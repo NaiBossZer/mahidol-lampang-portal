@@ -398,7 +398,7 @@ function MahidolLampangHub() {
             <span className="text-xs font-medium text-slate-600">อบจ. ลำปาง</span>
           </div>
 
-{/* พันธมิตร 3: อบต. แม่กัวะ (แก้เป็น .jpg) */}
+          {/* พันธมิตร 3: อบต. แม่กัวะ */}
           <div className="flex flex-col items-center gap-2 group">
             <div className="h-20 w-20 md:h-24 md:w-24 bg-white rounded-2xl p-2 shadow-sm border border-slate-100 flex items-center justify-center group-hover:shadow-md transition">
               <img 
@@ -409,10 +409,8 @@ function MahidolLampangHub() {
             </div>
             <span className="text-xs font-medium text-slate-600">อบต. แม่กัวะ</span>
           </div>
-            <span className="text-xs font-medium text-slate-600">อบต. แม่กัวะ</span>
-          </div>
         </div>
-      </section>
+      </section> {/* <-- เช็คว่ามีแท็กปิด </section> ตรงนี้ครบไหม */}
 
       {/* 7. NEWS & ACTIVITIES SECTION */}
       <section id="news" className="max-w-7xl mx-auto px-4 md:px-8 py-10 space-y-6">
