@@ -369,22 +369,45 @@ function MahidolLampangHub() {
         </div>
       </section>
 
-      {/* 6. PARTNERS SECTION */}
-      <section id="partners" className="max-w-7xl mx-auto px-4 md:px-8 py-10 text-center space-y-6">
-        <h2 className="text-xl font-bold text-indigo-950">พันธมิตรของเรา</h2>
+{/* 6. PARTNERS SECTION */}
+      <section id="partners" className="max-w-7xl mx-auto px-4 md:px-8 py-12 text-center space-y-6">
+        <h2 className="text-xl md:text-2xl font-bold text-indigo-950">พันธมิตรของเรา</h2>
         
-        <div className="flex flex-wrap items-center justify-center gap-8 opacity-75">
-          <div className="h-12 w-28 bg-slate-200 rounded-lg flex items-center justify-center font-bold text-xs text-slate-500">
-            มหาวิทยาลัยมหิดล
+        <div className="flex flex-wrap items-center justify-center gap-8 md:gap-12 pt-2">
+          {/* พันธมิตร 1: Creasia Group */}
+          <div className="flex flex-col items-center gap-2 group">
+            <div className="h-20 w-20 md:h-24 md:w-24 bg-white rounded-2xl p-2 shadow-sm border border-slate-100 flex items-center justify-center group-hover:shadow-md transition">
+              <img 
+                src="/partner-creasia.png" 
+                alt="Creasia Group" 
+                className="max-h-full max-w-full object-contain"
+              />
+            </div>
+            <span className="text-xs font-medium text-slate-600">Creasia Group</span>
           </div>
-          <div className="h-12 w-28 bg-slate-200 rounded-lg flex items-center justify-center font-bold text-xs text-slate-500">
-            อบต.สบปราบ
+
+          {/* พันธมิตร 2: อบจ.ลำปาง */}
+          <div className="flex flex-col items-center gap-2 group">
+            <div className="h-20 w-20 md:h-24 md:w-24 bg-white rounded-2xl p-2 shadow-sm border border-slate-100 flex items-center justify-center group-hover:shadow-md transition">
+              <img 
+                src="/partner-pao-lampang.png" 
+                alt="องค์การบริหารส่วนจังหวัดลำปาง" 
+                className="max-h-full max-w-full object-contain"
+              />
+            </div>
+            <span className="text-xs font-medium text-slate-600">อบจ. ลำปาง</span>
           </div>
-          <div className="h-12 w-28 bg-slate-200 rounded-lg flex items-center justify-center font-bold text-xs text-slate-500">
-            กฟภ. (PEA)
-          </div>
-          <div className="h-12 w-28 bg-slate-200 rounded-lg flex items-center justify-center font-bold text-xs text-slate-500">
-            กระทรวง อว.
+
+          {/* พันธมิตร 3: อบต. แม่กัวะ */}
+          <div className="flex flex-col items-center gap-2 group">
+            <div className="h-20 w-20 md:h-24 md:w-24 bg-white rounded-2xl p-2 shadow-sm border border-slate-100 flex items-center justify-center group-hover:shadow-md transition">
+              <img 
+                src="/partner-maekua.png" 
+                alt="อบต. แม่กัวะ อ.สบปราบ จ.ลำปาง" 
+                className="max-h-full max-w-full object-contain"
+              />
+            </div>
+            <span className="text-xs font-medium text-slate-600">อบต. แม่กัวะ</span>
           </div>
         </div>
       </section>
