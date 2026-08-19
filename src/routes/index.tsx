@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { 
   Zap, TreePine, Sprout, ArrowUpRight, Search, Globe, ChevronRight, 
-  MapPin, ShieldCheck, Newspaper, Award, Users, ChevronLeft 
+  MapPin, ShieldCheck, Newspaper, Award, Users, ChevronLeft, Menu, X 
 } from 'lucide-react';
 
 // URL ของแต่ละ Repo ที่ Deploy แล้ว
@@ -12,8 +12,10 @@ const BASE_URLS = {
 };
 
 export default function MahidolLampangHub() {
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
   return (
-    <div className="bg-slate-50 min-h-screen text-slate-800 font-sans selection:bg-blue-600 selection:text-white">
+    <div className="bg-slate-50 min-h-screen text-slate-800 font-sans selection:bg-blue-600 selection:text-white scroll-smooth">
       
       {/* 1. TOP HEADER / NAVBAR (สไตล์ PEA VOLTA Header) */}
       <header className="sticky top-0 z-50 bg-indigo-950 text-white shadow-md">
@@ -34,7 +36,7 @@ export default function MahidolLampangHub() {
             </div>
           </div>
 
-          {/* Nav Menu */}
+          {/* Nav Menu (Desktop) */}
           <nav className="hidden lg:flex items-center gap-6 text-xs font-medium text-indigo-100">
             <a href="#hero" className="hover:text-amber-300 transition">หน้าแรก</a>
             <a href="#bases" className="hover:text-amber-300 transition">ฐานการเรียนรู้</a>
@@ -44,18 +46,38 @@ export default function MahidolLampangHub() {
             <a href="#news" className="hover:text-amber-300 transition">ข่าวสาร & กิจกรรม</a>
           </nav>
 
-          {/* Search Icon */}
-          <button className="p-2 hover:bg-indigo-900 rounded-full transition">
-            <Search className="w-4 h-4 text-indigo-200" />
-          </button>
+          {/* Search Icon & Mobile Menu Button */}
+          <div className="flex items-center gap-2">
+            <button className="p-2 hover:bg-indigo-900 rounded-full transition" aria-label="Search">
+              <Search className="w-4 h-4 text-indigo-200" />
+            </button>
+            <button 
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              className="lg:hidden p-2 hover:bg-indigo-900 rounded-full transition text-indigo-200"
+              aria-label="Toggle Menu"
+            >
+              {isMobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+            </button>
+          </div>
         </div>
+
+        {/* Mobile Menu Dropdown */}
+        {isMobileMenuOpen && (
+          <div className="lg:hidden bg-indigo-900 border-t border-indigo-800 px-4 py-3 space-y-2 text-xs font-medium">
+            <a href="#hero" onClick={() => setIsMobileMenuOpen(false)} className="block py-1.5 hover:text-amber-300">หน้าแรก</a>
+            <a href="#bases" onClick={() => setIsMobileMenuOpen(false)} className="block py-1.5 hover:text-amber-300">ฐานการเรียนรู้</a>
+            <a href="#stats" onClick={() => setIsMobileMenuOpen(false)} className="block py-1.5 hover:text-amber-300">สถิติและเครือข่าย</a>
+            <a href="#testimonials" onClick={() => setIsMobileMenuOpen(false)} className="block py-1.5 hover:text-amber-300">เสียงจากผู้ใช้บริการ</a>
+            <a href="#partners" onClick={() => setIsMobileMenuOpen(false)} className="block py-1.5 hover:text-amber-300">พันธมิตร</a>
+            <a href="#news" onClick={() => setIsMobileMenuOpen(false)} className="block py-1.5 hover:text-amber-300">ข่าวสาร & กิจกรรม</a>
+          </div>
+        )}
       </header>
 
-      {/* 2. HERO BANNER SECTION (การ์ดมนทรงโค้งสไตล์ PEA Hero) */}
+      {/* 2. HERO BANNER SECTION */}
       <section id="hero" className="max-w-7xl mx-auto px-4 md:px-8 pt-8 pb-12">
         <div className="bg-gradient-to-r from-indigo-50 via-sky-50 to-indigo-100 rounded-3xl p-8 md:p-12 border border-indigo-100 shadow-sm relative overflow-hidden flex flex-col md:flex-row items-center justify-between gap-8">
           
-          {/* Left Text Content */}
           <div className="space-y-4 max-w-xl text-center md:text-left z-10">
             <span className="inline-block bg-indigo-900 text-white text-[11px] font-semibold px-3.5 py-1 rounded-full uppercase tracking-wider">
               Mahidol Learning Hub
@@ -77,7 +99,6 @@ export default function MahidolLampangHub() {
             </div>
           </div>
 
-          {/* Right Visual Card */}
           <div className="w-full md:w-1/2 flex justify-center z-10">
             <div className="bg-white p-6 rounded-2xl shadow-xl border border-indigo-50 max-w-sm w-full space-y-4 text-center">
               <div className="w-16 h-16 bg-amber-100 text-amber-600 rounded-2xl flex items-center justify-center mx-auto text-2xl font-black">
@@ -93,7 +114,7 @@ export default function MahidolLampangHub() {
         </div>
       </section>
 
-      {/* 3. CARD BASES SECTION (ฐานเรียนรู้หลัก 3 CARD) */}
+      {/* 3. CARD BASES SECTION */}
       <section id="bases" className="max-w-7xl mx-auto px-4 md:px-8 py-10 space-y-8">
         <div className="text-center space-y-2">
           <h2 className="text-2xl md:text-3xl font-black text-indigo-950">
@@ -106,7 +127,7 @@ export default function MahidolLampangHub() {
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           
-          {/* CARD 1: ฐานครั่ง (Repo: mahidol-rac) */}
+          {/* CARD 1: ฐานครั่ง */}
           <a 
             href={BASE_URLS.LAC}
             target="_blank"
@@ -133,7 +154,7 @@ export default function MahidolLampangHub() {
             </div>
           </a>
 
-          {/* CARD 2: ฐานพลังงาน (Repo: mahidol-clean-energy) */}
+          {/* CARD 2: ฐานพลังงาน */}
           <a 
             href={BASE_URLS.ENERGY}
             target="_blank"
@@ -185,7 +206,7 @@ export default function MahidolLampangHub() {
         </div>
       </section>
 
-      {/* 4. STATS COUNTER SECTION (สไตล์ตัวเลขนับสถิติ PEA VOLTA) */}
+      {/* 4. STATS COUNTER SECTION */}
       <section id="stats" className="max-w-7xl mx-auto px-4 md:px-8 py-12 text-center space-y-8">
         <h2 className="text-2xl font-black text-indigo-950">
           ศักยภาพและสถิติภาพรวมศูนย์
@@ -212,7 +233,7 @@ export default function MahidolLampangHub() {
         </div>
       </section>
 
-      {/* 5. TESTIMONIALS SECTION (สไตล์การ์ดคอมเมนต์ PEA) */}
+      {/* 5. TESTIMONIALS SECTION */}
       <section id="testimonials" className="max-w-7xl mx-auto px-4 md:px-8 py-10 space-y-6">
         <div className="border-l-4 border-rose-600 pl-3">
           <h2 className="text-lg font-bold text-indigo-950">Testimonials</h2>
@@ -242,7 +263,7 @@ export default function MahidolLampangHub() {
         </div>
       </section>
 
-      {/* 6. PARTNERS SECTION (สไตล์แถบพันธมิตร PEA) */}
+      {/* 6. PARTNERS SECTION */}
       <section id="partners" className="max-w-7xl mx-auto px-4 md:px-8 py-10 text-center space-y-6">
         <h2 className="text-xl font-bold text-indigo-950">พันธมิตรของเรา</h2>
         
@@ -262,7 +283,7 @@ export default function MahidolLampangHub() {
         </div>
       </section>
 
-      {/* 7. NEWS & ACTIVITIES SECTION (สไตล์การ์ดข่าวสาร PEA) */}
+      {/* 7. NEWS & ACTIVITIES SECTION */}
       <section id="news" className="max-w-7xl mx-auto px-4 md:px-8 py-10 space-y-6">
         <div className="border-l-4 border-indigo-900 pl-3">
           <h2 className="text-lg font-bold text-indigo-950">News & Activities</h2>
