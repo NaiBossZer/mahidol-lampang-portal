@@ -1,8 +1,14 @@
+import { createFileRoute } from '@tanstack/react-router';
 import { useState } from 'react';
 import { 
   Zap, TreePine, Sprout, ArrowUpRight, Search, Globe, ChevronRight, 
   MapPin, ShieldCheck, Newspaper, Award, Users, ChevronLeft, Menu, X 
 } from 'lucide-react';
+
+// 1. เพิ่มการสร้าง Route Object สำหรับ TanStack Router
+export const Route = createFileRoute('/')({
+  component: MahidolLampangHub,
+});
 
 // URL ของแต่ละ Repo ที่ Deploy แล้ว
 const BASE_URLS = {
@@ -11,13 +17,13 @@ const BASE_URLS = {
   AGRI: "#" // ฐานเกษตร
 };
 
-export default function MahidolLampangHub() {
+function MahidolLampangHub() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   return (
     <div className="bg-slate-50 min-h-screen text-slate-800 font-sans selection:bg-blue-600 selection:text-white scroll-smooth">
       
-      {/* 1. TOP HEADER / NAVBAR (สไตล์ PEA VOLTA Header) */}
+      {/* 1. TOP HEADER / NAVBAR */}
       <header className="sticky top-0 z-50 bg-indigo-950 text-white shadow-md">
         <div className="max-w-7xl mx-auto px-4 md:px-8 py-3 flex justify-between items-center">
           
@@ -322,3 +328,6 @@ export default function MahidolLampangHub() {
     </div>
   );
 }
+
+// 2. Export default component
+export default MahidolLampangHub;
