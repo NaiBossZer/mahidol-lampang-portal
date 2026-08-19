@@ -68,15 +68,39 @@ function MahidolLampangHub() {
   return (
     <div className="bg-slate-50 min-h-screen text-slate-800 font-sans selection:bg-blue-600 selection:text-white scroll-smooth">
       
-      {/* 1. TOP HEADER / NAVBAR */}
+{/* 1. TOP HEADER / NAVBAR */}
       <header className="sticky top-0 z-50 bg-indigo-950 text-white shadow-md">
-        <div className="max-w-7xl mx-auto px-4 md:px-8 py-3 flex justify-between items-center">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-white text-indigo-950 flex items-center justify-center font-black text-xl shadow">
-              M
-            </div>
-            <div>
-              <span className="font-bold text-base md:text-lg tracking-tight block leading-none">
+        <div className="max-w-7xl mx-auto px-4 md:px-8 py-2.5 flex justify-between items-center">
+          
+          {/* Logo Section ด้านซ้าย (รวม 3 โลโก้) */}
+          <div className="flex items-center gap-2 md:gap-3">
+            {/* โลโก้ที่ 1: Envi Mahidol */}
+            <img 
+              src="/envi-logo.png" 
+              alt="Envi Mahidol Logo" 
+              className="h-8 md:h-10 object-contain"
+            />
+
+            {/* โลโก้ที่ 2: คณะสิ่งแวดล้อมฯ มหาวิทยาลัยมหิดล */}
+            <img 
+              src="/mahidol-logo.png" 
+              alt="Faculty of Environment Logo" 
+              className="h-8 md:h-10 object-contain bg-white rounded p-0.5"
+            />
+
+            {/* โลโก้ที่ 3: งานพันธกิจเพื่อสังคม */}
+            <img 
+              src="/social-engagement-logo.png" 
+              alt="Social Engagement Lampang Logo" 
+              className="h-8 md:h-10 object-contain bg-white rounded p-0.5"
+            />
+
+            {/* เส้นแบ่งแนวตั้ง */}
+            <div className="h-7 w-[1px] bg-indigo-700/60 hidden sm:block mx-1" />
+
+            {/* ข้อความชื่อศูนย์ */}
+            <div className="hidden xl:block">
+              <span className="font-bold text-sm tracking-tight block leading-none text-white">
                 MAHIDOL LAMPANG
               </span>
               <span className="text-[10px] text-indigo-200 tracking-wider font-light">
@@ -85,7 +109,8 @@ function MahidolLampangHub() {
             </div>
           </div>
 
-          <nav className="hidden lg:flex items-center gap-6 text-xs font-medium text-indigo-100">
+          {/* Nav Menu (Desktop) */}
+          <nav className="hidden lg:flex items-center gap-5 text-xs font-medium text-indigo-100">
             <a href="#hero" className="hover:text-amber-300 transition">หน้าแรก</a>
             <a href="#bases" className="hover:text-amber-300 transition">ฐานการเรียนรู้</a>
             <a href="#stats" className="hover:text-amber-300 transition">สถิติและเครือข่าย</a>
@@ -94,6 +119,7 @@ function MahidolLampangHub() {
             <a href="#news" className="hover:text-amber-300 transition">ข่าวสาร & กิจกรรม</a>
           </nav>
 
+          {/* Search Icon & Mobile Menu Button */}
           <div className="flex items-center gap-2">
             <button className="p-2 hover:bg-indigo-900 rounded-full transition" aria-label="Search">
               <Search className="w-4 h-4 text-indigo-200" />
@@ -108,6 +134,7 @@ function MahidolLampangHub() {
           </div>
         </div>
 
+        {/* Mobile Menu Dropdown */}
         {isMobileMenuOpen && (
           <div className="lg:hidden bg-indigo-900 border-t border-indigo-800 px-4 py-3 space-y-2 text-xs font-medium">
             <a href="#hero" onClick={() => setIsMobileMenuOpen(false)} className="block py-1.5 hover:text-amber-300">หน้าแรก</a>
