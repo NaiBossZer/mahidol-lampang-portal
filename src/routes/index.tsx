@@ -398,15 +398,17 @@ function MahidolLampangHub() {
             <span className="text-xs font-medium text-slate-600">อบจ. ลำปาง</span>
           </div>
 
-          {/* พันธมิตร 3: อบต. แม่กัวะ */}
+{/* พันธมิตร 3: อบต. แม่กัวะ (แก้เป็น .jpg) */}
           <div className="flex flex-col items-center gap-2 group">
             <div className="h-20 w-20 md:h-24 md:w-24 bg-white rounded-2xl p-2 shadow-sm border border-slate-100 flex items-center justify-center group-hover:shadow-md transition">
               <img 
-                src="/partner-maekua.png" 
+                src="/partner-maekua.jpg" 
                 alt="อบต. แม่กัวะ อ.สบปราบ จ.ลำปาง" 
                 className="max-h-full max-w-full object-contain"
               />
             </div>
+            <span className="text-xs font-medium text-slate-600">อบต. แม่กัวะ</span>
+          </div>
             <span className="text-xs font-medium text-slate-600">อบต. แม่กัวะ</span>
           </div>
         </div>
