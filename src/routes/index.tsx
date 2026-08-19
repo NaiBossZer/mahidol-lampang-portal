@@ -68,14 +68,14 @@ function MahidolLampangHub() {
   return (
     <div className="bg-slate-50 min-h-screen text-slate-800 font-sans selection:bg-blue-600 selection:text-white scroll-smooth">
       
-{/* 1. TOP HEADER / NAVBAR */}
+      {/* 1. TOP HEADER / NAVBAR */}
       <header className="sticky top-0 z-50 bg-indigo-950 text-white shadow-md">
         <div className="max-w-7xl mx-auto px-4 md:px-8 py-2 flex justify-between items-center">
           
           {/* Logo Section ด้านซ้าย (รวม 3 โลโก้ + ข้อความหน่วยงาน) */}
           <div className="flex items-center gap-2 md:gap-3">
             
-            {/* โลโก้ที่ 1: Envi Mahidol (แก้เป็น .jpg ตรงกับในเครื่อง) */}
+            {/* โลโก้ที่ 1: Envi Mahidol (.jpg) */}
             <img 
               src="/envi-logo.jpg" 
               alt="Envi Mahidol Logo" 
@@ -99,7 +99,7 @@ function MahidolLampangHub() {
             {/* เส้นแบ่งแนวตั้ง */}
             <div className="h-8 w-[1px] bg-indigo-700/60 hidden sm:block mx-1" />
 
-            {/* ข้อความชื่อหน่วยงานใหม่ */}
+            {/* ข้อความชื่อหน่วยงาน */}
             <div className="hidden xl:block">
               <span className="font-bold text-xs md:text-sm tracking-tight block leading-tight text-white">
                 งานพันธกิจเพื่อสังคม สำนักงานวิจัยและวิทยบริการ
@@ -113,6 +113,7 @@ function MahidolLampangHub() {
           {/* Nav Menu (Desktop) */}
           <nav className="hidden lg:flex items-center gap-5 text-xs font-medium text-indigo-100">
             <a href="#hero" className="hover:text-amber-300 transition">หน้าแรก</a>
+            <a href="#about-video" className="hover:text-amber-300 transition">เกี่ยวกับเรา</a>
             <a href="#bases" className="hover:text-amber-300 transition">ฐานการเรียนรู้</a>
             <a href="#stats" className="hover:text-amber-300 transition">สถิติและเครือข่าย</a>
             <a href="#testimonials" className="hover:text-amber-300 transition">เสียงจากผู้ใช้บริการ</a>
@@ -139,6 +140,7 @@ function MahidolLampangHub() {
         {isMobileMenuOpen && (
           <div className="lg:hidden bg-indigo-900 border-t border-indigo-800 px-4 py-3 space-y-2 text-xs font-medium">
             <a href="#hero" onClick={() => setIsMobileMenuOpen(false)} className="block py-1.5 hover:text-amber-300">หน้าแรก</a>
+            <a href="#about-video" onClick={() => setIsMobileMenuOpen(false)} className="block py-1.5 hover:text-amber-300">เกี่ยวกับเรา</a>
             <a href="#bases" onClick={() => setIsMobileMenuOpen(false)} className="block py-1.5 hover:text-amber-300">ฐานการเรียนรู้</a>
             <a href="#stats" onClick={() => setIsMobileMenuOpen(false)} className="block py-1.5 hover:text-amber-300">สถิติและเครือข่าย</a>
             <a href="#testimonials" onClick={() => setIsMobileMenuOpen(false)} className="block py-1.5 hover:text-amber-300">เสียงจากผู้ใช้บริการ</a>
@@ -148,7 +150,7 @@ function MahidolLampangHub() {
         )}
       </header>
 
-      {/* 2. HERO SLIDER BANNER SECTION (สไตล์เว็บไซต์มหิดล) */}
+      {/* 2. HERO SLIDER BANNER SECTION */}
       <section id="hero" className="relative w-full h-[450px] md:h-[550px] overflow-hidden bg-slate-900">
         {SLIDES.map((slide, index) => (
           <div
@@ -162,7 +164,6 @@ function MahidolLampangHub() {
               className="absolute inset-0 bg-cover bg-center"
               style={{ backgroundImage: `url('${slide.image}')` }}
             >
-              {/* Overlay เงาดำสำหรับทำให้อ่านตัวหนังสือได้ชัดขึ้น */}
               <div className="absolute inset-0 bg-black/40 bg-gradient-to-t from-black/80 via-black/20 to-black/30" />
             </div>
 
@@ -205,7 +206,7 @@ function MahidolLampangHub() {
           <ChevronRight className="w-6 h-6 md:w-8 md:h-8" />
         </button>
 
-        {/* จุด (Indicators) แสดงตำแหน่ง Slide */}
+        {/* Indicators */}
         <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-30 flex gap-2">
           {SLIDES.map((_, idx) => (
             <button
@@ -217,6 +218,32 @@ function MahidolLampangHub() {
               }`}
             />
           ))}
+        </div>
+      </section>
+
+      {/* 2.5. GET TO KNOW US SECTION (ส่วนวิดีโอ) */}
+      <section id="about-video" className="bg-slate-100 py-12 md:py-16 border-y border-slate-200">
+        <div className="max-w-5xl mx-auto px-4 md:px-8 text-center space-y-6">
+          
+          {/* Section Title */}
+          <h2 className="text-xl md:text-2xl font-extrabold tracking-wide text-slate-800">
+            <span className="text-slate-900">GET </span>
+            <span className="text-teal-600">TO KNOW US</span>
+          </h2>
+
+          {/* Video Container (Responsive Aspect Ratio 16:9) */}
+          <div className="relative w-full max-w-3xl mx-auto rounded-2xl overflow-hidden shadow-xl border border-slate-200/80 bg-black aspect-video">
+            <video 
+              controls 
+              preload="metadata"
+              className="w-full h-full object-cover"
+              poster="/banner1.jpg"
+            >
+              <source src="/intro-enlp.mp4" type="video/mp4" />
+              เบราว์เซอร์ของคุณไม่รองรับการเล่นวิดีโอ
+            </video>
+          </div>
+
         </div>
       </section>
 
@@ -369,7 +396,7 @@ function MahidolLampangHub() {
         </div>
       </section>
 
-{/* 6. PARTNERS SECTION */}
+      {/* 6. PARTNERS SECTION */}
       <section id="partners" className="max-w-7xl mx-auto px-4 md:px-8 py-12 text-center space-y-6">
         <h2 className="text-xl md:text-2xl font-bold text-indigo-950">พันธมิตรของเรา</h2>
         
@@ -410,7 +437,7 @@ function MahidolLampangHub() {
             <span className="text-xs font-medium text-slate-600">อบต. แม่กัวะ</span>
           </div>
         </div>
-      </section> {/* <-- เช็คว่ามีแท็กปิด </section> ตรงนี้ครบไหม */}
+      </section>
 
       {/* 7. NEWS & ACTIVITIES SECTION */}
       <section id="news" className="max-w-7xl mx-auto px-4 md:px-8 py-10 space-y-6">
