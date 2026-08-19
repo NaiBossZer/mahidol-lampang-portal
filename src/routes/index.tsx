@@ -70,41 +70,42 @@ function MahidolLampangHub() {
       
 {/* 1. TOP HEADER / NAVBAR */}
       <header className="sticky top-0 z-50 bg-indigo-950 text-white shadow-md">
-        <div className="max-w-7xl mx-auto px-4 md:px-8 py-2.5 flex justify-between items-center">
+        <div className="max-w-7xl mx-auto px-4 md:px-8 py-2 flex justify-between items-center">
           
-          {/* Logo Section ด้านซ้าย (รวม 3 โลโก้) */}
+          {/* Logo Section ด้านซ้าย (รวม 3 โลโก้ + ข้อความหน่วยงาน) */}
           <div className="flex items-center gap-2 md:gap-3">
-            {/* โลโก้ที่ 1: Envi Mahidol */}
+            
+            {/* โลโก้ที่ 1: Envi Mahidol (แก้เป็น .jpg ตรงกับในเครื่อง) */}
             <img 
-              src="/envi-logo.png" 
+              src="/envi-logo.jpg" 
               alt="Envi Mahidol Logo" 
-              className="h-8 md:h-10 object-contain"
+              className="h-9 md:h-11 object-contain bg-white rounded p-0.5"
             />
 
-            {/* โลโก้ที่ 2: คณะสิ่งแวดล้อมฯ มหาวิทยาลัยมหิดล */}
+            {/* โลโก้ที่ 2: คณะสิ่งแวดล้อมฯ มหาวิทยาลัยมหิดล (.png) */}
             <img 
               src="/mahidol-logo.png" 
               alt="Faculty of Environment Logo" 
-              className="h-8 md:h-10 object-contain bg-white rounded p-0.5"
+              className="h-9 md:h-11 object-contain bg-white rounded p-0.5"
             />
 
-            {/* โลโก้ที่ 3: งานพันธกิจเพื่อสังคม */}
+            {/* โลโก้ที่ 3: งานพันธกิจเพื่อสังคม (.png) */}
             <img 
               src="/social-engagement-logo.png" 
-              alt="Social Engagement Lampang Logo" 
-              className="h-8 md:h-10 object-contain bg-white rounded p-0.5"
+              alt="Social Engagement Logo" 
+              className="h-9 md:h-11 object-contain bg-white rounded p-0.5"
             />
 
             {/* เส้นแบ่งแนวตั้ง */}
-            <div className="h-7 w-[1px] bg-indigo-700/60 hidden sm:block mx-1" />
+            <div className="h-8 w-[1px] bg-indigo-700/60 hidden sm:block mx-1" />
 
-            {/* ข้อความชื่อศูนย์ */}
+            {/* ข้อความชื่อหน่วยงานใหม่ */}
             <div className="hidden xl:block">
-              <span className="font-bold text-sm tracking-tight block leading-none text-white">
-                MAHIDOL LAMPANG
+              <span className="font-bold text-xs md:text-sm tracking-tight block leading-tight text-white">
+                งานพันธกิจเพื่อสังคม สำนักงานวิจัยและวิทยบริการ
               </span>
-              <span className="text-[10px] text-indigo-200 tracking-wider font-light">
-                ศูนย์การเรียนรู้ มหาวิทยาลัยมหิดล ลำปาง
+              <span className="text-[10px] text-indigo-200 tracking-normal font-light block leading-tight">
+                คณะสิ่งแวดล้อมและทรัพยากรศาสตร์ มหาวิทยาลัยมหิดล จังหวัดลำปาง
               </span>
             </div>
           </div>
