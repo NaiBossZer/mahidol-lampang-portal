@@ -12,7 +12,7 @@ export const Route = createFileRoute('/')({
 
 // URL ของแต่ละ Repo ที่ Deploy แล้ว
 const BASE_URLS = {
-  LAC: "https://mahidol-rac.vercel.app", // Repo: mahidol-rac (ฐานครั่ง)
+  LAC: "https://mahidol-shellac.vercel.app", // Repo: mahidol-shellac (ฐานครั่ง)
   ENERGY: "https://mahidol-clean-energy.vercel.app", // Repo: mahidol-clean-energy (ฐานพลังงาน)
   AGRI: "#" // ฐานเกษตร
 };
@@ -155,7 +155,7 @@ function MahidolLampangHub() {
               </div>
             </div>
             <div className="mt-6 pt-4 border-t border-slate-100 flex items-center justify-between text-xs font-bold text-rose-600">
-              <span>เข้าสู่ระบบ `mahidol-rac`</span>
+              <span>เข้าสู่ระบบ `mahidol-shellac`</span>
               <ArrowUpRight className="w-4 h-4" />
             </div>
           </a>
@@ -329,5 +329,4 @@ function MahidolLampangHub() {
   );
 }
 
-// 2. Export default component
 export default MahidolLampangHub;
