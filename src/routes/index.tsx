@@ -1,24 +1,69 @@
 import { createFileRoute } from '@tanstack/react-router';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { 
   Zap, TreePine, Sprout, ArrowUpRight, Search, Globe, ChevronRight, 
   MapPin, ShieldCheck, Newspaper, Award, Users, ChevronLeft, Menu, X 
 } from 'lucide-react';
 
-// 1. เพิ่มการสร้าง Route Object สำหรับ TanStack Router
 export const Route = createFileRoute('/')({
   component: MahidolLampangHub,
 });
 
-// URL ของแต่ละ Repo ที่ Deploy แล้ว
+// URL ของแต่ละ Repo
 const BASE_URLS = {
-  LAC: "https://mahidol-shellac.vercel.app", // Repo: mahidol-shellac (ฐานครั่ง)
-  ENERGY: "https://mahidol-clean-energy.vercel.app", // Repo: mahidol-clean-energy (ฐานพลังงาน)
-  AGRI: "#" // ฐานเกษตร
+  LAC: "https://mahidol-shellac.vercel.app",
+  ENERGY: "https://mahidol-clean-energy.vercel.app",
+  AGRI: "#"
 };
+
+// ข้อมูลรูปภาพที่จะนำไปวางในโฟลเดอร์ public/
+const SLIDES = [
+  {
+    id: 1,
+    image: '/banner1.jpg', // นำไฟล์ภาพชื่อ banner1.jpg ไปใส่ในโฟลเดอร์ public
+    title: 'Mahidol University Lampang Center',
+    subtitle: 'ศูนย์รวมองค์ความรู้ นวัตกรรม และพลังงานสะอาดเพื่อชุมชน',
+    buttonText: 'สำรวจฐานเรียนรู้',
+    buttonLink: '#bases',
+  },
+  {
+    id: 2,
+    image: '/banner2.jpg', // นำไฟล์ภาพชื่อ banner2.jpg ไปใส่ในโฟลเดอร์ public
+    title: 'Sustainable Future Starts Here',
+    subtitle: 'ยกระดับการบริการวิชาการ มหาวิทยาลัยมหิดล อำเภอสบปราบ จังหวัดลำปาง',
+    buttonText: 'สถิติภาพรวม',
+    buttonLink: '#stats',
+  },
+  {
+    id: 3,
+    image: '/banner3.jpg', // นำไฟล์ภาพชื่อ banner3.jpg ไปใส่ในโฟลเดอร์ public
+    title: 'Smart Learning & Innovation',
+    subtitle: 'เชื่อมโยงระบบสารสนเทศ งานวิจัยครั่ง พลังงานโซลาร์เซลล์ และเกษตรกรรมอัจฉริยะ',
+    buttonText: 'ข่าวสารและกิจกรรม',
+    buttonLink: '#news',
+  },
+];
 
 function MahidolLampangHub() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [currentSlide, setCurrentSlide] = useState(0);
+
+  // ระบบเปลี่ยนภาพอัตโนมัติทุกๆ 5 วินาที
+  useEffect(() => {
+    const slideInterval = setInterval(() => {
+      setCurrentSlide((prev) => (prev === SLIDES.length - 1 ? 0 : prev + 1));
+    }, 5000);
+
+    return () => clearInterval(slideInterval);
+  }, []);
+
+  const prevSlide = () => {
+    setCurrentSlide((prev) => (prev === 0 ? SLIDES.length - 1 : prev - 1));
+  };
+
+  const nextSlide = () => {
+    setCurrentSlide((prev) => (prev === SLIDES.length - 1 ? 0 : prev + 1));
+  };
 
   return (
     <div className="bg-slate-50 min-h-screen text-slate-800 font-sans selection:bg-blue-600 selection:text-white scroll-smooth">
@@ -26,8 +71,6 @@ function MahidolLampangHub() {
       {/* 1. TOP HEADER / NAVBAR */}
       <header className="sticky top-0 z-50 bg-indigo-950 text-white shadow-md">
         <div className="max-w-7xl mx-auto px-4 md:px-8 py-3 flex justify-between items-center">
-          
-          {/* Logo & Portal Title */}
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-white text-indigo-950 flex items-center justify-center font-black text-xl shadow">
               M
@@ -42,7 +85,6 @@ function MahidolLampangHub() {
             </div>
           </div>
 
-          {/* Nav Menu (Desktop) */}
           <nav className="hidden lg:flex items-center gap-6 text-xs font-medium text-indigo-100">
             <a href="#hero" className="hover:text-amber-300 transition">หน้าแรก</a>
             <a href="#bases" className="hover:text-amber-300 transition">ฐานการเรียนรู้</a>
@@ -52,7 +94,6 @@ function MahidolLampangHub() {
             <a href="#news" className="hover:text-amber-300 transition">ข่าวสาร & กิจกรรม</a>
           </nav>
 
-          {/* Search Icon & Mobile Menu Button */}
           <div className="flex items-center gap-2">
             <button className="p-2 hover:bg-indigo-900 rounded-full transition" aria-label="Search">
               <Search className="w-4 h-4 text-indigo-200" />
@@ -67,7 +108,6 @@ function MahidolLampangHub() {
           </div>
         </div>
 
-        {/* Mobile Menu Dropdown */}
         {isMobileMenuOpen && (
           <div className="lg:hidden bg-indigo-900 border-t border-indigo-800 px-4 py-3 space-y-2 text-xs font-medium">
             <a href="#hero" onClick={() => setIsMobileMenuOpen(false)} className="block py-1.5 hover:text-amber-300">หน้าแรก</a>
@@ -80,48 +120,80 @@ function MahidolLampangHub() {
         )}
       </header>
 
-      {/* 2. HERO BANNER SECTION */}
-      <section id="hero" className="max-w-7xl mx-auto px-4 md:px-8 pt-8 pb-12">
-        <div className="bg-gradient-to-r from-indigo-50 via-sky-50 to-indigo-100 rounded-3xl p-8 md:p-12 border border-indigo-100 shadow-sm relative overflow-hidden flex flex-col md:flex-row items-center justify-between gap-8">
-          
-          <div className="space-y-4 max-w-xl text-center md:text-left z-10">
-            <span className="inline-block bg-indigo-900 text-white text-[11px] font-semibold px-3.5 py-1 rounded-full uppercase tracking-wider">
-              Mahidol Learning Hub
-            </span>
-            <h1 className="text-2xl md:text-4xl font-extrabold text-indigo-950 leading-tight">
-              ศูนย์รวมองค์ความรู้ นวัตกรรม และพลังงานสะอาดเพื่อชุมชน
-            </h1>
-            <p className="text-xs md:text-sm text-slate-600 leading-relaxed">
-              เชื่อมโยงระบบสารสนเทศ งานวิจัยครั่ง พลังงานโซลาร์เซลล์ และเกษตรกรรมอัจฉริยะ ยกระดับการบริการวิชาการ มหาวิทยาลัยมหิดล อำเภอสบปราบ จังหวัดลำปาง
-            </p>
-            
-            <div className="pt-2 flex flex-wrap gap-3 justify-center md:justify-start">
-              <a 
-                href="#bases" 
-                className="bg-indigo-900 hover:bg-indigo-800 text-white text-xs font-bold px-6 py-3 rounded-xl shadow-md transition flex items-center gap-2"
-              >
-                สำรวจฐานเรียนรู้ <ChevronRight className="w-4 h-4" />
-              </a>
+      {/* 2. HERO SLIDER BANNER SECTION (สไตล์เว็บไซต์มหิดล) */}
+      <section id="hero" className="relative w-full h-[450px] md:h-[550px] overflow-hidden bg-slate-900">
+        {SLIDES.map((slide, index) => (
+          <div
+            key={slide.id}
+            className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${
+              index === currentSlide ? 'opacity-100 z-10' : 'opacity-0 z-0'
+            }`}
+          >
+            {/* Background Image */}
+            <div 
+              className="absolute inset-0 bg-cover bg-center"
+              style={{ backgroundImage: `url('${slide.image}')` }}
+            >
+              {/* Overlay เงาดำสำหรับทำให้อ่านตัวหนังสือได้ชัดขึ้น */}
+              <div className="absolute inset-0 bg-black/40 bg-gradient-to-t from-black/80 via-black/20 to-black/30" />
             </div>
-          </div>
 
-          <div className="w-full md:w-1/2 flex justify-center z-10">
-            <div className="bg-white p-6 rounded-2xl shadow-xl border border-indigo-50 max-w-sm w-full space-y-4 text-center">
-              <div className="w-16 h-16 bg-amber-100 text-amber-600 rounded-2xl flex items-center justify-center mx-auto text-2xl font-black">
-                ⚡
-              </div>
-              <h3 className="font-bold text-indigo-950 text-base">ระบบสนับสนุนการเรียนรู้</h3>
-              <p className="text-xs text-slate-500">
-                เข้าถึงข้อมูลสถิติการผลิตไฟฟ้า Real-time คลังงานวิจัยครั่ง และระบบลงทะเบียนใช้บริการ
+            {/* Banner Text Content */}
+            <div className="relative z-20 max-w-7xl mx-auto h-full px-6 md:px-12 flex flex-col justify-center items-center text-center text-white space-y-4">
+              <span className="bg-indigo-600/80 backdrop-blur-md text-white text-xs font-medium px-4 py-1.5 rounded-full uppercase tracking-wider shadow-lg">
+                Mahidol Learning Hub
+              </span>
+              <h1 className="text-2xl md:text-5xl font-extrabold tracking-tight drop-shadow-md max-w-4xl leading-tight">
+                {slide.title}
+              </h1>
+              <p className="text-sm md:text-lg text-slate-200 max-w-2xl drop-shadow">
+                {slide.subtitle}
               </p>
+              <div className="pt-4">
+                <a
+                  href={slide.buttonLink}
+                  className="bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs md:text-sm px-7 py-3.5 rounded-xl shadow-lg hover:shadow-xl transition flex items-center gap-2"
+                >
+                  {slide.buttonText} <ChevronRight className="w-4 h-4" />
+                </a>
+              </div>
             </div>
           </div>
+        ))}
 
+        {/* ปุ่มเลื่อนซ้าย-ขวา */}
+        <button
+          onClick={prevSlide}
+          aria-label="Previous Slide"
+          className="absolute left-4 top-1/2 -translate-y-1/2 z-30 p-3 rounded-full bg-black/30 hover:bg-black/60 text-white backdrop-blur-sm transition"
+        >
+          <ChevronLeft className="w-6 h-6 md:w-8 md:h-8" />
+        </button>
+        <button
+          onClick={nextSlide}
+          aria-label="Next Slide"
+          className="absolute right-4 top-1/2 -translate-y-1/2 z-30 p-3 rounded-full bg-black/30 hover:bg-black/60 text-white backdrop-blur-sm transition"
+        >
+          <ChevronRight className="w-6 h-6 md:w-8 md:h-8" />
+        </button>
+
+        {/* จุด (Indicators) แสดงตำแหน่ง Slide */}
+        <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-30 flex gap-2">
+          {SLIDES.map((_, idx) => (
+            <button
+              key={idx}
+              onClick={() => setCurrentSlide(idx)}
+              aria-label={`Go to slide ${idx + 1}`}
+              className={`h-2.5 rounded-full transition-all duration-300 ${
+                currentSlide === idx ? 'w-8 bg-emerald-500' : 'w-2.5 bg-white/50 hover:bg-white'
+              }`}
+            />
+          ))}
         </div>
       </section>
 
       {/* 3. CARD BASES SECTION */}
-      <section id="bases" className="max-w-7xl mx-auto px-4 md:px-8 py-10 space-y-8">
+      <section id="bases" className="max-w-7xl mx-auto px-4 md:px-8 py-12 space-y-8">
         <div className="text-center space-y-2">
           <h2 className="text-2xl md:text-3xl font-black text-indigo-950">
             ฐานการเรียนรู้และระบบปฏิบัติการ
