@@ -519,24 +519,17 @@ function MahidolLampangHub() {
               <span className="text-xs font-medium text-slate-700 group-hover:text-[#002D62] transition">อบต. แม่กัวะ</span>
             </div>
 
-            {/* Partner 4: กรมส่งเสริมการเกษตร (ใหม่) */}
-            <div className="flex flex-col items-center gap-2 group">
-              <div className="h-20 w-20 md:h-24 md:w-24 bg-white rounded-2xl p-3 shadow-sm border border-slate-200 flex items-center justify-center group-hover:shadow-md group-hover:border-blue-200 transition-all">
-                <img 
-                  src="/partner-doae.png" 
-                  alt="กรมส่งเสริมการเกษตร" 
-                  className="max-h-full max-w-full object-contain"
-                  onError={(e) => {
-                    e.currentTarget.style.display = 'none';
-                    e.currentTarget.parentElement!.innerText = '🌾 กรมส่งเสริมการเกษตร';
-                  }}
-                />
-              </div>
-              <span className="text-xs font-medium text-slate-700 group-hover:text-[#002D62] transition">กรมส่งเสริมการเกษตร</span>
-            </div>
-          </div>
-        </div>
-      </section>
+{/* Partner 4: กรมส่งเสริมการเกษตร */}
+<div className="flex flex-col items-center gap-2 group">
+  <div className="h-20 w-20 md:h-24 md:w-24 bg-white rounded-2xl p-3 shadow-sm border border-slate-200 flex items-center justify-center group-hover:shadow-md group-hover:border-blue-200 transition-all">
+    <img 
+      src="/partner-DOAE.png" 
+      alt="กรมส่งเสริมการเกษตร" 
+      className="max-h-full max-w-full object-contain"
+    />
+  </div>
+  <span className="text-xs font-medium text-slate-700 group-hover:text-[#002D62] transition">กรมส่งเสริมการเกษตร</span>
+</div>
 
       {/* 9. NEWS & ACTIVITIES SECTION */}
       <section id="news" className="max-w-7xl mx-auto px-4 md:px-8 py-14 space-y-6">
