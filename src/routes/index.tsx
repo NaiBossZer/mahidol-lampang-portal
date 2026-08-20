@@ -98,7 +98,6 @@ function MahidolLampangHub() {
     : KNOWLEDGE_ARTICLES.filter(item => item.category === activeCategory);
 
   return (
-    // กำหนด Font 'Prompt' สไตล์ Vercel / LINE Seed ทั้งระบบ[span_2](start_span)[span_2](end_span)
     <div className="font-['Prompt'] bg-[#F8FAFC] min-h-screen text-slate-800 selection:bg-[#002D62] selection:text-white scroll-smooth antialiased">
       
       {/* 1. TOP HEADER / NAVBAR */}
@@ -185,11 +184,9 @@ function MahidolLampangHub() {
               <span className="bg-[#F2A900] text-[#002D62] text-xs font-bold px-4 py-1.5 rounded-full uppercase tracking-wider shadow-md">
                 Mahidol Learning Hub
               </span>
-              {/* Hero Title (H1) Weight 700/800 */}
               <h1 className="text-2xl md:text-5xl font-extrabold tracking-tight drop-shadow-md max-w-4xl leading-tight">
                 {slide.title}
               </h1>
-              {/* Body Text Weight 400 */}
               <p className="text-sm md:text-base text-slate-200 max-w-2xl drop-shadow font-normal leading-relaxed">
                 {slide.subtitle}
               </p>
@@ -238,7 +235,6 @@ function MahidolLampangHub() {
             <div className="flex items-center gap-2 text-xs font-semibold text-[#F2A900] bg-blue-50 px-3 py-1 rounded-md w-fit border border-blue-100 mb-2">
               <BookOpen className="w-3.5 h-3.5 text-[#002D62]" /> KNOWLEDGE REPOSITORY
             </div>
-            {/* Section Title (H2) Weight 700 */}
             <h2 className="text-2xl md:text-3xl font-bold text-[#002D62]">
               คลังความรู้และงานวิจัย
             </h2>
@@ -286,11 +282,9 @@ function MahidolLampangHub() {
                     <span>•</span>
                     <span>{article.author}</span>
                   </div>
-                  {/* Card Title (H3) Weight 600 */}
                   <h3 className="text-base font-semibold text-[#002D62] line-clamp-2 hover:text-[#F2A900] transition-colors cursor-pointer leading-snug">
                     {article.title}
                   </h3>
-                  {/* Body Snippet Weight 400 */}
                   <p className="text-xs text-slate-600 line-clamp-3 mt-2 font-normal leading-relaxed">
                     {article.snippet}
                   </p>
@@ -501,6 +495,7 @@ function MahidolLampangHub() {
           </div>
           
           <div className="flex flex-wrap items-center justify-center gap-6 md:gap-10 pt-2">
+            {/* Partner 1 */}
             <div className="flex flex-col items-center gap-2 group">
               <div className="h-20 w-20 md:h-24 md:w-24 bg-white rounded-2xl p-3 shadow-sm border border-slate-200 flex items-center justify-center group-hover:shadow-md group-hover:border-blue-200 transition-all">
                 <img src="/partner-creasia.png" alt="Creasia Group" className="max-h-full max-w-full object-contain" />
@@ -508,6 +503,7 @@ function MahidolLampangHub() {
               <span className="text-xs font-medium text-slate-700 group-hover:text-[#002D62] transition">Creasia Group</span>
             </div>
 
+            {/* Partner 2 */}
             <div className="flex flex-col items-center gap-2 group">
               <div className="h-20 w-20 md:h-24 md:w-24 bg-white rounded-2xl p-3 shadow-sm border border-slate-200 flex items-center justify-center group-hover:shadow-md group-hover:border-blue-200 transition-all">
                 <img src="/partner-pao-lampang.png" alt="องค์การบริหารส่วนจังหวัดลำปาง" className="max-h-full max-w-full object-contain" />
@@ -515,11 +511,28 @@ function MahidolLampangHub() {
               <span className="text-xs font-medium text-slate-700 group-hover:text-[#002D62] transition">อบจ. ลำปาง</span>
             </div>
 
+            {/* Partner 3 */}
             <div className="flex flex-col items-center gap-2 group">
               <div className="h-20 w-20 md:h-24 md:w-24 bg-white rounded-2xl p-3 shadow-sm border border-slate-200 flex items-center justify-center group-hover:shadow-md group-hover:border-blue-200 transition-all">
                 <img src="/partner-maekua.jpg" alt="อบต. แม่กัวะ อ.สบปราบ จ.ลำปาง" className="max-h-full max-w-full object-contain" />
               </div>
               <span className="text-xs font-medium text-slate-700 group-hover:text-[#002D62] transition">อบต. แม่กัวะ</span>
+            </div>
+
+            {/* Partner 4: กรมส่งเสริมการเกษตร (ใหม่) */}
+            <div className="flex flex-col items-center gap-2 group">
+              <div className="h-20 w-20 md:h-24 md:w-24 bg-white rounded-2xl p-3 shadow-sm border border-slate-200 flex items-center justify-center group-hover:shadow-md group-hover:border-blue-200 transition-all">
+                <img 
+                  src="/partner-doae.png" 
+                  alt="กรมส่งเสริมการเกษตร" 
+                  className="max-h-full max-w-full object-contain"
+                  onError={(e) => {
+                    e.currentTarget.style.display = 'none';
+                    e.currentTarget.parentElement!.innerText = '🌾 กรมส่งเสริมการเกษตร';
+                  }}
+                />
+              </div>
+              <span className="text-xs font-medium text-slate-700 group-hover:text-[#002D62] transition">กรมส่งเสริมการเกษตร</span>
             </div>
           </div>
         </div>
