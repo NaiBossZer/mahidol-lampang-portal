@@ -44,7 +44,7 @@ const SLIDES = [
   },
 ];
 
-// ข้อมูล Knowledge Cards (Stripe / Vercel Architecture Style)
+// ข้อมูล Knowledge Cards (Vercel / Bento Grid Architecture)
 const KNOWLEDGE_ARTICLES = [
   {
     id: 1,
@@ -98,9 +98,10 @@ function MahidolLampangHub() {
     : KNOWLEDGE_ARTICLES.filter(item => item.category === activeCategory);
 
   return (
-    <div className="bg-[#F8FAFC] min-h-screen text-slate-800 font-sans selection:bg-[#002D62] selection:text-white scroll-smooth">
+    // กำหนด Font 'Prompt' สไตล์ Vercel / LINE Seed ทั้งระบบ[span_2](start_span)[span_2](end_span)
+    <div className="font-['Prompt'] bg-[#F8FAFC] min-h-screen text-slate-800 selection:bg-[#002D62] selection:text-white scroll-smooth antialiased">
       
-      {/* 1. TOP HEADER / NAVBAR (MU BLUE & GOLD IDENTITY) */}
+      {/* 1. TOP HEADER / NAVBAR */}
       <header className="sticky top-0 z-50 bg-[#002D62] text-white shadow-md border-b border-blue-900/50">
         <div className="max-w-7xl mx-auto px-4 md:px-8 py-2.5 flex justify-between items-center">
           
@@ -116,7 +117,7 @@ function MahidolLampangHub() {
               <span className="font-bold text-xs md:text-sm tracking-tight block leading-tight text-white">
                 งานพันธกิจเพื่อสังคม สำนักงานวิจัยและวิทยบริการ
               </span>
-              <span className="text-[10px] text-[#F2A900] tracking-normal font-light block leading-tight">
+              <span className="text-[10px] text-[#F2A900] font-normal block leading-tight">
                 คณะสิ่งแวดล้อมและทรัพยากรศาสตร์ มหาวิทยาลัยมหิดล จังหวัดลำปาง
               </span>
             </div>
@@ -181,19 +182,21 @@ function MahidolLampangHub() {
             </div>
 
             <div className="relative z-20 max-w-7xl mx-auto h-full px-6 md:px-12 flex flex-col justify-center items-center text-center text-white space-y-4">
-              <span className="bg-[#F2A900] text-[#002D62] text-xs font-extrabold px-4 py-1.5 rounded-full uppercase tracking-wider shadow-md">
+              <span className="bg-[#F2A900] text-[#002D62] text-xs font-bold px-4 py-1.5 rounded-full uppercase tracking-wider shadow-md">
                 Mahidol Learning Hub
               </span>
+              {/* Hero Title (H1) Weight 700/800 */}
               <h1 className="text-2xl md:text-5xl font-extrabold tracking-tight drop-shadow-md max-w-4xl leading-tight">
                 {slide.title}
               </h1>
-              <p className="text-sm md:text-lg text-slate-200 max-w-2xl drop-shadow font-normal">
+              {/* Body Text Weight 400 */}
+              <p className="text-sm md:text-base text-slate-200 max-w-2xl drop-shadow font-normal leading-relaxed">
                 {slide.subtitle}
               </p>
               <div className="pt-4">
                 <a
                   href={slide.buttonLink}
-                  className="bg-[#002D62] border border-blue-400/30 hover:bg-blue-900 text-white font-bold text-xs md:text-sm px-7 py-3.5 rounded-xl shadow-lg hover:shadow-xl transition flex items-center gap-2"
+                  className="bg-[#002D62] border border-blue-400/30 hover:bg-blue-900 text-white font-semibold text-xs md:text-sm px-7 py-3.5 rounded-xl shadow-lg hover:shadow-xl transition flex items-center gap-2"
                 >
                   {slide.buttonText} <ChevronRight className="w-4 h-4 text-[#F2A900]" />
                 </a>
@@ -228,17 +231,18 @@ function MahidolLampangHub() {
         </div>
       </section>
 
-      {/* 3. KNOWLEDGE HUB SECTION (STRIPE / VERCEL BENTO CARDS) */}
+      {/* 3. KNOWLEDGE HUB SECTION */}
       <section id="knowledge-hub" className="max-w-7xl mx-auto px-4 md:px-8 py-14 space-y-8">
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
           <div>
-            <div className="flex items-center gap-2 text-xs font-bold text-[#F2A900] bg-blue-50 px-3 py-1 rounded-md w-fit border border-blue-100 mb-2">
+            <div className="flex items-center gap-2 text-xs font-semibold text-[#F2A900] bg-blue-50 px-3 py-1 rounded-md w-fit border border-blue-100 mb-2">
               <BookOpen className="w-3.5 h-3.5 text-[#002D62]" /> KNOWLEDGE REPOSITORY
             </div>
-            <h2 className="text-2xl md:text-3xl font-extrabold text-[#002D62]">
+            {/* Section Title (H2) Weight 700 */}
+            <h2 className="text-2xl md:text-3xl font-bold text-[#002D62]">
               คลังความรู้และงานวิจัย
             </h2>
-            <p className="text-xs text-slate-500 mt-1">
+            <p className="text-xs text-slate-500 mt-1 font-normal">
               ย่อยองค์ความรู้ นวัตกรรม และผลการดำเนินงานเพื่อการเรียนรู้ของชุมชน
             </p>
           </div>
@@ -249,7 +253,7 @@ function MahidolLampangHub() {
               <button
                 key={cat}
                 onClick={() => setActiveCategory(cat)}
-                className={`text-xs font-semibold px-4 py-2 rounded-xl transition-all border ${
+                className={`text-xs font-medium px-4 py-2 rounded-xl transition-all border ${
                   activeCategory === cat
                     ? 'bg-[#002D62] text-white border-[#002D62] shadow-md'
                     : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'
@@ -261,7 +265,7 @@ function MahidolLampangHub() {
           </div>
         </div>
 
-        {/* Article Grid Layout */}
+        {/* Bento Grid Layout */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredArticles.map((article) => (
             <div 
@@ -271,20 +275,22 @@ function MahidolLampangHub() {
               <div>
                 <div className="relative aspect-video overflow-hidden bg-slate-100 flex items-center justify-center">
                   <img src="/banner1.jpg" alt={article.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-                  <span className={`absolute top-3 left-3 text-[10px] font-bold px-3 py-1 rounded-full border shadow-sm ${article.badgeClass}`}>
+                  <span className={`absolute top-3 left-3 text-[10px] font-semibold px-3 py-1 rounded-full border shadow-sm ${article.badgeClass}`}>
                     ฐาน{article.category}
                   </span>
                 </div>
 
                 <div className="p-5">
-                  <div className="flex items-center gap-2 text-[11px] text-slate-400 mb-2">
+                  <div className="flex items-center gap-2 text-[11px] text-slate-400 mb-2 font-normal">
                     <span className="flex items-center gap-1"><Clock className="w-3 h-3" /> {article.readTime}</span>
                     <span>•</span>
                     <span>{article.author}</span>
                   </div>
-                  <h3 className="text-base font-bold text-[#002D62] line-clamp-2 hover:text-[#F2A900] transition-colors cursor-pointer">
+                  {/* Card Title (H3) Weight 600 */}
+                  <h3 className="text-base font-semibold text-[#002D62] line-clamp-2 hover:text-[#F2A900] transition-colors cursor-pointer leading-snug">
                     {article.title}
                   </h3>
+                  {/* Body Snippet Weight 400 */}
                   <p className="text-xs text-slate-600 line-clamp-3 mt-2 font-normal leading-relaxed">
                     {article.snippet}
                   </p>
@@ -295,7 +301,7 @@ function MahidolLampangHub() {
                 href={article.link}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="px-5 py-3 bg-slate-50 border-t border-slate-100 flex items-center justify-between text-xs font-bold text-[#002D62] hover:bg-blue-50/50 transition"
+                className="px-5 py-3 bg-slate-50 border-t border-slate-100 flex items-center justify-between text-xs font-semibold text-[#002D62] hover:bg-blue-50/50 transition"
               >
                 <span>อ่านเนื้อหาฉบับเต็ม</span>
                 <ArrowUpRight className="w-4 h-4 text-[#F2A900] group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
@@ -309,10 +315,10 @@ function MahidolLampangHub() {
       <section id="bases" className="bg-white py-14 border-y border-slate-200">
         <div className="max-w-7xl mx-auto px-4 md:px-8 space-y-8">
           <div className="text-center space-y-2">
-            <h2 className="text-2xl md:text-3xl font-extrabold text-[#002D62]">
+            <h2 className="text-2xl md:text-3xl font-bold text-[#002D62]">
               ฐานการเรียนรู้และระบบปฏิบัติการ
             </h2>
-            <p className="text-xs text-slate-500">
+            <p className="text-xs text-slate-500 font-normal">
               เข้าใช้งานระบบสารสนเทศเจาะลึกเฉพาะทางของแต่ละฐานเรียนรู้
             </p>
           </div>
@@ -332,15 +338,15 @@ function MahidolLampangHub() {
                 </div>
                 <div>
                   <span className="text-[10px] font-bold text-[#9F1239] uppercase tracking-wider">ฐานที่ 1</span>
-                  <h3 className="text-lg font-bold text-[#002D62] group-hover:text-[#9F1239] transition">
+                  <h3 className="text-lg font-semibold text-[#002D62] group-hover:text-[#9F1239] transition">
                     ฐานเรียนรู้ครั่ง
                   </h3>
-                  <p className="text-xs text-slate-600 mt-2 leading-relaxed">
+                  <p className="text-xs text-slate-600 mt-2 leading-relaxed font-normal">
                     รวบรวมองค์ความรู้การเลี้ยงครั่ง งานวิจัยการแปรรูป ตลาดครั่ง และระบบสนับสนุนเศรษฐกิจชุมชน
                   </p>
                 </div>
               </div>
-              <div className="mt-6 pt-4 border-t border-slate-200 flex items-center justify-between text-xs font-bold text-[#9F1239]">
+              <div className="mt-6 pt-4 border-t border-slate-200 flex items-center justify-between text-xs font-semibold text-[#9F1239]">
                 <span>เข้าสู่ระบบ `mahidol-shellac`</span>
                 <ArrowUpRight className="w-4 h-4" />
               </div>
@@ -359,15 +365,15 @@ function MahidolLampangHub() {
                 </div>
                 <div>
                   <span className="text-[10px] font-bold text-[#D97706] uppercase tracking-wider">ฐานที่ 2</span>
-                  <h3 className="text-lg font-bold text-[#002D62] group-hover:text-[#D97706] transition">
+                  <h3 className="text-lg font-semibold text-[#002D62] group-hover:text-[#D97706] transition">
                     ฐานพลังงานสะอาด
                   </h3>
-                  <p className="text-xs text-slate-600 mt-2 leading-relaxed">
+                  <p className="text-xs text-slate-600 mt-2 leading-relaxed font-normal">
                     ติดตาม Solar Data (อาคารสำนักงาน & โรงจอดรถ), ระบบจอง EV Charger และคลังความรู้โซลาร์เซลล์
                   </p>
                 </div>
               </div>
-              <div className="mt-6 pt-4 border-t border-slate-200 flex items-center justify-between text-xs font-bold text-[#D97706]">
+              <div className="mt-6 pt-4 border-t border-slate-200 flex items-center justify-between text-xs font-semibold text-[#D97706]">
                 <span>เข้าสู่ระบบ `mahidol-clean-energy`</span>
                 <ArrowUpRight className="w-4 h-4" />
               </div>
@@ -381,15 +387,15 @@ function MahidolLampangHub() {
                 </div>
                 <div>
                   <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">ฐานที่ 3</span>
-                  <h3 className="text-lg font-bold text-slate-700">
+                  <h3 className="text-lg font-semibold text-slate-700">
                     ฐานเกษตรอัจฉริยะ
                   </h3>
-                  <p className="text-xs text-slate-500 mt-2 leading-relaxed">
+                  <p className="text-xs text-slate-500 mt-2 leading-relaxed font-normal">
                     ระบบบริหารจัดการ Smart Farm แปลงสาธิตเกษตรกรรม และระบบตรวจวัดสภาพแวดล้อม
                   </p>
                 </div>
               </div>
-              <div className="mt-6 pt-4 border-t border-slate-200 flex items-center justify-between text-xs font-bold text-slate-400">
+              <div className="mt-6 pt-4 border-t border-slate-200 flex items-center justify-between text-xs font-semibold text-slate-400">
                 <span>กำลังพัฒนาระบบ</span>
                 <span>Coming Soon</span>
               </div>
@@ -402,10 +408,10 @@ function MahidolLampangHub() {
       {/* 5. GET TO KNOW US SECTION (VIDEO) */}
       <section id="about-video" className="py-14 border-b border-slate-200">
         <div className="max-w-4xl mx-auto px-4 md:px-8 text-center space-y-6">
-          <div className="flex items-center justify-center gap-2 text-xs font-bold text-[#002D62]">
+          <div className="flex items-center justify-center gap-2 text-xs font-semibold text-[#002D62]">
             <PlayCircle className="w-4 h-4 text-[#F2A900]" /> VIDEO PRESENTATION
           </div>
-          <h2 className="text-2xl font-extrabold text-[#002D62]">
+          <h2 className="text-2xl font-bold text-[#002D62]">
             GET TO KNOW US : ศูนย์การเรียนรู้ มหิดล ลำปาง
           </h2>
 
@@ -425,27 +431,27 @@ function MahidolLampangHub() {
 
       {/* 6. STATS COUNTER SECTION */}
       <section id="stats" className="max-w-7xl mx-auto px-4 md:px-8 py-14 text-center space-y-8">
-        <h2 className="text-2xl font-extrabold text-[#002D62]">
+        <h2 className="text-2xl font-bold text-[#002D62]">
           ศักยภาพและสถิติภาพรวมศูนย์
         </h2>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-1">
-            <p className="text-xs font-bold text-slate-500 uppercase">กำลังการผลิตไฟฟ้ารวม</p>
+            <p className="text-xs font-semibold text-slate-500 uppercase">กำลังการผลิตไฟฟ้ารวม</p>
             <p className="text-4xl md:text-5xl font-extrabold text-[#002D62]">18.00+</p>
-            <p className="text-xs text-[#F2A900] font-bold">kWp (โซลาร์เซลล์)</p>
+            <p className="text-xs text-[#F2A900] font-semibold">kWp (โซลาร์เซลล์)</p>
           </div>
 
           <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-1">
-            <p className="text-xs font-bold text-slate-500 uppercase">ฐานเรียนรู้และวิจัย</p>
+            <p className="text-xs font-semibold text-slate-500 uppercase">ฐานเรียนรู้และวิจัย</p>
             <p className="text-4xl md:text-5xl font-extrabold text-[#002D62]">3</p>
-            <p className="text-xs text-slate-400">ฐานการเรียนรู้หลัก</p>
+            <p className="text-xs text-slate-400 font-normal">ฐานการเรียนรู้หลัก</p>
           </div>
 
           <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-1">
-            <p className="text-xs font-bold text-slate-500 uppercase">พื้นที่บริการวิชาการ</p>
+            <p className="text-xs font-semibold text-slate-500 uppercase">พื้นที่บริการวิชาการ</p>
             <p className="text-4xl md:text-5xl font-extrabold text-[#002D62]">สบปราบ</p>
-            <p className="text-xs text-slate-400">จ.ลำปาง</p>
+            <p className="text-xs text-slate-400 font-normal">จ.ลำปาง</p>
           </div>
         </div>
       </section>
@@ -455,7 +461,7 @@ function MahidolLampangHub() {
         <div className="max-w-7xl mx-auto px-4 md:px-8 space-y-6">
           <div className="border-l-4 border-[#F2A900] pl-3">
             <h2 className="text-lg font-bold text-[#002D62]">Testimonials</h2>
-            <p className="text-xs text-slate-500">เสียงสะท้อนจากผู้ใช้บริการและเกษตรกรในพื้นที่</p>
+            <p className="text-xs text-slate-500 font-normal">เสียงสะท้อนจากผู้ใช้บริการและเกษตรกรในพื้นที่</p>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -470,9 +476,9 @@ function MahidolLampangHub() {
                   MU
                 </div>
                 <div className="text-center space-y-1">
-                  <h4 className="font-bold text-xs text-[#002D62]">{item.name}</h4>
+                  <h4 className="font-semibold text-xs text-[#002D62]">{item.name}</h4>
                   <p className="text-[10px] text-amber-600 font-medium">{item.role}</p>
-                  <p className="text-[11px] text-slate-600 leading-relaxed pt-2 border-t border-slate-200">
+                  <p className="text-[11px] text-slate-600 leading-relaxed pt-2 border-t border-slate-200 font-normal">
                     "{item.text}"
                   </p>
                 </div>
@@ -486,10 +492,10 @@ function MahidolLampangHub() {
       <section id="partners" className="bg-[#F8FAFC] py-14 border-b border-slate-200">
         <div className="max-w-7xl mx-auto px-4 md:px-8 text-center space-y-6">
           <div className="space-y-1">
-            <span className="text-[10px] font-bold text-[#002D62] bg-blue-50 px-3 py-1 rounded-md border border-blue-100 uppercase tracking-wider">
+            <span className="text-[10px] font-semibold text-[#002D62] bg-blue-50 px-3 py-1 rounded-md border border-blue-100 uppercase tracking-wider">
               Network & Collaboration
             </span>
-            <h2 className="text-xl md:text-2xl font-extrabold text-[#002D62] pt-2">
+            <h2 className="text-xl md:text-2xl font-bold text-[#002D62] pt-2">
               พันธมิตรและความร่วมมือ
             </h2>
           </div>
@@ -499,21 +505,21 @@ function MahidolLampangHub() {
               <div className="h-20 w-20 md:h-24 md:w-24 bg-white rounded-2xl p-3 shadow-sm border border-slate-200 flex items-center justify-center group-hover:shadow-md group-hover:border-blue-200 transition-all">
                 <img src="/partner-creasia.png" alt="Creasia Group" className="max-h-full max-w-full object-contain" />
               </div>
-              <span className="text-xs font-semibold text-slate-700 group-hover:text-[#002D62] transition">Creasia Group</span>
+              <span className="text-xs font-medium text-slate-700 group-hover:text-[#002D62] transition">Creasia Group</span>
             </div>
 
             <div className="flex flex-col items-center gap-2 group">
               <div className="h-20 w-20 md:h-24 md:w-24 bg-white rounded-2xl p-3 shadow-sm border border-slate-200 flex items-center justify-center group-hover:shadow-md group-hover:border-blue-200 transition-all">
                 <img src="/partner-pao-lampang.png" alt="องค์การบริหารส่วนจังหวัดลำปาง" className="max-h-full max-w-full object-contain" />
               </div>
-              <span className="text-xs font-semibold text-slate-700 group-hover:text-[#002D62] transition">อบจ. ลำปาง</span>
+              <span className="text-xs font-medium text-slate-700 group-hover:text-[#002D62] transition">อบจ. ลำปาง</span>
             </div>
 
             <div className="flex flex-col items-center gap-2 group">
               <div className="h-20 w-20 md:h-24 md:w-24 bg-white rounded-2xl p-3 shadow-sm border border-slate-200 flex items-center justify-center group-hover:shadow-md group-hover:border-blue-200 transition-all">
                 <img src="/partner-maekua.jpg" alt="อบต. แม่กัวะ อ.สบปราบ จ.ลำปาง" className="max-h-full max-w-full object-contain" />
               </div>
-              <span className="text-xs font-semibold text-slate-700 group-hover:text-[#002D62] transition">อบต. แม่กัวะ</span>
+              <span className="text-xs font-medium text-slate-700 group-hover:text-[#002D62] transition">อบต. แม่กัวะ</span>
             </div>
           </div>
         </div>
@@ -523,7 +529,7 @@ function MahidolLampangHub() {
       <section id="news" className="max-w-7xl mx-auto px-4 md:px-8 py-14 space-y-6">
         <div className="border-l-4 border-[#002D62] pl-3">
           <h2 className="text-lg font-bold text-[#002D62]">News & Activities</h2>
-          <p className="text-xs text-slate-500">ข่าวสารและกิจกรรมล่าสุดจากศูนย์มหิดล ลำปาง</p>
+          <p className="text-xs text-slate-500 font-normal">ข่าวสารและกิจกรรมล่าสุดจากศูนย์มหิดล ลำปาง</p>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -539,8 +545,8 @@ function MahidolLampangHub() {
               </div>
               <div className="space-y-1 p-1">
                 <span className="text-[10px] text-[#002D62] font-semibold">{news.date}</span>
-                <h4 className="font-bold text-xs text-slate-900 line-clamp-2">{news.title}</h4>
-                <p className="text-[11px] text-slate-500 line-clamp-2 leading-relaxed">{news.desc}</p>
+                <h4 className="font-semibold text-xs text-slate-900 line-clamp-2">{news.title}</h4>
+                <p className="text-[11px] text-slate-500 line-clamp-2 leading-relaxed font-normal">{news.desc}</p>
               </div>
             </div>
           ))}
@@ -549,7 +555,7 @@ function MahidolLampangHub() {
 
       {/* FOOTER */}
       <footer className="bg-[#002D62] text-slate-300 text-xs py-8 border-t border-blue-900">
-        <div className="max-w-7xl mx-auto px-4 md:px-8 text-center space-y-2">
+        <div className="max-w-7xl mx-auto px-4 md:px-8 text-center space-y-2 font-normal">
           <p>© 2026 Mahidol University Lampang Center. All rights reserved.</p>
           <p className="text-[10px] text-[#F2A900]">ศูนย์การเรียนรู้ วิจัย และบริการวิชาการ มหาวิทยาลัยมหิดล อ.สบปราบ จ.ลำปาง</p>
         </div>
