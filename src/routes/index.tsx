@@ -13,7 +13,7 @@ export const Route = createFileRoute('/')({
 const BASE_URLS = {
   LAC: "https://mahidol-shellac.vercel.app",
   ENERGY: "https://mahidol-clean-energy.vercel.app",
-  AGRI: "#"
+  AGRI: "https://mahidol-smart-farm.vercel.app/"
 };
 
 // ข้อมูลรูปภาพแบนเนอร์
@@ -74,7 +74,7 @@ const KNOWLEDGE_ARTICLES = [
     snippet: 'การปรับใช้ไอโอที (IoT) และเซนเซอร์วัดความชื้นดินเพื่อการรดน้ำแปลงสาธิตเกษตรกรรมแม่นยำสูง...',
     readTime: '4 นาที',
     author: 'เกษตรอัจฉริยะ',
-    link: '#',
+    link: BASE_URLS.AGRI,
   },
 ];
 
@@ -374,26 +374,31 @@ function MahidolLampangHub() {
             </a>
 
             {/* CARD 3: ฐานเกษตร */}
-            <div className="bg-slate-50 rounded-2xl border border-slate-200 p-6 opacity-75 flex flex-col justify-between">
+            <a 
+              href={BASE_URLS.AGRI}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="group bg-[#F8FAFC] rounded-2xl border border-slate-200 p-6 shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1 flex flex-col justify-between"
+            >
               <div className="space-y-4">
                 <div className="w-12 h-12 rounded-xl bg-emerald-50 text-[#059669] border border-emerald-100 flex items-center justify-center font-bold">
                   <Sprout className="w-6 h-6" />
                 </div>
                 <div>
-                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">ฐานที่ 3</span>
-                  <h3 className="text-lg font-semibold text-slate-700">
+                  <span className="text-[10px] font-bold text-[#059669] uppercase tracking-wider">ฐานที่ 3</span>
+                  <h3 className="text-lg font-semibold text-[#002D62] group-hover:text-[#059669] transition">
                     ฐานเกษตรอัจฉริยะ
                   </h3>
-                  <p className="text-xs text-slate-500 mt-2 leading-relaxed font-normal">
+                  <p className="text-xs text-slate-600 mt-2 leading-relaxed font-normal">
                     ระบบบริหารจัดการ Smart Farm แปลงสาธิตเกษตรกรรม และระบบตรวจวัดสภาพแวดล้อม
                   </p>
                 </div>
               </div>
-              <div className="mt-6 pt-4 border-t border-slate-200 flex items-center justify-between text-xs font-semibold text-slate-400">
-                <span>กำลังพัฒนาระบบ</span>
-                <span>Coming Soon</span>
+              <div className="mt-6 pt-4 border-t border-slate-200 flex items-center justify-between text-xs font-semibold text-[#059669]">
+                <span>เข้าสู่ระบบ `mahidol-smart-farm`</span>
+                <ArrowUpRight className="w-4 h-4" />
               </div>
-            </div>
+            </a>
 
           </div>
         </div>
