@@ -2,8 +2,9 @@ import { createFileRoute } from '@tanstack/react-router';
 import { useState, useEffect } from 'react';
 import { 
   Zap, TreePine, Sprout, ArrowUpRight, Search, ChevronRight, 
-  ChevronLeft, Menu, X, BookOpen, Clock, PlayCircle
+  ChevronLeft, Menu, X, BookOpen, Clock
 } from 'lucide-react';
+import SiteLayout3D from '../components/SiteLayout3D';
 
 export const Route = createFileRoute('/')({
   component: MahidolLampangHub,
@@ -39,12 +40,12 @@ const SLIDES = [
     image: '/banner3.jpg',
     title: 'Smart Learning & Innovation',
     subtitle: 'เชื่อมโยงระบบสารสนเทศ งานวิจัยครั่ง พลังงานโซลาร์เซลล์ และเกษตรกรรมอัจฉริยะ',
-    buttonText: 'เกี่ยวกับเรา',
-    buttonLink: '#about-video',
+    buttonText: 'ผังบริเวณศูนย์ฯ',
+    buttonLink: '#site-layout-section',
   },
 ];
 
-// ข้อมูล Knowledge Cards (Vercel / Bento Grid Architecture)
+// ข้อมูล Knowledge Cards
 const KNOWLEDGE_ARTICLES = [
   {
     id: 1,
@@ -127,7 +128,7 @@ function MahidolLampangHub() {
             <a href="#hero" className="hover:text-[#F2A900] transition">หน้าแรก</a>
             <a href="#knowledge-hub" className="hover:text-[#F2A900] transition">คลังความรู้</a>
             <a href="#bases" className="hover:text-[#F2A900] transition">ฐานการเรียนรู้</a>
-            <a href="#about-video" className="hover:text-[#F2A900] transition">เกี่ยวกับเรา</a>
+            <a href="#site-layout-section" className="hover:text-[#F2A900] transition">ผังบริเวณ</a>
             <a href="#stats" className="hover:text-[#F2A900] transition">สถิติ</a>
             <a href="#testimonials" className="hover:text-[#F2A900] transition">เสียงสะท้อน</a>
             <a href="#partners" className="hover:text-[#F2A900] transition">พันธมิตร</a>
@@ -155,7 +156,7 @@ function MahidolLampangHub() {
             <a href="#hero" onClick={() => setIsMobileMenuOpen(false)} className="block py-1.5 hover:text-[#F2A900]">หน้าแรก</a>
             <a href="#knowledge-hub" onClick={() => setIsMobileMenuOpen(false)} className="block py-1.5 hover:text-[#F2A900]">คลังความรู้</a>
             <a href="#bases" onClick={() => setIsMobileMenuOpen(false)} className="block py-1.5 hover:text-[#F2A900]">ฐานการเรียนรู้</a>
-            <a href="#about-video" onClick={() => setIsMobileMenuOpen(false)} className="block py-1.5 hover:text-[#F2A900]">เกี่ยวกับเรา</a>
+            <a href="#site-layout-section" onClick={() => setIsMobileMenuOpen(false)} className="block py-1.5 hover:text-[#F2A900]">ผังบริเวณ</a>
             <a href="#stats" onClick={() => setIsMobileMenuOpen(false)} className="block py-1.5 hover:text-[#F2A900]">สถิติ</a>
             <a href="#testimonials" onClick={() => setIsMobileMenuOpen(false)} className="block py-1.5 hover:text-[#F2A900]">เสียงสะท้อน</a>
             <a href="#partners" onClick={() => setIsMobileMenuOpen(false)} className="block py-1.5 hover:text-[#F2A900]">พันธมิตร</a>
@@ -404,29 +405,8 @@ function MahidolLampangHub() {
         </div>
       </section>
 
-      {/* 5. GET TO KNOW US SECTION (VIDEO) */}
-      <section id="about-video" className="py-14 border-b border-slate-200">
-        <div className="max-w-4xl mx-auto px-4 md:px-8 text-center space-y-6">
-          <div className="flex items-center justify-center gap-2 text-xs font-semibold text-[#002D62]">
-            <PlayCircle className="w-4 h-4 text-[#F2A900]" /> VIDEO PRESENTATION
-          </div>
-          <h2 className="text-2xl font-bold text-[#002D62]">
-            GET TO KNOW US : ศูนย์การเรียนรู้ มหิดล ลำปาง
-          </h2>
-
-          <div className="relative w-full rounded-2xl overflow-hidden shadow-xl border border-slate-200 bg-black aspect-video">
-            <video 
-              controls 
-              preload="metadata"
-              className="w-full h-full object-cover"
-              poster="/banner1.jpg"
-            >
-              <source src="/intro-enlp.mp4" type="video/mp4" />
-              เบราว์เซอร์ของคุณไม่รองรับการเล่นวิดีโอ
-            </video>
-          </div>
-        </div>
-      </section>
+      {/* 5. SITE LAYOUT COMPONENT (2 TABS: SITE MAP / VIDEO) */}
+      <SiteLayout3D />
 
       {/* 6. STATS COUNTER SECTION */}
       <section id="stats" className="max-w-7xl mx-auto px-4 md:px-8 py-14 text-center space-y-8">
@@ -500,7 +480,6 @@ function MahidolLampangHub() {
           </div>
           
           <div className="flex flex-wrap items-center justify-center gap-6 md:gap-10 pt-2">
-            {/* Partner 1 */}
             <div className="flex flex-col items-center gap-2 group">
               <div className="h-20 w-20 md:h-24 md:w-24 bg-white rounded-2xl p-3 shadow-sm border border-slate-200 flex items-center justify-center group-hover:shadow-md group-hover:border-blue-200 transition-all">
                 <img src="/partner-creasia.png" alt="Creasia Group" className="max-h-full max-w-full object-contain" />
@@ -508,7 +487,6 @@ function MahidolLampangHub() {
               <span className="text-xs font-medium text-slate-700 group-hover:text-[#002D62] transition">Creasia Group</span>
             </div>
 
-            {/* Partner 2 */}
             <div className="flex flex-col items-center gap-2 group">
               <div className="h-20 w-20 md:h-24 md:w-24 bg-white rounded-2xl p-3 shadow-sm border border-slate-200 flex items-center justify-center group-hover:shadow-md group-hover:border-blue-200 transition-all">
                 <img src="/partner-pao-lampang.png" alt="องค์การบริหารส่วนจังหวัดลำปาง" className="max-h-full max-w-full object-contain" />
@@ -516,7 +494,6 @@ function MahidolLampangHub() {
               <span className="text-xs font-medium text-slate-700 group-hover:text-[#002D62] transition">อบจ. ลำปาง</span>
             </div>
 
-            {/* Partner 3 */}
             <div className="flex flex-col items-center gap-2 group">
               <div className="h-20 w-20 md:h-24 md:w-24 bg-white rounded-2xl p-3 shadow-sm border border-slate-200 flex items-center justify-center group-hover:shadow-md group-hover:border-blue-200 transition-all">
                 <img src="/partner-maekua.jpg" alt="อบต. แม่กัวะ อ.สบปราบ จ.ลำปาง" className="max-h-full max-w-full object-contain" />
@@ -524,7 +501,6 @@ function MahidolLampangHub() {
               <span className="text-xs font-medium text-slate-700 group-hover:text-[#002D62] transition">อบต. แม่กัวะ</span>
             </div>
 
-            {/* Partner 4: กรมส่งเสริมการเกษตร */}
             <div className="flex flex-col items-center gap-2 group">
               <div className="h-20 w-20 md:h-24 md:w-24 bg-white rounded-2xl p-3 shadow-sm border border-slate-200 flex items-center justify-center group-hover:shadow-md group-hover:border-blue-200 transition-all">
                 <img 
