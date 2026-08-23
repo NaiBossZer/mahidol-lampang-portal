@@ -1,6 +1,6 @@
-// src/components/SiteLayout3D.tsx
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'; // หรือปรับ path ตาม Alias ของคุณ
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { MapPin, PlayCircle } from 'lucide-react';
+import Map3DViewer from './Map3DViewer';
 
 export default function SiteLayout3D() {
   return (
@@ -16,11 +16,11 @@ export default function SiteLayout3D() {
             ผังบริเวณและพื้นที่การเรียนรู้ มหิดล ลำปาง
           </h2>
           <p className="text-xs text-slate-500 font-normal">
-            รับชมแผนที่ผังบริเวณศูนย์ฯ และวิดีโอแนะนำพื้นที่การดำเนินงาน
+            รับชมแผนที่ผังบริเวณ 3D ของศูนย์ฯ และวิดีโอแนะนำพื้นที่การดำเนินงาน
           </p>
         </div>
 
-        {/* RADIX / SHADCN TABS */}
+        {/* TABS */}
         <Tabs defaultValue="map" className="w-full flex flex-col items-center">
           <TabsList className="grid w-full max-w-md grid-cols-2 mb-6 bg-slate-200/60 p-1 rounded-xl">
             <TabsTrigger 
@@ -28,7 +28,7 @@ export default function SiteLayout3D() {
               className="flex items-center justify-center gap-2 text-xs md:text-sm font-semibold rounded-lg data-[state=active]:bg-white data-[state=active]:text-[#002D62] data-[state=active]:shadow-sm transition-all"
             >
               <MapPin className="w-4 h-4 text-[#F2A900]" />
-              แผนที่ผังบริเวณ
+              แผนที่ผังบริเวณ (3D)
             </TabsTrigger>
             
             <TabsTrigger 
@@ -40,17 +40,10 @@ export default function SiteLayout3D() {
             </TabsTrigger>
           </TabsList>
 
-          {/* TAB 1: MAP DISPLAY */}
+          {/* TAB 1: 3D MAP DISPLAY */}
           <TabsContent value="map" className="w-full mt-0 focus-visible:outline-none">
-            <div className="relative w-full rounded-2xl overflow-hidden shadow-xl border border-slate-200 bg-black aspect-video">
-              <iframe
-                title="Mahidol Lampang Site Map"
-                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3788.835492194685!2d99.3361!3d18.1065!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zMTjCsDA2JzIzLjQiTiA5OcKwMjAnMTAuMCJF!5e0!3m2!1sth!2sth!4v1620000000000!5m2!1sth!2sth"
-                className="w-full h-full border-0"
-                allowFullScreen={true}
-                loading="lazy"
-                referrerPolicy="no-referrer-when-downgrade"
-              />
+            <div className="relative w-full rounded-2xl overflow-hidden shadow-xl border border-slate-200 bg-slate-900 aspect-video">
+              <Map3DViewer modelUrl="/site-map-3d.glb" />
             </div>
           </TabsContent>
 
