@@ -1,6 +1,6 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { MapPin, PlayCircle } from 'lucide-react';
-import Map3DViewer from './Map3DViewer';
+import { Map3DViewer } from './Map3DViewer';
 
 export default function SiteLayout3D() {
   return (
