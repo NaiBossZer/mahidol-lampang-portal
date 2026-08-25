@@ -9,6 +9,7 @@ export function Map3DViewer({ modelUrl }: Map3DViewerProps) {
   const [isLoaded, setIsLoaded] = useState<boolean>(false);
   const [hasError, setHasError] = useState<boolean>(false);
   const [shouldLoad, setShouldLoad] = useState<boolean>(false);
+  const [viewerReady, setViewerReady] = useState<boolean>(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const viewerRef = useRef<HTMLElement>(null);
 
@@ -35,10 +36,20 @@ export function Map3DViewer({ modelUrl }: Map3DViewerProps) {
     if (!shouldLoad) return;
 
     let isActive = true;
-    const setupViewer = async () => {
-      await import("@google/model-viewer");
-      const viewer = viewerRef.current;
-      if (!isActive || !viewer) return;
+    void import("@google/model-viewer").then(() => {
+      if (isActive) setViewerReady(true);
+    });
+
+    return () => {
+      isActive = false;
+    };
+  }, [shouldLoad]);
+
+  useEffect(() => {
+    if (!shouldLoad || !viewerReady) return;
+
+    const viewer = viewerRef.current;
+    if (!viewer) return;
 
       const handleProgress = (event: Event) => {
         const totalProgress = (event as CustomEvent<{ totalProgress: number }>).detail
@@ -59,29 +70,20 @@ export function Map3DViewer({ modelUrl }: Map3DViewerProps) {
       viewer.addEventListener("progress", handleProgress);
       viewer.addEventListener("load", handleLoad);
       viewer.addEventListener("error", handleError);
+      viewer.setAttribute("src", modelUrl);
 
       return () => {
         viewer.removeEventListener("progress", handleProgress);
         viewer.removeEventListener("load", handleLoad);
         viewer.removeEventListener("error", handleError);
       };
-    };
-
-    let removeListeners: (() => void) | undefined;
-    void setupViewer().then((cleanup) => {
-      removeListeners = cleanup;
-    });
-
-    return () => {
-      isActive = false;
-      removeListeners?.();
-    };
-  }, [shouldLoad]);
+  }, [modelUrl, shouldLoad, viewerReady]);
 
   const retryLoading = () => {
     setProgress(0);
     setIsLoaded(false);
     setHasError(false);
+    setViewerReady(false);
     setShouldLoad(false);
     requestAnimationFrame(() => setShouldLoad(true));
   };
@@ -94,7 +96,6 @@ export function Map3DViewer({ modelUrl }: Map3DViewerProps) {
       {shouldLoad ? (
         <model-viewer
           ref={viewerRef}
-          src={modelUrl}
           alt="ผังบริเวณศูนย์การเรียนรู้ มหิดล ลำปาง"
           loading="eager"
           auto-rotate
