@@ -2,7 +2,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Map, MapPin, PlayCircle } from 'lucide-react';
 import { Map3DViewer } from './Map3DViewer';
 
-const MODEL_URL = import.meta.env.VITE_MODEL_URL || '/site-map-3d.glb';
+const FALLBACK_MODEL_URL =
+  'https://huggingface.co/BossLampang/site-map-3d-MU-Lampang/resolve/main/site-map-3d.glb';
+const ACTIVE_MODEL_URL = import.meta.env.VITE_MODEL_URL?.trim() || FALLBACK_MODEL_URL;
 const GOOGLE_MAP_URL =
   'https://www.google.com/maps?q=ศูนย์การเรียนรู้ วิจัย และบริการวิชาการ มหาวิทยาลัยมหิดล อำเภอสบปราบ จังหวัดลำปาง&output=embed';
 
@@ -83,7 +85,7 @@ export default function SiteLayout3D() {
           {/* TAB 3: 3D MAP DISPLAY */}
           <TabsContent value="map" className="w-full mt-0 focus-visible:outline-none">
             <div className="relative aspect-video min-h-[360px] w-full overflow-hidden rounded-2xl border border-slate-200 bg-slate-900 shadow-xl sm:min-h-0">
-              <Map3DViewer modelUrl={MODEL_URL} />
+              <Map3DViewer modelUrl={ACTIVE_MODEL_URL} />
             </div>
           </TabsContent>
         </Tabs>

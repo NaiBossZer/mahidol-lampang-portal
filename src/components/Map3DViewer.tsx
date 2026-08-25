@@ -4,6 +4,9 @@ type Map3DViewerProps = {
   modelUrl: string;
 };
 
+const FALLBACK_MODEL_URL =
+  "https://huggingface.co/BossLampang/site-map-3d-MU-Lampang/resolve/main/site-map-3d.glb";
+
 export function Map3DViewer({ modelUrl }: Map3DViewerProps) {
   const [progress, setProgress] = useState<number>(0);
   const [isLoaded, setIsLoaded] = useState<boolean>(false);
@@ -12,6 +15,7 @@ export function Map3DViewer({ modelUrl }: Map3DViewerProps) {
   const [viewerReady, setViewerReady] = useState<boolean>(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const viewerRef = useRef<HTMLElement>(null);
+  const activeModelUrl = modelUrl?.trim() || FALLBACK_MODEL_URL;
 
   // Lazy Loading: ตรวจจับเมื่อผู้ใช้เลื่อนหน้าจอมาถึงบริเวณนี้
   useEffect(() => {
@@ -36,9 +40,13 @@ export function Map3DViewer({ modelUrl }: Map3DViewerProps) {
     if (!shouldLoad) return;
 
     let isActive = true;
-    void import("@google/model-viewer").then(() => {
-      if (isActive) setViewerReady(true);
-    });
+    void import("@google/model-viewer")
+      .then(() => {
+        if (isActive) setViewerReady(true);
+      })
+      .catch(() => {
+        if (isActive) setHasError(true);
+      });
 
     return () => {
       isActive = false;
@@ -70,14 +78,15 @@ export function Map3DViewer({ modelUrl }: Map3DViewerProps) {
       viewer.addEventListener("progress", handleProgress);
       viewer.addEventListener("load", handleLoad);
       viewer.addEventListener("error", handleError);
-      viewer.setAttribute("src", modelUrl);
+      viewer.setAttribute("src", activeModelUrl);
 
       return () => {
         viewer.removeEventListener("progress", handleProgress);
         viewer.removeEventListener("load", handleLoad);
         viewer.removeEventListener("error", handleError);
+        viewer.removeAttribute("src");
       };
-  }, [modelUrl, shouldLoad, viewerReady]);
+  }, [activeModelUrl, shouldLoad, viewerReady]);
 
   const retryLoading = () => {
     setProgress(0);
