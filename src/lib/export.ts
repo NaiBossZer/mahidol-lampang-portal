@@ -61,7 +61,9 @@ export async function exportExcel(a: Analysis, headers: string[], rows: string[]
 
 export async function exportPptx(a: Analysis, insight: InsightResult | null) {
   const mod = await import("pptxgenjs");
-  const PptxGenJS = (mod as unknown as { default: new () => any }).default;
+  type SlideAdapter = { background: { color: string }; addText: (...args: readonly unknown[]) => void; addTable: (...args: readonly unknown[]) => void };
+  type PresentationAdapter = { layout: string; addSlide: () => SlideAdapter; writeFile: (props: { fileName: string }) => Promise<string> };
+  const PptxGenJS = mod.default as unknown as new () => PresentationAdapter;
   const pptx = new PptxGenJS();
   pptx.layout = "LAYOUT_16x9";
 

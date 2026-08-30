@@ -1,11 +1,12 @@
 export async function fetchSheet() {
-  const sheetUrl = process.env.GOOGLE_SHEET_CSV_URL;
+  const sheetUrl = process.env['GOOGLE_SHEET_CSV_URL'];
 
   if (!sheetUrl) {
     throw new Error("GOOGLE_SHEET_CSV_URL is missing in environment variables");
   }
+  const csvUrl = sheetUrl;
 
-  const response = await fetch(sheetUrl);
+  const response = await fetch(csvUrl);
   if (!response.ok) {
     throw new Error("Failed to fetch Google Sheets CSV");
   }
@@ -29,7 +30,7 @@ export async function fetchSheet() {
       .map((cell) => cell.replace(/^"|"$/g, "").trim());
   };
 
-  const headers = parseRow(lines[0]);
+  const headers = parseRow(lines[0] ?? "");
   const rows = lines.slice(1).map(parseRow);
 
   return {

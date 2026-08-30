@@ -4,7 +4,7 @@ import { Map3DViewer } from './Map3DViewer';
 
 const FALLBACK_MODEL_URL =
   'https://huggingface.co/BossLampang/site-map-3d-MU-Lampang/resolve/main/site-map-3d.glb';
-const ACTIVE_MODEL_URL = import.meta.env.VITE_MODEL_URL?.trim() || FALLBACK_MODEL_URL;
+const ACTIVE_MODEL_URL = import.meta.env['VITE_MODEL_URL']?.trim() || FALLBACK_MODEL_URL;
 const GOOGLE_MAP_URL =
   'https://www.google.com/maps?q=ศูนย์การเรียนรู้ วิจัย และบริการวิชาการ มหาวิทยาลัยมหิดล อำเภอสบปราบ จังหวัดลำปาง&output=embed';
 

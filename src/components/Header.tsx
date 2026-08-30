@@ -85,9 +85,8 @@ export const Header = () => {
                     </li>
                     <li>
                       <NavigationMenuLink asChild>
-                        {/* We use TanStack Link for storefront if it's part of this main app */}
-                        <Link
-                          to="/storefront"
+                        <a
+                          href="/#storefront"
                           className="block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-[#F2A900]/20 hover:text-[#002D62]"
                         >
                           <div className="flex items-center text-sm font-medium leading-none mb-2">
@@ -97,7 +96,7 @@ export const Header = () => {
                           <p className="line-clamp-2 text-sm leading-snug text-muted-foreground">
                             ระบบสั่งซื้อผลผลิต งานวิจัย และผลิตภัณฑ์จากศูนย์ฯ
                           </p>
-                        </Link>
+                        </a>
                       </NavigationMenuLink>
                     </li>
                   </ul>

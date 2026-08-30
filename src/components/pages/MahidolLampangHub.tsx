@@ -173,12 +173,12 @@ export function MahidolLampangHub() {
                       </li>
                       <li>
                         <NavigationMenuLink asChild>
-                          <Link to="/storefront" className="block select-none space-y-1 rounded-md p-2.5 leading-none no-underline outline-none transition-colors hover:bg-[#F2A900]/10">
+                          <a href="#storefront" className="block select-none space-y-1 rounded-md p-2.5 leading-none no-underline outline-none transition-colors hover:bg-[#F2A900]/10">
                             <div className="flex items-center text-xs font-semibold text-slate-800 mb-1.5">
                               <ShoppingCart className="w-4 h-4 mr-2 text-[#F2A900]" /> ร้านค้าผลผลิตเกษตร
                             </div>
                             <p className="text-[10px] text-slate-500 leading-snug">ระบบสั่งซื้อผลผลิต งานวิจัย และผลิตภัณฑ์จากศูนย์ฯ</p>
-                          </Link>
+                          </a>
                         </NavigationMenuLink>
                       </li>
                     </ul>

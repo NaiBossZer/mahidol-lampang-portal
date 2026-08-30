@@ -16,7 +16,17 @@ import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as RacRouteImport } from './routes/rac'
 import { Route as SmartFarmRouteImport } from './routes/smart-farm'
+import { Route as StorefrontRouteImport } from './routes/storefront'
 import { Route as SurveyRouteImport } from './routes/survey'
+import { Route as ApiEvBookingsRouteImport } from './routes/api/ev-bookings'
+import { Route as ApiOrdersRouteImport } from './routes/api/orders'
+import { Route as ApiProductsRouteImport } from './routes/api/products'
+import { Route as ApiAdminOrdersRouteImport } from './routes/api/admin/orders'
+import { Route as ApiAuthLoginRouteImport } from './routes/api/auth/login'
+import { Route as ApiAuthLogoutRouteImport } from './routes/api/auth/logout'
+import { Route as ApiInventoryIdRouteImport } from './routes/api/inventory/$id'
+import { Route as ApiProductsIdRouteImport } from './routes/api/products/$id'
+import { Route as ApiAdminOrdersIdStatusRouteImport } from './routes/api/admin/orders/$id/status'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -53,10 +63,60 @@ const SmartFarmRoute = SmartFarmRouteImport.update({
   path: '/smart-farm',
   getParentRoute: () => rootRouteImport,
 } as any)
+const StorefrontRoute = StorefrontRouteImport.update({
+  id: '/storefront',
+  path: '/storefront',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SurveyRoute = SurveyRouteImport.update({
   id: '/survey',
   path: '/survey',
   getParentRoute: () => rootRouteImport,
+} as any)
+const ApiEvBookingsRoute = ApiEvBookingsRouteImport.update({
+  id: '/api/ev-bookings',
+  path: '/api/ev-bookings',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiOrdersRoute = ApiOrdersRouteImport.update({
+  id: '/api/orders',
+  path: '/api/orders',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiProductsRoute = ApiProductsRouteImport.update({
+  id: '/api/products',
+  path: '/api/products',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAdminOrdersRoute = ApiAdminOrdersRouteImport.update({
+  id: '/api/admin/orders',
+  path: '/api/admin/orders',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAuthLoginRoute = ApiAuthLoginRouteImport.update({
+  id: '/api/auth/login',
+  path: '/api/auth/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAuthLogoutRoute = ApiAuthLogoutRouteImport.update({
+  id: '/api/auth/logout',
+  path: '/api/auth/logout',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiInventoryIdRoute = ApiInventoryIdRouteImport.update({
+  id: '/api/inventory/$id',
+  path: '/api/inventory/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiProductsIdRoute = ApiProductsIdRouteImport.update({
+  id: '/$id',
+  path: '/$id',
+  getParentRoute: () => ApiProductsRoute,
+} as any)
+const ApiAdminOrdersIdStatusRoute = ApiAdminOrdersIdStatusRouteImport.update({
+  id: '/$id/status',
+  path: '/$id/status',
+  getParentRoute: () => ApiAdminOrdersRoute,
 } as any)
 
 export interface FileRoutesByFullPath {
@@ -67,7 +127,17 @@ export interface FileRoutesByFullPath {
   '/login': typeof LoginRoute
   '/rac': typeof RacRoute
   '/smart-farm': typeof SmartFarmRoute
+  '/storefront': typeof StorefrontRoute
   '/survey': typeof SurveyRoute
+  '/api/ev-bookings': typeof ApiEvBookingsRoute
+  '/api/orders': typeof ApiOrdersRoute
+  '/api/products': typeof ApiProductsRouteWithChildren
+  '/api/admin/orders': typeof ApiAdminOrdersRouteWithChildren
+  '/api/auth/login': typeof ApiAuthLoginRoute
+  '/api/auth/logout': typeof ApiAuthLogoutRoute
+  '/api/inventory/$id': typeof ApiInventoryIdRoute
+  '/api/products/$id': typeof ApiProductsIdRoute
+  '/api/admin/orders/$id/status': typeof ApiAdminOrdersIdStatusRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -77,7 +147,17 @@ export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/rac': typeof RacRoute
   '/smart-farm': typeof SmartFarmRoute
+  '/storefront': typeof StorefrontRoute
   '/survey': typeof SurveyRoute
+  '/api/ev-bookings': typeof ApiEvBookingsRoute
+  '/api/orders': typeof ApiOrdersRoute
+  '/api/products': typeof ApiProductsRouteWithChildren
+  '/api/admin/orders': typeof ApiAdminOrdersRouteWithChildren
+  '/api/auth/login': typeof ApiAuthLoginRoute
+  '/api/auth/logout': typeof ApiAuthLogoutRoute
+  '/api/inventory/$id': typeof ApiInventoryIdRoute
+  '/api/products/$id': typeof ApiProductsIdRoute
+  '/api/admin/orders/$id/status': typeof ApiAdminOrdersIdStatusRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -88,7 +168,17 @@ export interface FileRoutesById {
   '/login': typeof LoginRoute
   '/rac': typeof RacRoute
   '/smart-farm': typeof SmartFarmRoute
+  '/storefront': typeof StorefrontRoute
   '/survey': typeof SurveyRoute
+  '/api/ev-bookings': typeof ApiEvBookingsRoute
+  '/api/orders': typeof ApiOrdersRoute
+  '/api/products': typeof ApiProductsRouteWithChildren
+  '/api/admin/orders': typeof ApiAdminOrdersRouteWithChildren
+  '/api/auth/login': typeof ApiAuthLoginRoute
+  '/api/auth/logout': typeof ApiAuthLogoutRoute
+  '/api/inventory/$id': typeof ApiInventoryIdRoute
+  '/api/products/$id': typeof ApiProductsIdRoute
+  '/api/admin/orders/$id/status': typeof ApiAdminOrdersIdStatusRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -100,7 +190,17 @@ export interface FileRouteTypes {
     | '/login'
     | '/rac'
     | '/smart-farm'
+    | '/storefront'
     | '/survey'
+    | '/api/ev-bookings'
+    | '/api/orders'
+    | '/api/products'
+    | '/api/admin/orders'
+    | '/api/auth/login'
+    | '/api/auth/logout'
+    | '/api/inventory/$id'
+    | '/api/products/$id'
+    | '/api/admin/orders/$id/status'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -110,7 +210,17 @@ export interface FileRouteTypes {
     | '/login'
     | '/rac'
     | '/smart-farm'
+    | '/storefront'
     | '/survey'
+    | '/api/ev-bookings'
+    | '/api/orders'
+    | '/api/products'
+    | '/api/admin/orders'
+    | '/api/auth/login'
+    | '/api/auth/logout'
+    | '/api/inventory/$id'
+    | '/api/products/$id'
+    | '/api/admin/orders/$id/status'
   id:
     | '__root__'
     | '/'
@@ -120,7 +230,17 @@ export interface FileRouteTypes {
     | '/login'
     | '/rac'
     | '/smart-farm'
+    | '/storefront'
     | '/survey'
+    | '/api/ev-bookings'
+    | '/api/orders'
+    | '/api/products'
+    | '/api/admin/orders'
+    | '/api/auth/login'
+    | '/api/auth/logout'
+    | '/api/inventory/$id'
+    | '/api/products/$id'
+    | '/api/admin/orders/$id/status'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -131,7 +251,15 @@ export interface RootRouteChildren {
   LoginRoute: typeof LoginRoute
   RacRoute: typeof RacRoute
   SmartFarmRoute: typeof SmartFarmRoute
+  StorefrontRoute: typeof StorefrontRoute
   SurveyRoute: typeof SurveyRoute
+  ApiEvBookingsRoute: typeof ApiEvBookingsRoute
+  ApiOrdersRoute: typeof ApiOrdersRoute
+  ApiProductsRoute: typeof ApiProductsRouteWithChildren
+  ApiAdminOrdersRoute: typeof ApiAdminOrdersRouteWithChildren
+  ApiAuthLoginRoute: typeof ApiAuthLoginRoute
+  ApiAuthLogoutRoute: typeof ApiAuthLogoutRoute
+  ApiInventoryIdRoute: typeof ApiInventoryIdRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -185,6 +313,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SmartFarmRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/storefront': {
+      id: '/storefront'
+      path: '/storefront'
+      fullPath: '/storefront'
+      preLoaderRoute: typeof StorefrontRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/survey': {
       id: '/survey'
       path: '/survey'
@@ -192,8 +327,95 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SurveyRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/ev-bookings': {
+      id: '/api/ev-bookings'
+      path: '/api/ev-bookings'
+      fullPath: '/api/ev-bookings'
+      preLoaderRoute: typeof ApiEvBookingsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/orders': {
+      id: '/api/orders'
+      path: '/api/orders'
+      fullPath: '/api/orders'
+      preLoaderRoute: typeof ApiOrdersRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/products': {
+      id: '/api/products'
+      path: '/api/products'
+      fullPath: '/api/products'
+      preLoaderRoute: typeof ApiProductsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/admin/orders': {
+      id: '/api/admin/orders'
+      path: '/api/admin/orders'
+      fullPath: '/api/admin/orders'
+      preLoaderRoute: typeof ApiAdminOrdersRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/auth/login': {
+      id: '/api/auth/login'
+      path: '/api/auth/login'
+      fullPath: '/api/auth/login'
+      preLoaderRoute: typeof ApiAuthLoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/auth/logout': {
+      id: '/api/auth/logout'
+      path: '/api/auth/logout'
+      fullPath: '/api/auth/logout'
+      preLoaderRoute: typeof ApiAuthLogoutRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/inventory/$id': {
+      id: '/api/inventory/$id'
+      path: '/api/inventory/$id'
+      fullPath: '/api/inventory/$id'
+      preLoaderRoute: typeof ApiInventoryIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/products/$id': {
+      id: '/api/products/$id'
+      path: '/$id'
+      fullPath: '/api/products/$id'
+      preLoaderRoute: typeof ApiProductsIdRouteImport
+      parentRoute: typeof ApiProductsRoute
+    }
+    '/api/admin/orders/$id/status': {
+      id: '/api/admin/orders/$id/status'
+      path: '/$id/status'
+      fullPath: '/api/admin/orders/$id/status'
+      preLoaderRoute: typeof ApiAdminOrdersIdStatusRouteImport
+      parentRoute: typeof ApiAdminOrdersRoute
+    }
   }
 }
+
+interface ApiProductsRouteChildren {
+  ApiProductsIdRoute: typeof ApiProductsIdRoute
+}
+
+const ApiProductsRouteChildren: ApiProductsRouteChildren = {
+  ApiProductsIdRoute: ApiProductsIdRoute,
+}
+
+const ApiProductsRouteWithChildren = ApiProductsRoute._addFileChildren(
+  ApiProductsRouteChildren,
+)
+
+interface ApiAdminOrdersRouteChildren {
+  ApiAdminOrdersIdStatusRoute: typeof ApiAdminOrdersIdStatusRoute
+}
+
+const ApiAdminOrdersRouteChildren: ApiAdminOrdersRouteChildren = {
+  ApiAdminOrdersIdStatusRoute: ApiAdminOrdersIdStatusRoute,
+}
+
+const ApiAdminOrdersRouteWithChildren = ApiAdminOrdersRoute._addFileChildren(
+  ApiAdminOrdersRouteChildren,
+)
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
@@ -203,7 +425,15 @@ const rootRouteChildren: RootRouteChildren = {
   LoginRoute: LoginRoute,
   RacRoute: RacRoute,
   SmartFarmRoute: SmartFarmRoute,
+  StorefrontRoute: StorefrontRoute,
   SurveyRoute: SurveyRoute,
+  ApiEvBookingsRoute: ApiEvBookingsRoute,
+  ApiOrdersRoute: ApiOrdersRoute,
+  ApiProductsRoute: ApiProductsRouteWithChildren,
+  ApiAdminOrdersRoute: ApiAdminOrdersRouteWithChildren,
+  ApiAuthLoginRoute: ApiAuthLoginRoute,
+  ApiAuthLogoutRoute: ApiAuthLogoutRoute,
+  ApiInventoryIdRoute: ApiInventoryIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

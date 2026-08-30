@@ -4,7 +4,7 @@ import { useState } from "react";
 export const Route = createFileRoute("/login")({
   validateSearch: (search: Record<string, unknown>) => {
     return {
-      redirect: (search.redirect as string) || "/dashboard",
+      redirect: search['redirect'] === "/admin" ? "/admin" : "/dashboard",
     }
   },
   component: LoginPage,
@@ -16,13 +16,29 @@ export function LoginPage() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
 
-  const handleLogin = (e: React.FormEvent) => {
+  const [loading, setLoading] = useState(false);
+
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (password === "ENLP2517") {
-      sessionStorage.setItem("dashboard_auth", "true");
-      navigate({ to: redirect });
-    } else {
-      setError("รหัสผ่านไม่ถูกต้อง กรุณาลองใหม่อีกครั้ง");
+    setLoading(true);
+    setError("");
+    try {
+      const response = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password }),
+      });
+      if (response.ok) {
+        sessionStorage.setItem("dashboard_auth", "true");
+        await navigate({ to: redirect });
+      } else {
+        const body = await response.json().catch(() => ({})) as { error?: string };
+        setError(body.error ?? "รหัสผ่านไม่ถูกต้อง กรุณาลองใหม่อีกครั้ง");
+      }
+    } catch {
+      setError("ไม่สามารถเชื่อมต่อระบบยืนยันตัวตนได้");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -60,7 +76,7 @@ export function LoginPage() {
           </div>
 
           {error && (
-            <p className="text-xs font-semibold text-red-500 text-center animate-shake">
+            <p role="alert" className="text-xs font-semibold text-red-500 text-center animate-shake">
               {error}
             </p>
           )}
@@ -69,7 +85,7 @@ export function LoginPage() {
             type="submit"
             className="w-full py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm shadow-md shadow-emerald-600/20 active:scale-[0.98] transition-all cursor-pointer"
           >
-            เข้าสู่ระบบ
+            {loading ? 'กำลังตรวจสอบ…' : 'เข้าสู่ระบบ'}
           </button>
         </form>
 

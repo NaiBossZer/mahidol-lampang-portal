@@ -6,7 +6,7 @@ export const Route = createFileRoute("/dashboard")({
     if (typeof window !== "undefined") {
       const isAuth = sessionStorage.getItem("dashboard_auth") === "true";
       if (!isAuth) {
-        throw redirect({ to: "/login" });
+        throw redirect({ to: "/login", search: { redirect: "/dashboard" } });
       }
     }
   },
@@ -62,6 +62,14 @@ const QUESTION_MAP: Record<keyof SurveyResponse, { title: string; category: stri
   feedback: { title: "", category: "" },
 };
 
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null;
+}
+
+function isSurveyResponse(value: unknown): value is SurveyResponse {
+  return isRecord(value);
+}
+
 const COLOR_PALETTE = ["#0284c7", "#6366f1", "#a855f7", "#ec4899", "#f97316", "#10b981", "#f59e0b"];
 
 const MONTH_NAMES = [
@@ -84,7 +92,7 @@ export function DashboardPage() {
   useEffect(() => {
     const isAuth = sessionStorage.getItem("dashboard_auth") === "true";
     if (!isAuth) {
-      navigate({ to: "/login" });
+      navigate({ to: "/login", search: { redirect: "/dashboard" } });
       return;
     }
     fetchData();
@@ -92,7 +100,8 @@ export function DashboardPage() {
 
   const handleLogout = () => {
     sessionStorage.clear();
-    navigate({ to: "/login", replace: true });
+    void fetch('/api/auth/logout', { method: 'POST' });
+    navigate({ to: "/login", search: { redirect: "/dashboard" }, replace: true });
   };
 
   const handleResetFilter = () => {
@@ -111,7 +120,7 @@ export function DashboardPage() {
       const json = await res.json();
 
       if (Array.isArray(json)) {
-        const validData = json.filter((item: any) => {
+        const validData = json.filter(isSurveyResponse).filter((item) => {
           if (!item || typeof item !== "object") return false;
           return Object.values(item).some(
             (val) => val !== null && val !== undefined && String(val).trim() !== ""
@@ -129,7 +138,7 @@ export function DashboardPage() {
           .toString()
           .padStart(2, "0")}:${now.getMinutes().toString().padStart(2, "0")}`
       );
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Error fetching dashboard data:", err);
       setErrorMsg("ไม่สามารถดึงข้อมูลได้ในขณะนี้ กรุณากด Refresh อีกครั้ง");
       setData([]);
@@ -138,7 +147,7 @@ export function DashboardPage() {
     }
   };
 
-  const parseNum = (val: any): number => {
+  const parseNum = (val: unknown): number => {
     const n = Number(val);
     return isNaN(n) ? 0 : n;
   };
@@ -246,7 +255,7 @@ export function DashboardPage() {
       if (!groups[item.category]) {
         groups[item.category] = { category: item.category, avg: 0, items: [] };
       }
-      groups[item.category].items.push(item);
+      groups[item.category]?.items.push(item);
     });
 
     const resultList = Object.values(groups).map((group) => {
@@ -273,6 +282,7 @@ export function DashboardPage() {
     const sorted = [...itemScores].sort((a, b) => b.avg - a.avg);
     const highest = sorted[0];
     const lowest = sorted[sorted.length - 1];
+    if (!highest || !lowest) return null;
 
     const rawGrandAvg = itemScores.reduce((acc, curr) => acc + curr.avg, 0) / itemScores.length;
     const grandAvgPercent = Math.round((rawGrandAvg / 5) * 100);
@@ -320,6 +330,9 @@ export function DashboardPage() {
       "สิ่งแวดล้อม/สถานที่": 0,
       "อุปกรณ์/สื่อ": 0,
     };
+    const incrementTopic = (topic: string) => {
+      topicCounts[topic] = (topicCounts[topic] ?? 0) + 1;
+    };
 
     const parsedList = rawFeedbacks.map((item) => {
       const t = item.text.toLowerCase();
@@ -342,16 +355,16 @@ export function DashboardPage() {
 
       if (t.includes("บริการ") || t.includes("พนักงาน") || t.includes("ต้อนรับ") || t.includes("เจ้าหน้าที่")) {
         tag = "การให้บริการ";
-        topicCounts["การให้บริการ"]++;
+        incrementTopic(tag);
       } else if (t.includes("จอดรถ") || t.includes("สถานที่") || t.includes("ห้อง") || t.includes("แอร์") || t.includes("สะอาด")) {
         tag = "สิ่งแวดล้อม/สถานที่";
-        topicCounts["สิ่งแวดล้อม/สถานที่"]++;
+        incrementTopic(tag);
       } else if (t.includes("อุปกรณ์") || t.includes("สื่อ") || t.includes("ไมค์") || t.includes("สไลด์")) {
         tag = "อุปกรณ์/สื่อ";
-        topicCounts["อุปกรณ์/สื่อ"]++;
+        incrementTopic(tag);
       } else {
         tag = "กิจกรรม/การเรียนรู้";
-        topicCounts["กิจกรรม/การเรียนรู้"]++;
+        incrementTopic(tag);
       }
 
       return {

@@ -1,12 +1,12 @@
-import { drizzle } from 'drizzle-orm/node-postgres';
-import { Pool } from 'pg';
-import * as schema from './schema';
+import { drizzle } from "drizzle-orm/neon-http";
+import { neon } from "@neondatabase/serverless";
+import * as schema from "./schema";
 
-// Connection pool setup
-// In production, use environment variables for connection string
-const pool = new Pool({
-  connectionString: process.env.DATABASE_URL || 'postgres://user:password@localhost:5432/mahidol_farm',
-});
+// Database access must be configured by the deployment environment.
+// Never ship a fallback credential or connect to localhost in production.
+const databaseUrl = process.env["DATABASE_URL"];
+if (!databaseUrl) throw new Error("DATABASE_URL is required");
+const sql = neon(databaseUrl);
 
 // Create Drizzle ORM instance with schema attached for relational queries
-export const db = drizzle(pool, { schema });
+export const db = drizzle(sql, { schema });

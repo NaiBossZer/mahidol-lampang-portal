@@ -21,7 +21,7 @@ export function Map3DViewer({ modelUrl }: Map3DViewerProps) {
   useEffect(() => {
     const observer = new IntersectionObserver(
       ([entry]) => {
-        if (entry.isIntersecting) {
+        if (entry?.isIntersecting) {
           setShouldLoad(true);
           observer.disconnect(); // เลิกตรวจจับเมื่อเริ่มโหลดแล้ว
         }
