@@ -2,20 +2,25 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 
 export const Route = createFileRoute("/login")({
+  validateSearch: (search: Record<string, unknown>) => {
+    return {
+      redirect: (search.redirect as string) || "/dashboard",
+    }
+  },
   component: LoginPage,
 });
 
 export function LoginPage() {
   const navigate = useNavigate();
+  const { redirect } = Route.useSearch();
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
-    // ใส่ Logic รหัสผ่านของคุณที่นี่ (ตัวอย่าง: admin1234)
     if (password === "ENLP2517") {
       sessionStorage.setItem("dashboard_auth", "true");
-      navigate({ to: "/dashboard" });
+      navigate({ to: redirect });
     } else {
       setError("รหัสผ่านไม่ถูกต้อง กรุณาลองใหม่อีกครั้ง");
     }

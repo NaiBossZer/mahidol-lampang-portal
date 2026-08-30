@@ -550,10 +550,16 @@ function MahidolLampangHub() {
       </section>
 
       {/* FOOTER */}
-      <footer className="bg-[#002D62] text-slate-300 text-xs py-8 border-t border-blue-900">
+      <footer className="bg-[#002D62] text-slate-300 text-xs py-8 border-t border-blue-900 relative">
         <div className="max-w-7xl mx-auto px-4 md:px-8 text-center space-y-2 font-normal">
           <p>© 2026 Mahidol University Lampang Center. All rights reserved.</p>
           <p className="text-[10px] text-[#F2A900]">ศูนย์การเรียนรู้ วิจัย และบริการวิชาการ มหาวิทยาลัยมหิดล อ.สบปราบ จ.ลำปาง</p>
+          <div className="pt-4 flex justify-center">
+            <a href="/admin" className="text-[10px] text-slate-400 hover:text-white transition-colors border border-slate-600/50 hover:border-slate-400 px-3 py-1 rounded-full flex items-center gap-1">
+              <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M15 3v18"/><path d="m8 9 3 3-3 3"/></svg>
+              จัดการระบบ (Admin)
+            </a>
+          </div>
         </div>
       </footer>
 
