@@ -1,9 +1,17 @@
-import { createFileRoute } from '@tanstack/react-router';
+import { createFileRoute, Link } from '@tanstack/react-router';
 import { useState, useEffect } from 'react';
 import { 
   Zap, TreePine, Sprout, ArrowUpRight, Search, ChevronRight, 
-  ChevronLeft, Menu, X, BookOpen, Clock
+  ChevronLeft, Menu, X, BookOpen, Clock, Leaf, FlaskConical, ShoppingCart
 } from 'lucide-react';
+import {
+  NavigationMenu,
+  NavigationMenuContent,
+  NavigationMenuItem,
+  NavigationMenuLink,
+  NavigationMenuList,
+  NavigationMenuTrigger,
+} from '@/components/ui/navigation-menu';
 import SiteLayout3D from '../components/SiteLayout3D';
 import { StorefrontWidget } from '../components/storefront/StorefrontWidget';
 
@@ -134,6 +142,60 @@ function MahidolLampangHub() {
             <a href="#testimonials" className="hover:text-[#F2A900] transition">เสียงสะท้อน</a>
             <a href="#partners" className="hover:text-[#F2A900] transition">พันธมิตร</a>
             <a href="#news" className="hover:text-[#F2A900] transition">ข่าวสาร</a>
+
+            <NavigationMenu>
+              <NavigationMenuList>
+                <NavigationMenuItem>
+                  <NavigationMenuTrigger className="bg-transparent hover:bg-transparent hover:text-[#F2A900] focus:bg-transparent data-[state=open]:bg-transparent text-xs font-medium text-slate-100 px-0 py-0 h-auto">
+                    ระบบศูนย์ย่อย
+                  </NavigationMenuTrigger>
+                  <NavigationMenuContent>
+                    <ul className="grid w-[280px] gap-1 p-2 bg-white rounded-lg shadow-xl border border-slate-200">
+                      <li>
+                        <NavigationMenuLink asChild>
+                          <a href="/smart-farm" className="block select-none space-y-1 rounded-md p-2.5 leading-none no-underline outline-none transition-colors hover:bg-green-50">
+                            <div className="flex items-center text-xs font-semibold text-slate-800 mb-1.5">
+                              <Leaf className="w-4 h-4 mr-2 text-green-600" /> ระบบ Smart Farm IoT
+                            </div>
+                            <p className="text-[10px] text-slate-500 leading-snug">ระบบติดตามและจัดการฟาร์มอัจฉริยะแบบเรียลไทม์</p>
+                          </a>
+                        </NavigationMenuLink>
+                      </li>
+                      <li>
+                        <NavigationMenuLink asChild>
+                          <a href="/clean-energy" className="block select-none space-y-1 rounded-md p-2.5 leading-none no-underline outline-none transition-colors hover:bg-blue-50">
+                            <div className="flex items-center text-xs font-semibold text-slate-800 mb-1.5">
+                              <Zap className="w-4 h-4 mr-2 text-blue-600" /> ศูนย์พลังงานสะอาด
+                            </div>
+                            <p className="text-[10px] text-slate-500 leading-snug">ระบบมอนิเตอร์พลังงานแสงอาทิตย์และพลังงานทดแทน</p>
+                          </a>
+                        </NavigationMenuLink>
+                      </li>
+                      <li>
+                        <NavigationMenuLink asChild>
+                          <a href="/rac" className="block select-none space-y-1 rounded-md p-2.5 leading-none no-underline outline-none transition-colors hover:bg-orange-50">
+                            <div className="flex items-center text-xs font-semibold text-slate-800 mb-1.5">
+                              <FlaskConical className="w-4 h-4 mr-2 text-orange-600" /> ศูนย์วิจัย RAC
+                            </div>
+                            <p className="text-[10px] text-slate-500 leading-snug">ระบบฐานข้อมูลงานวิจัยและทดลอง</p>
+                          </a>
+                        </NavigationMenuLink>
+                      </li>
+                      <li>
+                        <NavigationMenuLink asChild>
+                          <Link to="/storefront" className="block select-none space-y-1 rounded-md p-2.5 leading-none no-underline outline-none transition-colors hover:bg-[#F2A900]/10">
+                            <div className="flex items-center text-xs font-semibold text-slate-800 mb-1.5">
+                              <ShoppingCart className="w-4 h-4 mr-2 text-[#F2A900]" /> ร้านค้าผลผลิตเกษตร
+                            </div>
+                            <p className="text-[10px] text-slate-500 leading-snug">ระบบสั่งซื้อผลผลิต งานวิจัย และผลิตภัณฑ์จากศูนย์ฯ</p>
+                          </Link>
+                        </NavigationMenuLink>
+                      </li>
+                    </ul>
+                  </NavigationMenuContent>
+                </NavigationMenuItem>
+              </NavigationMenuList>
+            </NavigationMenu>
           </nav>
 
           {/* Action Buttons */}
