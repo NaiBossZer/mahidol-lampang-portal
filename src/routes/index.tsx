@@ -224,6 +224,21 @@ function MahidolLampangHub() {
             <a href="#testimonials" onClick={() => setIsMobileMenuOpen(false)} className="block py-1.5 hover:text-[#F2A900]">เสียงสะท้อน</a>
             <a href="#partners" onClick={() => setIsMobileMenuOpen(false)} className="block py-1.5 hover:text-[#F2A900]">พันธมิตร</a>
             <a href="#news" onClick={() => setIsMobileMenuOpen(false)} className="block py-1.5 hover:text-[#F2A900]">ข่าวสาร</a>
+            <div className="border-t border-blue-800/50 pt-2 mt-1 space-y-1">
+              <p className="text-[10px] text-blue-400 uppercase tracking-wider font-semibold pb-1">ระบบศูนย์ย่อย</p>
+              <a href="/smart-farm" className="flex items-center gap-2 py-1.5 hover:text-[#F2A900]">
+                <Leaf className="w-3.5 h-3.5" /> Smart Farm IoT
+              </a>
+              <a href="/clean-energy" className="flex items-center gap-2 py-1.5 hover:text-[#F2A900]">
+                <Zap className="w-3.5 h-3.5" /> พลังงานสะอาด
+              </a>
+              <a href="/rac" className="flex items-center gap-2 py-1.5 hover:text-[#F2A900]">
+                <FlaskConical className="w-3.5 h-3.5" /> ศูนย์วิจัย RAC
+              </a>
+              <a href="#storefront" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center gap-2 py-1.5 hover:text-[#F2A900]">
+                <ShoppingCart className="w-3.5 h-3.5" /> ร้านค้าผลผลิต
+              </a>
+            </div>
           </div>
         )}
       </header>
