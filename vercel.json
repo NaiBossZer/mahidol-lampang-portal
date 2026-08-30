@@ -12,16 +12,28 @@
   ],
   "rewrites": [
     {
+      "source": "/smart-farm",
+      "destination": "https://mahidol-smart-farm.vercel.app"
+    },
+    {
       "source": "/smart-farm/:path*",
-      "destination": "https://smart-farm-sub.vercel.app/:path*"
+      "destination": "https://mahidol-smart-farm.vercel.app/:path*"
+    },
+    {
+      "source": "/clean-energy",
+      "destination": "https://mahidol-clean-energy.vercel.app"
     },
     {
       "source": "/clean-energy/:path*",
-      "destination": "https://clean-energy-sub.vercel.app/:path*"
+      "destination": "https://mahidol-clean-energy.vercel.app/:path*"
+    },
+    {
+      "source": "/rac",
+      "destination": "https://mahidol-shellac.vercel.app"
     },
     {
       "source": "/rac/:path*",
-      "destination": "https://rac-sub.vercel.app/:path*"
+      "destination": "https://mahidol-shellac.vercel.app/:path*"
     }
   ]
 }
