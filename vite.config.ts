@@ -7,12 +7,6 @@
 import { defineConfig } from "@lovable.dev/vite-tanstack-config";
 
 export default defineConfig({
-  // Vercel must receive a Vercel-compatible Nitro function, not the default
-  // Cloudflare module output used by the local/preview environment.
+  // Build a Vercel-compatible Nitro function for TanStack Start SSR and API routes.
   nitro: { preset: "vercel" },
-  tanstackStart: {
-    // Redirect TanStack Start's bundled server entry to src/server.ts (our SSR error wrapper).
-    // nitro/vite builds from this
-    server: { entry: "server" },
-  },
 });
