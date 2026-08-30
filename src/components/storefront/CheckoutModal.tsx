@@ -88,7 +88,6 @@ export const CheckoutModal = ({
                 <Label htmlFor="address">ที่อยู่จัดส่ง / จุดนัดรับ</Label>
                 <Textarea id="address" required placeholder="บ้านเลขที่, ถนน, ตำบล..." />
               </div>
-            </div>
             )}
 
             <div className="border-t pt-4 mt-4 space-y-2">
