@@ -1,0 +1,1 @@
+import{i as e}from"./index-BXGdRbZs.js";import{t}from"./EmbeddedSystemView-CKlsPMQz.js";import{t as n}from"./constants-OKOBfu-A.js";var r=e();function i(){return(0,r.jsx)(t,{url:n.RAC,title:`RAC System`,systemLabel:`Research & Academic Center`})}export{i as component};

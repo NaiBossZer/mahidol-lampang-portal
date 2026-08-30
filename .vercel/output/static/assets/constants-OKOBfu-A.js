@@ -1,0 +1,1 @@
+var e={RAC:`https://mahidol-shellac.vercel.app`,CLEAN_ENERGY:`https://mahidol-clean-energy.vercel.app`,SMART_FARM:`https://mahidol-smart-farm.vercel.app/`};export{e as t};

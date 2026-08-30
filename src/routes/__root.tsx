@@ -12,6 +12,7 @@ import { useEffect, type ReactNode } from "react";
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { Toaster } from "sonner";
+import { RuntimeErrorBoundary } from "../components/RuntimeErrorBoundary";
 
 function NotFoundComponent() {
   return (
@@ -124,7 +125,9 @@ function RootComponent() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <Outlet />
+      <RuntimeErrorBoundary>
+        <Outlet />
+      </RuntimeErrorBoundary>
       <Toaster position="top-right" richColors closeButton />
     </QueryClientProvider>
   );

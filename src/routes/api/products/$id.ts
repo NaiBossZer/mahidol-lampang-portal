@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { eq } from "drizzle-orm";
-import { db } from "../../../db";
+import { getDb } from "../../../db";
 import { products } from "../../../db/schema";
 import { isAdminRequest } from "../../../server/admin-auth";
 
@@ -44,7 +44,7 @@ export const Route = createFileRoute("/api/products/$id")({
             { success: false, error: "ข้อมูลสินค้าไม่ถูกต้อง" },
             { status: 400 },
           );
-        const [updated] = await db
+        const [updated] = await getDb()
           .update(products)
           .set({
             name: body.name.trim(),
@@ -65,7 +65,7 @@ export const Route = createFileRoute("/api/products/$id")({
       DELETE: async ({ request, params }) => {
         if (!(await isAdminRequest(request)))
           return Response.json({ success: false, error: "Unauthorized" }, { status: 401 });
-        const [deleted] = await db
+        const [deleted] = await getDb()
           .delete(products)
           .where(eq(products.id, params.id))
           .returning({ id: products.id });

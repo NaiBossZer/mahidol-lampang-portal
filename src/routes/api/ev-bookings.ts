@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { and, gt, lt, ne } from "drizzle-orm";
-import { db } from "../../db";
+import { getDb } from "../../db";
 import { evBookings } from "../../db/schema";
 
 type EvBookingInput = {
@@ -42,7 +42,7 @@ export const Route = createFileRoute("/api/ev-bookings")({
           }
 
           const chargerCount = readChargerCount();
-          const booking = await db.transaction(async (tx) => {
+          const booking = await getDb().transaction(async (tx) => {
             const conflicts = await tx
               .select({ id: evBookings.id })
               .from(evBookings)

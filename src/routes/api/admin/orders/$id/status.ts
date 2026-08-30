@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { db } from "../../../../../db";
+import { getDb } from "../../../../../db";
 import { orders } from "../../../../../db/schema";
 import { eq } from "drizzle-orm";
 import { isAdminRequest } from "../../../../../server/admin-auth";
@@ -22,7 +22,7 @@ export const Route = createFileRoute("/api/admin/orders/$id/status")({
           }
 
           // 3. PATCH /api/admin/orders/:id/status: อัปเดตสถานะออเดอร์โดย Admin
-          const [updatedOrder] = await db
+          const [updatedOrder] = await getDb()
             .update(orders)
             .set({ status })
             .where(eq(orders.id, id))

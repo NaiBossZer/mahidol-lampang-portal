@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { db } from "../../db";
+import { getDb } from "../../db";
 import { orders, orderItems, products } from "../../db/schema";
 import { and, eq, gte, sql } from "drizzle-orm";
 
@@ -41,7 +41,7 @@ export const Route = createFileRoute("/api/orders")({
           const safeSlipUrl = typeof slipUrl === "string" ? slipUrl : undefined;
 
           // 2. POST /api/orders: รับข้อมูลการสั่งซื้อ บันทึกออเดอร์ และลดจำนวนสต็อกสินค้าใน Transaction แบบ Atomic
-          const newOrder = await db.transaction(async (tx) => {
+          const newOrder = await getDb().transaction(async (tx) => {
             let calculatedTotal = 0;
             const normalizedItems: Array<{
               productId: string;

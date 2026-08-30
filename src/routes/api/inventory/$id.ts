@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { eq } from "drizzle-orm";
-import { db } from "../../../db";
+import { getDb } from "../../../db";
 import { products } from "../../../db/schema";
 import { isAdminRequest } from "../../../server/admin-auth";
 
@@ -18,7 +18,7 @@ export const Route = createFileRoute("/api/inventory/$id")({
             { success: false, error: "จำนวน stock ไม่ถูกต้อง" },
             { status: 400 },
           );
-        const [updated] = await db
+        const [updated] = await getDb()
           .update(products)
           .set({ stockQuantity: stock })
           .where(eq(products.id, params.id))

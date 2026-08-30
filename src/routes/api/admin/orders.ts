@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { desc } from "drizzle-orm";
-import { db } from "../../../db";
+import { getDb } from "../../../db";
 import { orders } from "../../../db/schema";
 import { isAdminRequest } from "../../../server/admin-auth";
 
@@ -10,7 +10,7 @@ export const Route = createFileRoute("/api/admin/orders")({
       GET: async ({ request }) => {
         if (!(await isAdminRequest(request)))
           return Response.json({ success: false, error: "Unauthorized" }, { status: 401 });
-        const rows = await db
+        const rows = await getDb()
           .select({
             id: orders.id,
             customerName: orders.customerName,

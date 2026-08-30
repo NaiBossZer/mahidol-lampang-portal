@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { db } from "../../db";
+import { getDb } from "../../db";
 import { products } from "../../db/schema";
 import { or, gt, eq } from "drizzle-orm";
 import { isAdminRequest } from "../../server/admin-auth";
@@ -40,7 +40,7 @@ export const Route = createFileRoute("/api/products")({
       GET: async ({ request }) => {
         try {
           // 1. GET /api/products: ดึงรายการสินค้าสดที่มี stock > 0 หรือเปิดให้ Pre-order
-          const availableProducts = await db
+          const availableProducts = await getDb()
             .select()
             .from(products)
             .where(or(gt(products.stockQuantity, 0), eq(products.isPreorder, true)));
@@ -69,7 +69,7 @@ export const Route = createFileRoute("/api/products")({
             { success: false, error: "ข้อมูลสินค้าไม่ถูกต้อง" },
             { status: 400 },
           );
-        const [created] = await db
+        const [created] = await getDb()
           .insert(products)
           .values({
             name: body.name.trim(),
