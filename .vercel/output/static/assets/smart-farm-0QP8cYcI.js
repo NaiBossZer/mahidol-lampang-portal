@@ -1,1 +1,0 @@
-import{i as e}from"./index-BXGdRbZs.js";import{t}from"./EmbeddedSystemView-CKlsPMQz.js";var n=e(),r=`https://mahidol-smart-farm.vercel.app`;function i(){return(0,n.jsx)(t,{url:r,title:`Smart Farm System`,systemLabel:`Smart Farm IoT`})}export{i as component};

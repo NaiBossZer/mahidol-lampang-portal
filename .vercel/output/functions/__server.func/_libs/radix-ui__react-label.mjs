@@ -1,6 +1,6 @@
 import { i as __toESM } from "../_runtime.mjs";
 import { o as require_jsx_runtime, s as require_react } from "./@radix-ui/react-collection+[...].mjs";
-import { f as Primitive } from "./@radix-ui/react-dialog+[...].mjs";
+import { p as Primitive } from "./@radix-ui/react-dialog+[...].mjs";
 //#region node_modules/@radix-ui/react-label/dist/index.mjs
 var import_react = /* @__PURE__ */ __toESM(require_react(), 1);
 var import_jsx_runtime = require_jsx_runtime();

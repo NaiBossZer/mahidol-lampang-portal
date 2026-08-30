@@ -1,4 +1,4 @@
-//#region node_modules/.nitro/vite/services/ssr/assets/_tanstack-start-manifest_v-eyOc8Y5z.js
+//#region node_modules/.nitro/vite/services/ssr/assets/_tanstack-start-manifest_v-B2hyKzxH.js
 var tsrStartManifest = () => ({ routes: {
 	__root__: {
 		filePath: "C:/NaiBossZer/MU BY NaiBossZer/WEBSITE/mahidol-lampang-portal/src/routes/__root.tsx",
@@ -20,61 +20,58 @@ var tsrStartManifest = () => ({ routes: {
 			"/api/auth/logout",
 			"/api/inventory/$id"
 		],
-		preloads: ["/assets/index-BXGdRbZs.js"],
+		preloads: ["/assets/index-BbB5x7mz.js"],
 		scripts: [{ attrs: {
 			type: "module",
 			async: !0,
-			src: "/assets/index-BXGdRbZs.js"
+			src: "/assets/index-BbB5x7mz.js"
 		} }]
 	},
 	"/": {
 		filePath: "C:/NaiBossZer/MU BY NaiBossZer/WEBSITE/mahidol-lampang-portal/src/routes/index.tsx",
 		children: void 0,
 		preloads: [
-			"/assets/routes-DkiXBaZk.js",
-			"/assets/api-C3eLos85.js",
-			"/assets/createLucideIcon-CnsQzImi.js",
-			"/assets/tabs-C6Mx61s5.js",
-			"/assets/StorefrontWidget-D-WeAmqR.js",
-			"/assets/constants-OKOBfu-A.js"
+			"/assets/routes-CbN8PTUi.js",
+			"/assets/api-DZOvdiqU.js",
+			"/assets/createLucideIcon-CtU-cvnK.js",
+			"/assets/CartDrawer-nainH3-q.js"
 		]
 	},
 	"/admin": {
 		filePath: "C:/NaiBossZer/MU BY NaiBossZer/WEBSITE/mahidol-lampang-portal/src/routes/admin.tsx",
 		children: void 0,
 		preloads: [
-			"/assets/admin-JkYAE3PD.js",
-			"/assets/api-C3eLos85.js",
-			"/assets/createLucideIcon-CnsQzImi.js",
-			"/assets/tabs-C6Mx61s5.js"
+			"/assets/admin-Cmn6Opdk.js",
+			"/assets/api-DZOvdiqU.js",
+			"/assets/createLucideIcon-CtU-cvnK.js",
+			"/assets/calendar-BLH4ai0f.js"
 		]
 	},
 	"/clean-energy": {
 		filePath: "C:/NaiBossZer/MU BY NaiBossZer/WEBSITE/mahidol-lampang-portal/src/routes/clean-energy.tsx",
 		children: void 0,
-		preloads: ["/assets/clean-energy-Dv0tOEh1.js", "/assets/EmbeddedSystemView-CKlsPMQz.js"]
+		preloads: ["/assets/clean-energy-u_-zM54O.js", "/assets/EmbeddedSystemView-Lae5lRic.js"]
 	},
 	"/rac": {
 		filePath: "C:/NaiBossZer/MU BY NaiBossZer/WEBSITE/mahidol-lampang-portal/src/routes/rac.tsx",
 		children: void 0,
-		preloads: [
-			"/assets/rac-Bqnyh5ZL.js",
-			"/assets/EmbeddedSystemView-CKlsPMQz.js",
-			"/assets/constants-OKOBfu-A.js"
-		]
+		preloads: ["/assets/rac-Bdhc5exg.js", "/assets/EmbeddedSystemView-Lae5lRic.js"]
 	},
 	"/smart-farm": {
 		filePath: "C:/NaiBossZer/MU BY NaiBossZer/WEBSITE/mahidol-lampang-portal/src/routes/smart-farm.tsx",
 		children: void 0,
-		preloads: ["/assets/smart-farm-0QP8cYcI.js", "/assets/EmbeddedSystemView-CKlsPMQz.js"]
+		preloads: ["/assets/smart-farm-BxbW8F19.js", "/assets/EmbeddedSystemView-Lae5lRic.js"]
 	},
 	"/storefront": {
 		filePath: "C:/NaiBossZer/MU BY NaiBossZer/WEBSITE/mahidol-lampang-portal/src/routes/storefront.tsx",
 		children: void 0,
 		preloads: [
-			"/assets/storefront-BMnnQhy7.js",
-			"/assets/createLucideIcon-CnsQzImi.js",
-			"/assets/StorefrontWidget-D-WeAmqR.js"
+			"/assets/storefront-CYOxBzcS.js",
+			"/assets/api-DZOvdiqU.js",
+			"/assets/createLucideIcon-CtU-cvnK.js",
+			"/assets/calendar-BLH4ai0f.js",
+			"/assets/CartDrawer-nainH3-q.js",
+			"/assets/loader-circle-Cp40HPL4.js"
 		]
 	}
 } });

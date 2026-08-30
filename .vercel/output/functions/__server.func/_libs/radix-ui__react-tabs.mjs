@@ -1,7 +1,7 @@
 import { i as __toESM } from "../_runtime.mjs";
 import { n as createContextScope, o as require_jsx_runtime, s as require_react } from "./@radix-ui/react-collection+[...].mjs";
+import { c as Presence, d as useId, p as Primitive, u as useControllableState } from "./@radix-ui/react-dialog+[...].mjs";
 import { t as composeEventHandlers } from "./radix-ui__primitive.mjs";
-import { f as Primitive, h as useId, l as Presence, u as useControllableState } from "./@radix-ui/react-dialog+[...].mjs";
 import { t as useDirection } from "./radix-ui__react-direction.mjs";
 import { a as Root, i as Item, o as createRovingFocusGroupScope } from "./@radix-ui/react-radio-group+[...].mjs";
 //#region node_modules/@radix-ui/react-tabs/dist/index.mjs

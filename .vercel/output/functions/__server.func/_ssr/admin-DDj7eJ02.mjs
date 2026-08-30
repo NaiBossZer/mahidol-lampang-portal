@@ -1,14 +1,34 @@
 import { i as __toESM } from "../_runtime.mjs";
 import { o as require_jsx_runtime, s as require_react } from "../_libs/@radix-ui/react-collection+[...].mjs";
 import { r as cn, t as Button } from "./button-CCQEfgNs.mjs";
-import { i as TabsTrigger, n as TabsContent, r as TabsList, t as Tabs } from "./tabs-BiHV7YXM.mjs";
-import { R as Calendar, g as Package, h as Plus, j as CircleCheck, k as CircleX, l as ShoppingCart, o as Trash2, s as SquarePen, w as Eye } from "../_libs/lucide-react.mjs";
+import { M as CircleCheck, T as Eye, _ as Package, a as Trash2, c as SquarePen, g as Plus, j as CircleX, u as ShoppingCart, z as Calendar } from "../_libs/lucide-react.mjs";
 import { u as format } from "../_libs/date-fns.mjs";
-import { C as updateOrderStatus, S as getProducts, a as CardDescription, b as deleteProduct, c as CardTitle, d as DialogDescription, f as DialogFooter, g as Label, h as Input, i as CardContent, l as Dialog, m as DialogTitle, n as Calendar$1, p as DialogHeader, r as Card, s as CardHeader, t as Badge, u as DialogContent, w as updateProduct, x as getAdminOrders, y as createProduct } from "./api-Ci-ZTcpM.mjs";
+import { a as CardDescription, c as CardTitle, i as CardContent, n as Calendar$1, r as Card, s as CardHeader, t as Badge } from "./calendar-vkKSiYyy.mjs";
+import { _ as updateProduct, a as DialogHeader, c as Label, f as createProduct, g as updateOrderStatus, h as getProducts, i as DialogFooter, m as getAdminOrders, n as DialogContent, o as DialogTitle, p as deleteProduct, r as DialogDescription, s as Input, t as Dialog } from "./api-BXZgsq1G.mjs";
 import { n as toast } from "../_libs/sonner.mjs";
-//#region node_modules/.nitro/vite/services/ssr/assets/admin-D52PiVkQ.js
+import { i as Trigger, n as List, r as Root2, t as Content } from "../_libs/radix-ui__react-tabs.mjs";
+//#region node_modules/.nitro/vite/services/ssr/assets/admin-DDj7eJ02.js
 var import_react = /* @__PURE__ */ __toESM(require_react());
 var import_jsx_runtime = require_jsx_runtime();
+var Tabs = Root2;
+var TabsList = import_react.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(List, {
+	ref,
+	className: cn("inline-flex h-9 items-center justify-center rounded-lg bg-muted p-1 text-muted-foreground", className),
+	...props
+}));
+TabsList.displayName = List.displayName;
+var TabsTrigger = import_react.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Trigger, {
+	ref,
+	className: cn("inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1 text-sm font-medium ring-offset-background cursor-pointer transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 disabled:cursor-not-allowed data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow", className),
+	...props
+}));
+TabsTrigger.displayName = Trigger.displayName;
+var TabsContent = import_react.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Content, {
+	ref,
+	className: cn("mt-2 ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2", className),
+	...props
+}));
+TabsContent.displayName = Content.displayName;
 var Table = import_react.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
 	className: "relative w-full overflow-auto",
 	children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("table", {
