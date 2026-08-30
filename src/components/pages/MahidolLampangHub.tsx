@@ -1,9 +1,84 @@
-import { createFileRoute } from '@tanstack/react-router';
-import { MahidolLampangHub } from '@/components/pages/MahidolLampangHub';
+import { useState, useEffect } from 'react';
+import { Link } from '@tanstack/react-router';
+import { 
+  Zap, TreePine, Sprout, ArrowUpRight, Search, ChevronRight, 
+  ChevronLeft, Menu, X, BookOpen, Clock, Leaf, FlaskConical, ShoppingCart
+} from 'lucide-react';
+import {
+  NavigationMenu,
+  NavigationMenuContent,
+  NavigationMenuItem,
+  NavigationMenuLink,
+  NavigationMenuList,
+  NavigationMenuTrigger,
+} from '@/components/ui/navigation-menu';
+import SiteLayout3D from '../SiteLayout3D';
+import { StorefrontWidget } from '../storefront/StorefrontWidget';
+import { SUB_SYSTEM_URLS } from '@/config';
 
-export const Route = createFileRoute('/')({
-  component: MahidolLampangHub,
-});
+// ข้อมูลรูปภาพแบนเนอร์
+const SLIDES = [
+  {
+    id: 1,
+    image: '/banner1.jpg',
+    title: 'Mahidol University Lampang Hub',
+    subtitle: 'ศูนย์รวมองค์ความรู้ งานวิจัยนวัตกรรม และพลังงานสะอาดเพื่อชุมชน',
+    buttonText: 'สำรวจคลังความรู้',
+    buttonLink: '#knowledge-hub',
+  },
+  {
+    id: 2,
+    image: '/banner2.jpg',
+    title: 'Sustainable Future Starts Here',
+    subtitle: 'ยกระดับการบริการวิชาการ มหาวิทยาลัยมหิดล อำเภอสบปราบ จังหวัดลำปาง',
+    buttonText: 'ฐานการเรียนรู้',
+    buttonLink: '#bases',
+  },
+  {
+    id: 3,
+    image: '/banner3.jpg',
+    title: 'Smart Learning & Innovation',
+    subtitle: 'เชื่อมโยงระบบสารสนเทศ งานวิจัยครั่ง พลังงานโซลาร์เซลล์ และเกษตรกรรมอัจฉริยะ',
+    buttonText: 'ผังบริเวณศูนย์ฯ',
+    buttonLink: '#site-layout-section',
+  },
+];
+
+// ข้อมูล Knowledge Cards
+const KNOWLEDGE_ARTICLES = [
+  {
+    id: 1,
+    category: 'ครั่ง',
+    badgeClass: 'bg-rose-50 text-[#9F1239] border-rose-200',
+    title: 'การแปรรูปครั่งสู่ผลิตภัณฑ์ชีวภาพมูลค่าสูง',
+    snippet: 'นวัตกรรมการสกัดสารจากครั่งธรรมชาติ เพื่อนำไปใช้ในอุตสาหกรรมทางการแพทย์ อาหาร และการเกษตรเชิงพาณิชย์...',
+    readTime: '3 นาที',
+    author: 'งานวิจัยครั่ง',
+    link: SUB_SYSTEM_URLS.RAC,
+  },
+  {
+    id: 2,
+    category: 'พลังงาน',
+    badgeClass: 'bg-amber-50 text-[#D97706] border-amber-200',
+    title: 'ติดตาม Real-time Solar Data อาคารสำนักงาน',
+    snippet: 'ระบบ Smart Meter ตรวจวัดกำลังการผลิตไฟฟ้าจากแผงโซลาร์เซลล์และสถิติการลดก๊าซเรือนกระจกรายวัน...',
+    readTime: '2 นาที',
+    author: 'ศูนย์พลังงาน',
+    link: SUB_SYSTEM_URLS.CLEAN_ENERGY,
+  },
+  {
+    id: 3,
+    category: 'เกษตร',
+    badgeClass: 'bg-emerald-50 text-[#059669] border-emerald-200',
+    title: 'การบริหารจัดการระบบ Smart Farm ในพื้นที่แห้งแล้ง',
+    snippet: 'การปรับใช้ไอโอที (IoT) และเซนเซอร์วัดความชื้นดินเพื่อการรดน้ำแปลงสาธิตเกษตรกรรมแม่นยำสูง...',
+    readTime: '4 นาที',
+    author: 'เกษตรอัจฉริยะ',
+    link: SUB_SYSTEM_URLS.SMART_FARM,
+  },
+];
+
+export function MahidolLampangHub() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [currentSlide, setCurrentSlide] = useState(0);
   const [activeCategory, setActiveCategory] = useState('ทั้งหมด');
@@ -315,7 +390,7 @@ export const Route = createFileRoute('/')({
             
             {/* CARD 1: ฐานครั่ง */}
             <a 
-              href={BASE_URLS.LAC}
+              href={SUB_SYSTEM_URLS.RAC}
               target="_blank"
               rel="noopener noreferrer"
               className="group bg-[#F8FAFC] rounded-2xl border border-slate-200 p-6 shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1 flex flex-col justify-between"
@@ -342,7 +417,7 @@ export const Route = createFileRoute('/')({
 
             {/* CARD 2: ฐานพลังงาน */}
             <a 
-              href={BASE_URLS.ENERGY}
+              href={SUB_SYSTEM_URLS.CLEAN_ENERGY}
               target="_blank"
               rel="noopener noreferrer"
               className="group bg-[#F8FAFC] rounded-2xl border border-slate-200 p-6 shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1 flex flex-col justify-between"
@@ -369,7 +444,7 @@ export const Route = createFileRoute('/')({
 
             {/* CARD 3: ฐานเกษตร */}
             <a 
-              href={BASE_URLS.AGRI}
+              href={SUB_SYSTEM_URLS.SMART_FARM}
               target="_blank"
               rel="noopener noreferrer"
               className="group bg-[#F8FAFC] rounded-2xl border border-slate-200 p-6 shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1 flex flex-col justify-between"

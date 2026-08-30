@@ -1,41 +1,20 @@
-import { createFileRoute, redirect } from '@tanstack/react-router';
-
-const isProd = typeof window !== 'undefined'
-  ? window.location.hostname !== 'localhost'
-  : true;
+import { createFileRoute } from '@tanstack/react-router';
 
 const CLEAN_ENERGY_URL = 'https://mahidol-clean-energy.vercel.app';
 
 export const Route = createFileRoute('/clean-energy')({
-  beforeLoad: () => {
-    if (isProd) {
-      throw redirect({ href: CLEAN_ENERGY_URL });
-    }
-  },
-  component: CleanEnergyLocal,
+  component: CleanEnergySystem,
 });
 
-function CleanEnergyLocal() {
+function CleanEnergySystem() {
   return (
-    <div className="w-full h-screen flex flex-col">
-      <div className="bg-yellow-100 text-yellow-800 p-2 text-center text-sm font-medium">
-        ⚠️{' '}
-        <strong>Local Dev Mode</strong> — แสดงผลผ่าน Iframe{' '}
-        <a
-          href={CLEAN_ENERGY_URL}
-          target="_blank"
-          rel="noreferrer"
-          className="underline font-bold"
-        >
-          mahidol-clean-energy.vercel.app
-        </a>
-        {' '}(บน Production จะใช้ Vercel Edge Rewrites แทน)
-      </div>
+    <div className="w-full h-screen flex flex-col bg-white">
       <iframe
         src={CLEAN_ENERGY_URL}
-        className="w-full flex-1 border-0"
+        className="w-full h-full border-0"
         title="Clean Energy System"
-        sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-popups-to-escape-sandbox"
+        sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-popups-to-escape-sandbox allow-presentation"
+        allow="fullscreen; clipboard-write; geolocation; microphone; camera"
       />
     </div>
   );
