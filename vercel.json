@@ -9,5 +9,19 @@
         }
       ]
     }
+  ],
+  "rewrites": [
+    {
+      "source": "/smart-farm/:path*",
+      "destination": "https://smart-farm-sub.vercel.app/:path*"
+    },
+    {
+      "source": "/clean-energy/:path*",
+      "destination": "https://clean-energy-sub.vercel.app/:path*"
+    },
+    {
+      "source": "/rac/:path*",
+      "destination": "https://rac-sub.vercel.app/:path*"
+    }
   ]
 }

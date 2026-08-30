@@ -10,13 +10,21 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as CleanEnergyRouteImport } from './routes/clean-energy'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as LoginRouteImport } from './routes/login'
+import { Route as RacRouteImport } from './routes/rac'
+import { Route as SmartFarmRouteImport } from './routes/smart-farm'
 import { Route as SurveyRouteImport } from './routes/survey'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CleanEnergyRoute = CleanEnergyRouteImport.update({
+  id: '/clean-energy',
+  path: '/clean-energy',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DashboardRoute = DashboardRouteImport.update({
@@ -29,6 +37,16 @@ const LoginRoute = LoginRouteImport.update({
   path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any)
+const RacRoute = RacRouteImport.update({
+  id: '/rac',
+  path: '/rac',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SmartFarmRoute = SmartFarmRouteImport.update({
+  id: '/smart-farm',
+  path: '/smart-farm',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SurveyRoute = SurveyRouteImport.update({
   id: '/survey',
   path: '/survey',
@@ -37,35 +55,69 @@ const SurveyRoute = SurveyRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/clean-energy': typeof CleanEnergyRoute
   '/dashboard': typeof DashboardRoute
   '/login': typeof LoginRoute
+  '/rac': typeof RacRoute
+  '/smart-farm': typeof SmartFarmRoute
   '/survey': typeof SurveyRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/clean-energy': typeof CleanEnergyRoute
   '/dashboard': typeof DashboardRoute
   '/login': typeof LoginRoute
+  '/rac': typeof RacRoute
+  '/smart-farm': typeof SmartFarmRoute
   '/survey': typeof SurveyRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/clean-energy': typeof CleanEnergyRoute
   '/dashboard': typeof DashboardRoute
   '/login': typeof LoginRoute
+  '/rac': typeof RacRoute
+  '/smart-farm': typeof SmartFarmRoute
   '/survey': typeof SurveyRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/dashboard' | '/login' | '/survey'
+  fullPaths:
+    | '/'
+    | '/clean-energy'
+    | '/dashboard'
+    | '/login'
+    | '/rac'
+    | '/smart-farm'
+    | '/survey'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/dashboard' | '/login' | '/survey'
-  id: '__root__' | '/' | '/dashboard' | '/login' | '/survey'
+  to:
+    | '/'
+    | '/clean-energy'
+    | '/dashboard'
+    | '/login'
+    | '/rac'
+    | '/smart-farm'
+    | '/survey'
+  id:
+    | '__root__'
+    | '/'
+    | '/clean-energy'
+    | '/dashboard'
+    | '/login'
+    | '/rac'
+    | '/smart-farm'
+    | '/survey'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  CleanEnergyRoute: typeof CleanEnergyRoute
   DashboardRoute: typeof DashboardRoute
   LoginRoute: typeof LoginRoute
+  RacRoute: typeof RacRoute
+  SmartFarmRoute: typeof SmartFarmRoute
   SurveyRoute: typeof SurveyRoute
 }
 
@@ -76,6 +128,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/clean-energy': {
+      id: '/clean-energy'
+      path: '/clean-energy'
+      fullPath: '/clean-energy'
+      preLoaderRoute: typeof CleanEnergyRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/dashboard': {
@@ -92,6 +151,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LoginRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/rac': {
+      id: '/rac'
+      path: '/rac'
+      fullPath: '/rac'
+      preLoaderRoute: typeof RacRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/smart-farm': {
+      id: '/smart-farm'
+      path: '/smart-farm'
+      fullPath: '/smart-farm'
+      preLoaderRoute: typeof SmartFarmRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/survey': {
       id: '/survey'
       path: '/survey'
@@ -104,8 +177,11 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  CleanEnergyRoute: CleanEnergyRoute,
   DashboardRoute: DashboardRoute,
   LoginRoute: LoginRoute,
+  RacRoute: RacRoute,
+  SmartFarmRoute: SmartFarmRoute,
   SurveyRoute: SurveyRoute,
 }
 export const routeTree = rootRouteImport

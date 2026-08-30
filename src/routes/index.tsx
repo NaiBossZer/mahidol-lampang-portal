@@ -5,6 +5,7 @@ import {
   ChevronLeft, Menu, X, BookOpen, Clock
 } from 'lucide-react';
 import SiteLayout3D from '../components/SiteLayout3D';
+import { StorefrontWidget } from '../components/storefront/StorefrontWidget';
 
 export const Route = createFileRoute('/')({
   component: MahidolLampangHub,
@@ -405,6 +406,11 @@ function MahidolLampangHub() {
         </div>
       </section>
 
+      {/* STOREFRONT WIDGET */}
+      <section id="storefront" className="bg-[#F8FAFC] border-y border-slate-200">
+        <StorefrontWidget />
+      </section>
+
       {/* 5. SITE LAYOUT COMPONENT (2 TABS: SITE MAP / VIDEO) */}
       <SiteLayout3D />
 
@@ -554,5 +560,3 @@ function MahidolLampangHub() {
     </div>
   );
 }
-
-export default MahidolLampangHub;
