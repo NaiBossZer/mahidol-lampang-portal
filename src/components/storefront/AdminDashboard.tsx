@@ -339,7 +339,7 @@ export const AdminDashboard = () => {
       </div>
 
       <Tabs defaultValue="inventory" className="w-full">
-        <TabsList className="grid w-full md:w-[600px] grid-cols-3 mb-8">
+        <TabsList className="grid w-full md:w-150 grid-cols-3 mb-8">
           <TabsTrigger
             value="inventory"
             className="data-[state=active]:bg-[#002D62] data-[state=active]:text-white"
@@ -573,7 +573,7 @@ export const AdminDashboard = () => {
 
       {/* Add/Edit Product Modal */}
       <Dialog open={isProductModalOpen} onOpenChange={setIsProductModalOpen}>
-        <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
+        <DialogContent className="sm:max-w-150 max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>{editingProduct ? "แก้ไขข้อมูลผลผลิต" : "เพิ่มผลผลิตใหม่"}</DialogTitle>
             <DialogDescription>
@@ -673,7 +673,7 @@ export const AdminDashboard = () => {
 
       {/* Slip Preview Modal */}
       <Dialog open={isSlipModalOpen} onOpenChange={setIsSlipModalOpen}>
-        <DialogContent className="sm:max-w-[450px]">
+        <DialogContent className="sm:max-w-112.5 max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>ตรวจสอบการชำระเงิน</DialogTitle>
             <DialogDescription>คำสั่งซื้อ: {selectedOrder?.id}</DialogDescription>

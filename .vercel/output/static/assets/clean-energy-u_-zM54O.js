@@ -1,0 +1,1 @@
+import{r as e}from"./index-BbB5x7mz.js";import{t}from"./EmbeddedSystemView-Lae5lRic.js";var n=e(),r=`https://mahidol-clean-energy.vercel.app`;function i(){return(0,n.jsx)(t,{url:r,title:`Clean Energy System`,systemLabel:`Clean Energy`})}export{i as component};
