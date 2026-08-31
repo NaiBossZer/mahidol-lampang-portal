@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { ExternalLink, Loader2, WifiOff } from "lucide-react";
-import { Link } from "@tanstack/react-router";
+import { Link as RouterLink } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 
 type EmbeddedSystemViewProps = { url: string; title: string; systemLabel: string };
@@ -20,9 +20,9 @@ export function EmbeddedSystemView({ url, title, systemLabel }: EmbeddedSystemVi
     <div className="flex h-screen w-full flex-col bg-white">
       <div className="flex items-center justify-between border-b border-slate-200 bg-[#002D62] px-4 py-2 text-white">
         <div className="flex items-center gap-3 text-sm">
-          <Link to="/" className="text-[#F2A900] hover:underline">
+          <RouterLink to="/" className="text-[#F2A900] hover:underline">
             หน้าหลัก
-          </Link>
+          </RouterLink>
           <span aria-hidden="true">/</span>
           <span>{systemLabel}</span>
         </div>

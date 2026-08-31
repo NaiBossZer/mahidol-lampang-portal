@@ -1,18 +1,10 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { Link as RouterLink, useNavigate, useSearchParams } from "react-router-dom";
 import { useState } from "react";
-
-export const Route = createFileRoute("/login")({
-  validateSearch: (search: Record<string, unknown>) => {
-    return {
-      redirect: search['redirect'] === "/admin" ? "/admin" : "/dashboard",
-    }
-  },
-  component: LoginPage,
-});
 
 export function LoginPage() {
   const navigate = useNavigate();
-  const { redirect } = Route.useSearch();
+  const [searchParams] = useSearchParams();
+  const redirect = searchParams.get("redirect") === "/admin" ? "/admin" : "/dashboard";
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
 
@@ -30,7 +22,7 @@ export function LoginPage() {
       });
       if (response.ok) {
         sessionStorage.setItem("dashboard_auth", "true");
-        await navigate({ to: redirect });
+        navigate(redirect);
       } else {
         const body = await response.json().catch(() => ({})) as { error?: string };
         setError(body.error ?? "รหัสผ่านไม่ถูกต้อง กรุณาลองใหม่อีกครั้ง");
@@ -91,12 +83,12 @@ export function LoginPage() {
 
         {/* ปุ่มกลับสู่หน้าหลัก */}
         <div className="pt-2 text-center border-t border-slate-100">
-          <Link
+          <RouterLink
             to="/"
             className="inline-flex items-center gap-1.5 text-xs text-slate-500 hover:text-emerald-600 font-semibold transition-colors py-1 px-2 rounded-lg hover:bg-slate-50"
           >
             ← กลับสู่หน้าหลัก
-          </Link>
+          </RouterLink>
         </div>
 
       </div>

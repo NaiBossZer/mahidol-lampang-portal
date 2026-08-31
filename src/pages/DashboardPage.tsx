@@ -1,17 +1,5 @@
-import { createFileRoute, Link, redirect, useNavigate } from "@tanstack/react-router";
+import { Link as RouterLink, useNavigate } from "react-router-dom";
 import { useEffect, useMemo, useState } from "react";
-
-export const Route = createFileRoute("/dashboard")({
-  beforeLoad: () => {
-    if (typeof window !== "undefined") {
-      const isAuth = sessionStorage.getItem("dashboard_auth") === "true";
-      if (!isAuth) {
-        throw redirect({ to: "/login", search: { redirect: "/dashboard" } });
-      }
-    }
-  },
-  component: DashboardPage,
-});
 
 const GOOGLE_SCRIPT_URL =
   "https://script.google.com/macros/s/AKfycbxIXYFkonDlYf8sb1VqTDoJXlsZ58Pd53qYSP-rxeLc-9_hiHA4kKIUVAUEM-IdcrLIkQ/exec";
@@ -92,7 +80,7 @@ export function DashboardPage() {
   useEffect(() => {
     const isAuth = sessionStorage.getItem("dashboard_auth") === "true";
     if (!isAuth) {
-      navigate({ to: "/login", search: { redirect: "/dashboard" } });
+      navigate("/login?redirect=%2Fdashboard");
       return;
     }
     fetchData();
@@ -101,7 +89,7 @@ export function DashboardPage() {
   const handleLogout = () => {
     sessionStorage.clear();
     void fetch('/api/auth/logout', { method: 'POST' });
-    navigate({ to: "/login", search: { redirect: "/dashboard" }, replace: true });
+    navigate("/login?redirect=%2Fdashboard", { replace: true });
   };
 
   const handleResetFilter = () => {
@@ -247,7 +235,6 @@ export function DashboardPage() {
     });
   }, [filteredData]);
 
-  // จัดกลุ่มคะแนนตามหมวดหมู่ + เรียงลำดับจากคะแนนมากที่สุดไปน้อยที่สุด (Descending Order)
   const categoryGroupedScores = useMemo(() => {
     const groups: Record<string, { category: string; avg: number; items: typeof itemScores }> = {};
 
@@ -262,7 +249,6 @@ export function DashboardPage() {
       const total = group.items.reduce((sum, i) => sum + i.avg, 0);
       const avg = group.items.length > 0 ? parseFloat((total / group.items.length).toFixed(2)) : 0;
       
-      // เรียงหัวข้อย่อยภายในหมวดหมู่จากคะแนนมากไปน้อย
       const sortedItems = [...group.items].sort((a, b) => b.avg - a.avg);
 
       return {
@@ -272,7 +258,6 @@ export function DashboardPage() {
       };
     });
 
-    // เรียงหมวดหมู่ใหญ่จากคะแนนเฉลี่ยมากไปน้อย
     return resultList.sort((a, b) => b.avg - a.avg);
   }, [itemScores]);
 
@@ -437,9 +422,9 @@ export function DashboardPage() {
         
         {/* Top Navigation */}
         <div className="flex justify-between items-center text-xs text-slate-500">
-          <Link to="/" className="hover:text-amber-600 transition-colors flex items-center gap-1 font-semibold">
+          <RouterLink to="/" className="hover:text-amber-600 transition-colors flex items-center gap-1 font-semibold">
             ← Back to home
-          </Link>
+          </RouterLink>
           <span className="text-amber-700 font-semibold bg-amber-50 px-3 py-1 rounded-full border border-amber-200/80 shadow-sm">
             Viewing Fixed Google Sheets
           </span>
@@ -592,7 +577,7 @@ export function DashboardPage() {
           </div>
         </div>
 
-        {/* Executive Summary Cards (ปรับเหลือ 4 CARD ตามต้องการ) */}
+        {/* Executive Summary Cards */}
         {cardMetrics && (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
             

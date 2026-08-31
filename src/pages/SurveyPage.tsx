@@ -1,15 +1,8 @@
-import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 
-export const Route = createFileRoute("/survey")({
-  component: SurveyPage,
-});
-
-// ⚠️ Web App URL ล่าสุดสำหรับรับข้อมูล
 const GOOGLE_SCRIPT_URL =
   "https://script.google.com/macros/s/AKfycbx6MoINngMyK4Jf4JgCTQHY_B_iydnYqtqSKcT2-UbslV23ZBX__k-ez7gbeixDXq8rPQ/exec";
 
-// ตัวเลือกสำหรับแบบสอบถาม
 const AGE_GROUPS = [
   "0 - 10 ปี",
   "11 - 20 ปี",
