@@ -1,1 +1,0 @@
-import{r as e}from"./index-BbB5x7mz.js";import{t}from"./EmbeddedSystemView-Lae5lRic.js";var n={RAC:`https://mahidol-shellac.vercel.app`,CLEAN_ENERGY:`https://mahidol-clean-energy.vercel.app`,SMART_FARM:`https://mahidol-smart-farm.vercel.app/`},r=e();function i(){return(0,r.jsx)(t,{url:n.RAC,title:`RAC System`,systemLabel:`Research & Academic Center`})}export{i as component};
