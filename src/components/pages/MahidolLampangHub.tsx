@@ -226,9 +226,15 @@ export function MahidolLampangHub() {
         <header className="sticky top-0 z-50 bg-[#0e2b42] text-white shadow-md border-b-4 border-[#e2a021]">
           <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 lg:px-8">
             
-{/* LEFT LOGO & TITLE SECTION */}
+{/* HEADER / NAVIGATION BAR */}
+        <header className="sticky top-0 z-50 bg-[#0e2b42] text-white shadow-md border-b-4 border-[#e2a021]">
+          <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 lg:px-8">
+            
+            {/* LEFT LOGO & TITLE SECTION */}
             <div className="flex items-center gap-3 sm:gap-4 shrink-0">
               <div className="flex items-center gap-2">
+                
+                {/* LOGO 1: Mahidol */}
                 <div className="bg-white p-1 rounded-lg h-9 sm:h-11 flex items-center justify-center shrink-0 shadow-sm">
                   <img 
                     src="/mahidol-logo.png" 
@@ -241,6 +247,7 @@ export function MahidolLampangHub() {
                   />
                 </div>
 
+                {/* LOGO 2: Envi */}
                 <div className="bg-white p-1 rounded-lg h-9 sm:h-11 flex items-center justify-center shrink-0 shadow-sm">
                   <img 
                     src="/envi-logo.jpg" 
@@ -252,8 +259,8 @@ export function MahidolLampangHub() {
                     }}
                   />
                 </div>
-                />
 
+                {/* LOGO 3: Social Engagement */}
                 <div className="bg-white p-1 rounded-lg h-9 sm:h-11 flex items-center justify-center shrink-0 shadow-sm">
                   <img 
                     src="/social-engagement-logo.png" 
@@ -265,19 +272,15 @@ export function MahidolLampangHub() {
                     }}
                   />
                 </div>
-              </div>
-              
-              <div className="h-9 w-px bg-slate-600 hidden sm:block"></div>
-              <div className="hidden sm:flex flex-col text-left">
-                <span className="text-xs lg:text-sm font-bold text-white leading-tight">
-                  งานพันธกิจเพื่อสังคม สำนักงานวิจัยและวิทยาบริการ
-                </span>
-                <span className="text-[11px] lg:text-xs text-amber-300 leading-tight mt-0.5 font-medium">
-                  คณะสิ่งแวดล้อมและทรัพยากรศาสตร์ มหาวิทยาลัยมหิดล จังหวัดลำปาง
-                </span>
-              </div>
-            </a>
 
+              </div>
+            </div>
+
+            {/* คุณสามารถใส่องค์ประกอบด้านขวา เช่น เมนูหรือปุ่ม ค้นหา ตรงนี้ */}
+
+          </div>
+        </header>
+            
             {/* MAIN NAVIGATION */}
             <nav className="flex items-center gap-1 xl:gap-2 text-xs font-medium text-slate-200">
               <a href="#overview" className="rounded-lg px-3 py-2 transition hover:bg-white/10 hover:text-white flex items-center gap-1">
