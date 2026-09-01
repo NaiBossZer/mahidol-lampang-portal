@@ -226,15 +226,26 @@ export function MahidolLampangHub() {
         <header className="sticky top-0 z-50 bg-[#0e2b42] text-white shadow-md border-b-4 border-[#e2a021]">
           <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 lg:px-8">
             
-            {/* LEFT LOGO & TITLE SECTION */}
+{/* LEFT LOGO & TITLE SECTION */}
             <a href="#overview" className="flex items-center gap-3">
               <div className="flex items-center gap-2 rounded-lg bg-white p-1.5 shadow-inner">
-                <img src="/mahidol-logo.png" alt="Mahidol Logos" className="h-10 sm:h-11 object-contain" />
-              <div className="flex items-center gap-2 rounded-lg bg-white p-1.5 shadow-inner"></div>
-                <img src="/envi-logo.jpg" alt="envi logo" className="h-10 sm:h-11 object-contain" />
-              <div className="flex items-center gap-2 rounded-lg bg-white p-1.5 shadow-inner"></div>
-                <img src="/social-engagement-logo.png" alt="social engagement logo" className="h-10 sm:h-11 object-contain" />
+                <img 
+                  src="/mahidol-logo.png" 
+                  alt="Mahidol Logos" 
+                  className="h-10 sm:h-11 object-contain" 
+                />
+                <img 
+                  src="/envi-logo.jpg" 
+                  alt="envi logo" 
+                  className="h-10 sm:h-11 object-contain" 
+                />
+                <img 
+                  src="/social-engagement-logo.png" 
+                  alt="social engagement logo" 
+                  className="h-10 sm:h-11 object-contain" 
+                />
               </div>
+              
               <div className="h-9 w-px bg-slate-600 hidden sm:block"></div>
               <div className="hidden sm:flex flex-col text-left">
                 <span className="text-xs lg:text-sm font-bold text-white leading-tight">
