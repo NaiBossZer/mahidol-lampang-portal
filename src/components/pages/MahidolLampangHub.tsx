@@ -49,17 +49,17 @@ const HERO_SLIDES = [
     id: 2,
     image: "/Shellac banner.jpg",
     badge: "ZONE 01 // SOIL MOISTURE IOT",
-    title: "เซนเซอร์วัดความชื้นดิน",
+    title: "ห้องครั่งครบวงจร",
     subtitle: "ตรวจวัดความชื้นในดินแบบเรียลไทม์ด้วยเซนเซอร์ IoT ทั่วแปลงสาธิต เพื่อการรดน้ำที่แม่นยำ",
     buttonText: "ดูข้อมูลความชื้นดิน",
     buttonLink: "#farm",
   },
   {
     id: 3,
-    image: "/banner3.jpg",
-    badge: "ZONE 02 // WEATHER STATION",
-    title: "สถานีตรวจวัดสภาพอากาศ",
-    subtitle: "บันทึกอุณหภูมิ ความชื้นอากาศ และปริมาณน้ำฝนตลอด 24 ชั่วโมง เพื่อวางแผนการเพาะปลูก",
+    image: "/Smart Farm.jpg",
+    badge: "ZONE 02 // SMART FARM STATION",
+    title: "โรงเรือนเกษตรอัจฉริยะ",
+    subtitle: "บันทึกอุณหภูมิ ความชื้นอากาศและปริมาณน้ำฝนตลอด 24 ชั่วโมง เพื่อวางแผนการเพาะปลูก",
     buttonText: "ดูข้อมูลสภาพอากาศ",
     buttonLink: "#farm",
   },
@@ -95,10 +95,10 @@ const HERO_SLIDES = [
 type Module = { label: string; title: string; description: string; href: string; icon: typeof Leaf; tone: string };
 const modules: Module[] = [
   { label: "PORTAL", title: "ภาพรวมโครงการ", description: "ข่าวสาร กิจกรรมและบริการวิชาการ", href: "https://mahidol-lampang-portal.vercel.app", icon: Sprout, tone: "bg-[#002D62]" },
-  { label: "SHELLAC", title: "ห้องเรียนรู้ครั่งครบวงจร", description: "งานวิจัย คู่มือและข้อมูลเปิด", href: "https://mahidol-insight-hub.vercel.app", icon: BookOpen, tone: "bg-[#80142B]" }, // สีครั่งแดง (Lac Red)
+  { label: "SHELLAC", title: "ห้องเรียนรู้ครั่งครบวงจร", description: "งานวิจัย คู่มือและข้อมูลเปิด", href: "https://mahidol-insight-hub.vercel.app", icon: BookOpen, tone: "bg-[#80142B]" },
   { label: "SMART FARM", title: "เกษตรอัจฉริยะ", description: "ติดตามแปลงเพาะปลูกแบบเรียลไทม์", href: "https://mahidol-smart-farm.vercel.app", icon: Leaf, tone: "bg-[#2E7D32]" },
   { label: "CLEAN ENERGY", title: "พลังงานสะอาด", description: "วิเคราะห์การผลิตและคาร์บอนที่ลดได้", href: "https://mahidol-clean-energy.vercel.app", icon: Zap, tone: "bg-[#9b6a00]" },
-  { label: "SHOPPING VEG", title: "ตลาดผักมหิดล", description: "ผลผลิตปลอดสารพิษจากแปลงวิจัย", href: "https://mulp-farm-fresh-market.vercel.app", icon: ShoppingCart, tone: "bg-[#1b8a43]" }, // สีเขียวผักสด (Fresh Green)
+  { label: "SHOPPING VEG", title: "ตลาดผักมหิดล", description: "ผลผลิตปลอดสารพิษจากแปลงวิจัย", href: "https://mulp-farm-fresh-market.vercel.app", icon: ShoppingCart, tone: "bg-[#1b8a43]" },
 ];
 
 const knowledge = [
@@ -107,7 +107,6 @@ const knowledge = [
   { type: "ENERGY", title: "รายงานผลการผลิตไฟฟ้าจาก Solar Rooftop", meta: "พลังงานสะอาด · 2 นาที", color: "text-[#9b6a00]" },
 ];
 
-// การ์ดบริการหลัก 4 รายการ
 const serviceCards = [
   {
     id: "meeting-rooms",
@@ -208,7 +207,6 @@ export function MahidolLampangHub() {
     [query]
   );
 
-  // Auto Slide Effect
   useEffect(() => {
     const timer = setInterval(() => {
       setCurrentSlide((prev) => (prev + 1) % HERO_SLIDES.length);
@@ -221,31 +219,20 @@ export function MahidolLampangHub() {
 
   return (
     <CartProvider>
-      <div className="min-h-screen bg-slate-50 text-slate-800 font-sans" id="overview">
+      <div className="min-h-screen bg-slate-50 font-sans text-slate-800" id="overview">
         
         {/* HEADER / NAVIGATION BAR */}
-        <header className="sticky top-0 z-50 bg-[#0e2b42] text-white shadow-md border-b-4 border-[#e2a021]">
+        <header className="sticky top-0 z-50 border-b-4 border-[#e2a021] bg-[#0e2b42] text-white shadow-md">
           <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 lg:px-8">
             
-{/* HEADER / NAVIGATION BAR */}
-        <header className="sticky top-0 z-50 bg-[#0e2b42] text-white shadow-md border-b-4 border-[#e2a021]">
-          <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 lg:px-8">
-            
-            <div className="flex items-center gap-3 sm:gap-4 shrink-0">
+            {/* LEFT LOGO & TITLE SECTION */}
+            <div className="flex items-center gap-3 shrink-0 sm:gap-4">
+              
+              {/* LOGO GROUP */}
               <div className="flex items-center gap-2">
-                <div className="bg-white p-1 rounded-lg h-9 sm:h-11 flex items-center justify-center shrink-0 shadow-sm">
-                  <img 
-                    src="/envi-logo.jpg" 
-                    alt="Envi Mahidol Logo" 
-                    className="h-full object-contain"
-                    onError={(e) => {
-                      e.currentTarget.style.display = 'none';
-                      e.currentTarget.parentElement!.innerText = '🌍 Envi';
-                    }}
-                  />
-                </div>
-
-                <div className="bg-white p-1 rounded-lg h-9 sm:h-11 flex items-center justify-center shrink-0 shadow-sm">
+                
+                {/* LOGO 1: Mahidol University */}
+                <div className="flex h-9 items-center justify-center rounded-lg bg-white p-1 shadow-sm shrink-0 sm:h-11">
                   <img 
                     src="/mahidol-logo.png" 
                     alt="Mahidol University Logo" 
@@ -257,7 +244,21 @@ export function MahidolLampangHub() {
                   />
                 </div>
 
-                <div className="bg-white p-1 rounded-lg h-9 sm:h-11 flex items-center justify-center shrink-0 shadow-sm">
+                {/* LOGO 2: Faculty of Environment */}
+                <div className="flex h-9 items-center justify-center rounded-lg bg-white p-1 shadow-sm shrink-0 sm:h-11">
+                  <img 
+                    src="/envi-logo.jpg" 
+                    alt="Envi Mahidol Logo" 
+                    className="h-full object-contain"
+                    onError={(e) => {
+                      e.currentTarget.style.display = 'none';
+                      e.currentTarget.parentElement!.innerText = '🌍 Envi';
+                    }}
+                  />
+                </div>
+
+                {/* LOGO 3: Social Engagement */}
+                <div className="flex h-9 items-center justify-center rounded-lg bg-white p-1 shadow-sm shrink-0 sm:h-11">
                   <img 
                     src="/social-engagement-logo.png" 
                     alt="Social Engagement Logo" 
@@ -268,437 +269,269 @@ export function MahidolLampangHub() {
                     }}
                   />
                 </div>
+
               </div>
 
-              <div className="w-px h-8 sm:h-10 bg-white/20 shrink-0 hidden sm:block"></div>
+              {/* VERTICAL DIVIDER */}
+              <div className="hidden h-8 w-px bg-white/20 shrink-0 sm:block sm:h-10" />
 
+              {/* ORGANIZATION TITLE */}
               <div className="hidden sm:block">
-                <span className="text-xs sm:text-sm font-semibold tracking-tight text-white block leading-snug">
+                <span className="block text-xs font-semibold leading-snug tracking-tight text-white sm:text-sm">
                   งานพันธกิจเพื่อสังคม สำนักงานวิจัยและวิทยบริการ
                 </span>
-                <span className="text-[10px] sm:text-xs font-medium text-[#F5B800] block leading-tight mt-0.5">
+                <span className="mt-0.5 block text-[10px] font-medium leading-tight text-[#F5B800] sm:text-xs">
                   คณะสิ่งแวดล้อมและทรัพยากรศาสตร์ มหาวิทยาลัยมหิดล จังหวัดลำปาง
                 </span>
               </div>
+
             </div>
 
-            {/* คุณสามารถใส่องค์ประกอบด้านขวา เช่น เมนูหรือปุ่ม ค้นหา ตรงนี้ */}
-
-          </div>
-        </header>
-            
-            {/* MAIN NAVIGATION */}
-            <nav className="flex items-center gap-1 xl:gap-2 text-xs font-medium text-slate-200">
-              <a href="#overview" className="rounded-lg px-3 py-2 transition hover:bg-white/10 hover:text-white flex items-center gap-1">
-                <House size={14} className="text-amber-400" /> หน้าแรก
-              </a>
-
-              <a href="#social-projects" className="rounded-lg px-3 py-2 transition hover:bg-white/10 hover:text-white">
-                โครงการเพื่อสังคม
-              </a>
-              <a href="#learning-center" className="rounded-lg px-3 py-2 transition hover:bg-white/10 hover:text-white">
-                ศูนย์การเรียนรู้
-              </a>
-
-              {/* EYE-CATCHING DROPDOWN FOR "SERVICES" */}
-              <div className="relative group py-1">
-                <button className="flex items-center gap-1.5 rounded-full bg-linear-to-r from-emerald-600 to-teal-600 px-4 py-1.5 font-semibold text-white shadow-md border border-emerald-400/30 transition hover:from-emerald-500 hover:to-teal-500">
-                  <Sprout size={15} className="text-amber-300" />
-                  <span>บริการของเรา</span>
-                  <ChevronDown size={14} />
-                </button>
-
-                {/* DROPDOWN MENU */}
-                <div className="absolute right-0 top-full hidden w-64 rounded-xl border border-slate-100 bg-white py-2 text-slate-800 shadow-xl group-hover:block animate-in fade-in slide-in-from-top-2">
-                  <div className="border-b border-slate-100 px-4 py-1.5 text-[10px] font-bold text-slate-400 uppercase tracking-wider">
-                    บริการวิชาการและสถานที่
-                  </div>
-                  <a href="#services-cards" className="flex items-center gap-2.5 px-4 py-2.5 text-xs transition hover:bg-emerald-50 hover:text-emerald-700">
-                    <Building2 size={16} className="text-emerald-600" />
-                    <span>บริการห้องประชุม / ห้องพัก</span>
-                  </a>
-                  <a href="#services-cards" className="flex items-center gap-2.5 px-4 py-2.5 text-xs transition hover:bg-emerald-50 hover:text-emerald-700">
-                    <Package size={16} className="text-emerald-600" />
-                    <span>ผลิตภัณฑ์โครงการ</span>
-                  </a>
-                  <a href="#services-cards" className="flex items-center gap-2.5 px-4 py-2.5 text-xs transition hover:bg-emerald-50 hover:text-emerald-700">
-                    <FileSignature size={16} className="text-emerald-600" />
-                    <span>แบบฟอร์มขอเช่าสถานที่</span>
-                  </a>
-                  <a href="#services-cards" className="flex items-center gap-2.5 px-4 py-2.5 text-xs transition hover:bg-emerald-50 hover:text-emerald-700">
-                    <Trees size={16} className="text-emerald-600" />
-                    <span>บริการพื้นที่เช่าทำการเกษตร</span>
-                  </a>
-                </div>
-              </div>
-
-              {/* SEARCH & CART */}
-              <div className="ml-2 flex items-center gap-2 border-l border-slate-700 pl-3">
-                <div className="hidden items-center gap-2 rounded-xl border border-white/15 bg-white/10 px-3 py-1.5 xl:flex">
-                  <Search size={14} className="text-slate-300" />
-                  <input
-                    value={query}
-                    onChange={(e) => setQuery(e.target.value)}
-                    placeholder="ค้นหา..."
-                    className="w-24 bg-transparent text-xs outline-none placeholder:text-slate-300"
-                  />
-                </div>
-                <CartButton />
-              </div>
-            </nav>
-          </div>
-        </header>
-
-        <main>
-          {/* HERO SLIDER SECTION */}
-          <section className="relative overflow-hidden bg-[#0e2b42] text-white">
-            <div className="relative h-105 sm:h-120 lg:h-130 w-full">
-              {HERO_SLIDES.map((slide, idx) => (
-                <div
-                  key={slide.id}
-                  className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${
-                    idx === currentSlide ? "opacity-100 z-10" : "opacity-0 z-0 pointer-events-none"
-                  }`}
-                >
-                  <div
-                    className="absolute inset-0 bg-cover bg-center"
-                    style={{ backgroundImage: `url('${slide.image}')` }}
-                  >
-                    <div className="absolute inset-0 bg-linear-to-r from-[#0e2b42] via-[#0e2b42]/80 to-transparent" />
-                  </div>
-
-                  <div className="relative mx-auto flex h-full max-w-7xl items-center px-4 lg:px-8">
-                    <div className="max-w-2xl">
-                      <span className="inline-flex items-center gap-2 rounded-full border border-[#F2A900]/50 bg-[#F2A900]/15 px-3 py-1 text-[10px] font-bold tracking-widest text-[#F2A900]">
-                        <span className="h-1.5 w-1.5 rounded-full bg-[#F2A900]" /> {slide.badge}
-                      </span>
-                      <h1 className="mt-4 text-3xl font-bold leading-tight sm:text-4xl md:text-5xl">
-                        {slide.title}
-                      </h1>
-                      <p className="mt-4 text-xs leading-relaxed text-slate-300 sm:text-sm md:text-base">
-                        {slide.subtitle}
-                      </p>
-                      <div className="mt-6 flex flex-wrap gap-3">
-                        <a
-                          href={slide.buttonLink}
-                          className="inline-flex items-center gap-2 rounded-xl bg-[#F2A900] px-5 py-2.5 text-xs font-bold text-[#002D62] transition hover:-translate-y-0.5"
-                        >
-                          {slide.buttonText} <ArrowUpRight size={15} />
-                        </a>
-                      </div>
-                    </div>
+            {/* RIGHT SECTION: Navigation & Utilities */}
+            <div className="flex items-center gap-3 sm:gap-6">
+              <nav className="hidden items-center gap-5 text-xs font-semibold md:flex">
+                <a href="#overview" className="flex items-center gap-1 text-[#F2A900] transition hover:opacity-80">
+                  <House size={14} /> หน้าแรก
+                </a>
+                <a href="#about" className="flex items-center gap-1 text-white/90 transition hover:text-[#F2A900]">
+                  <Info size={14} /> เกี่ยวกับเรา
+                </a>
+                <a href="#projects" className="flex items-center gap-1 text-white/90 transition hover:text-[#F2A900]">
+                  <Users size={14} /> โครงการเพื่อสังคม
+                </a>
+                <a href="#learning" className="flex items-center gap-1 text-white/90 transition hover:text-[#F2A900]">
+                  <GraduationCap size={14} /> ศูนย์การเรียนรู้
+                </a>
+                <a href="#activities" className="flex items-center gap-1 text-white/90 transition hover:text-[#F2A900]">
+                  <CalendarDays size={14} /> กิจกรรม
+                </a>
+                
+                <div className="group relative">
+                  <button className="flex items-center gap-1 rounded-full bg-[#00A86B] px-3.5 py-1.5 text-xs font-bold text-white transition hover:bg-[#008f5b]">
+                    <Sprout size={14} /> บริการของเรา <ChevronDown size={13} />
+                  </button>
+                  <div className="absolute right-0 top-full hidden w-52 rounded-xl border border-slate-100 bg-white p-2 text-slate-700 shadow-xl group-hover:block">
+                    {serviceCards.map((s) => (
+                      <a key={s.id} href={`#${s.id}`} className="block rounded-lg px-3 py-2 text-xs font-medium hover:bg-slate-100">
+                        {s.title}
+                      </a>
+                    ))}
                   </div>
                 </div>
-              ))}
-            </div>
+              </nav>
 
-            {/* SLIDE ARROW BUTTONS */}
-            <button
-              onClick={prevSlide}
-              className="absolute left-4 top-1/2 z-20 -translate-y-1/2 rounded-full bg-black/40 p-2.5 text-white backdrop-blur-md transition hover:bg-black/70"
-            >
-              <ChevronLeft size={20} />
-            </button>
-            <button
-              onClick={nextSlide}
-              className="absolute right-4 top-1/2 z-20 -translate-y-1/2 rounded-full bg-black/40 p-2.5 text-white backdrop-blur-md transition hover:bg-black/70"
-            >
-              <ChevronRight size={20} />
-            </button>
-
-            {/* SLIDE DOT INDICATORS */}
-            <div className="absolute bottom-4 left-1/2 z-20 flex -translate-x-1/2 gap-2">
-              {HERO_SLIDES.map((_, idx) => (
-                <button
-                  key={idx}
-                  onClick={() => setCurrentSlide(idx)}
-                  className={`h-2 rounded-full transition-all ${
-                    idx === currentSlide ? "w-7 bg-[#F2A900]" : "w-2 bg-white/40"
-                  }`}
+              {/* SEARCH BAR */}
+              <div className="relative hidden lg:block">
+                <input
+                  type="text"
+                  placeholder="ค้นหา..."
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
+                  className="w-36 rounded-xl bg-white/10 py-1.5 pl-8 pr-3 text-xs text-white placeholder-white/50 border border-white/20 focus:w-48 focus:bg-white/20 focus:outline-none transition-all duration-300"
                 />
-              ))}
-            </div>
-          </section>
+                <Search size={14} className="absolute left-2.5 top-2 text-white/60" />
+              </div>
 
-          {/* MODULE NAVIGATION CARDS */}
-          <section id="modules" className="relative z-20 mx-auto -mt-10 max-w-7xl px-4 lg:px-8">
-            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
-              {modules.map(({ icon: Icon, ...module }) => (
+              {/* CART BUTTON */}
+              <CartButton />
+            </div>
+
+          </div>
+        </header>
+
+        {/* HERO CAROUSEL */}
+        <section className="relative h-120 overflow-hidden bg-slate-900 sm:h-140">
+          {HERO_SLIDES.map((slide, index) => (
+            <div
+              key={slide.id}
+              className={`absolute inset-0 transition-opacity duration-1000 ${index === currentSlide ? "opacity-100 z-10" : "opacity-0 z-0"}`}
+            >
+              <img src={slide.image} alt={slide.title} className="h-full w-full object-cover" />
+              <div className="absolute inset-0 bg-linear-to-t from-[#0e2b42] via-[#0e2b42]/50 to-transparent" />
+              <div className="absolute inset-0 flex items-center">
+                <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 w-full space-y-4">
+                  <span className="inline-block rounded-full bg-[#e2a021] px-3.5 py-1 text-xs font-bold text-[#0e2b42]">
+                    {slide.badge}
+                  </span>
+                  <h1 className="text-3xl font-extrabold text-white sm:text-5xl lg:text-6xl max-w-2xl leading-tight">
+                    {slide.title}
+                  </h1>
+                  <p className="max-w-xl text-sm text-slate-200 sm:text-base">
+                    {slide.subtitle}
+                  </p>
+                  {slide.buttonText && (
+                    <a
+                      href={slide.buttonLink}
+                      className="inline-flex items-center gap-2 rounded-xl bg-[#e2a021] px-5 py-2.5 text-xs font-bold text-[#0e2b42] transition hover:bg-amber-400"
+                    >
+                      {slide.buttonText} <ArrowUpRight size={15} />
+                    </a>
+                  )}
+                </div>
+              </div>
+            </div>
+          ))}
+
+          {/* SLIDE NAVIGATION CONTROLS */}
+          <button
+            onClick={prevSlide}
+            className="absolute left-4 top-1/2 z-20 -translate-y-1/2 rounded-full bg-black/30 p-2 text-white backdrop-blur-md transition hover:bg-black/60"
+            aria-label="Previous Slide"
+          >
+            <ChevronLeft size={20} />
+          </button>
+          <button
+            onClick={nextSlide}
+            className="absolute right-4 top-1/2 z-20 -translate-y-1/2 rounded-full bg-black/30 p-2 text-white backdrop-blur-md transition hover:bg-black/60"
+            aria-label="Next Slide"
+          >
+            <ChevronRight size={20} />
+          </button>
+        </section>
+
+        {/* 5 MAIN SYSTEM MODULE CARDS */}
+        <section className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8 -mt-16 relative z-30">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">
+            {modules.map((m) => {
+              const Icon = m.icon;
+              return (
                 <a
-                  key={module.title}
-                  href={module.href}
-                  className={`group rounded-2xl ${module.tone} p-4 text-white shadow-xl transition hover:-translate-y-1`}
+                  key={m.label}
+                  href={m.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={`${m.tone} group relative overflow-hidden rounded-2xl p-5 text-white shadow-lg transition duration-300 hover:-translate-y-1 hover:shadow-xl`}
                 >
                   <div className="flex items-center justify-between">
-                    <Icon size={21} />
-                    <ArrowUpRight size={16} className="opacity-60 transition group-hover:opacity-100" />
+                    <Icon size={22} />
+                    <ArrowUpRight size={16} className="opacity-70 transition group-hover:translate-x-0.5 group-hover:-translate-y-0.5 group-hover:opacity-100" />
                   </div>
-                  <p className="mt-5 text-[9px] font-bold tracking-[.18em] text-white/60">{module.label}</p>
-                  <h2 className="mt-1 text-sm font-bold">{module.title}</h2>
-                  <p className="mt-1 text-[11px] leading-5 text-white/75">{module.description}</p>
+                  <span className="mt-4 block text-[10px] font-bold uppercase tracking-wider opacity-80">{m.label}</span>
+                  <h3 className="mt-1 text-base font-bold">{m.title}</h3>
+                  <p className="mt-1 text-xs opacity-90 leading-relaxed">{m.description}</p>
                 </a>
+              );
+            })}
+          </div>
+        </section>
+
+        {/* MAIN SERVICES SECTION */}
+        <section id="services-cards" className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8 space-y-8">
+          <div className="text-center space-y-2">
+            <h2 className="text-2xl font-bold text-[#002D62] sm:text-3xl">บริการของเรา</h2>
+            <p className="text-xs text-slate-500 sm:text-sm">บริการเช่าสถานที่ แปลงเกษตรกรรม สินค้าชุมชน และบริการวิชาการเพื่อพัฒนาคุณภาพชีวิต</p>
+          </div>
+
+          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+            {serviceCards.map((card) => {
+              const Icon = card.icon;
+              return (
+                <div key={card.id} className="group flex flex-col justify-between rounded-2xl border border-slate-200 bg-white p-6 shadow-sm transition hover:shadow-md">
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <div className={`rounded-2xl bg-linear-to-br ${card.gradient} p-3.5 text-white shadow-md`}>
+                        <Icon size={24} />
+                      </div>
+                      <span className={`rounded-full border px-2.5 py-1 text-[10px] font-semibold transition ${card.badgeBg}`}>
+                        {card.tag}
+                      </span>
+                    </div>
+                    <h3 className="text-base font-bold text-[#002D62]">{card.title}</h3>
+                    <p className="text-xs leading-relaxed text-slate-500">{card.desc}</p>
+                  </div>
+                  <button className="mt-6 flex items-center justify-center gap-1.5 rounded-xl border border-slate-200 py-2 text-xs font-bold text-[#002D62] transition hover:bg-slate-50">
+                    เข้าดูบริการ <ArrowUpRight size={14} />
+                  </button>
+                </div>
+              );
+            })}
+          </div>
+        </section>
+
+        {/* TELEMETRY / IOT MONITORING */}
+        <section id="farm" className="bg-slate-100/60 py-12">
+          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 space-y-6">
+            <div className="flex flex-col justify-between gap-2 sm:flex-row sm:items-end">
+              <div>
+                <span className="text-xs font-bold uppercase tracking-wider text-[#2E7D32]">SMART FARM // LIVE TELEMETRY</span>
+                <h2 className="text-xl font-bold text-[#002D62] sm:text-2xl">สถานะแปลงสาธิตวันนี้</h2>
+              </div>
+              <span className="text-xs font-medium text-slate-500">อัปเดตล่าสุด: เมื่อครู่นี้ (เรียลไทม์)</span>
+            </div>
+
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+              <Telemetry icon={Droplets} label="ความชื้นในดิน (แปลง 1)" value="42" unit="%" status="ปกติ" color="bg-blue-50 text-blue-600" />
+              <Telemetry icon={Thermometer} label="อุณหภูมิอากาศ" value="31.5" unit="°C" status="ปกติ" color="bg-amber-50 text-amber-600" />
+              <Telemetry icon={Sun} label="ความเข้มแสง Solar" value="845" unit="W/m²" status="แสงแดดจัด" color="bg-orange-50 text-orange-600" />
+              <Telemetry icon={Zap} label="กำลังไฟฟ้าที่ผลิตได้" value="4.2" unit="kW" status="ปกติ" color="bg-emerald-50 text-emerald-600" />
+            </div>
+          </div>
+        </section>
+
+        {/* 3D SITE LAYOUT SECTION */}
+        <SiteLayout3D />
+
+        {/* EV CHARGING BOOKING SECTION */}
+        <EVBookingSection />
+
+        {/* MARKETPLACE PREVIEW */}
+        <section className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8 space-y-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <span className="text-xs font-bold uppercase tracking-wider text-[#1b8a43]">FRESH MARKET</span>
+              <h2 className="text-xl font-bold text-[#002D62] sm:text-2xl">ผลผลิตแนะนำจากแปลงวิจัย</h2>
+            </div>
+            <a href="https://mulp-farm-fresh-market.vercel.app" target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 text-xs font-bold text-[#2E7D32] hover:underline">
+              ดูสินค้าทั้งหมด <ChevronRight size={14} />
+            </a>
+          </div>
+
+          <div className="grid grid-cols-1 gap-6 sm:grid-cols-3">
+            {products.map((p) => (
+              <MarketCard key={p.id} product={p} />
+            ))}
+          </div>
+        </section>
+
+        {/* KNOWLEDGE BASE SECTION */}
+        <section id="learning" className="bg-slate-100/80 py-12">
+          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 space-y-6">
+            <h2 className="text-xl font-bold text-[#002D62] sm:text-2xl">องค์ความรู้และงานวิจัย</h2>
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+              {filteredKnowledge.map((k, i) => (
+                <div key={i} className="flex flex-col justify-between rounded-2xl bg-white p-5 shadow-sm border border-slate-200">
+                  <div className="space-y-2">
+                    <span className={`text-[10px] font-bold uppercase tracking-wider ${k.color}`}>{k.type}</span>
+                    <h3 className="text-sm font-bold text-[#002D62] leading-snug">{k.title}</h3>
+                  </div>
+                  <div className="mt-4 flex items-center justify-between text-xs text-slate-400">
+                    <span>{k.meta}</span>
+                    <ArrowUpRight size={14} className="text-slate-600" />
+                  </div>
+                </div>
               ))}
             </div>
-          </section>
+          </div>
+        </section>
 
-          {/* FEATURED SECTION: "บริการของเรา" */}
-          <section id="services-cards" className="mx-auto max-w-7xl px-4 py-16 lg:px-8">
-            <div className="mx-auto max-w-3xl text-center">
-              <span className="rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700">
-                SERVICE HIGHLIGHTS
-              </span>
-              <h2 className="mt-3 text-3xl font-bold text-slate-900 sm:text-4xl">
-                บริการของเรา
-              </h2>
-              <div className="mx-auto mt-2 h-1 w-16 rounded-full bg-linear-to-r from-emerald-500 to-amber-500" />
-              <p className="mt-3 text-sm text-slate-600">
-                บริการเช่าสถานที่ แปลงเกษตรกรรม สินค้าชุมชน และบริการวิชาการเพื่อพัฒนาคุณภาพชีวิต
-              </p>
-            </div>
-
-            <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-              {serviceCards.map((srv) => {
-                const IconComp = srv.icon;
-                return (
-                  <div
-                    key={srv.id}
-                    className="group flex flex-col justify-between overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl"
-                  >
-                    <div>
-                      {/* CARD TOP BANNER */}
-                      <div className={`relative flex h-36 items-center justify-center bg-linear-to-br ${srv.gradient}`}>
-                        <IconComp size={56} className="text-white/80 transition-transform duration-300 group-hover:scale-110" />
-                        <span className="absolute top-3 right-3 rounded-full bg-white/95 px-2.5 py-0.5 text-[10px] font-bold text-slate-800 shadow-sm">
-                          {srv.tag}
-                        </span>
-                      </div>
-
-                      {/* CARD CONTENT */}
-                      <div className="p-5">
-                        <h3 className="text-base font-bold text-slate-800 transition-colors group-hover:text-emerald-700">
-                          {srv.title}
-                        </h3>
-                        <p className="mt-2 text-xs leading-relaxed text-slate-500">
-                          {srv.desc}
-                        </p>
-                      </div>
-                    </div>
-
-                    {/* CARD FOOTER BUTTON */}
-                    <div className="p-5 pt-0">
-                      <button
-                        onClick={() => toast.info(`เปิดหน้ารายละเอียด: ${srv.title}`)}
-                        className={`flex w-full items-center justify-center gap-1.5 rounded-xl border py-2 text-xs font-semibold transition-all ${srv.badgeBg}`}
-                      >
-                        <span>เข้าดูบริการ</span>
-                        <ArrowUpRight size={14} />
-                      </button>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </section>
-
-          {/* SMART FARM LIVE TELEMETRY */}
-          <section id="farm" className="bg-slate-100/70 py-16 border-y border-slate-200">
-            <div className="mx-auto max-w-7xl px-4 lg:px-8">
-              <div className="flex flex-col justify-between gap-4 md:flex-row md:items-end">
-                <div>
-                  <p className="text-[10px] font-bold tracking-[.2em] text-[#2E7D32]">SMART FARM / LIVE TELEMETRY</p>
-                  <h2 className="mt-2 text-2xl font-bold text-[#002D62] md:text-3xl">สถานะแปลงสาธิตวันนี้</h2>
-                  <p className="mt-2 text-sm text-slate-500">ข้อมูลจากเซนเซอร์แปลงเกษตรอัจฉริยะ อัปเดตทุก 5 นาที</p>
-                </div>
-                <RouterLink to="/smart-farm" className="flex items-center gap-1 text-xs font-bold text-[#002D62]">
-                  ดูแดชบอร์ดเต็ม <ChevronRight size={16} />
-                </RouterLink>
-              </div>
-              <div className="mt-7 grid gap-4 sm:grid-cols-3">
-                <Telemetry icon={Droplets} label="ความชื้นในดิน" value="61" unit="%" status="Ready" color="bg-green-50 text-[#2E7D32]" />
-                <Telemetry icon={Thermometer} label="อุณหภูมิ" value="25.8" unit="°C" status="Normal" color="bg-amber-50 text-[#9b6a00]" />
-                <Telemetry icon={CloudSun} label="ความชื้นสัมพัทธ์" value="68" unit="%" status="Normal" color="bg-blue-50 text-[#002D62]" />
-              </div>
-            </div>
-          </section>
-          {/* SITE LAYOUT & 3D MAP SECTION */}
-          <SiteLayout3D />
-
-          {/* วางระบบจอง EV ตรงนี้ */}
-          <EVBookingSection />
-
-          {/* CLEAN ENERGY ANALYTICS */}
-          <section className="bg-white">
-            <div className="mx-auto grid max-w-7xl gap-6 px-4 py-12 lg:grid-cols-[1.2fr_.8fr] lg:px-8">
-              <div>
-                <p className="text-[10px] font-bold tracking-[.2em] text-[#9b6a00]">CLEAN ENERGY ANALYTICS</p>
-                <h2 className="mt-2 text-2xl font-bold text-[#002D62]">พลังงานสะอาดที่สร้างผลลัพธ์</h2>
-                <p className="mt-2 max-w-lg text-sm leading-6 text-slate-500">
-                  ติดตามพลังงานจากแสงอาทิตย์และผลกระทบเชิงบวกต่อสิ่งแวดล้อมแบบโปร่งใส
-                </p>
-                <RouterLink to="/clean-energy" className="mt-5 inline-flex items-center gap-2 rounded-xl bg-[#002D62] px-4 py-2.5 text-xs font-bold text-white">
-                  เปิด Energy dashboard <ArrowUpRight size={14} />
-                </RouterLink>
-              </div>
-              <div className="grid grid-cols-2 gap-3">
-                <div className="rounded-2xl bg-amber-50 p-4">
-                  <Sun className="text-[#F2A900]" size={20} />
-                  <p className="mt-4 text-xs text-slate-500">ผลิตไฟฟ้าวันนี้</p>
-                  <p className="mt-1 text-2xl font-bold text-[#002D62]">42.8 <small className="text-xs">kWh</small></p>
-                </div>
-                <div className="rounded-2xl bg-green-50 p-4">
-                  <Leaf className="text-[#2E7D32]" size={20} />
-                  <p className="mt-4 text-xs text-slate-500">ลด CO₂ สะสม</p>
-                  <p className="mt-1 text-2xl font-bold text-[#2E7D32]">1.24 <small className="text-xs">tCO₂e</small></p>
-                </div>
-              </div>
-            </div>
-          </section>
-
-          {/* MARKETPLACE SECTION */}
-          <section id="market" className="bg-slate-50 border-t border-slate-200 py-16">
-            <div className="mx-auto max-w-7xl px-4 lg:px-8">
-              <div className="flex flex-col justify-between gap-4 md:flex-row md:items-end">
-                <div>
-                  <p className="text-[10px] font-bold tracking-[.2em] text-[#2E7D32]">SHOPPING VEG MARKETPLACE</p>
-                  <h2 className="mt-2 text-2xl font-bold text-[#002D62] md:text-3xl">ผลผลิตจากแปลงวิจัย</h2>
-                  <p className="mt-2 text-sm text-slate-500">สด ปลอดภัย ตรวจสอบย้อนกลับได้ด้วย IoT</p>
-                </div>
-                <button onClick={() => toast.info("กำลังเปิดดูผลผลิตทั้งหมด")} className="flex items-center gap-1 text-xs font-bold text-[#002D62]">
-                  ดูสินค้าทั้งหมด <ChevronRight size={16} />
-                </button>
-              </div>
-              <div className="mt-7 grid gap-5 md:grid-cols-3">
-                {products.map((product) => (
-                  <MarketCard key={product.id} product={product} />
-                ))}
-              </div>
-            </div>
-          </section>
-
-          {/* KNOWLEDGE REPOSITORY */}
-          <section id="knowledge" className="bg-white py-16">
-            <div className="mx-auto max-w-7xl px-4 lg:px-8">
-              <div className="flex flex-col justify-between gap-4 md:flex-row md:items-end">
-                <div>
-                  <p className="text-[10px] font-bold tracking-[.2em] text-[#002D62]">KNOWLEDGE REPOSITORY</p>
-                  <h2 className="mt-2 text-2xl font-bold text-[#002D62] md:text-3xl">ห้องคลังความรู้</h2>
-                  <p className="mt-2 text-sm text-slate-500">ข้อมูลสำหรับการเรียนรู้ วิจัย และต่อยอดชุมชน</p>
-                </div>
-                <div className="flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2">
-                  <Search size={15} className="text-slate-400" />
-                  <input
-                    value={query}
-                    onChange={(e) => setQuery(e.target.value)}
-                    placeholder="ค้นหาเอกสาร..."
-                    className="w-40 bg-transparent text-xs outline-none"
-                  />
-                </div>
-              </div>
-              <div className="mt-7 grid gap-4 lg:grid-cols-3">
-                {filteredKnowledge.map((item) => (
-                  <article key={item.title} className="rounded-2xl border border-slate-200 bg-white p-5 transition hover:-translate-y-0.5 hover:shadow-md">
-                    <div className="flex items-center justify-between">
-                      <span className={`text-[10px] font-bold tracking-widest ${item.color}`}>{item.type}</span>
-                      <FileText size={18} className="text-slate-300" />
-                    </div>
-                    <h3 className="mt-8 text-sm font-bold leading-6 text-[#002D62]">{item.title}</h3>
-                    <p className="mt-2 text-[11px] text-slate-500">{item.meta}</p>
-                    <button onClick={() => toast.success("เปิดเอกสารในห้องคลังแล้ว")} className="mt-5 flex items-center gap-1 text-xs font-bold text-[#002D62]">
-                      อ่านเพิ่มเติม <ArrowUpRight size={14} />
-                    </button>
-                  </article>
-                ))}
-              </div>
-            </div>
-          </section>
-
-          {/* PARTNERS SECTION */}
-          <PartnerLogos />
-
-          {/* OVERVIEW SECTIONS */}
-          <section className="bg-slate-100 py-16 border-t border-slate-200">
-            <div className="mx-auto max-w-7xl px-4 lg:px-8">
-              <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-                
-                {/* ABOUT US BOX */}
-                <div id="about" className="rounded-2xl bg-white p-6 shadow-sm border border-slate-200/80">
-                  <div className="flex items-center gap-2 text-base font-bold text-[#002D62]">
-                    <Info size={18} className="text-blue-600" />
-                    <span>เกี่ยวกับเรา</span>
-                  </div>
-                  <p className="mt-3 text-xs leading-relaxed text-slate-500">
-                    งานพันธกิจเพื่อสังคม ทำหน้าที่เชื่อมโยงองค์ความรู้ด้านสิ่งแวดล้อมสู่การปฏิบัติจริงในพื้นที่ จ.ลำปาง และภาคเหนือ
-                  </p>
-                </div>
-
-                {/* SOCIAL PROJECTS BOX */}
-                <div id="social-projects" className="rounded-2xl bg-white p-6 shadow-sm border border-slate-200/80">
-                  <div className="flex items-center gap-2 text-base font-bold text-[#002D62]">
-                    <Users size={18} className="text-emerald-600" />
-                    <span>โครงการเพื่อสังคม</span>
-                  </div>
-                  <p className="mt-3 text-xs leading-relaxed text-slate-500">
-                    รวบรวมโครงการพัฒนาคุณภาพชีวิต โครงการอนุรักษ์ทรัพยากรธรรมชาติ และกิจกรรมเพื่อชุมชนอย่างยั่งยืน
-                  </p>
-                </div>
-
-                {/* LEARNING CENTER BOX */}
-                <div id="learning-center" className="rounded-2xl bg-white p-6 shadow-sm border border-slate-200/80">
-                  <div className="flex items-center gap-2 text-base font-bold text-[#002D62]">
-                    <GraduationCap size={18} className="text-amber-600" />
-                    <span>ศูนย์การเรียนรู้</span>
-                  </div>
-                  <p className="mt-3 text-xs leading-relaxed text-slate-500">
-                    คลังความรู้ นิทรรศการ และศูนย์อบรมถ่ายทอดเทคโนโลยีด้านการจัดการสิ่งแวดล้อมและเกษตรอัจฉริยะ
-                  </p>
-                </div>
-
-                {/* ACTIVITIES BOX */}
-                <div id="activities" className="rounded-2xl bg-white p-6 shadow-sm border border-slate-200/80">
-                  <div className="flex items-center gap-2 text-base font-bold text-[#002D62]">
-                    <CalendarDays size={18} className="text-teal-600" />
-                    <span>กิจกรรม</span>
-                  </div>
-                  <p className="mt-3 text-xs leading-relaxed text-slate-500">
-                    ข่าวสารกิจกรรม สัมมนา อบรมเชิงปฏิบัติการ และความเคลื่อนไหวล่าสุดของงานพันธกิจเพื่อสังคม
-                  </p>
-                </div>
-
-              </div>
-            </div>
-          </section>
-        </main>
+        {/* PARTNER LOGOS SECTION */}
+        <PartnerLogos />
 
         {/* FOOTER */}
-        <footer className="bg-[#0e2b42] text-blue-100 border-t border-slate-800">
-          <div className="mx-auto grid max-w-7xl gap-8 px-4 py-10 md:grid-cols-[1.5fr_1fr_1fr] lg:px-8">
-            <div>
-              <div className="flex items-center gap-3">
-                <img src="/mahidol-logo.png" alt="Mahidol University" className="h-9 w-9 rounded bg-white p-1" />
-                <p className="font-bold text-white">Mahidol Lampang Hub</p>
-              </div>
-              <p className="mt-4 max-w-sm text-xs leading-6 text-slate-300">
-                งานพันธกิจเพื่อสังคม สำนักงานวิจัยและวิทยาบริการ คณะสิ่งแวดล้อมและทรัพยากรศาสตร์ มหาวิทยาลัยมหิดล อำเภอสบปราบ จังหวัดลำปาง
-              </p>
-            </div>
-            <div>
-              <p className="text-xs font-bold text-[#F2A900]">เมนูด่วน</p>
-              <a href="#about" className="mt-3 block text-xs hover:text-white">เกี่ยวกับเรา</a>
-              <a href="#services-cards" className="mt-2 block text-xs hover:text-white">บริการของเรา</a>
-              <a href="#knowledge" className="mt-2 block text-xs hover:text-white">ห้องคลังความรู้</a>
-              <a href="#market" className="mt-2 block text-xs hover:text-white">ตลาดผักมหิดล</a>
-            </div>
-            <div>
-              <p className="text-xs font-bold text-[#F2A900]">SYSTEM STATUS</p>
-              <p className="mt-4 flex items-center gap-2 text-xs">
-                <span className="h-2 w-2 rounded-full bg-[#7bd67f]" /> All systems operational
-              </p>
-              <p className="mt-3 text-xs text-slate-400">© 2026 Mahidol University. All Rights Reserved.</p>
-            </div>
+        <footer className="border-t border-slate-800 bg-[#0a1e2f] py-8 text-slate-400 text-xs">
+          <div className="mx-auto max-w-7xl px-4 text-center sm:px-6 lg:px-8 space-y-2">
+            <p className="font-medium text-slate-300">
+              © 2026 งานพันธกิจเพื่อสังคม คณะสิ่งแวดล้อมและทรัพยากรศาสตร์ มหาวิทยาลัยมหิดล จังหวัดลำปาง
+            </p>
+            <p className="text-slate-500">
+              Mahidol Lampang Portal · Powered by React, TypeScript & Tailwind CSS
+            </p>
           </div>
         </footer>
 
+        {/* CART DRAWER SLIDE-OVER */}
         <CartDrawer />
+
       </div>
     </CartProvider>
   );
