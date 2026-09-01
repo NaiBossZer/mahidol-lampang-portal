@@ -230,24 +230,8 @@ export function MahidolLampangHub() {
         <header className="sticky top-0 z-50 bg-[#0e2b42] text-white shadow-md border-b-4 border-[#e2a021]">
           <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 lg:px-8">
             
-            {/* LEFT LOGO & TITLE SECTION */}
             <div className="flex items-center gap-3 sm:gap-4 shrink-0">
               <div className="flex items-center gap-2">
-                
-                {/* LOGO 1: Mahidol */}
-                <div className="bg-white p-1 rounded-lg h-9 sm:h-11 flex items-center justify-center shrink-0 shadow-sm">
-                  <img 
-                    src="/mahidol-logo.png" 
-                    alt="Mahidol University Logo" 
-                    className="h-full object-contain"
-                    onError={(e) => {
-                      e.currentTarget.style.display = 'none';
-                      e.currentTarget.parentElement!.innerText = '🏛️ Mahidol';
-                    }}
-                  />
-                </div>
-
-                {/* LOGO 2: Envi */}
                 <div className="bg-white p-1 rounded-lg h-9 sm:h-11 flex items-center justify-center shrink-0 shadow-sm">
                   <img 
                     src="/envi-logo.jpg" 
@@ -260,7 +244,18 @@ export function MahidolLampangHub() {
                   />
                 </div>
 
-                {/* LOGO 3: Social Engagement */}
+                <div className="bg-white p-1 rounded-lg h-9 sm:h-11 flex items-center justify-center shrink-0 shadow-sm">
+                  <img 
+                    src="/mahidol-logo.png" 
+                    alt="Mahidol University Logo" 
+                    className="h-full object-contain"
+                    onError={(e) => {
+                      e.currentTarget.style.display = 'none';
+                      e.currentTarget.parentElement!.innerText = '🏛️ Mahidol';
+                    }}
+                  />
+                </div>
+
                 <div className="bg-white p-1 rounded-lg h-9 sm:h-11 flex items-center justify-center shrink-0 shadow-sm">
                   <img 
                     src="/social-engagement-logo.png" 
@@ -272,9 +267,21 @@ export function MahidolLampangHub() {
                     }}
                   />
                 </div>
+              </div>
 
+              <div className="w-px h-8 sm:h-10 bg-white/20 shrink-0 hidden sm:block"></div>
+
+              <div className="hidden sm:block">
+                <span className="text-xs sm:text-sm font-semibold tracking-tight text-white block leading-snug">
+                  งานพันธกิจเพื่อสังคม สำนักงานวิจัยและวิทยบริการ
+                </span>
+                <span className="text-[10px] sm:text-xs font-medium text-[#F5B800] block leading-tight mt-0.5">
+                  คณะสิ่งแวดล้อมและทรัพยากรศาสตร์ มหาวิทยาลัยมหิดล จังหวัดลำปาง
+                </span>
               </div>
             </div>
+
+            
 
             {/* คุณสามารถใส่องค์ประกอบด้านขวา เช่น เมนูหรือปุ่ม ค้นหา ตรงนี้ */}
 
