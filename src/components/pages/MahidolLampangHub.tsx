@@ -32,6 +32,7 @@ import { CartProvider } from "../storefront/CartContext";
 import { useCart } from "../storefront/useCart";
 import { CartDrawer } from "../storefront/CartDrawer";
 import { MOCK_PRODUCTS, type Product } from "../storefront/mockData";
+import { EVBookingSection } from "../EVBookingSection";
 
 // ข้อมูล 6 ภาพสไลด์แบนเนอร์
 const HERO_SLIDES = [
