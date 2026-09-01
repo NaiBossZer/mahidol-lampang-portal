@@ -38,16 +38,14 @@ import { EVBookingSection } from "../EVBookingSection";
 const HERO_SLIDES = [
   {
     id: 1,
-    image: "/Banner 1.jpg",
+    image: "/main banner.jpg",
     badge: "MAHIDOL SMART FARM HUB",
     title: "งานพันธกิจเพื่อสังคม",
     subtitle: "คณะสิ่งแวดล้อมและทรัพยากรศาสตร์ มหาวิทยาลัยมหิดล อ.สบปราบ จ.ลำปาง",
-    buttonText: "สำรวจแปลงเกษตร 3 มิติ",
-    buttonLink: "#market",
   },
   {
     id: 2,
-    image: "/Banner 2.jpg",
+    image: "/banner2.jpg",
     badge: "ZONE 01 // SOIL MOISTURE IOT",
     title: "เซนเซอร์วัดความชื้นดิน",
     subtitle: "ตรวจวัดความชื้นในดินแบบเรียลไทม์ด้วยเซนเซอร์ IoT ทั่วแปลงสาธิต เพื่อการรดน้ำที่แม่นยำ",
@@ -56,7 +54,7 @@ const HERO_SLIDES = [
   },
   {
     id: 3,
-    image: "/Banner 3.jpg",
+    image: "/banner3.jpg",
     badge: "ZONE 02 // WEATHER STATION",
     title: "สถานีตรวจวัดสภาพอากาศ",
     subtitle: "บันทึกอุณหภูมิ ความชื้นอากาศ และปริมาณน้ำฝนตลอด 24 ชั่วโมง เพื่อวางแผนการเพาะปลูก",
@@ -65,7 +63,7 @@ const HERO_SLIDES = [
   },
   {
     id: 4,
-    image: "/Banner 4.jpg",
+    image: "/banner4.jpg",
     badge: "ZONE 03 // AUTO IRRIGATION",
     title: "ระบบรดน้ำอัตโนมัติ",
     subtitle: "วาล์วน้ำอัจฉริยะสั่งงานอัตโนมัติตามค่าความชื้นดิน ลดการใช้น้ำและแรงงานในแปลงสาธิต",
@@ -74,7 +72,7 @@ const HERO_SLIDES = [
   },
   {
     id: 5,
-    image: "/Banner 5.jpg",
+    image: "/banner5.jpg",
     badge: "ZONE 04 // DIGITAL TWIN 3D",
     title: "โมเดลแปลงเกษตร 3 มิติ",
     subtitle: "สำรวจโครงสร้างแปลงสาธิตและตำแหน่งเซนเซอร์แบบ 360 องศาผ่านโมเดล 3 มิติเสมือนจริง",
@@ -83,7 +81,7 @@ const HERO_SLIDES = [
   },
   {
     id: 6,
-    image: "/Banner 6.jpg",
+    image: "/banner6.jpg",
     badge: "ZONE 05 // REALTIME DASHBOARD",
     title: "แดชบอร์ดและการแจ้งเตือน",
     subtitle: "ติดตามค่าจากเซนเซอร์ทุกจุดและรับการแจ้งเตือนทันทีเมื่อค่าความชื้นหรืออุณหภูมิผิดปกติ",
