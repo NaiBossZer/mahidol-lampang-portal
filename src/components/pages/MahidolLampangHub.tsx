@@ -34,6 +34,7 @@ import { useCart } from "../storefront/useCart";
 import { CartDrawer } from "../storefront/CartDrawer";
 import { MOCK_PRODUCTS, type Product } from "../storefront/mockData";
 import { EVBookingSection } from "../EVBookingSection";
+import PartnerLogos from '../PartnerLogos';
 
 // ข้อมูล 6 ภาพสไลด์แบนเนอร์
 const HERO_SLIDES = [
@@ -610,6 +611,9 @@ export function MahidolLampangHub() {
               </div>
             </div>
           </section>
+
+          {/* PARTNERS SECTION */}
+          <PartnerLogos />
 
           {/* OVERVIEW SECTIONS */}
           <section className="bg-slate-100 py-16 border-t border-slate-200">
