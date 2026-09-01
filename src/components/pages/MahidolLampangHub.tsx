@@ -42,18 +42,18 @@ const HERO_SLIDES = [
   {
     id: 1,
     image: "/main banner.jpg",
-    badge: "MAHIDOL SMART FARM HUB",
+    badge: "MAHIDOL HUB",
     title: "งานพันธกิจเพื่อสังคม",
     subtitle: "คณะสิ่งแวดล้อมและทรัพยากรศาสตร์ มหาวิทยาลัยมหิดล อ.สบปราบ จ.ลำปาง",
   },
   {
     id: 2,
     image: "/Shellac banner.jpg",
-    badge: "ZONE 01 // SOIL MOISTURE IOT",
+    badge: "ZONE 01 // COMPREHENSIVE SHELLAC LEARNING CENTER",
     title: "ห้องครั่งครบวงจร",
-    subtitle: "ตรวจวัดความชื้นในดินแบบเรียลไทม์ด้วยเซนเซอร์ IoT ทั่วแปลงสาธิต เพื่อการรดน้ำที่แม่นยำ",
-    buttonText: "ดูข้อมูลความชื้นดิน",
-    buttonLink: "#farm",
+    subtitle: "กำเนิดครั่ง มหัศจรรย์วงจรชีวิตของแมลงครั่งและการแปรรูปครั่งสู่ผลิตภัณฑ์สร้างมูลค่า",
+    buttonText: "เข้าสู่ห้องเรียนรู้ครั่ง",
+    buttonLink: "https://mahidol-shellac.vercel.app/",
   },
   {
     id: 3,
@@ -62,34 +62,16 @@ const HERO_SLIDES = [
     title: "โรงเรือนเกษตรอัจฉริยะ",
     subtitle: "บันทึกอุณหภูมิ ความชื้นอากาศและปริมาณน้ำฝนตลอด 24 ชั่วโมง เพื่อวางแผนการเพาะปลูก",
     buttonText: "ดูข้อมูลสภาพอากาศ",
-    buttonLink: "#farm",
+    buttonLink: "https://mahidol-smart-farm.vercel.app/",
   },
   {
     id: 4,
-    image: "/banner4.jpg",
-    badge: "ZONE 03 // AUTO IRRIGATION",
-    title: "ระบบรดน้ำอัตโนมัติ",
-    subtitle: "วาล์วน้ำอัจฉริยะสั่งงานอัตโนมัติตามค่าความชื้นดิน ลดการใช้น้ำและแรงงานในแปลงสาธิต",
-    buttonText: "ดูระบบรดน้ำอัตโนมัติ",
-    buttonLink: "#farm",
-  },
-  {
-    id: 5,
-    image: "/banner5.jpg",
-    badge: "ZONE 04 // DIGITAL TWIN 3D",
-    title: "โมเดลแปลงเกษตร 3 มิติ",
-    subtitle: "สำรวจโครงสร้างแปลงสาธิตและตำแหน่งเซนเซอร์แบบ 360 องศาผ่านโมเดล 3 มิติเสมือนจริง",
-    buttonText: "หมุนดูโมเดล 3 มิติ",
-    buttonLink: "#farm",
-  },
-  {
-    id: 6,
-    image: "/banner6.jpg",
-    badge: "ZONE 05 // REALTIME DASHBOARD",
-    title: "แดชบอร์ดและการแจ้งเตือน",
-    subtitle: "ติดตามค่าจากเซนเซอร์ทุกจุดและรับการแจ้งเตือนทันทีเมื่อค่าความชื้นหรืออุณหภูมิผิดปกติ",
-    buttonText: "ดูสถิติแบบเรียลไทม์",
-    buttonLink: "#farm",
+    image: "/EVCharger.jpg",
+    badge: "ZONE 03 // EV CHARGER STATION",
+    title: "จุดจอดรถชาร์จไฟฟ้า EV",
+    subtitle: "บริการชาร์จไฟฟ้า EV สำหรับรถยนต์ไฟฟ้า พร้อมระบบจองคิวออนไลน์",
+    buttonText: "เข้าสู่ระบบจัดการพลังงานแสงอาทิตย์",
+    buttonLink: "https://mahidol-clean-energy.vercel.app/",
   },
 ];
 
@@ -291,9 +273,6 @@ export function MahidolLampangHub() {
             {/* RIGHT SECTION: Navigation & Utilities */}
             <div className="flex items-center gap-3 sm:gap-6">
               <nav className="hidden items-center gap-5 text-xs font-semibold md:flex">
-                <a href="#overview" className="flex items-center gap-1 text-[#F2A900] transition hover:opacity-80">
-                  <House size={14} /> หน้าแรก
-                </a>
                 <a href="#about" className="flex items-center gap-1 text-white/90 transition hover:text-[#F2A900]">
                   <Info size={14} /> เกี่ยวกับเรา
                 </a>
@@ -302,9 +281,6 @@ export function MahidolLampangHub() {
                 </a>
                 <a href="#learning" className="flex items-center gap-1 text-white/90 transition hover:text-[#F2A900]">
                   <GraduationCap size={14} /> ศูนย์การเรียนรู้
-                </a>
-                <a href="#activities" className="flex items-center gap-1 text-white/90 transition hover:text-[#F2A900]">
-                  <CalendarDays size={14} /> กิจกรรม
                 </a>
                 
                 <div className="group relative">
