@@ -270,26 +270,50 @@ export function MahidolLampangHub() {
 
             </div>
 
-            {/* RIGHT SECTION: Navigation & Utilities */}
-            <div className="flex items-center gap-3 sm:gap-6">
-              <nav className="hidden items-center gap-5 text-xs font-semibold md:flex">
-                <a href="#about" className="flex items-center gap-1 text-white/90 transition hover:text-[#F2A900]">
-                  <Info size={14} /> เกี่ยวกับเรา
+{/* RIGHT SECTION: Navigation & Utilities */}
+            <div className="ml-auto flex items-center gap-4 pl-6">
+              <nav className="hidden items-center gap-3 text-xs font-semibold md:flex">
+                <a
+                  href="#about"
+                  className="flex items-center gap-1.5 rounded-full bg-[#00A86B] px-4 py-2 text-xs font-bold text-white shadow-sm transition hover:bg-[#008f5b] hover:shadow"
+                >
+                  <Info size={14} />
+                  <span>เกี่ยวกับเรา</span>
                 </a>
-                <a href="#projects" className="flex items-center gap-1 text-white/90 transition hover:text-[#F2A900]">
-                  <Users size={14} /> โครงการเพื่อสังคม
+
+                <a
+                  href="#projects"
+                  className="flex items-center gap-1.5 rounded-full bg-[#00A86B] px-4 py-2 text-xs font-bold text-white shadow-sm transition hover:bg-[#008f5b] hover:shadow"
+                >
+                  <Users size={14} />
+                  <span>โครงการเพื่อสังคม</span>
                 </a>
-                <a href="#learning" className="flex items-center gap-1 text-white/90 transition hover:text-[#F2A900]">
-                  <GraduationCap size={14} /> ศูนย์การเรียนรู้
+
+                <a
+                  href="#learning"
+                  className="flex items-center gap-1.5 rounded-full bg-[#00A86B] px-4 py-2 text-xs font-bold text-white shadow-sm transition hover:bg-[#008f5b] hover:shadow"
+                >
+                  <GraduationCap size={14} />
+                  <span>ศูนย์การเรียนรู้</span>
                 </a>
-                
+
                 <div className="group relative">
-                  <button className="flex items-center gap-1 rounded-full bg-[#00A86B] px-3.5 py-1.5 text-xs font-bold text-white transition hover:bg-[#008f5b]">
-                    <Sprout size={14} /> บริการของเรา <ChevronDown size={13} />
+                  <button 
+                    type="button"
+                    className="flex items-center gap-1.5 rounded-full bg-[#00A86B] px-4 py-2 text-xs font-bold text-white shadow-sm transition hover:bg-[#008f5b] hover:shadow"
+                  >
+                    <Sprout size={14} />
+                    <span>บริการของเรา</span>
+                    <ChevronDown size={13} className="ml-0.5 transition-transform group-hover:rotate-180" />
                   </button>
-                  <div className="absolute right-0 top-full hidden w-52 rounded-xl border border-slate-100 bg-white p-2 text-slate-700 shadow-xl group-hover:block">
+
+                  <div className="absolute right-0 top-full mt-2 hidden w-56 rounded-xl border border-slate-100 bg-white p-2 text-slate-700 shadow-xl group-hover:block">
                     {serviceCards.map((s) => (
-                      <a key={s.id} href={`#${s.id}`} className="block rounded-lg px-3 py-2 text-xs font-medium hover:bg-slate-100">
+                      <a
+                        key={s.id}
+                        href={`#${s.id}`}
+                        className="block rounded-lg px-3 py-2 text-xs font-medium text-slate-600 transition hover:bg-slate-100 hover:text-[#002D62]"
+                      >
                         {s.title}
                       </a>
                     ))}
