@@ -46,7 +46,7 @@ const HERO_SLIDES = [
   },
   {
     id: 2,
-    image: "/banner2.jpg",
+    image: "/Shellac banner.jpg",
     badge: "ZONE 01 // SOIL MOISTURE IOT",
     title: "เซนเซอร์วัดความชื้นดิน",
     subtitle: "ตรวจวัดความชื้นในดินแบบเรียลไทม์ด้วยเซนเซอร์ IoT ทั่วแปลงสาธิต เพื่อการรดน้ำที่แม่นยำ",
@@ -227,25 +227,44 @@ export function MahidolLampangHub() {
           <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 lg:px-8">
             
 {/* LEFT LOGO & TITLE SECTION */}
-            <a href="#overview" className="flex items-center gap-3">
-              <div className="flex items-center gap-2 rounded-lg bg-white p-1.5 shadow-inner">
-                <img 
-                  src="/mahidol-logo.png" 
-                  alt="Mahidol Logos" 
-                  className="h-10 sm:h-11 object-contain" 
+            <div className="flex items-center gap-3 sm:gap-4 shrink-0">
+              <div className="flex items-center gap-2">
+                <div className="bg-white p-1 rounded-lg h-9 sm:h-11 flex items-center justify-center shrink-0 shadow-sm">
+                  <img 
+                    src="/mahidol-logo.png" 
+                    alt="Mahidol University Logo" 
+                    className="h-full object-contain"
+                    onError={(e) => {
+                      e.currentTarget.style.display = 'none';
+                      e.currentTarget.parentElement!.innerText = '🏛️ Mahidol';
+                    }}
+                  />
+                </div>
+
+                <div className="bg-white p-1 rounded-lg h-9 sm:h-11 flex items-center justify-center shrink-0 shadow-sm">
+                  <img 
+                    src="/envi-logo.jpg" 
+                    alt="Envi Mahidol Logo" 
+                    className="h-full object-contain"
+                    onError={(e) => {
+                      e.currentTarget.style.display = 'none';
+                      e.currentTarget.parentElement!.innerText = '🌍 Envi';
+                    }}
+                  />
+                </div>
                 />
-              <div className="flex items-center gap-2 rounded-lg bg-white p-1.5 shadow-inner"></div>
-                <img 
-                  src="/envi-logo.jpg" 
-                  alt="envi logo" 
-                  className="h-10 sm:h-11 object-contain" 
-                />
-              <div className="flex items-center gap-2 rounded-lg bg-white p-1.5 shadow-inner"></div>
-                <img 
-                  src="/social-engagement-logo.png" 
-                  alt="social engagement logo" 
-                  className="h-10 sm:h-11 object-contain" 
-                />
+
+                <div className="bg-white p-1 rounded-lg h-9 sm:h-11 flex items-center justify-center shrink-0 shadow-sm">
+                  <img 
+                    src="/social-engagement-logo.png" 
+                    alt="Social Engagement Logo" 
+                    className="h-full object-contain"
+                    onError={(e) => {
+                      e.currentTarget.style.display = 'none';
+                      e.currentTarget.parentElement!.innerText = '🤝 Social';
+                    }}
+                  />
+                </div>
               </div>
               
               <div className="h-9 w-px bg-slate-600 hidden sm:block"></div>
