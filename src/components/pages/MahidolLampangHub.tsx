@@ -480,6 +480,8 @@ export function MahidolLampangHub() {
               </div>
             </div>
           </section>
+          {/* SITE LAYOUT & 3D MAP SECTION */}
+          <SiteLayout3D />
 
           {/* วางระบบจอง EV ตรงนี้ */}
           <EVBookingSection />
