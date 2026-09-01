@@ -56,7 +56,7 @@ export default function SiteLayout3D() {
 
           {/* TAB 1: VIDEO DISPLAY */}
           <TabsContent value="video" className="w-full mt-0 focus-visible:outline-none">
-            <div className="relative aspect-video min-h-[240px] w-full overflow-hidden rounded-2xl border border-slate-200 bg-black shadow-xl sm:min-h-0">
+            <div className="relative aspect-video min-h-60 w-full overflow-hidden rounded-2xl border border-slate-200 bg-black shadow-xl sm:min-h-0">
               <video 
                 controls 
                 preload="metadata"
@@ -71,7 +71,7 @@ export default function SiteLayout3D() {
 
           {/* TAB 2: GOOGLE MAP DISPLAY */}
           <TabsContent value="google-map" className="w-full mt-0 focus-visible:outline-none">
-            <div className="relative aspect-video min-h-[300px] w-full overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xl sm:min-h-0">
+            <div className="relative aspect-video min-h-75 w-full overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xl sm:min-h-0">
               <iframe
                 src={GOOGLE_MAP_URL}
                 title="ตำแหน่งศูนย์การเรียนรู้ วิจัย และบริการวิชาการ มหาวิทยาลัยมหิดล ลำปาง"
@@ -84,7 +84,7 @@ export default function SiteLayout3D() {
 
           {/* TAB 3: 3D MAP DISPLAY */}
           <TabsContent value="map" className="w-full mt-0 focus-visible:outline-none">
-            <div className="relative aspect-video min-h-[360px] w-full overflow-hidden rounded-2xl border border-slate-200 bg-slate-900 shadow-xl sm:min-h-0">
+            <div className="relative aspect-video min-h-90 w-full overflow-hidden rounded-2xl border border-slate-200 bg-slate-900 shadow-xl sm:min-h-0">
               <Map3DViewer modelUrl={ACTIVE_MODEL_URL} />
             </div>
           </TabsContent>

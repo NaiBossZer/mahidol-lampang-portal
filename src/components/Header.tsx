@@ -13,7 +13,7 @@ import { Leaf, Zap, FlaskConical, ShoppingCart, Home } from 'lucide-react';
 
 export const Header = () => {
   return (
-    <header className="sticky top-0 z-50 w-full border-b bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/60">
+    <header className="sticky top-0 z-50 w-full border-b bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/60supports-backdrop-filter:bg-white/60">
       <div className="container flex h-16 items-center justify-between">
         <div className="flex items-center gap-6">
           <RouterLink to="/" className="flex items-center space-x-2">
@@ -34,7 +34,7 @@ export const Header = () => {
                   ระบบศูนย์ย่อย (Sub-Systems)
                 </NavigationMenuTrigger>
                 <NavigationMenuContent>
-                  <ul className="grid w-[400px] gap-3 p-4 md:w-[500px] md:grid-cols-2 lg:w-[600px]">
+                  <ul className="grid w-100 gap-3 p-4 md:w-125 md:grid-cols-2 lg:w-150">
                     <li>
                       <NavigationMenuLink asChild>
                         <a
