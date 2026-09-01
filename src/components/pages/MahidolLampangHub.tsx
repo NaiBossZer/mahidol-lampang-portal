@@ -230,6 +230,8 @@ export function MahidolLampangHub() {
             <a href="#overview" className="flex items-center gap-3">
               <div className="flex items-center gap-2 rounded-lg bg-white p-1.5 shadow-inner">
                 <img src="/mahidol-logo.png" alt="Mahidol Logos" className="h-10 sm:h-11 object-contain" />
+                <img src="/envi-logo.png" alt="Mahidol Logos" className="h-10 sm:h-11 object-contain" />
+                <img src="/social-engagement-logo.png" alt="Mahidol Logos" className="h-10 sm:h-11 object-contain" />
               </div>
               <div className="h-9 w-px bg-slate-600 hidden sm:block"></div>
               <div className="hidden sm:flex flex-col text-left">
