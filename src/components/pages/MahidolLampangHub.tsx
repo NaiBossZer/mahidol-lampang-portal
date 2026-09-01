@@ -281,8 +281,6 @@ export function MahidolLampangHub() {
               </div>
             </div>
 
-            
-
             {/* คุณสามารถใส่องค์ประกอบด้านขวา เช่น เมนูหรือปุ่ม ค้นหา ตรงนี้ */}
 
           </div>
@@ -293,17 +291,12 @@ export function MahidolLampangHub() {
               <a href="#overview" className="rounded-lg px-3 py-2 transition hover:bg-white/10 hover:text-white flex items-center gap-1">
                 <House size={14} className="text-amber-400" /> หน้าแรก
               </a>
-              <a href="#about" className="rounded-lg px-3 py-2 transition hover:bg-white/10 hover:text-white">
-                เกี่ยวกับเรา
-              </a>
+
               <a href="#social-projects" className="rounded-lg px-3 py-2 transition hover:bg-white/10 hover:text-white">
                 โครงการเพื่อสังคม
               </a>
               <a href="#learning-center" className="rounded-lg px-3 py-2 transition hover:bg-white/10 hover:text-white">
                 ศูนย์การเรียนรู้
-              </a>
-              <a href="#activities" className="rounded-lg px-3 py-2 transition hover:bg-white/10 hover:text-white">
-                กิจกรรม
               </a>
 
               {/* EYE-CATCHING DROPDOWN FOR "SERVICES" */}
