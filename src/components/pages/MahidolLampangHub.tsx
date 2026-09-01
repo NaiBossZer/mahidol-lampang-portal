@@ -40,8 +40,8 @@ const HERO_SLIDES = [
     id: 1,
     image: "/Banner 1.jpg",
     badge: "MAHIDOL SMART FARM HUB",
-    title: "ฐานเรียนรู้เกษตรอัจฉริยะ",
-    subtitle: "งานพันธกิจเพื่อสังคม คณะสิ่งแวดล้อมและทรัพยากรศาสตร์ มหาวิทยาลัยมหิดล อ.สบปราบ จ.ลำปาง",
+    title: "งานพันธกิจเพื่อสังคม",
+    subtitle: "คณะสิ่งแวดล้อมและทรัพยากรศาสตร์ มหาวิทยาลัยมหิดล อ.สบปราบ จ.ลำปาง",
     buttonText: "สำรวจแปลงเกษตร 3 มิติ",
     buttonLink: "#market",
   },
@@ -94,11 +94,11 @@ const HERO_SLIDES = [
 
 type Module = { label: string; title: string; description: string; href: string; icon: typeof Leaf; tone: string };
 const modules: Module[] = [
-  { label: "PORTAL", title: "ภาพรวมศูนย์", description: "ข่าวสาร กิจกรรม และบริการวิชาการ", href: "#overview", icon: Sprout, tone: "bg-[#002D62]" },
-  { label: "ห้องคลัง", title: "คลังความรู้", description: "งานวิจัย คู่มือ และข้อมูลเปิด", href: "#knowledge", icon: BookOpen, tone: "bg-[#173f72]" },
-  { label: "SMART FARM", title: "เกษตรอัจฉริยะ", description: "ติดตามแปลงเพาะปลูกแบบเรียลไทม์", href: "/smart-farm", icon: Leaf, tone: "bg-[#2E7D32]" },
-  { label: "CLEAN ENERGY", title: "พลังงานสะอาด", description: "วิเคราะห์การผลิตและคาร์บอนที่ลดได้", href: "/clean-energy", icon: Zap, tone: "bg-[#9b6a00]" },
-  { label: "SHOPPING VEG", title: "ตลาดผักมหิดล", description: "ผลผลิตปลอดภัยจากแปลงวิจัย", href: "#market", icon: ShoppingCart, tone: "bg-[#496b1d]" },
+  { label: "PORTAL", title: "ภาพรวมโครงการ", description: "ข่าวสาร กิจกรรมและบริการวิชาการ", href: "https://mahidol-lampang-portal.vercel.app", icon: Sprout, tone: "bg-[#002D62]" },
+  { label: "SHELLAC", title: "ห้องเรียนรู้ครั่งครบวงจร", description: "งานวิจัย คู่มือและข้อมูลเปิด", href: "https://mahidol-insight-hub.vercel.app", icon: BookOpen, tone: "bg-[#80142B]" }, // สีครั่งแดง (Lac Red)
+  { label: "SMART FARM", title: "เกษตรอัจฉริยะ", description: "ติดตามแปลงเพาะปลูกแบบเรียลไทม์", href: "https://mahidol-smart-farm.vercel.app", icon: Leaf, tone: "bg-[#2E7D32]" },
+  { label: "CLEAN ENERGY", title: "พลังงานสะอาด", description: "วิเคราะห์การผลิตและคาร์บอนที่ลดได้", href: "https://mahidol-clean-energy.vercel.app", icon: Zap, tone: "bg-[#9b6a00]" },
+  { label: "SHOPPING VEG", title: "ตลาดผักมหิดล", description: "ผลผลิตปลอดสารพิษจากแปลงวิจัย", href: "https://mulp-farm-fresh-market.vercel.app", icon: ShoppingCart, tone: "bg-[#1b8a43]" }, // สีเขียวผักสด (Fresh Green)
 ];
 
 const knowledge = [
@@ -481,7 +481,7 @@ export function MahidolLampangHub() {
               </div>
             </div>
           </section>
-          
+
           {/* วางระบบจอง EV ตรงนี้ */}
           <EVBookingSection />
 
