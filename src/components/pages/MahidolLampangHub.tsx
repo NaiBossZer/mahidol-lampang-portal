@@ -234,11 +234,13 @@ export function MahidolLampangHub() {
                   alt="Mahidol Logos" 
                   className="h-10 sm:h-11 object-contain" 
                 />
+              <div className="flex items-center gap-2 rounded-lg bg-white p-1.5 shadow-inner"></div>
                 <img 
                   src="/envi-logo.jpg" 
                   alt="envi logo" 
                   className="h-10 sm:h-11 object-contain" 
                 />
+              <div className="flex items-center gap-2 rounded-lg bg-white p-1.5 shadow-inner"></div>
                 <img 
                   src="/social-engagement-logo.png" 
                   alt="social engagement logo" 
