@@ -481,6 +481,9 @@ export function MahidolLampangHub() {
               </div>
             </div>
           </section>
+          
+          {/* วางระบบจอง EV ตรงนี้ */}
+          <EVBookingSection />
 
           {/* CLEAN ENERGY ANALYTICS */}
           <section className="bg-white">
