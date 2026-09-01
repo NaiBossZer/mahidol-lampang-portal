@@ -100,7 +100,7 @@ export function Map3DViewer({ modelUrl }: Map3DViewerProps) {
   return (
     <div
       ref={containerRef}
-      className="w-full h-[450px] md:h-[550px] bg-slate-900 rounded-2xl overflow-hidden shadow-2xl border border-slate-700 relative"
+      className="w-full h-112.5 md:h-137.5 bg-slate-900 rounded-2xl overflow-hidden shadow-2xl border border-slate-700 relative"
     >
       {shouldLoad ? (
         <model-viewer
@@ -152,7 +152,7 @@ export function Map3DViewer({ modelUrl }: Map3DViewerProps) {
                     className="h-3 w-full max-w-md overflow-hidden rounded-full border border-slate-700 bg-slate-800 p-0.5"
                   >
                     <div
-                      className="h-full rounded-full bg-gradient-to-r from-amber-500 to-amber-400 transition-[width] duration-200 ease-out"
+                      className="h-full rounded-full bg-linear-to-r from-amber-500 to-amber-400 transition-[width] duration-200 ease-out"
                       style={{ width: `${progress}%` }}
                     />
                   </div>

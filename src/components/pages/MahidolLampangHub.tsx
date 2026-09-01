@@ -35,6 +35,7 @@ import { CartDrawer } from "../storefront/CartDrawer";
 import { MOCK_PRODUCTS, type Product } from "../storefront/mockData";
 import { EVBookingSection } from "../EVBookingSection";
 import PartnerLogos from '../PartnerLogos';
+import AboutOur from "../AboutOur";
 
 // ข้อมูล 6 ภาพสไลด์แบนเนอร์
 const HERO_SLIDES = [
@@ -494,25 +495,7 @@ export function MahidolLampangHub() {
         </section>
 
         {/* KNOWLEDGE BASE SECTION */}
-        <section id="learning" className="bg-slate-100/80 py-12">
-          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 space-y-6">
-            <h2 className="text-xl font-bold text-[#002D62] sm:text-2xl">องค์ความรู้และงานวิจัย</h2>
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-              {filteredKnowledge.map((k, i) => (
-                <div key={i} className="flex flex-col justify-between rounded-2xl bg-white p-5 shadow-sm border border-slate-200">
-                  <div className="space-y-2">
-                    <span className={`text-[10px] font-bold uppercase tracking-wider ${k.color}`}>{k.type}</span>
-                    <h3 className="text-sm font-bold text-[#002D62] leading-snug">{k.title}</h3>
-                  </div>
-                  <div className="mt-4 flex items-center justify-between text-xs text-slate-400">
-                    <span>{k.meta}</span>
-                    <ArrowUpRight size={14} className="text-slate-600" />
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
+        <AboutOur items={filteredKnowledge} />
 
         {/* PARTNER LOGOS SECTION */}
         <PartnerLogos />
@@ -524,7 +507,7 @@ export function MahidolLampangHub() {
               © 2026 งานพันธกิจเพื่อสังคม คณะสิ่งแวดล้อมและทรัพยากรศาสตร์ มหาวิทยาลัยมหิดล จังหวัดลำปาง
             </p>
             <p className="text-slate-500">
-              Mahidol Lampang Portal · Powered by React, TypeScript & Tailwind CSS
+              SOCIAL ENGAGEMENT : Faculty of Environment and Resource Studies , Mahidol University 
             </p>
           </div>
         </footer>
