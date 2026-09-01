@@ -28,6 +28,7 @@ import {
   CalendarDays
 } from "lucide-react";
 import { toast } from "sonner";
+import SiteLayout3D from "../SiteLayout3D";
 import { CartProvider } from "../storefront/CartContext";
 import { useCart } from "../storefront/useCart";
 import { CartDrawer } from "../storefront/CartDrawer";

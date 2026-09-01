@@ -94,7 +94,7 @@ export const Header = () => {
                             ร้านค้าผลผลิตเกษตร
                           </div>
                           <p className="line-clamp-2 text-sm leading-snug text-muted-foreground">
-                            ระบบสั่งซื้อผลผลิต งานวิจัย และผลิตภัณฑ์จากศูนย์ฯ
+                            ระบบสั่งซื้อผลผลิต งานวิจัยและผลิตภัณฑ์จากศูนย์ฯ
                           </p>
                         </a>
                       </NavigationMenuLink>
