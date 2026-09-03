@@ -52,9 +52,32 @@
   --font-sans: "IBM Plex Sans Thai", "Inter", system-ui, sans-serif;
   --font-display: "Chakra Petch", "IBM Plex Sans Thai", system-ui, sans-serif;
   --font-mono: "IBM Plex Mono", ui-monospace, monospace;
+
+  /* Social Engagement design tokens */
+  --color-brand-navy: #123b63;
+  --color-brand-blue: #1677a8;
+  --color-local-terracotta: #c66b4f;
+  --color-northern-gold: #d6a84f;
+  --color-leaf: #5f8d62;
+  --color-surface-warm: #f8f6f0;
+  --color-ink: #1f2933;
+  --color-muted-ink: #667085;
 }
 
 :root {
+  /* Design System: งานพันธกิจเพื่อสังคม */
+  --brand-navy: #123b63;
+  --brand-blue: #1677a8;
+  --local-terracotta: #c66b4f;
+  --northern-gold: #d6a84f;
+  --leaf: #5f8d62;
+  --surface-warm: #f8f6f0;
+  --ink: #1f2933;
+  --muted-ink: #667085;
+  --focus-ring: #1677a8;
+  --space-section: clamp(3rem, 7vw, 6.5rem);
+  --content-max: 80rem;
+
   --radius: 0.5rem;
   --background: oklch(0.19 0.045 262);
   --foreground: oklch(0.97 0.01 250);
@@ -96,6 +119,16 @@
     border-color: var(--color-border);
   }
 
+  :focus-visible {
+    outline: 3px solid var(--focus-ring);
+    outline-offset: 3px;
+  }
+
+  ::selection {
+    background: color-mix(in srgb, var(--brand-blue) 22%, white);
+    color: var(--brand-navy);
+  }
+
   body {
     background-color: var(--color-background);
     background-image:
@@ -105,6 +138,32 @@
     color: var(--color-foreground);
     font-family: var(--font-sans);
     -webkit-font-smoothing: antialiased;
+  }
+}
+
+@layer utilities {
+  .container-content {
+    width: min(100% - 2rem, var(--content-max));
+    margin-inline: auto;
+  }
+
+  .section-space {
+    padding-block: var(--space-section);
+  }
+
+  .text-balance {
+    text-wrap: balance;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
   }
 }
 

@@ -6,7 +6,7 @@ const FALLBACK_MODEL_URL =
   'https://huggingface.co/BossLampang/site-map-3d-MU-Lampang/resolve/main/site-map-3d.glb';
 const ACTIVE_MODEL_URL = import.meta.env['VITE_MODEL_URL']?.trim() || FALLBACK_MODEL_URL;
 const GOOGLE_MAP_URL =
-  'https://www.google.com/maps?q=ศูนย์การเรียนรู้ วิจัย และบริการวิชาการ มหาวิทยาลัยมหิดล อำเภอสบปราบ จังหวัดลำปาง&output=embed';
+  'https://www.google.com/maps?q=งานพันธกิจเพื่อสังคม คณะสิ่งแวดล้อมและทรัพยากรศาสตร์ มหาวิทยาลัยมหิดล อำเภอสบปราบ ลำปาง&output=embed';
 
 export default function SiteLayout3D() {
   return (
@@ -19,7 +19,7 @@ export default function SiteLayout3D() {
             Explore Our Site
           </span>
           <h2 className="text-2xl font-bold leading-tight text-[#002D62] md:text-3xl">
-            ผังบริเวณและพื้นที่การเรียนรู้ มหิดล ลำปาง
+            ผังพื้นที่ปฏิบัติงานและการเรียนรู้ มหิดล ลำปาง
           </h2>
           <p className="mx-auto max-w-2xl text-xs font-normal leading-relaxed text-slate-600 sm:text-sm">
             รับชมวิดีโอแนะนำศูนย์ฯ ดูตำแหน่งที่ตั้ง และสำรวจผังบริเวณ 3D
@@ -74,7 +74,7 @@ export default function SiteLayout3D() {
             <div className="relative aspect-video min-h-75 w-full overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xl sm:min-h-0">
               <iframe
                 src={GOOGLE_MAP_URL}
-                title="ตำแหน่งศูนย์การเรียนรู้ วิจัย และบริการวิชาการ มหาวิทยาลัยมหิดล ลำปาง"
+                title="ตำแหน่งงานพันธกิจเพื่อสังคม วิจัย และบริการวิชาการ มหาวิทยาลัยมหิดล ลำปาง"
                 loading="lazy"
                 referrerPolicy="no-referrer-when-downgrade"
                 className="w-full h-full border-0"

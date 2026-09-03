@@ -105,7 +105,7 @@ export function Map3DViewer({ modelUrl }: Map3DViewerProps) {
       {shouldLoad ? (
         <model-viewer
           ref={viewerRef}
-          alt="ผังบริเวณศูนย์การเรียนรู้ มหิดล ลำปาง"
+          alt="ผังพื้นที่ปฏิบัติงานและการเรียนรู้ มหิดล ลำปาง"
           loading="eager"
           auto-rotate
           camera-controls

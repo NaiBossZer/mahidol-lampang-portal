@@ -36,6 +36,7 @@ import { MOCK_PRODUCTS, type Product } from "../storefront/mockData";
 import { EVBookingSection } from "../EVBookingSection";
 import PartnerLogos from '../PartnerLogos';
 import AboutOur from "../AboutOur";
+import { LearningEngagement } from "../LearningEngagement";
 
 // ข้อมูล 6 ภาพสไลด์แบนเนอร์
 const HERO_SLIDES = [
@@ -44,13 +45,13 @@ const HERO_SLIDES = [
     image: "/main banner.jpg",
     badge: "MAHIDOL HUB",
     title: "งานพันธกิจเพื่อสังคม",
-    subtitle: "คณะสิ่งแวดล้อมและทรัพยากรศาสตร์ มหาวิทยาลัยมหิดล อ.สบปราบ จ.ลำปาง",
+    subtitle: "คณะสิ่งแวดล้อมและทรัพยากรศาสตร์ มหาวิทยาลัยมหิดล · พื้นที่ปฏิบัติงานสบปราบ ลำปาง",
   },
   {
     id: 2,
     image: "/Shellac banner.jpg",
     badge: "ZONE 01 // COMPREHENSIVE SHELLAC LEARNING CENTER",
-    title: "ห้องครั่งครบวงจร",
+    title: "พื้นที่เรียนรู้ครั่งครบวงจร",
     subtitle: "กำเนิดครั่ง มหัศจรรย์วงจรชีวิตของแมลงครั่งและการแปรรูปครั่งสู่ผลิตภัณฑ์สร้างมูลค่า",
     buttonText: "เข้าสู่ห้องเรียนรู้ครั่ง",
     buttonLink: "https://mahidol-shellac.vercel.app/",
@@ -264,7 +265,7 @@ export function MahidolLampangHub() {
                   งานพันธกิจเพื่อสังคม สำนักงานวิจัยและวิทยบริการ
                 </span>
                 <span className="mt-0.5 block text-[10px] font-medium leading-tight text-[#F5B800] sm:text-xs">
-                  คณะสิ่งแวดล้อมและทรัพยากรศาสตร์ มหาวิทยาลัยมหิดล จังหวัดลำปาง
+                  คณะสิ่งแวดล้อมและทรัพยากรศาสตร์ มหาวิทยาลัยมหิดล · พื้นที่สบปราบ ลำปาง
                 </span>
               </div>
 
@@ -294,7 +295,7 @@ export function MahidolLampangHub() {
                   className="flex items-center gap-1.5 rounded-full bg-[#00A86B] px-4 py-2 text-xs font-bold text-white shadow-sm transition hover:bg-[#008f5b] hover:shadow"
                 >
                   <GraduationCap size={14} />
-                  <span>ศูนย์การเรียนรู้</span>
+                  <span>พื้นที่เรียนรู้</span>
                 </a>
 
                 <div className="group relative">
@@ -475,6 +476,8 @@ export function MahidolLampangHub() {
         {/* EV CHARGING BOOKING SECTION */}
         <EVBookingSection />
 
+        <LearningEngagement />
+
         {/* MARKETPLACE PREVIEW */}
         <section className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8 space-y-6">
           <div className="flex items-center justify-between">
@@ -504,7 +507,7 @@ export function MahidolLampangHub() {
         <footer className="border-t border-slate-800 bg-[#0a1e2f] py-8 text-slate-400 text-xs">
           <div className="mx-auto max-w-7xl px-4 text-center sm:px-6 lg:px-8 space-y-2">
             <p className="font-medium text-slate-300">
-              © 2026 งานพันธกิจเพื่อสังคม คณะสิ่งแวดล้อมและทรัพยากรศาสตร์ มหาวิทยาลัยมหิดล จังหวัดลำปาง
+              © 2026 งานพันธกิจเพื่อสังคม คณะสิ่งแวดล้อมและทรัพยากรศาสตร์ มหาวิทยาลัยมหิดล · พื้นที่สบปราบ ลำปาง
             </p>
             <p className="text-slate-500">
               SOCIAL ENGAGEMENT : Faculty of Environment and Resource Studies , Mahidol University 
