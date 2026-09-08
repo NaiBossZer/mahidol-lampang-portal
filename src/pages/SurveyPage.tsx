@@ -63,7 +63,7 @@ export function SurveyPage() {
   // จัดการการเลือกช่องทางข่าวสาร (Checkbox)
   const handleChannelChange = (val: string) => {
     setChannels((prev) =>
-      prev.includes(val) ? prev.filter((item) => item !== val) : [...prev, val]
+      prev.includes(val) ? prev.filter((item) => item !== val) : [...prev, val],
     );
   };
 
@@ -79,9 +79,20 @@ export function SurveyPage() {
 
     // 2. ตรวจสอบ Likert Scale (1-5) ให้ครบทุกข้อ
     const ratings = [
-      p2_location, p2_schedule, p2_readiness, p2_reception, p2_overall,
-      p3_interest, p3_content, p3_clarity, p3_benefit, p3_application,
-      p4_knowledge, p4_inspiration, p4_communityResource, p4_futureReturn,
+      p2_location,
+      p2_schedule,
+      p2_readiness,
+      p2_reception,
+      p2_overall,
+      p3_interest,
+      p3_content,
+      p3_clarity,
+      p3_benefit,
+      p3_application,
+      p4_knowledge,
+      p4_inspiration,
+      p4_communityResource,
+      p4_futureReturn,
     ];
 
     if (ratings.some((r) => r === null)) {
@@ -93,9 +104,7 @@ export function SurveyPage() {
 
     try {
       const finalAffiliation = affiliation === "อื่นๆ" ? affiliationOther : affiliation;
-      const finalChannels = channels
-        .map((c) => (c === "อื่นๆ" ? channelOther : c))
-        .join(", ");
+      const finalChannels = channels.map((c) => (c === "อื่นๆ" ? channelOther : c)).join(", ");
 
       const params = new URLSearchParams({
         // ตอนที่ 1
@@ -142,14 +151,17 @@ export function SurveyPage() {
     value: number | null,
     onChange: (val: number) => void,
     leftLabel = "มากที่สุด",
-    rightLabel = "น้อยที่สุด"
+    rightLabel = "น้อยที่สุด",
   ) => (
     <div className="mt-3">
       <div className="flex justify-between items-center bg-slate-50 dark:bg-slate-900/40 p-3 rounded-xl border border-slate-200/60 dark:border-slate-700">
         <span className="text-xs text-slate-500 w-20 text-left select-none">{leftLabel}</span>
         <div className="flex gap-2 sm:gap-6">
           {[5, 4, 3, 2, 1].map((score) => (
-            <label key={score} className="flex flex-col items-center gap-1 cursor-pointer select-none">
+            <label
+              key={score}
+              className="flex flex-col items-center gap-1 cursor-pointer select-none"
+            >
               <input
                 type="radio"
                 name={nameGroup}
@@ -171,7 +183,7 @@ export function SurveyPage() {
   // 1. หน้าจอเมื่อส่งข้อมูลสำเร็จ
   if (step === "submitted") {
     return (
-      <div 
+      <div
         className="min-h-screen relative flex items-center justify-center p-4 bg-cover bg-center bg-no-repeat"
         style={{ backgroundImage: "url('/Backdrop_Shellac_2569.png')" }}
       >
@@ -195,7 +207,7 @@ export function SurveyPage() {
   // 2. หน้าข้อตกลง PDPA
   if (step === "pdpa") {
     return (
-      <div 
+      <div
         className="min-h-screen relative py-12 px-4 flex items-center justify-center bg-cover bg-center bg-no-repeat"
         style={{ backgroundImage: "url('/Backdrop_Shellac_2569.png')" }}
       >
@@ -287,7 +299,10 @@ export function SurveyPage() {
               </label>
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                 {AGE_GROUPS.map((item) => (
-                  <label key={item} className="flex items-center gap-2 p-2 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-emerald-50/50 dark:hover:bg-slate-700/50 cursor-pointer text-sm text-slate-700 dark:text-slate-300 transition-colors">
+                  <label
+                    key={item}
+                    className="flex items-center gap-2 p-2 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-emerald-50/50 dark:hover:bg-slate-700/50 cursor-pointer text-sm text-slate-700 dark:text-slate-300 transition-colors"
+                  >
                     <input
                       type="radio"
                       name="ageGroup"
@@ -309,7 +324,10 @@ export function SurveyPage() {
               </label>
               <div className="space-y-2">
                 {AFFILIATIONS.map((item) => (
-                  <label key={item} className="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-300 cursor-pointer">
+                  <label
+                    key={item}
+                    className="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-300 cursor-pointer"
+                  >
                     <input
                       type="radio"
                       name="affiliation"
@@ -337,11 +355,15 @@ export function SurveyPage() {
             {/* เคยเข้าร่วมกิจกรรมหรือไม่ */}
             <div>
               <label className="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-2">
-                ท่านเคยเข้าร่วมกิจกรรมของโครงการนี้มาก่อนหรือไม่ <span className="text-red-500">*</span>
+                ท่านเคยเข้าร่วมกิจกรรมของโครงการนี้มาก่อนหรือไม่{" "}
+                <span className="text-red-500">*</span>
               </label>
               <div className="flex gap-6">
                 {["เคย", "ไม่เคย"].map((item) => (
-                  <label key={item} className="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-300 cursor-pointer">
+                  <label
+                    key={item}
+                    className="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-300 cursor-pointer"
+                  >
                     <input
                       type="radio"
                       name="everJoined"
@@ -359,11 +381,15 @@ export function SurveyPage() {
             {/* ทราบข่าวสารจากช่องทางใด */}
             <div>
               <label className="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-2">
-                ท่านทราบข่าวสารการจัดงานจากช่องทางใด (เลือกได้มากกว่า 1 ข้อ) <span className="text-red-500">*</span>
+                ท่านทราบข่าวสารการจัดงานจากช่องทางใด (เลือกได้มากกว่า 1 ข้อ){" "}
+                <span className="text-red-500">*</span>
               </label>
               <div className="space-y-2">
                 {CHANNEL_OPTIONS.map((item) => (
-                  <label key={item} className="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-300 cursor-pointer">
+                  <label
+                    key={item}
+                    className="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-300 cursor-pointer"
+                  >
                     <input
                       type="checkbox"
                       value={item}
@@ -403,7 +429,8 @@ export function SurveyPage() {
 
             <div>
               <label className="text-sm font-medium text-slate-700 dark:text-slate-300">
-                2. ความเหมาะสมของกำหนดการและระยะเวลาการจัดงาน <span className="text-red-500">*</span>
+                2. ความเหมาะสมของกำหนดการและระยะเวลาการจัดงาน{" "}
+                <span className="text-red-500">*</span>
               </label>
               {renderLikert("p2_schedule", p2_schedule, setP2_schedule)}
             </div>
@@ -417,7 +444,8 @@ export function SurveyPage() {
 
             <div>
               <label className="text-sm font-medium text-slate-700 dark:text-slate-300">
-                4. การต้อนรับและการอำนวยความสะดวกของเจ้าหน้าที่ <span className="text-red-500">*</span>
+                4. การต้อนรับและการอำนวยความสะดวกของเจ้าหน้าที่{" "}
+                <span className="text-red-500">*</span>
               </label>
               {renderLikert("p2_reception", p2_reception, setP2_reception)}
             </div>
@@ -480,28 +508,32 @@ export function SurveyPage() {
 
             <div>
               <label className="text-sm font-medium text-slate-700 dark:text-slate-300">
-                1. ท่านได้รับความรู้และความเข้าใจเกี่ยวกับครั่งเพิ่มขึ้น <span className="text-red-500">*</span>
+                1. ท่านได้รับความรู้และความเข้าใจเกี่ยวกับครั่งเพิ่มขึ้น{" "}
+                <span className="text-red-500">*</span>
               </label>
               {renderLikert("p4_knowledge", p4_knowledge, setP4_knowledge)}
             </div>
 
             <div>
               <label className="text-sm font-medium text-slate-700 dark:text-slate-300">
-                2. กิจกรรมสามารถสร้างแรงบันดาลใจในการอนุรักษ์และพัฒนาครั่ง <span className="text-red-500">*</span>
+                2. กิจกรรมสามารถสร้างแรงบันดาลใจในการอนุรักษ์และพัฒนาครั่ง{" "}
+                <span className="text-red-500">*</span>
               </label>
               {renderLikert("p4_inspiration", p4_inspiration, setP4_inspiration)}
             </div>
 
             <div>
               <label className="text-sm font-medium text-slate-700 dark:text-slate-300">
-                3. ห้องการเรียนรู้สามารถใช้เป็นแหล่งเรียนรู้สำหรับชุมชนและผู้สนใจได้ <span className="text-red-500">*</span>
+                3. ห้องการเรียนรู้สามารถใช้เป็นแหล่งเรียนรู้สำหรับชุมชนและผู้สนใจได้{" "}
+                <span className="text-red-500">*</span>
               </label>
               {renderLikert("p4_communityResource", p4_communityResource, setP4_communityResource)}
             </div>
 
             <div>
               <label className="text-sm font-medium text-slate-700 dark:text-slate-300">
-                4. ท่านมีความสนใจเข้าร่วมกิจกรรมหรือกลับมาใช้ห้องการเรียนรู้อีกในอนาคต <span className="text-red-500">*</span>
+                4. ท่านมีความสนใจเข้าร่วมกิจกรรมหรือกลับมาใช้ห้องการเรียนรู้อีกในอนาคต{" "}
+                <span className="text-red-500">*</span>
               </label>
               {renderLikert("p4_futureReturn", p4_futureReturn, setP4_futureReturn)}
             </div>

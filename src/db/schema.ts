@@ -9,6 +9,7 @@ import {
   timestamp,
   pgEnum,
   unique,
+  index,
 } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
 
@@ -24,6 +25,15 @@ export const evBookingStatusEnum = pgEnum("ev_booking_status", [
   "pending",
   "confirmed",
   "cancelled",
+]);
+export const activityStatusEnum = pgEnum("activity_status", ["draft", "published", "archived"]);
+export const centerTypeEnum = pgEnum("learning_center_type", [
+  "SOCIAL_CENTER",
+  "LEARNING_CENTER",
+  "RESEARCH_SITE",
+  "COMMUNITY",
+  "SCHOOL",
+  "PARTNER_SITE",
 ]);
 
 export const plots = pgTable(
@@ -106,6 +116,161 @@ export const orderItems = pgTable("order_items", {
   pricePerUnit: decimal("price_per_unit", { precision: 10, scale: 2 }).notNull(),
 });
 
+// Social Engagement domain
+export const socialProjects = pgTable(
+  "social_projects",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    title: varchar("title", { length: 255 }).notNull(),
+    slug: varchar("slug", { length: 255 }).notNull(),
+    description: text("description"),
+    objective: text("objective"),
+    startDate: timestamp("start_date", { withTimezone: true }),
+    endDate: timestamp("end_date", { withTimezone: true }),
+    status: varchar("status", { length: 30 }).notNull().default("active"),
+    coverImage: text("cover_image"),
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
+  },
+  (table) => ({ slugUnique: unique("social_projects_slug_unique").on(table.slug) }),
+);
+
+export const learningCenters = pgTable(
+  "learning_centers",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    name: varchar("name", { length: 255 }).notNull(),
+    slug: varchar("slug", { length: 255 }).notNull(),
+    type: centerTypeEnum("type").notNull(),
+    description: text("description"),
+    province: varchar("province", { length: 100 }),
+    district: varchar("district", { length: 100 }),
+    subdistrict: varchar("subdistrict", { length: 100 }),
+    address: text("address"),
+    latitude: decimal("latitude", { precision: 10, scale: 7 }),
+    longitude: decimal("longitude", { precision: 10, scale: 7 }),
+    coverImage: text("cover_image"),
+    status: varchar("status", { length: 30 }).notNull().default("active"),
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
+  },
+  (table) => ({ slugUnique: unique("learning_centers_slug_unique").on(table.slug) }),
+);
+export const activities = pgTable(
+  "activities",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    projectId: uuid("project_id").references(() => socialProjects.id, { onDelete: "set null" }),
+    centerId: uuid("center_id").references(() => learningCenters.id, { onDelete: "set null" }),
+    title: varchar("title", { length: 255 }).notNull(),
+    slug: varchar("slug", { length: 255 }).notNull(),
+    summary: text("summary"),
+    content: text("content"),
+    activityDate: timestamp("activity_date", { withTimezone: true }).notNull(),
+    location: varchar("location", { length: 255 }),
+    participantCount: integer("participant_count"),
+    objective: text("objective"),
+    process: text("process"),
+    outcome: text("outcome"),
+    impact: text("impact"),
+    featuredImage: text("featured_image"),
+    status: activityStatusEnum("status").notNull().default("draft"),
+    publishedAt: timestamp("published_at", { withTimezone: true }),
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
+  },
+  (table) => ({
+    slugUnique: unique("activities_slug_unique").on(table.slug),
+    activityDateIdx: index("activities_activity_date_idx").on(table.activityDate),
+    statusPublishedIdx: index("activities_status_published_idx").on(
+      table.status,
+      table.publishedAt,
+    ),
+    centerDateIdx: index("activities_center_date_idx").on(table.centerId, table.activityDate),
+  }),
+);
+
+export const activityPhotos = pgTable(
+  "activity_photos",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    activityId: uuid("activity_id")
+      .notNull()
+      .references(() => activities.id, { onDelete: "cascade" }),
+    imageUrl: text("image_url").notNull(),
+    thumbnailUrl: text("thumbnail_url"),
+    caption: varchar("caption", { length: 500 }),
+    altText: varchar("alt_text", { length: 500 }),
+    sortOrder: integer("sort_order").notNull().default(0),
+    isCover: boolean("is_cover").notNull().default(false),
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+  },
+  (table) => ({
+    activitySortIdx: index("activity_photos_activity_sort_idx").on(
+      table.activityId,
+      table.sortOrder,
+    ),
+  }),
+);
+export const partners = pgTable("partners", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  name: varchar("name", { length: 255 }).notNull(),
+  type: varchar("type", { length: 100 }),
+  logo: text("logo"),
+  description: text("description"),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+});
+
+export const activityPartners = pgTable(
+  "activity_partners",
+  {
+    activityId: uuid("activity_id")
+      .notNull()
+      .references(() => activities.id, { onDelete: "cascade" }),
+    partnerId: uuid("partner_id")
+      .notNull()
+      .references(() => partners.id, { onDelete: "cascade" }),
+  },
+  (table) => ({ pk: unique("activity_partners_unique").on(table.activityId, table.partnerId) }),
+);
+
+export const activityOutcomes = pgTable("activity_outcomes", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  activityId: uuid("activity_id")
+    .notNull()
+    .references(() => activities.id, { onDelete: "cascade" }),
+  metricName: varchar("metric_name", { length: 255 }).notNull(),
+  metricValue: varchar("metric_value", { length: 255 }),
+  unit: varchar("unit", { length: 100 }),
+  description: text("description"),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+});
+export const socialProjectsRelations = relations(socialProjects, ({ many }) => ({
+  activities: many(activities),
+}));
+export const learningCentersRelations = relations(learningCenters, ({ many }) => ({
+  activities: many(activities),
+}));
+export const activitiesRelations = relations(activities, ({ one, many }) => ({
+  project: one(socialProjects, { fields: [activities.projectId], references: [socialProjects.id] }),
+  center: one(learningCenters, { fields: [activities.centerId], references: [learningCenters.id] }),
+  photos: many(activityPhotos),
+  outcomes: many(activityOutcomes),
+  partners: many(activityPartners),
+}));
+export const activityPhotosRelations = relations(activityPhotos, ({ one }) => ({
+  activity: one(activities, { fields: [activityPhotos.activityId], references: [activities.id] }),
+}));
+export const partnersRelations = relations(partners, ({ many }) => ({
+  activities: many(activityPartners),
+}));
+export const activityPartnersRelations = relations(activityPartners, ({ one }) => ({
+  activity: one(activities, { fields: [activityPartners.activityId], references: [activities.id] }),
+  partner: one(partners, { fields: [activityPartners.partnerId], references: [partners.id] }),
+}));
+export const activityOutcomesRelations = relations(activityOutcomes, ({ one }) => ({
+  activity: one(activities, { fields: [activityOutcomes.activityId], references: [activities.id] }),
+}));
 // Relations
 export const ordersRelations = relations(orders, ({ many }) => ({
   items: many(orderItems),

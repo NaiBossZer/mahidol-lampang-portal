@@ -1,713 +1,495 @@
-import React, { useEffect, useState } from "react";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Badge } from "@/components/ui/badge";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-  DialogDescription,
-} from "@/components/ui/dialog";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { Calendar } from "@/components/ui/calendar";
-import {
-  Plus,
-  Edit,
-  Trash2,
-  Eye,
-  CheckCircle2,
-  XCircle,
-  Search,
-  Calendar as CalendarIcon,
-  Package,
-  ShoppingCart,
-} from "lucide-react";
-import { format } from "date-fns";
-import { th } from "date-fns/locale";
+﻿import { useEffect, useState, type ReactNode } from "react";
 import { toast } from "sonner";
 import {
+  createActivity,
   createProduct,
+  deleteActivity,
   deleteProduct,
+  getAdminActivities,
   getAdminOrders,
   getProducts,
+  updateActivity,
+  updateInventory,
   updateOrderStatus,
   updateProduct,
+  type AdminActivity,
+  type AdminOrder,
+  type ActivityWriteInput,
   type ProductWriteInput,
 } from "@/services/api";
-import type { Product } from "./mockData";
+import { MOCK_PRODUCTS } from "@/components/storefront/mockData";
 
-// --- Types & Mock Data ---
-
-type OrderStatus = "pending_payment" | "preparing" | "ready" | "completed" | "cancelled";
-
-interface AdminProduct {
-  id: string;
-  name: string;
-  price: number;
-  stock: number;
-  unit: string;
-  plot: string;
-  harvestDate: string;
-  shelfLife: string;
-  image: string;
-}
-
-interface Order {
-  id: string;
-  customerName: string;
-  date: string;
-  total: number;
-  status: OrderStatus;
-  slipImage?: string;
-  items: { name: string; qty: number }[];
-}
-
-const MOCK_PRODUCTS: AdminProduct[] = [
-  {
-    id: "p1",
-    name: "ผักสลัดกรีนโอ๊ค",
-    price: 50,
-    stock: 15,
-    unit: "กก.",
-    plot: "P-01 (รอบที่ 3)",
-    harvestDate: "2026-08-31",
-    shelfLife: "7 วัน",
-    image: "https://images.unsplash.com/photo-1640958904159-51ae08bc3412?w=150",
-  },
-  {
-    id: "p2",
-    name: "มะเขือเทศราชินี",
-    price: 80,
-    stock: 0,
-    unit: "กก.",
-    plot: "T-02 (อินทรีย์)",
-    harvestDate: "2026-09-05",
-    shelfLife: "14 วัน",
-    image: "https://images.unsplash.com/photo-1592924357228-91a4daadcfea?w=150",
-  },
-  {
-    id: "p3",
-    name: "เมล่อนสายพันธุ์ใหม่",
-    price: 150,
-    stock: 5,
-    unit: "ลูก",
-    plot: "M-01 (วิจัย)",
-    harvestDate: "2026-09-10",
-    shelfLife: "10 วัน",
-    image: "https://images.unsplash.com/photo-1595475207225-428b62bda831?w=150",
-  },
-];
-
-const MOCK_ORDERS: Order[] = [
-  {
-    id: "ORD-001",
-    customerName: "สมชาย ใจดี",
-    date: "2026-08-30T10:30:00",
-    total: 250,
-    status: "pending_payment",
-    slipImage: "https://images.unsplash.com/photo-1620714223084-8fcacc6dfd8d?w=300",
-    items: [
-      { name: "ผักสลัดกรีนโอ๊ค", qty: 2 },
-      { name: "เมล่อนสายพันธุ์ใหม่", qty: 1 },
-    ],
-  },
-  {
-    id: "ORD-002",
-    customerName: "สมหญิง งามตา",
-    date: "2026-08-30T09:15:00",
-    total: 80,
-    status: "preparing",
-    items: [{ name: "มะเขือเทศราชินี", qty: 1 }],
-  },
-  {
-    id: "ORD-003",
-    customerName: "วิชัย มั่นคง",
-    date: "2026-08-29T15:40:00",
-    total: 150,
-    status: "ready",
-    items: [{ name: "ผักสลัดกรีนโอ๊ค", qty: 3 }],
-  },
-];
-
-// --- Status Helpers ---
-const getStatusBadge = (status: OrderStatus) => {
-  switch (status) {
-    case "pending_payment":
-      return (
-        <Badge variant="outline" className="bg-yellow-50 text-yellow-700 border-yellow-200">
-          รอตรวจสอบชำระเงิน
-        </Badge>
-      );
-    case "preparing":
-      return (
-        <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
-          กำลังเตรียมสินค้า
-        </Badge>
-      );
-    case "ready":
-      return (
-        <Badge variant="outline" className="bg-purple-50 text-purple-700 border-purple-200">
-          พร้อมรับ/จัดส่ง
-        </Badge>
-      );
-    case "completed":
-      return (
-        <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
-          สำเร็จ
-        </Badge>
-      );
-    case "cancelled":
-      return (
-        <Badge variant="outline" className="bg-red-50 text-red-700 border-red-200">
-          ยกเลิก
-        </Badge>
-      );
-  }
+type ProductRow = ProductWriteInput & { id: string };
+const blankActivity: ActivityWriteInput = {
+  title: "",
+  slug: "",
+  summary: "",
+  content: "",
+  activityDate: new Date().toISOString().slice(0, 16),
+  location: "",
+  participantCount: 0,
+  objective: "",
+  process: "",
+  outcome: "",
+  impact: "",
+  featuredImage: "",
+  status: "draft",
 };
+const inputClass = "w-full rounded-lg border px-3 py-2 text-sm bg-white";
 
-export const AdminDashboard = () => {
-  const [products, setProducts] = useState<AdminProduct[]>(MOCK_PRODUCTS);
-  const [orders, setOrders] = useState<Order[]>(MOCK_ORDERS);
-
-  // States for Modals
-  const [isProductModalOpen, setIsProductModalOpen] = useState(false);
-  const [editingProduct, setEditingProduct] = useState<AdminProduct | null>(null);
-  const [isSlipModalOpen, setIsSlipModalOpen] = useState(false);
-  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
-
-  // States for Forecast Calendar
-  const [date, setDate] = useState<Date | undefined>(new Date());
-
+export function AdminDashboard() {
+  const [tab, setTab] = useState<"activities" | "products" | "orders">("activities");
+  const [activities, setActivities] = useState<AdminActivity[]>([]);
+  const [products, setProducts] = useState<ProductRow[]>([]);
+  const [orders, setOrders] = useState<AdminOrder[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [editingActivity, setEditingActivity] = useState<AdminActivity | null>(null);
+  const [activityForm, setActivityForm] = useState<ActivityWriteInput>(blankActivity);
+  const [showActivity, setShowActivity] = useState(false);
+  const [showProduct, setShowProduct] = useState(false);
+  const [editingProduct, setEditingProduct] = useState<ProductRow | null>(null);
+  const [productForm, setProductForm] = useState<ProductWriteInput>({
+    name: "",
+    price: 0,
+    unit: "กก.",
+    stock: 0,
+    image: "",
+    isPreOrder: false,
+    harvestDate: "",
+    plotId: "",
+    researchTag: "",
+  });
+  const load = async () => {
+    setLoading(true);
+    try {
+      const [a, p, o] = await Promise.all([getAdminActivities(), getProducts(), getAdminOrders()]);
+      setActivities(a);
+      setProducts(p as ProductRow[]);
+      setOrders(o);
+    } catch (e) {
+      console.error(e);
+      toast.error("ไม่สามารถโหลดข้อมูลหลังบ้านได้");
+    } finally {
+      setLoading(false);
+    }
+  };
   useEffect(() => {
-    void Promise.all([getProducts(), getAdminOrders()]).then(([liveProducts, liveOrders]) => {
-      if (liveProducts.length > 0)
-        setProducts(
-          liveProducts.map((product: Product) => ({
-            id: product.id,
-            name: product.name,
-            price: product.price,
-            stock: product.stock,
-            unit: product.unit,
-            plot: product.plotId,
-            harvestDate: product.harvestDate ?? product.harvestPrediction.estimatedDate,
-            shelfLife: "-",
-            image: product.image,
-          })),
-        );
-      if (liveOrders.length > 0)
-        setOrders(
-          liveOrders.map((order) => ({
-            id: order.id,
-            customerName: order.customerName,
-            date: order.createdAt,
-            total: Number(order.totalAmount),
-            status:
-              order.status === "pending"
-                ? "pending_payment"
-                : order.status === "paid"
-                  ? "preparing"
-                  : order.status === "fulfilled"
-                    ? "completed"
-                    : "cancelled",
-            items: [],
-            ...(order.slipUrl ? { slipImage: order.slipUrl } : {}),
-          })),
-        );
-    });
+    void load();
   }, []);
-
-  // --- Handlers ---
-  const handleSaveProduct = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    const form = new FormData(e.currentTarget);
-    const input: ProductWriteInput = {
-      name: String(form.get("name") ?? "").trim(),
-      image: String(form.get("image") ?? "").trim(),
-      price: Number(form.get("price")),
-      stock: Number(form.get("stock")),
-      unit: String(form.get("unit") ?? "กก.").trim(),
-      plotId: String(form.get("plot") ?? "").trim(),
-      harvestDate: String(form.get("harvestDate") ?? ""),
-      ...(editingProduct ? { id: editingProduct.id } : {}),
-    };
-    if (
-      !input.name ||
-      !Number.isFinite(input.price) ||
-      input.price < 0 ||
-      !Number.isInteger(input.stock) ||
-      input.stock < 0 ||
-      !input.unit
-    ) {
+  const saveActivity = async () => {
+    if (!activityForm.title || !activityForm.slug) {
+      toast.error("กรุณาระบุชื่อและ slug");
+      return;
+    }
+    try {
+      if (editingActivity) await updateActivity({ ...activityForm, id: editingActivity.id });
+      else await createActivity(activityForm);
+      toast.success("บันทึกกิจกรรมแล้ว");
+      setShowActivity(false);
+      setEditingActivity(null);
+      await load();
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "บันทึกกิจกรรมไม่สำเร็จ");
+    }
+  };
+  const saveProduct = async () => {
+    if (!productForm.name || productForm.price < 0 || productForm.stock < 0) {
       toast.error("กรุณาตรวจสอบข้อมูลสินค้า");
       return;
     }
     try {
-      if (editingProduct) await updateProduct({ ...input, id: editingProduct.id });
-      else await createProduct(input);
-      toast.success("บันทึกสินค้าเข้าระบบแล้ว");
-    } catch {
-      toast.warning("API ยังไม่พร้อม จึงบันทึกเฉพาะในหน้าจอนี้");
-    }
-    const localProduct: AdminProduct = {
-      id: editingProduct?.id ?? crypto.randomUUID(),
-      name: input.name,
-      image: input.image ?? "/mahidol-logo.png",
-      price: input.price,
-      stock: input.stock,
-      unit: input.unit,
-      plot: input.plotId ?? "-",
-      harvestDate: input.harvestDate ?? "",
-      shelfLife: String(form.get("shelfLife") ?? "-"),
-    };
-    setProducts((previous) =>
-      editingProduct
-        ? previous.map((product) => (product.id === editingProduct.id ? localProduct : product))
-        : [...previous, localProduct],
-    );
-    setIsProductModalOpen(false);
-    setEditingProduct(null);
-  };
-
-  const handleApproveSlip = async () => {
-    if (selectedOrder) {
-      try {
-        await updateOrderStatus(selectedOrder.id, "paid");
-        toast.success("อนุมัติการชำระเงินแล้ว");
-      } catch {
-        toast.warning("อัปเดต API ไม่สำเร็จ แต่ปรับสถานะในหน้าจอแล้ว");
-      }
-      setOrders((previous) =>
-        previous.map((o) => (o.id === selectedOrder.id ? { ...o, status: "preparing" } : o)),
-      );
-      setIsSlipModalOpen(false);
+      if (editingProduct) await updateProduct({ ...productForm, id: editingProduct.id });
+      else await createProduct(productForm);
+      toast.success("บันทึกสินค้าแล้ว");
+      setShowProduct(false);
+      setEditingProduct(null);
+      await load();
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "บันทึกสินค้าไม่สำเร็จ");
     }
   };
-
-  const handleRejectSlip = async () => {
-    if (selectedOrder) {
-      try {
-        await updateOrderStatus(selectedOrder.id, "cancelled");
-        toast.success("ปฏิเสธสลิปแล้ว");
-      } catch {
-        toast.warning("อัปเดต API ไม่สำเร็จ แต่ปรับสถานะในหน้าจอแล้ว");
-      }
-      setOrders((previous) =>
-        previous.map((o) => (o.id === selectedOrder.id ? { ...o, status: "cancelled" } : o)),
-      );
-      setIsSlipModalOpen(false);
-    }
+  const editProduct = (p: ProductRow) => {
+    setEditingProduct(p);
+    setProductForm({ ...p });
+    setShowProduct(true);
   };
-
-  const handleDeleteProduct = async (product: AdminProduct) => {
-    try {
-      await deleteProduct(product.id);
-      toast.success("ลบสินค้าแล้ว");
-    } catch {
-      toast.warning("API ยังไม่พร้อม จึงลบเฉพาะในหน้าจอนี้");
-    }
-    setProducts((previous) => previous.filter((item) => item.id !== product.id));
-  };
-
-  // Helper for calendar
-  const harvestsOnDate = products.filter(
-    (p) => p.harvestDate === (date ? format(date, "yyyy-MM-dd") : ""),
-  );
-
   return (
-    <div className="w-full max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8 space-y-6">
-      <div>
-        <h2 className="text-3xl font-bold text-[#002D62]">ระบบหลังบ้าน (Admin Dashboard)</h2>
-        <p className="text-gray-500">จัดการสินค้า คำสั่งซื้อ และคาดการณ์ผลผลิตของศูนย์วิจัย</p>
-        {products.filter((product) => product.stock < 10).length > 0 && (
-          <p role="status" className="mt-2 text-sm font-semibold text-red-600">
-            แจ้งเตือน: มีสินค้า stock ต่ำกว่า 10 จำนวน{" "}
-            {products.filter((product) => product.stock < 10).length} รายการ
-          </p>
-        )}
-      </div>
-
-      <Tabs defaultValue="inventory" className="w-full">
-        <TabsList className="grid w-full md:w-150 grid-cols-3 mb-8">
-          <TabsTrigger
-            value="inventory"
-            className="data-[state=active]:bg-[#002D62] data-[state=active]:text-white"
+    <main className="w-full max-w-7xl mx-auto p-4 md:p-8 space-y-6">
+      <header>
+        <p className="text-sm font-semibold text-emerald-700">Mahidol Social Engagement Platform</p>
+        <h1 className="text-3xl font-bold text-slate-900">ศูนย์จัดการระบบหลังบ้าน</h1>
+        <p className="text-slate-500 mt-1">
+          จัดการกิจกรรม ผลผลิต และคำสั่งซื้อจากฐานข้อมูลเดียวกัน
+        </p>
+      </header>
+      <nav className="flex flex-wrap gap-2 border-b pb-3">
+        {(
+          [
+            ["activities", "📋 กิจกรรม Social Engagement"],
+            ["products", "🥬 ผลผลิต / Products"],
+            ["orders", "🛒 คำสั่งซื้อ / Orders"],
+          ] as const
+        ).map(([k, l]) => (
+          <button
+            key={k}
+            onClick={() => setTab(k)}
+            className={`px-4 py-2 rounded-lg text-sm font-semibold ${tab === k ? "bg-slate-900 text-white" : "bg-slate-100 text-slate-700"}`}
           >
-            <Package className="w-4 h-4 mr-2" />
-            สินค้าและผลผลิต
-          </TabsTrigger>
-          <TabsTrigger
-            value="orders"
-            className="data-[state=active]:bg-[#002D62] data-[state=active]:text-white"
-          >
-            <ShoppingCart className="w-4 h-4 mr-2" />
-            คำสั่งซื้อ
-          </TabsTrigger>
-          <TabsTrigger
-            value="forecast"
-            className="data-[state=active]:bg-[#002D62] data-[state=active]:text-white"
-          >
-            <CalendarIcon className="w-4 h-4 mr-2" />
-            ตารางเก็บเกี่ยว
-          </TabsTrigger>
-        </TabsList>
-
-        {/* --- Tab 1: Inventory Management --- */}
-        <TabsContent value="inventory">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between">
-              <div>
-                <CardTitle>จัดการสินค้าและรอบเก็บเกี่ยว</CardTitle>
-                <CardDescription>เพิ่ม ลบ แก้ไข ข้อมูลผลผลิตและสต็อก</CardDescription>
-              </div>
-              <Button
-                className="bg-[#2E7D32] hover:bg-[#2E7D32]/90"
-                onClick={() => {
-                  setEditingProduct(null);
-                  setIsProductModalOpen(true);
-                }}
-              >
-                <Plus className="w-4 h-4 mr-2" /> เพิ่มผลผลิต
-              </Button>
-            </CardHeader>
-            <CardContent>
-              <div className="rounded-md border">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>สินค้า</TableHead>
-                      <TableHead>แปลง/รอบวิจัย</TableHead>
-                      <TableHead>สต็อกคงเหลือ</TableHead>
-                      <TableHead>วันเก็บเกี่ยว</TableHead>
-                      <TableHead>ราคา</TableHead>
-                      <TableHead className="text-right">จัดการ</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {products.map((product) => (
-                      <TableRow key={product.id}>
-                        <TableCell>
-                          <div className="flex items-center gap-3">
-                            <img
-                              src={product.image}
-                              alt={product.name}
-                              className="w-10 h-10 rounded-md object-cover"
-                              onError={(event) => {
-                                event.currentTarget.src = "/mahidol-logo.png";
-                              }}
-                            />
-                            <span className="font-medium">{product.name}</span>
-                          </div>
-                        </TableCell>
-                        <TableCell>{product.plot}</TableCell>
-                        <TableCell>
-                          <Badge variant={product.stock > 0 ? "secondary" : "destructive"}>
-                            {product.stock} {product.unit}
-                          </Badge>
-                        </TableCell>
-                        <TableCell>{product.harvestDate}</TableCell>
-                        <TableCell>
-                          ฿{product.price}/{product.unit}
-                        </TableCell>
-                        <TableCell className="text-right space-x-2">
-                          <Button
-                            variant="outline"
-                            size="icon"
-                            onClick={() => {
-                              setEditingProduct(product);
-                              setIsProductModalOpen(true);
-                            }}
-                          >
-                            <Edit className="w-4 h-4 text-blue-600" />
-                          </Button>
-                          <Button
-                            variant="outline"
-                            size="icon"
-                            onClick={() => void handleDeleteProduct(product)}
-                            aria-label={`ลบ ${product.name}`}
-                          >
-                            <Trash2 className="w-4 h-4 text-red-600" />
-                          </Button>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        {/* --- Tab 2: Orders Management --- */}
-        <TabsContent value="orders">
-          <Card>
-            <CardHeader>
-              <CardTitle>รายการคำสั่งซื้อล่าสุด</CardTitle>
-              <CardDescription>จัดการสถานะการสั่งซื้อและตรวจสอบสลิปโอนเงิน</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="rounded-md border">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>รหัสสั่งซื้อ</TableHead>
-                      <TableHead>ลูกค้า</TableHead>
-                      <TableHead>รายการสินค้า</TableHead>
-                      <TableHead>ยอดรวม</TableHead>
-                      <TableHead>สถานะ</TableHead>
-                      <TableHead className="text-right">ตรวจสอบสลิป</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {orders.map((order) => (
-                      <TableRow key={order.id}>
-                        <TableCell className="font-medium">{order.id}</TableCell>
-                        <TableCell>{order.customerName}</TableCell>
-                        <TableCell>
-                          <div className="text-sm">
-                            {order.items.map((item, i) => (
-                              <div key={i}>
-                                {item.name} x{item.qty}
-                              </div>
-                            ))}
-                          </div>
-                        </TableCell>
-                        <TableCell className="font-bold text-[#002D62]">฿{order.total}</TableCell>
-                        <TableCell>{getStatusBadge(order.status)}</TableCell>
-                        <TableCell className="text-right">
-                          {order.status === "pending_payment" && order.slipImage ? (
-                            <Button
-                              size="sm"
-                              className="bg-[#F2A900] hover:bg-[#F2A900]/90 text-[#002D62]"
-                              onClick={() => {
-                                setSelectedOrder(order);
-                                setIsSlipModalOpen(true);
-                              }}
-                            >
-                              <Eye className="w-4 h-4 mr-1" /> ดูสลิป
-                            </Button>
-                          ) : (
-                            <Button size="sm" variant="outline" disabled>
-                              ไม่มีสลิป
-                            </Button>
-                          )}
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        {/* --- Tab 3: Yield Forecast --- */}
-        <TabsContent value="forecast">
-          <Card>
-            <CardHeader>
-              <CardTitle>คาดการณ์ผลผลิต (Yield Forecast)</CardTitle>
-              <CardDescription>ตรวจสอบรอบการเก็บเกี่ยวเพื่อเปิดระบบ Pre-Order</CardDescription>
-            </CardHeader>
-            <CardContent className="flex flex-col md:flex-row gap-8">
-              <div className="border rounded-md p-4 bg-white inline-block">
-                <Calendar
-                  mode="single"
-                  selected={date}
-                  onSelect={setDate}
-                  className="rounded-md border-0"
-                />
-              </div>
-              <div className="flex-1 space-y-4">
-                <h3 className="font-semibold text-lg text-[#002D62]">
-                  ผลผลิตที่คาดว่าจะเก็บเกี่ยววันที่: {date ? format(date, "dd MMM yyyy") : "-"}
-                </h3>
-
-                {harvestsOnDate.length > 0 ? (
-                  <div className="space-y-4">
-                    {harvestsOnDate.map((p) => (
-                      <div
-                        key={p.id}
-                        className="flex items-center gap-4 p-4 border rounded-lg bg-green-50/50"
-                      >
-                        <img
-                          src={p.image}
-                          alt={p.name}
-                          className="w-16 h-16 rounded-md object-cover"
-                        />
-                        <div className="flex-1">
-                          <h4 className="font-bold text-[#2E7D32]">{p.name}</h4>
-                          <p className="text-sm text-gray-600">แปลงปลูก: {p.plot}</p>
-                          <p className="text-sm text-gray-600">
-                            ปริมาณคาดการณ์: {p.stock} {p.unit}
-                          </p>
-                        </div>
-                        <Button variant="outline" className="border-[#002D62] text-[#002D62]">
-                          เปิด Pre-Order
-                        </Button>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="text-center py-12 text-gray-400 border-2 border-dashed rounded-lg">
-                    ไม่มีกำหนดเก็บเกี่ยวในวันนี้
-                  </div>
-                )}
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-      </Tabs>
-
-      {/* --- Modals --- */}
-
-      {/* Add/Edit Product Modal */}
-      <Dialog open={isProductModalOpen} onOpenChange={setIsProductModalOpen}>
-        <DialogContent className="sm:max-w-150 max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>{editingProduct ? "แก้ไขข้อมูลผลผลิต" : "เพิ่มผลผลิตใหม่"}</DialogTitle>
-            <DialogDescription>
-              กรอกข้อมูลผลผลิต ข้อมูลงานวิจัย และวันที่เก็บเกี่ยว
-            </DialogDescription>
-          </DialogHeader>
-          <form onSubmit={handleSaveProduct} className="space-y-4 py-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label>ชื่อผลผลิต</Label>
-                <Input name="name" defaultValue={editingProduct?.name} required />
-              </div>
-              <div className="space-y-2">
-                <Label>URL รูปภาพ</Label>
-                <Input
-                  name="image"
-                  defaultValue={editingProduct?.image}
-                  placeholder="https://..."
-                  required
-                />
-              </div>
-              <div className="space-y-2">
-                <Label>ราคา (บาท)</Label>
-                <Input
-                  name="price"
-                  type="number"
-                  min="0"
-                  step="0.01"
-                  defaultValue={editingProduct?.price}
-                  required
-                />
-              </div>
-              <div className="grid grid-cols-2 gap-2">
-                <div className="space-y-2">
-                  <Label>ปริมาณ</Label>
-                  <Input
-                    name="stock"
-                    type="number"
-                    min="0"
-                    defaultValue={editingProduct?.stock}
-                    required
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label>หน่วย</Label>
-                  <Input name="unit" defaultValue={editingProduct?.unit || "กก."} required />
-                </div>
-              </div>
+            {l}
+          </button>
+        ))}
+      </nav>
+      {loading ? (
+        <div className="py-20 text-center text-slate-500">กำลังโหลดข้อมูล...</div>
+      ) : tab === "activities" ? (
+        <section className="space-y-4">
+          <div className="flex justify-between items-center">
+            <div>
+              <h2 className="text-xl font-bold">Activity CRUD</h2>
+              <p className="text-sm text-slate-500">
+                Draft → Published → Archived พร้อมหลักฐานกิจกรรม
+              </p>
             </div>
-
-            <div className="bg-gray-50 p-4 rounded-lg space-y-4 border">
-              <h4 className="font-semibold text-sm text-[#002D62] flex items-center gap-2">
-                <CalendarIcon className="w-4 h-4" /> ฟิลด์พิเศษสำหรับงานวิจัย
-              </h4>
-              <div className="space-y-2">
-                <Label>แปลงปลูก / รอบการวิจัยที่</Label>
-                <Input
-                  name="plot"
-                  defaultValue={editingProduct?.plot}
-                  placeholder="เช่น P-01 (รอบที่ 3)"
-                  required
-                />
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label>วันที่เก็บเกี่ยว (Harvest Date)</Label>
-                  <Input
-                    name="harvestDate"
-                    type="date"
-                    defaultValue={editingProduct?.harvestDate}
-                    required
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label>อายุการเก็บรักษา (Shelf Life)</Label>
-                  <Input
-                    name="shelfLife"
-                    defaultValue={editingProduct?.shelfLife}
-                    placeholder="เช่น 7 วัน"
-                    required
-                  />
-                </div>
-              </div>
-            </div>
-
-            <DialogFooter className="pt-4">
-              <Button type="button" variant="outline" onClick={() => setIsProductModalOpen(false)}>
-                ยกเลิก
-              </Button>
-              <Button type="submit" className="bg-[#002D62] hover:bg-[#002D62]/90">
-                บันทึกข้อมูล
-              </Button>
-            </DialogFooter>
-          </form>
-        </DialogContent>
-      </Dialog>
-
-      {/* Slip Preview Modal */}
-      <Dialog open={isSlipModalOpen} onOpenChange={setIsSlipModalOpen}>
-        <DialogContent className="sm:max-w-112.5 max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>ตรวจสอบการชำระเงิน</DialogTitle>
-            <DialogDescription>คำสั่งซื้อ: {selectedOrder?.id}</DialogDescription>
-          </DialogHeader>
-          <div className="flex flex-col items-center space-y-4 py-4">
-            <div className="w-full h-80 bg-gray-100 rounded-md border flex items-center justify-center overflow-hidden">
-              {selectedOrder?.slipImage ? (
-                <img
-                  src={selectedOrder.slipImage}
-                  alt="Slip"
-                  className="object-contain w-full h-full"
-                />
-              ) : (
-                <span className="text-gray-400">ไม่พบรูปภาพสลิป</span>
-              )}
-            </div>
-            <div className="w-full flex justify-between gap-4 pt-4">
-              <Button
-                variant="outline"
-                className="w-full text-red-600 border-red-200 hover:bg-red-50"
-                onClick={handleRejectSlip}
-              >
-                <XCircle className="w-4 h-4 mr-2" /> ปฏิเสธ (ข้อมูลไม่ถูกต้อง)
-              </Button>
-              <Button
-                className="w-full bg-[#2E7D32] hover:bg-[#2E7D32]/90"
-                onClick={handleApproveSlip}
-              >
-                <CheckCircle2 className="w-4 h-4 mr-2" /> อนุมัติ (รับยอดแล้ว)
-              </Button>
-            </div>
+            <button
+              className="px-4 py-2 rounded-lg bg-emerald-700 text-white"
+              onClick={() => {
+                setEditingActivity(null);
+                setActivityForm({ ...blankActivity });
+                setShowActivity(true);
+              }}
+            >
+              + เพิ่มกิจกรรม
+            </button>
           </div>
-        </DialogContent>
-      </Dialog>
+          <div className="overflow-x-auto rounded-xl border bg-white">
+            <table className="w-full text-sm">
+              <thead className="bg-slate-50">
+                <tr>
+                  <th className="p-3 text-left">กิจกรรม</th>
+                  <th className="p-3">วันที่</th>
+                  <th className="p-3">สถานะ</th>
+                  <th className="p-3">ผู้เข้าร่วม</th>
+                  <th className="p-3 text-right">จัดการ</th>
+                </tr>
+              </thead>
+              <tbody>
+                {activities.map((a) => (
+                  <tr key={a.id} className="border-t">
+                    <td className="p-3">
+                      <b>{a.title}</b>
+                      <div className="text-xs text-slate-400">/{a.slug}</div>
+                    </td>
+                    <td className="p-3 text-center">
+                      {new Date(a.activityDate).toLocaleDateString("th-TH")}
+                    </td>
+                    <td className="p-3 text-center">
+                      <span className="rounded-full bg-slate-100 px-2 py-1">{a.status}</span>
+                    </td>
+                    <td className="p-3 text-center">{a.participantCount ?? 0}</td>
+                    <td className="p-3 text-right space-x-2">
+                      <button
+                        className="underline"
+                        onClick={() => {
+                          setEditingActivity(a);
+                          setActivityForm({ ...a });
+                          setShowActivity(true);
+                        }}
+                      >
+                        แก้ไข
+                      </button>
+                      <button
+                        className="text-red-600 underline"
+                        onClick={async () => {
+                          if (confirm("ลบกิจกรรมนี้?")) {
+                            await deleteActivity(a.id);
+                            await load();
+                          }
+                        }}
+                      >
+                        ลบ
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </section>
+      ) : tab === "products" ? (
+        <section className="space-y-4">
+          <div className="flex justify-between items-center">
+            <div>
+              <h2 className="text-xl font-bold">Products / Stock</h2>
+              <p className="text-sm text-slate-500">
+                ผลผลิตจาก Smart Farm ที่พร้อมจำหน่าย/ให้การสนับสนุน
+              </p>
+            </div>
+            <button
+              className="px-4 py-2 rounded-lg bg-emerald-700 text-white"
+              onClick={() => {
+                setEditingProduct(null);
+                setProductForm({
+                  name: "",
+                  price: 0,
+                  unit: "กก.",
+                  stock: 0,
+                  image: "",
+                  isPreOrder: false,
+                  harvestDate: "",
+                  plotId: "",
+                  researchTag: "",
+                });
+                setShowProduct(true);
+              }}
+            >
+              + เพิ่มผลผลิต
+            </button>
+          </div>
+          <div className="grid gap-3">
+            {products.map((p) => (
+              <div
+                key={p.id}
+                className="rounded-xl border bg-white p-4 flex flex-wrap gap-4 items-center"
+              >
+                <div className="flex-1">
+                  <b>{p.name}</b>
+                  <div className="text-sm text-slate-500">
+                    ฿{Number(p.price).toLocaleString()}/{p.unit} · แปลง {p.plotId || "-"}
+                  </div>
+                </div>
+                <span
+                  className={`px-3 py-1 rounded-full text-sm ${p.stock > 0 ? "bg-emerald-50 text-emerald-700" : "bg-red-50 text-red-700"}`}
+                >
+                  คงเหลือ {p.stock}
+                </span>
+                <button className="underline" onClick={() => editProduct(p)}>
+                  แก้ไข
+                </button>
+                <button
+                  className="text-red-600 underline"
+                  onClick={async () => {
+                    if (confirm("ลบสินค้านี้?")) {
+                      await deleteProduct(p.id);
+                      await load();
+                    }
+                  }}
+                >
+                  ลบ
+                </button>
+              </div>
+            ))}
+          </div>
+        </section>
+      ) : (
+        <section className="space-y-4">
+          <div>
+            <h2 className="text-xl font-bold">Orders</h2>
+            <p className="text-sm text-slate-500">ตรวจสอบการชำระเงินและสถานะการส่งมอบ</p>
+          </div>
+          <div className="overflow-x-auto rounded-xl border bg-white">
+            <table className="w-full text-sm">
+              <thead className="bg-slate-50">
+                <tr>
+                  <th className="p-3 text-left">ลูกค้า</th>
+                  <th className="p-3">วันที่</th>
+                  <th className="p-3">ยอด</th>
+                  <th className="p-3">สถานะ</th>
+                  <th className="p-3">เปลี่ยนสถานะ</th>
+                </tr>
+              </thead>
+              <tbody>
+                {orders.map((o) => (
+                  <tr key={o.id} className="border-t">
+                    <td className="p-3">
+                      <b>{o.customerName}</b>
+                      <div className="text-xs text-slate-400">{o.customerPhone}</div>
+                    </td>
+                    <td className="p-3 text-center">
+                      {new Date(o.createdAt).toLocaleString("th-TH")}
+                    </td>
+                    <td className="p-3 text-center">฿{Number(o.totalAmount).toLocaleString()}</td>
+                    <td className="p-3 text-center">{o.status}</td>
+                    <td className="p-3 text-center">
+                      <select
+                        className="border rounded px-2 py-1"
+                        value={o.status}
+                        onChange={async (e) => {
+                          await updateOrderStatus(o.id, e.target.value as any);
+                          await load();
+                        }}
+                      >
+                        <option value="pending">pending</option>
+                        <option value="paid">paid</option>
+                        <option value="fulfilled">fulfilled</option>
+                        <option value="cancelled">cancelled</option>
+                      </select>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </section>
+      )}
+      {showActivity && (
+        <Modal
+          title={editingActivity ? "แก้ไขกิจกรรม" : "เพิ่มกิจกรรม"}
+          onClose={() => setShowActivity(false)}
+          onSave={saveActivity}
+        >
+          <div className="grid md:grid-cols-2 gap-3">
+            {(
+              [
+                "title",
+                "slug",
+                "activityDate",
+                "location",
+                "participantCount",
+                "featuredImage",
+                "summary",
+                "objective",
+                "process",
+                "outcome",
+                "impact",
+                "content",
+              ] as const
+            ).map((k) => (
+              <label
+                key={k}
+                className={
+                  k === "content" ||
+                  k === "summary" ||
+                  k === "objective" ||
+                  k === "process" ||
+                  k === "outcome" ||
+                  k === "impact"
+                    ? "md:col-span-2"
+                    : ""
+                }
+              >
+                <span className="text-xs font-semibold">{k}</span>
+                {k === "participantCount" ? (
+                  <input
+                    type="number"
+                    className={inputClass}
+                    value={activityForm[k] ?? 0}
+                    onChange={(e) =>
+                      setActivityForm({ ...activityForm, participantCount: Number(e.target.value) })
+                    }
+                  />
+                ) : k === "activityDate" ? (
+                  <input
+                    type="datetime-local"
+                    className={inputClass}
+                    value={String(activityForm[k]).slice(0, 16)}
+                    onChange={(e) =>
+                      setActivityForm({ ...activityForm, activityDate: e.target.value })
+                    }
+                  />
+                ) : (
+                  <textarea
+                    rows={k === "content" ? 5 : 2}
+                    className={inputClass}
+                    value={String(activityForm[k] ?? "")}
+                    onChange={(e) => setActivityForm({ ...activityForm, [k]: e.target.value })}
+                  />
+                )}
+              </label>
+            ))}
+            <label>
+              <span className="text-xs font-semibold">status</span>
+              <select
+                className={inputClass}
+                value={activityForm.status}
+                onChange={(e) =>
+                  setActivityForm({ ...activityForm, status: e.target.value as any })
+                }
+              >
+                <option value="draft">draft</option>
+                <option value="published">published</option>
+                <option value="archived">archived</option>
+              </select>
+            </label>
+          </div>
+        </Modal>
+      )}
+      {showProduct && (
+        <Modal
+          title={editingProduct ? "แก้ไขผลผลิต" : "เพิ่มผลผลิต"}
+          onClose={() => setShowProduct(false)}
+          onSave={saveProduct}
+        >
+          <div className="grid md:grid-cols-2 gap-3">
+            {(
+              [
+                "name",
+                "price",
+                "unit",
+                "stock",
+                "image",
+                "harvestDate",
+                "plotId",
+                "researchTag",
+                "category",
+              ] as const
+            ).map((k) => (
+              <label key={k}>
+                <span className="text-xs font-semibold">{k}</span>
+                <input
+                  type={k === "price" || k === "stock" ? "number" : "text"}
+                  className={inputClass}
+                  value={String((productForm as any)[k] ?? "")}
+                  onChange={(e) =>
+                    setProductForm({
+                      ...productForm,
+                      [k]: k === "price" || k === "stock" ? Number(e.target.value) : e.target.value,
+                    })
+                  }
+                />
+              </label>
+            ))}
+            <label className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                checked={!!productForm.isPreOrder}
+                onChange={(e) => setProductForm({ ...productForm, isPreOrder: e.target.checked })}
+              />{" "}
+              เปิดรับ Pre-order
+            </label>
+          </div>
+        </Modal>
+      )}
+    </main>
+  );
+}
+function Modal({
+  title,
+  onClose,
+  onSave,
+  children,
+}: {
+  title: string;
+  onClose: () => void;
+  onSave: () => void;
+  children: ReactNode;
+}) {
+  return (
+    <div className="fixed inset-0 z-50 bg-black/40 p-4 flex items-center justify-center">
+      <div className="bg-white rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-auto p-6">
+        <div className="flex justify-between mb-5">
+          <h3 className="text-xl font-bold">{title}</h3>
+          <button onClick={onClose}>✕</button>
+        </div>
+        {children}
+        <div className="flex justify-end gap-2 mt-6">
+          <button className="px-4 py-2 border rounded-lg" onClick={onClose}>
+            ยกเลิก
+          </button>
+          <button className="px-4 py-2 bg-slate-900 text-white rounded-lg" onClick={onSave}>
+            บันทึก
+          </button>
+        </div>
+      </div>
     </div>
   );
-};
+}

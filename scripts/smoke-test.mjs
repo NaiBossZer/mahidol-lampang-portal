@@ -20,6 +20,12 @@ const requiredRoutes = [
   "/clean-energy",
   "/rac",
   "/survey",
+  "/activities",
+  "/centers",
+  "/projects",
+  "/shellac",
+  "/site-map",
+  "/support-vegetables",
 ];
 for (const route of requiredRoutes)
   check(
@@ -37,12 +43,15 @@ const requiredAssets = [
 ];
 for (const asset of requiredAssets) check(`asset ${asset}`, existsSync(resolve(root, asset)));
 
-const hub = readFileSync(resolve(root, "src/components/pages/MahidolLampangHub.tsx"), "utf8");
+const hub = readFileSync(resolve(root, "src/pages/HomePage.tsx"), "utf8");
+const socialData = readFileSync(resolve(root, "src/data/socialEngagement.ts"), "utf8");
 check("primary identity wording", hub.includes("งานพันธกิจเพื่อสังคม"));
 check("secondary learning wording", hub.includes("พื้นที่เรียนรู้"));
 check(
-  "legacy content modules retained",
-  ["Smart Farm", "CLEAN ENERGY", "ตลาดผักมหิดล"].every((item) => hub.includes(item)),
+  "core architecture retained",
+  ["Smart Farm", "Clean Energy", "Shellac Learning Center", "Learning Experience"].every(
+    (item) => hub.includes(item) || socialData.includes(item),
+  ),
 );
 
 const styles = readFileSync(resolve(root, "src/styles.css"), "utf8");

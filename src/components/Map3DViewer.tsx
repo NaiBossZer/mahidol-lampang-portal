@@ -17,28 +17,22 @@ export function Map3DViewer({ modelUrl }: Map3DViewerProps) {
   const viewerRef = useRef<HTMLElement>(null);
   const activeModelUrl = modelUrl?.trim() || FALLBACK_MODEL_URL;
 
-  // Lazy Loading: ตรวจจับเมื่อผู้ใช้เลื่อนหน้าจอมาถึงบริเวณนี้
   useEffect(() => {
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry?.isIntersecting) {
           setShouldLoad(true);
-          observer.disconnect(); // เลิกตรวจจับเมื่อเริ่มโหลดแล้ว
+          observer.disconnect();
         }
       },
-      { rootMargin: "100px" } // เริ่มโหลดล่วงหน้าก่อนเลื่อนมาถึง 100px
+      { rootMargin: "100px" },
     );
-
-    if (containerRef.current) {
-      observer.observe(containerRef.current);
-    }
-
+    if (containerRef.current) observer.observe(containerRef.current);
     return () => observer.disconnect();
   }, []);
 
   useEffect(() => {
     if (!shouldLoad) return;
-
     let isActive = true;
     void import("@google/model-viewer")
       .then(() => {
@@ -47,7 +41,6 @@ export function Map3DViewer({ modelUrl }: Map3DViewerProps) {
       .catch(() => {
         if (isActive) setHasError(true);
       });
-
     return () => {
       isActive = false;
     };
@@ -55,37 +48,34 @@ export function Map3DViewer({ modelUrl }: Map3DViewerProps) {
 
   useEffect(() => {
     if (!shouldLoad || !viewerReady) return;
-
     const viewer = viewerRef.current;
     if (!viewer) return;
 
-      const handleProgress = (event: Event) => {
-        const totalProgress = (event as CustomEvent<{ totalProgress: number }>).detail
-          ?.totalProgress;
-        if (typeof totalProgress !== "number") return;
+    const handleProgress = (event: Event) => {
+      const totalProgress = (event as CustomEvent<{ totalProgress: number }>).detail?.totalProgress;
+      if (typeof totalProgress !== "number") return;
+      const nextProgress = Math.round(totalProgress * 100);
+      setProgress((currentProgress) =>
+        currentProgress === nextProgress ? currentProgress : nextProgress,
+      );
+    };
+    const handleLoad = () => {
+      setProgress(100);
+      setIsLoaded(true);
+    };
+    const handleError = () => setHasError(true);
 
-        const nextProgress = Math.round(totalProgress * 100);
-        setProgress((currentProgress) =>
-          currentProgress === nextProgress ? currentProgress : nextProgress
-        );
-      };
-      const handleLoad = () => {
-        setProgress(100);
-        setIsLoaded(true);
-      };
-      const handleError = () => setHasError(true);
+    viewer.addEventListener("progress", handleProgress);
+    viewer.addEventListener("load", handleLoad);
+    viewer.addEventListener("error", handleError);
+    viewer.setAttribute("src", activeModelUrl);
 
-      viewer.addEventListener("progress", handleProgress);
-      viewer.addEventListener("load", handleLoad);
-      viewer.addEventListener("error", handleError);
-      viewer.setAttribute("src", activeModelUrl);
-
-      return () => {
-        viewer.removeEventListener("progress", handleProgress);
-        viewer.removeEventListener("load", handleLoad);
-        viewer.removeEventListener("error", handleError);
-        viewer.removeAttribute("src");
-      };
+    return () => {
+      viewer.removeEventListener("progress", handleProgress);
+      viewer.removeEventListener("load", handleLoad);
+      viewer.removeEventListener("error", handleError);
+      viewer.removeAttribute("src");
+    };
   }, [activeModelUrl, shouldLoad, viewerReady]);
 
   const retryLoading = () => {
@@ -106,7 +96,7 @@ export function Map3DViewer({ modelUrl }: Map3DViewerProps) {
         <model-viewer
           ref={viewerRef}
           alt="ผังพื้นที่ปฏิบัติงานและการเรียนรู้ มหิดล ลำปาง"
-          loading="eager"
+          loading="lazy"
           auto-rotate
           camera-controls
           shadow-intensity="1.5"
@@ -115,7 +105,6 @@ export function Map3DViewer({ modelUrl }: Map3DViewerProps) {
           field-of-view="30deg"
           className="w-full h-full"
         >
-          {/* แสดงสถานะโหลดหรือข้อผิดพลาดทับบน viewer */}
           {(!isLoaded || hasError) && (
             <div
               slot="poster"
@@ -138,11 +127,8 @@ export function Map3DViewer({ modelUrl }: Map3DViewerProps) {
                 <>
                   <div className="mb-4 flex items-center gap-3">
                     <div className="h-6 w-6 animate-spin rounded-full border-4 border-slate-600 border-t-amber-500" />
-                    <p className="text-lg font-medium text-slate-100">
-                      กำลังโหลดผังบริเวณ 3D...
-                    </p>
+                    <p className="text-lg font-medium text-slate-100">กำลังโหลดผังบริเวณ 3D...</p>
                   </div>
-
                   <div
                     role="progressbar"
                     aria-label="ความคืบหน้าการโหลดโมเดล 3D"
@@ -156,11 +142,9 @@ export function Map3DViewer({ modelUrl }: Map3DViewerProps) {
                       style={{ width: `${progress}%` }}
                     />
                   </div>
-
                   <span className="mt-2 font-mono text-sm font-semibold text-amber-400">
                     {progress}%
                   </span>
-
                   <p className="mt-3 text-center text-xs text-slate-400">
                     โมเดลมีความละเอียดสูง (241 MB) อาจใช้เวลาดาวน์โหลดครู่หนึ่ง
                   </p>
@@ -170,7 +154,6 @@ export function Map3DViewer({ modelUrl }: Map3DViewerProps) {
           )}
         </model-viewer>
       ) : (
-        /* หน้าพรีวิวเริ่มต้นก่อนที่ผู้ใช้จะเลื่อนหน้าจอมาถึง */
         <div className="flex flex-col items-center justify-center h-full text-slate-400">
           <p className="text-sm">เลื่อนลงมาเพื่อโหลดผังบริเวณ 3D</p>
         </div>

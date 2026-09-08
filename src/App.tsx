@@ -1,63 +1,83 @@
-import { Routes, Route, Navigate } from 'react-router-dom';
-import { Toaster } from 'sonner';
-import { RuntimeErrorBoundary } from './components/RuntimeErrorBoundary';
-import { MahidolLampangHub } from './components/pages/MahidolLampangHub';
-import { DashboardPage } from './pages/DashboardPage';
-import { LoginPage } from './pages/LoginPage';
-import { StorefrontPage } from './pages/StorefrontPage';
-import { AdminPage } from './pages/AdminPage';
-import { SmartFarmPage } from './pages/SmartFarmPage';
-import { CleanEnergyPage } from './pages/CleanEnergyPage';
-import { RACPage } from './pages/RACPage';
-import { SurveyPage } from './pages/SurveyPage';
+import { Link as RouterLink, Route, Routes } from "react-router-dom";
+import type { ReactNode } from "react";
+import { Toaster } from "sonner";
+import { RuntimeErrorBoundary } from "./components/RuntimeErrorBoundary";
+import { AdminGuard } from "./components/AdminGuard";
+import { HomePage } from "./pages/HomePage";
+import { SurveyPage } from "./pages/SurveyPage";
+import { SiteMapPage } from "./pages/SiteMapPage";
+import { LoginPage } from "./pages/admin/LoginPage";
+import { AdminPage } from "./pages/admin/AdminPage";
+import { DashboardPage } from "./pages/admin/DashboardPage";
+import { StorefrontPage } from "./pages/store/StorefrontPage";
+import { SmartFarmPage } from "./pages/systems/SmartFarmPage";
+import { CleanEnergyPage } from "./pages/systems/CleanEnergyPage";
+import { RACPage } from "./pages/systems/RACPage";
+import { ActivitiesPage } from "./pages/social/ActivitiesPage";
+import { ActivityDetailPage } from "./pages/social/ActivityDetailPage";
+import { CentersPage } from "./pages/social/CentersPage";
+import { ProjectsPage, ProjectDetailPage } from "./pages/social/ProjectsPage";
+import { ShellacLearningCenterPage } from "./pages/social/ShellacLearningCenterPage";
 
 function NotFoundComponent() {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background px-4">
+    <div className="flex min-h-screen items-center justify-center bg-[#f8f6f0] px-4">
       <div className="max-w-md text-center">
-        <h1 className="text-7xl font-bold text-foreground">404</h1>
-        <h2 className="mt-4 text-xl font-semibold text-foreground">Page not found</h2>
-        <p className="mt-2 text-sm text-muted-foreground">
-          The page you're looking for doesn't exist or has been moved.
-        </p>
-        <div className="mt-6">
-          <RouterLink
-            to="/"
-            className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
-          >
-            Go home
-          </RouterLink>
-        </div>
+        <h1 className="text-7xl font-black text-[#123B63]">404</h1>
+        <h2 className="mt-4 text-xl font-bold text-[#123B63]">ไม่พบหน้าที่ต้องการ</h2>
+        <RouterLink
+          to="/"
+          className="mt-6 inline-flex rounded-xl bg-[#123B63] px-4 py-2 text-sm font-bold text-white"
+        >
+          กลับหน้าหลัก
+        </RouterLink>
       </div>
     </div>
   );
+}
+
+function ProtectedRoute({ children }: { children: ReactNode }) {
+  return <AdminGuard>{children}</AdminGuard>;
 }
 
 export default function App() {
   return (
     <RuntimeErrorBoundary>
       <Routes>
-        <Route path="/" element={<MahidolLampangHub />} />
+        <Route path="/" element={<HomePage />} />
+        <Route path="/activities" element={<ActivitiesPage />} />
+        <Route path="/activities/:slug" element={<ActivityDetailPage />} />
+        <Route path="/centers" element={<CentersPage />} />
+        <Route path="/projects" element={<ProjectsPage />} />
+        <Route path="/projects/:slug" element={<ProjectDetailPage />} />
+        <Route path="/shellac" element={<ShellacLearningCenterPage />} />
         <Route path="/login" element={<LoginPage />} />
-        <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
+        <Route
+          path="/dashboard"
+          element={
+            <ProtectedRoute>
+              <DashboardPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin"
+          element={
+            <ProtectedRoute>
+              <AdminPage />
+            </ProtectedRoute>
+          }
+        />
         <Route path="/storefront" element={<StorefrontPage />} />
-        <Route path="/admin" element={<ProtectedRoute adminOnly><AdminPage /></ProtectedRoute>} />
+        <Route path="/support-vegetables" element={<StorefrontPage />} />
         <Route path="/smart-farm" element={<SmartFarmPage />} />
         <Route path="/clean-energy" element={<CleanEnergyPage />} />
         <Route path="/rac" element={<RACPage />} />
         <Route path="/survey" element={<SurveyPage />} />
+        <Route path="/site-map" element={<SiteMapPage />} />
         <Route path="*" element={<NotFoundComponent />} />
       </Routes>
       <Toaster position="top-right" richColors closeButton />
     </RuntimeErrorBoundary>
   );
-}
-
-function ProtectedRoute({ children, adminOnly = false }: { children: React.ReactNode; adminOnly?: boolean }) {
-  const isAuth = typeof window !== 'undefined' && sessionStorage.getItem('dashboard_auth') === 'true';
-  if (!isAuth) {
-    const redirectPath = adminOnly ? '/admin' : '/dashboard';
-    return <Navigate to={`/login?redirect=${encodeURIComponent(redirectPath)}`} replace />;
-  }
-  return <>{children}</>;
 }

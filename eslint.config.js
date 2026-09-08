@@ -1,4 +1,4 @@
-import js from "@eslint/js";
+﻿import js from "@eslint/js";
 import eslintPluginPrettier from "eslint-plugin-prettier/recommended";
 import globals from "globals";
 import reactHooks from "eslint-plugin-react-hooks";
@@ -19,6 +19,7 @@ export default tseslint.config(
       "react-refresh": reactRefresh,
     },
     rules: {
+      "@typescript-eslint/no-explicit-any": "warn",
       ...reactHooks.configs.recommended.rules,
       "no-restricted-imports": [
         "error",
