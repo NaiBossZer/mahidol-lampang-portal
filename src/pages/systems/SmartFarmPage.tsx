@@ -1,11 +1,10 @@
+import { SUB_SYSTEM_URLS } from "@/config";
 import { EmbeddedSystemView } from "@/components/EmbeddedSystemView";
-
-const SMART_FARM_URL = "https://mahidol-smart-farm.vercel.app";
 
 export function SmartFarmPage() {
   return (
     <EmbeddedSystemView
-      url={SMART_FARM_URL}
+      url={SUB_SYSTEM_URLS.SMART_FARM}
       title="Smart Farm System"
       systemLabel="Smart Farm IoT"
     />
