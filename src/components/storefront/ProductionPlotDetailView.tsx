@@ -1,0 +1,15 @@
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Badge } from "@/components/ui/badge";
+import { CalendarDays, Map, PackageCheck, FlaskConical } from "lucide-react";
+import type { Product } from "./mockData";
+
+type ProductionProduct = Product & { description?: string; category?: string; researchTag?: string };
+export function ProductionPlotDetailView({ product, relatedProducts, onClose }: { product: Product | null; relatedProducts: Product[]; onClose: () => void }) {
+  const p = product as ProductionProduct | null;
+  return <Dialog open={p !== null} onOpenChange={(open) => !open && onClose()}><DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-2xl">{p && <><DialogHeader><DialogTitle className="flex items-center gap-2 text-[#002D62]"><PackageCheck className="h-5 w-5" />ข้อมูลการผลิต: {p.name}</DialogTitle><DialogDescription>ข้อมูลจากฐานข้อมูลผลผลิตของระบบกลาง ไม่เชื่อมต่อ Smart Farm</DialogDescription></DialogHeader>
+    <div className="grid gap-4 sm:grid-cols-2"><section className="rounded-xl border bg-slate-50 p-4"><h3 className="mb-3 font-semibold text-[#002D62]">รายละเอียดผลผลิต</h3><dl className="space-y-2 text-sm"><div className="flex justify-between gap-4"><dt className="text-slate-500">หมวดหมู่</dt><dd className="font-medium">{p.category || "-"}</dd></div><div className="flex justify-between gap-4"><dt className="text-slate-500">แปลงผลิต</dt><dd className="font-medium">{p.plotId || "-"}</dd></div><div className="flex justify-between gap-4"><dt className="text-slate-500">คงเหลือ</dt><dd className="font-medium">{p.stock} {p.unit}</dd></div><div className="flex justify-between gap-4"><dt className="text-slate-500">วันเก็บเกี่ยว</dt><dd className="font-medium">{p.harvestDate ? new Date(p.harvestDate).toLocaleDateString("th-TH") : "ยังไม่ระบุ"}</dd></div></dl></section>
+    <section className="rounded-xl border bg-emerald-50/40 p-4"><h3 className="mb-3 flex items-center gap-2 font-semibold text-[#2E7D32]"><CalendarDays className="h-4 w-4" />งานวิจัยและมาตรฐาน</h3><p className="text-sm"><span className="text-slate-500">รหัสงานวิจัย:</span> {p.researchTag || "-"}</p><div className="mt-3 flex flex-wrap gap-2">{p.standards.map((x) => <Badge key={x} variant="outline">{x}</Badge>)}{p.researchTag && <Badge variant="outline"><FlaskConical className="mr-1 h-3 w-3" />งานวิจัย</Badge>}</div></section></div>
+    <section className="rounded-xl border p-4"><div className="flex items-center gap-2 font-semibold text-[#002D62]"><Map className="h-4 w-4" />แปลงผลิต {p.plotId || "-"}</div><p className="mt-2 text-sm text-slate-500">ระบบใช้รหัสแปลงเป็นข้อมูลอ้างอิงการผลิตเท่านั้น โดยไม่ดึงข้อมูลเซนเซอร์จาก Smart Farm</p>{p.description && <p className="mt-3 text-sm">{p.description}</p>}</section>
+    {relatedProducts.length > 0 && <section><h3 className="mb-2 text-sm font-semibold text-[#002D62]">ผลผลิตรายการอื่น</h3><div className="flex flex-wrap gap-2">{relatedProducts.map((x) => <Badge key={x.id} variant="secondary">{x.name}</Badge>)}</div></section>}
+  </>}</DialogContent></Dialog>;
+}
