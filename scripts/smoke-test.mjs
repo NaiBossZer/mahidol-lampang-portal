@@ -27,11 +27,10 @@ const requiredRoutes = [
   "/site-map",
   "/support-vegetables",
 ];
-for (const route of requiredRoutes)
-  check(
-    `route ${route}`,
-    app.includes(`path=\"${route}\"`) || (route === "/" && app.includes('path="/"')),
-  );
+
+for (const route of requiredRoutes) {
+  check(`route ${route}`, app.includes(`path="${route}"`));
+}
 
 const requiredAssets = [
   "public/main banner.jpg",
@@ -44,15 +43,20 @@ const requiredAssets = [
 for (const asset of requiredAssets) check(`asset ${asset}`, existsSync(resolve(root, asset)));
 
 const hub = readFileSync(resolve(root, "src/pages/HomePage.tsx"), "utf8");
-const socialData = readFileSync(resolve(root, "src/data/socialEngagement.ts"), "utf8");
+const systems = readFileSync(resolve(root, "src/config/systems.ts"), "utf8");
+const activityData = readFileSync(resolve(root, "src/data/socialEngagement.ts"), "utf8");
+
 check("primary identity wording", hub.includes("งานพันธกิจเพื่อสังคม"));
 check("secondary learning wording", hub.includes("พื้นที่เรียนรู้"));
 check(
   "core architecture retained",
   ["Smart Farm", "Clean Energy", "Shellac Learning Center", "Learning Experience"].every(
-    (item) => hub.includes(item) || socialData.includes(item),
+    (item) => hub.includes(item) || systems.includes(item),
   ),
 );
+check("core registry centralized", systems.includes("CORE_SYSTEMS") && !activityData.includes("SYSTEMS"));
+check("removed diagnostic endpoint", !existsSync(resolve(root, "api/admin/db-check.ts")));
+check("building safety remains excluded", !app.toLowerCase().includes("building safety"));
 
 const styles = readFileSync(resolve(root, "src/styles.css"), "utf8");
 check("design tokens loaded", styles.includes("--brand-navy") && styles.includes("--focus-ring"));
