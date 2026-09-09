@@ -1,3 +1,5 @@
+import { SUB_SYSTEM_URLS } from "./constants";
+
 export type CoreSystem = {
   slug: string;
   title: string;
@@ -5,8 +7,6 @@ export type CoreSystem = {
   image: string;
   href: string;
 };
-
-import { SUB_SYSTEM_URLS } from "./constants";
 
 /** Single source of truth for the portal's core systems. */
 export const CORE_SYSTEMS: readonly CoreSystem[] = [
