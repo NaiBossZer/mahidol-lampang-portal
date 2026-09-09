@@ -44,6 +44,8 @@ for (const asset of requiredAssets) check(`asset ${asset}`, existsSync(resolve(r
 
 const hub = readFileSync(resolve(root, "src/pages/HomePage.tsx"), "utf8");
 const systems = readFileSync(resolve(root, "src/config/systems.ts"), "utf8");
+const activityData = readFileSync(resolve(root, "src/data/socialEngagement.ts"), "utf8");
+
 check("primary identity wording", hub.includes("งานพันธกิจเพื่อสังคม"));
 check("secondary learning wording", hub.includes("พื้นที่เรียนรู้"));
 check(
@@ -52,6 +54,9 @@ check(
     (item) => hub.includes(item) || systems.includes(item),
   ),
 );
+check("core registry centralized", systems.includes("CORE_SYSTEMS") && !activityData.includes("SYSTEMS"));
+check("removed diagnostic endpoint", !existsSync(resolve(root, "api/admin/db-check.ts")));
+check("building safety remains excluded", !app.toLowerCase().includes("building safety"));
 
 const styles = readFileSync(resolve(root, "src/styles.css"), "utf8");
 check("design tokens loaded", styles.includes("--brand-navy") && styles.includes("--focus-ring"));
