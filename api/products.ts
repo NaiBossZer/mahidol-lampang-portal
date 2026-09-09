@@ -1,43 +1,36 @@
-﻿import { and, eq } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 import { getDb } from "../src/db/index";
-import { products, plots } from "../src/db/schema";
-import { json, methodNotAllowed, readJson, type ApiRequest, type ApiResponse } from "../_http";
-
+import { products } from "../src/db/schema";
+import { json, methodNotAllowed, readJson, type ApiRequest, type ApiResponse } from "./_http";
 import { isAdmin } from "./_auth";
+
 function validBody(body: unknown) {
   if (!body || typeof body !== "object") return null;
   const b = body as Record<string, unknown>;
-  const name = String(b.name ?? "").trim(),
-    unit = String(b.unit ?? "").trim();
-  const price = Number(b.price),
-    stock = Number(b.stockQuantity ?? b.stock ?? 0);
-  if (
-    !name ||
-    !unit ||
-    !Number.isFinite(price) ||
-    price < 0 ||
-    !Number.isInteger(stock) ||
-    stock < 0
-  )
+  const name = String(b["name"] ?? "").trim();
+  const unit = String(b["unit"] ?? "").trim();
+  const price = Number(b["price"]);
+  const stock = Number(b["stockQuantity"] ?? b["stock"] ?? 0);
+  if (!name || !unit || !Number.isFinite(price) || price < 0 || !Number.isInteger(stock) || stock < 0)
     return null;
   return {
     name,
-    description: b.description ? String(b.description) : null,
-    category: b.category ? String(b.category) : null,
+    description: b["description"] ? String(b["description"]) : null,
+    category: b["category"] ? String(b["category"]) : null,
     price: price.toFixed(2),
     unit,
     stockQuantity: stock,
-    imageUrl: b.imageUrl ? String(b.imageUrl) : null,
-    harvestDate: b.harvestDate ? new Date(String(b.harvestDate)) : null,
-    isPreorder: Boolean(b.isPreorder),
-    researchTag: b.researchTag ? String(b.researchTag) : null,
-    plotId: b.plotId ? String(b.plotId) : null,
+    imageUrl: b["imageUrl"] ? String(b["imageUrl"]) : null,
+    harvestDate: b["harvestDate"] ? new Date(String(b["harvestDate"])) : null,
+    isPreorder: Boolean(b["isPreorder"]),
+    researchTag: b["researchTag"] ? String(b["researchTag"]) : null,
+    plotId: b["plotId"] ? String(b["plotId"]) : null,
   };
 }
 
 export default async function handler(req: ApiRequest, res: ApiResponse) {
-  const url = new URL(req.url ?? "/", "http://localhost"),
-    id = url.searchParams.get("id");
+  const url = new URL(req.url ?? "/", "http://localhost");
+  const id = url.searchParams.get("id");
   try {
     if (req.method === "GET") {
       const rows = await getDb().select().from(products).orderBy(products.createdAt);
@@ -59,10 +52,7 @@ export default async function handler(req: ApiRequest, res: ApiResponse) {
       return json(res, 200, { success: true, data: row });
     }
     if (req.method === "DELETE" && id) {
-      const [row] = await db
-        .delete(products)
-        .where(eq(products.id, id))
-        .returning({ id: products.id });
+      const [row] = await db.delete(products).where(eq(products.id, id)).returning({ id: products.id });
       if (!row) return json(res, 404, { error: "ไม่พบสินค้า" });
       return json(res, 200, { success: true, data: row });
     }

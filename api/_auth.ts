@@ -30,8 +30,9 @@ export function isAdmin(req: ApiRequest): boolean {
   if (!configured) return false;
   const cookie = req.headers.cookie ?? "";
   const match = cookie.match(/(?:^|;\s*)admin_session=([^;]+)/);
-  if (!match) return false;
-  const [rawExpires, rawSignature] = match[1].split(".");
+  const value = match?.[1];
+  if (!value) return false;
+  const [rawExpires, rawSignature] = value.split(".");
   const expires = Number(rawExpires);
   if (!Number.isSafeInteger(expires) || expires < Math.floor(Date.now() / 1000) || !rawSignature)
     return false;

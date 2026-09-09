@@ -1,15 +1,16 @@
-﻿import { eq, sql } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 import { getDb } from "../src/db/index";
 import { products } from "../src/db/schema";
-import { json, methodNotAllowed, readJson, type ApiRequest, type ApiResponse } from "../_http";
+import { json, methodNotAllowed, readJson, type ApiRequest, type ApiResponse } from "./_http";
 import { isAdmin } from "./_auth";
+
 export default async function handler(req: ApiRequest, res: ApiResponse) {
   if (!isAdmin(req)) return json(res, 401, { error: "Unauthorized" });
   const id = new URL(req.url ?? "/", "http://localhost").searchParams.get("id");
   if (req.method !== "PATCH" || !id) return methodNotAllowed(res, ["PATCH"]);
   try {
-    const b = (await readJson(req)) as any;
-    const stock = Number(b.stock ?? b.stockQuantity);
+    const b = (await readJson(req)) as Record<string, unknown>;
+    const stock = Number(b["stock"] ?? b["stockQuantity"]);
     if (!Number.isInteger(stock) || stock < 0) return json(res, 400, { error: "สต็อกไม่ถูกต้อง" });
     const [row] = await getDb()
       .update(products)

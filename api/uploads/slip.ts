@@ -5,9 +5,9 @@ const ALLOWED = new Set(["image/jpeg", "image/png", "image/webp"]);
 const MAX_BYTES = 2_000_000;
 
 function config() {
-  const url = process.env.SUPABASE_URL?.replace(/\/$/, "");
-  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  const bucket = process.env.SUPABASE_STORAGE_BUCKET || "order-slips";
+  const url = process.env["SUPABASE_URL"]?.replace(/\/$/, "");
+  const key = process.env["SUPABASE_SERVICE_ROLE_KEY"];
+  const bucket = process.env["SUPABASE_STORAGE_BUCKET"] || "order-slips";
   if (!url || !key) throw new Error("SUPABASE_STORAGE_CONFIG_MISSING");
   return { url, key, bucket };
 }
@@ -16,8 +16,8 @@ export default async function handler(req: ApiRequest, res: ApiResponse) {
   if (req.method !== "POST") return methodNotAllowed(res, ["POST"]);
   try {
     const body = (await readJson(req)) as Record<string, unknown>;
-    const contentType = String(body.contentType ?? "");
-    const dataUrl = String(body.dataUrl ?? "");
+    const contentType = String(body["contentType"] ?? "");
+    const dataUrl = String(body["dataUrl"] ?? "");
     if (!ALLOWED.has(contentType) || !dataUrl.startsWith(`data:${contentType};base64,`)) {
       return json(res, 400, { error: "ชนิดไฟล์สลิปไม่ถูกต้อง" });
     }

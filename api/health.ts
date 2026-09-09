@@ -13,7 +13,7 @@ export default async function handler(req: ApiRequest, res: ApiResponse) {
         service: "social-engagement-api",
         database: "supabase",
         connected: true,
-        serverTime: result[0]?.server_time ?? null,
+        serverTime: result[0]?.["server_time"] ?? null,
       },
     });
   } catch (error) {
