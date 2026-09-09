@@ -18,37 +18,13 @@ export type SocialActivity = {
   partners?: string[];
 };
 
-export const SYSTEMS = [
-  {
-    slug: "smart-farm",
-    title: "Smart Farm",
-    subtitle: "เกษตรอัจฉริยะและข้อมูลจากพื้นที่จริง",
-    image: "/Smart Farm.jpg",
-    href: "/smart-farm",
-  },
-  {
-    slug: "clean-energy",
-    title: "Clean Energy",
-    subtitle: "พลังงานสะอาดและการใช้พลังงานอย่างมีประสิทธิภาพ",
-    image: "/EVCharger.jpg",
-    href: "/clean-energy",
-  },
-  {
-    slug: "shellac",
-    title: "Shellac Learning Center",
-    subtitle: "ศูนย์เรียนรู้ครั่งครบวงจร",
-    image: "/Shellac banner.jpg",
-    href: "https://mahidol-shellac.vercel.app/",
-  },
-];
-
+/** Offline-safe seed content used only when the activity API is unavailable or empty. */
 export const FALLBACK_ACTIVITIES: SocialActivity[] = [
   {
     id: "shellac-learning-2569",
     slug: "shellac-learning-center-2569",
     title: "ห้องการเรียนรู้ครั่งครบวงจร",
-    summary:
-      "เปิดพื้นที่เรียนรู้เรื่องครั่ง ตั้งแต่วงจรชีวิต การเลี้ยงครั่ง การแปรรูป ไปจนถึงการสร้างมูลค่าในชุมชน",
+    summary: "เปิดพื้นที่เรียนรู้เรื่องครั่ง ตั้งแต่วงจรชีวิต การเลี้ยงครั่ง การแปรรูป ไปจนถึงการสร้างมูลค่าในชุมชน",
     activityDate: "2026-08-21",
     location: "ศูนย์ลำปาง อำเภอสบปราบ จังหวัดลำปาง",
     featuredImage: "/Shellac banner.jpg",
@@ -62,8 +38,7 @@ export const FALLBACK_ACTIVITIES: SocialActivity[] = [
     id: "school-shellac-2569",
     slug: "shellac-school-community-baan-fon-2569",
     title: "ขับเคลื่อนพื้นที่การเรียนรู้ ‘ครั่ง’ อย่างครบวงจร",
-    summary:
-      "สร้างความร่วมมือกับสถานศึกษาเพื่อพัฒนาพื้นที่เรียนรู้ครั่งและเชื่อมโยงองค์ความรู้สู่การปฏิบัติ",
+    summary: "สร้างความร่วมมือกับสถานศึกษาเพื่อพัฒนาพื้นที่เรียนรู้ครั่งและเชื่อมโยงองค์ความรู้สู่การปฏิบัติ",
     activityDate: "2026-06-12",
     location: "โรงเรียนชุมชนบ้านฟ่อนวิทยา จังหวัดลำปาง",
     featuredImage: "/Shellac banner.jpg",
@@ -77,8 +52,7 @@ export const FALLBACK_ACTIVITIES: SocialActivity[] = [
     id: "smart-farm-2569",
     slug: "smart-farm-learning-2569",
     title: "ยกระดับการเรียนรู้เกษตรอัจฉริยะจากข้อมูลพื้นที่จริง",
-    summary:
-      "ใช้ข้อมูลอุณหภูมิ ความชื้น และสภาพแวดล้อมเพื่อสนับสนุนการเรียนรู้และการวางแผนเพาะปลูก",
+    summary: "ใช้ข้อมูลอุณหภูมิ ความชื้น และสภาพแวดล้อมเพื่อสนับสนุนการเรียนรู้และการวางแผนเพาะปลูก",
     activityDate: "2026-06-09",
     location: "พื้นที่ปฏิบัติการสบปราบ จังหวัดลำปาง",
     featuredImage: "/Smart Farm.jpg",
