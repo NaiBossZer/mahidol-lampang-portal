@@ -1,4 +1,5 @@
 ﻿import { MOCK_PRODUCTS, type Product } from "@/components/storefront/mockData";
+
 export type OrderLineInput = { productId: string; quantity: number };
 export type CreateOrderInput = {
   customerName: string;
@@ -51,12 +52,24 @@ export type ActivityWriteInput = {
   featuredImage?: string;
   status: "draft" | "published" | "archived";
 };
-export type AdminActivity = ActivityWriteInput & { id: string; publishedAt?: string | null; createdAt: string; updatedAt: string };
+export type AdminActivity = ActivityWriteInput & {
+  id: string;
+  publishedAt?: string | null;
+  createdAt: string;
+  updatedAt: string;
+};
 export class ApiError extends Error {
   readonly status: number;
-  constructor(message: string, status: number) { super(message); this.name = "ApiError"; this.status = status; }
+
+  constructor(message: string, status: number) {
+    super(message);
+    this.name = "ApiError";
+    this.status = status;
+  }
 }
-function isRecord(v: unknown): v is Record<string, unknown> { return typeof v === "object" && v !== null; }
+function isRecord(v: unknown): v is Record<string, unknown> {
+  return typeof v === "object" && v !== null;
+}
 
 const pendingGets = new Map<string, Promise<unknown>>();
 const GET_CACHE_TTL_MS = 30_000;
@@ -80,7 +93,9 @@ async function request<T>(url: string, init: RequestInit = {}): Promise<T> {
   } catch (error) {
     if (error instanceof ApiError) throw error;
     throw new ApiError(error instanceof DOMException && error.name === "AbortError" ? "บริการใช้เวลานานเกินไป" : "ไม่สามารถเชื่อมต่อบริการได้", 0);
-  } finally { window.clearTimeout(timeout); }
+  } finally {
+    window.clearTimeout(timeout);
+  }
 }
 
 export async function apiRequest<T>(url: string, init?: RequestInit): Promise<T> {
@@ -90,27 +105,48 @@ export async function apiRequest<T>(url: string, init?: RequestInit): Promise<T>
   if (cached && cached.expiresAt > Date.now()) return cached.value as T;
   const pending = pendingGets.get(url);
   if (pending) return pending as Promise<T>;
-  const promise = request<T>(url, init).then((value) => {
-    getCache.set(url, { expiresAt: Date.now() + GET_CACHE_TTL_MS, value });
-    pendingGets.delete(url);
-    return value;
-  }).catch((error) => { pendingGets.delete(url); throw error; });
+  const promise = request<T>(url, init)
+    .then((value) => {
+      getCache.set(url, { expiresAt: Date.now() + GET_CACHE_TTL_MS, value });
+      pendingGets.delete(url);
+      return value;
+    })
+    .catch((error) => {
+      pendingGets.delete(url);
+      throw error;
+    });
   pendingGets.set(url, promise);
   return promise;
 }
 
 export function invalidateApiCache(prefix?: string) {
-  if (!prefix) { getCache.clear(); return; }
+  if (!prefix) {
+    getCache.clear();
+    return;
+  }
   for (const key of getCache.keys()) if (key.startsWith(prefix)) getCache.delete(key);
 }
 
 export async function getProducts(): Promise<Product[]> {
-  const data = await apiRequest<any[]>("/api/products");
-  return Array.isArray(data) ? data.map((p) => {
-    const base = MOCK_PRODUCTS.find((x) => x.name === p.name) ?? MOCK_PRODUCTS[0];
-    if (!base) throw new ApiError("ไม่พบข้อมูลสินค้าเริ่มต้น", 500);
-    return { ...base, id: p.id, name: p.name, price: Number(p.price), stock: p.stockQuantity, image: p.imageUrl ?? base.image, isPreOrder: p.isPreorder, plotId: p.plotId ?? "", harvestDate: p.harvestDate ?? base.harvestPrediction.estimatedDate };
-  }) : [];
+  const data = await apiRequest<unknown[]>("/api/products");
+  if (!Array.isArray(data)) return [];
+
+  return data.flatMap((raw) => {
+    if (!isRecord(raw)) return [];
+    const name = typeof raw["name"] === "string" ? raw["name"] : "";
+    const base = MOCK_PRODUCTS.find((x) => x.name === name) ?? MOCK_PRODUCTS[0];
+    if (!base) return [];
+
+    const stock = typeof raw["stockQuantity"] === "number" ? raw["stockQuantity"] : Number(raw["stockQuantity"] ?? 0);
+    const price = typeof raw["price"] === "number" ? raw["price"] : Number(raw["price"] ?? base.price);
+    const image = typeof raw["imageUrl"] === "string" ? raw["imageUrl"] : base.image;
+    const isPreOrder = typeof raw["isPreorder"] === "boolean" ? raw["isPreorder"] : base.isPreOrder;
+    const harvestDate = typeof raw["harvestDate"] === "string" ? raw["harvestDate"] : base.harvestPrediction.estimatedDate;
+    const plotId = typeof raw["plotId"] === "string" ? raw["plotId"] : "";
+    const id = typeof raw["id"] === "string" ? raw["id"] : base.id;
+
+    return [{ ...base, id, name, price: Number.isFinite(price) ? price : base.price, stock: Number.isFinite(stock) ? stock : 0, image, isPreOrder, plotId, harvestDate }];
+  });
 }
 export async function createProduct(p: ProductWriteInput) { const result = await apiRequest("/api/products", { method: "POST", body: JSON.stringify(p) }); invalidateApiCache("/api/products"); return result; }
 export async function updateProduct(p: ProductWriteInput & { id: string }) { const result = await apiRequest(`/api/products?id=${encodeURIComponent(p.id)}`, { method: "PUT", body: JSON.stringify(p) }); invalidateApiCache("/api/products"); return result; }
