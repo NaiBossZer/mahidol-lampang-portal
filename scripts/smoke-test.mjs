@@ -62,15 +62,10 @@ const styles = readFileSync(resolve(root, "src/styles.css"), "utf8");
 check("design tokens loaded", styles.includes("--brand-navy") && styles.includes("--focus-ring"));
 check("reduced motion support", styles.includes("prefers-reduced-motion"));
 
-// Phase 9.1: Vercel + API routing static guardrails.
-const vercel = JSON.parse(readFileSync(resolve(root, "vercel.json"), "utf8"));
-check("vercel schema declared", vercel.$schema === "https://openapi.vercel.sh/vercel.json");
-check(
-  "SPA fallback configured",
-  Array.isArray(vercel.rewrites) && vercel.rewrites.some(
-    (rule) => rule?.source === "/(.*)" && rule?.destination === "/index.html",
-  ),
-);
+// Cloudflare Pages + Vite static deployment guardrails.
+check("legacy Vercel config removed", !existsSync(resolve(root, "vercel.json")));
+check("Vite config exists", existsSync(resolve(root, "vite.config.ts")));
+check("Vite build script exists", readFileSync(resolve(root, "package.json"), "utf8").includes('"build": "vite build"'));
 check("API function directory exists", existsSync(resolve(root, "api")));
 check("API health function exists", existsSync(resolve(root, "api/health.ts")));
 check("API activity function exists", existsSync(resolve(root, "api/activities.ts")));
