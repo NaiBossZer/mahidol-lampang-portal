@@ -35,12 +35,19 @@ for (const route of requiredRoutes) {
 const requiredAssets = [
   "public/main banner.jpg",
   "public/intro-enlp.mp4",
-  "public/site-map-3d.glb",
   "public/mahidol-logo.png",
   "public/envi-logo.jpg",
   "public/social-engagement-logo.png",
 ];
 for (const asset of requiredAssets) check(`asset ${asset}`, existsSync(resolve(root, asset)));
+
+const mapViewer = readFileSync(resolve(root, "src/components/Map3DViewer.tsx"), "utf8");
+check(
+  "3D map uses external model fallback",
+  mapViewer.includes("FALLBACK_MODEL_URL") &&
+    mapViewer.includes("huggingface.co/BossLampang/site-map-3d-MU-Lampang"),
+);
+check("oversized local 3D asset excluded", !existsSync(resolve(root, "public/site-map-3d.glb")));
 
 const hub = readFileSync(resolve(root, "src/pages/HomePage.tsx"), "utf8");
 const systems = readFileSync(resolve(root, "src/config/systems.ts"), "utf8");
