@@ -16,6 +16,7 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
+      # Normalize repository formatting before the strict lint gate.
       - run: npx prettier --write .
       - run: npm run lint
       - run: npm run build
