@@ -1,33 +1,9 @@
 import { useEffect, useState } from "react";
-import { ArrowUpRight, ExternalLink } from "lucide-react";
+import { ArrowUpRight } from "lucide-react";
 import { Link as RouterLink } from "react-router-dom";
 import { PublicAppShell } from "../components/layout/PublicAppShell";
 import { getActivities } from "../services/socialEngagementApi";
 import type { SocialActivity } from "../data/socialEngagement";
-
-const CORE_SYSTEMS = [
-  {
-    slug: "lac",
-    title: "Shellac Learning Center",
-    subtitle: "เรียนรู้ครั่งครบวงจร ตั้งแต่ภูมิปัญญาท้องถิ่นถึงการต่อยอด",
-    image: "/learning-centers-bg.jpeg",
-    href: "https://mahidol-shellac.vercel.app/",
-  },
-  {
-    slug: "smart-farm",
-    title: "Smart Farm Station",
-    subtitle: "พื้นที่เรียนรู้เกษตรอัจฉริยะและการจัดการทรัพยากรอย่างยั่งยืน",
-    image: "/activities-bg.jpeg",
-    href: "/smart-farm",
-  },
-  {
-    slug: "clean-energy",
-    title: "Clean Energy Station",
-    subtitle: "ระบบพลังงานสะอาดและการใช้พลังงานอย่างมีประสิทธิภาพ",
-    image: "/research-bg.jpeg",
-    href: "/clean-energy",
-  },
-];
 
 function activityCategory(activity: SocialActivity) {
   if (activity.system === "shellac") return "SHELLAC";
@@ -36,17 +12,43 @@ function activityCategory(activity: SocialActivity) {
   return "SOCIAL ENGAGEMENT";
 }
 
+function formatActivityDate(value: string) {
+  const date = new Date(`${value}T00:00:00`);
+  if (Number.isNaN(date.getTime())) return value;
+  return new Intl.DateTimeFormat("th-TH", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  }).format(date);
+}
+
 function ActivityPreview({ activity }: { activity: SocialActivity }) {
   return (
-    <article className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-      <div className="p-5">
-        <p className="text-xs font-medium text-[#C66B4F]">{activityCategory(activity)}</p>
-        <h3 className="mt-2 line-clamp-2 text-lg font-semibold text-[#123B63]">{activity.title}</h3>
-        <p className="mt-2 line-clamp-2 text-sm leading-6 text-slate-500">{activity.summary}</p>
-        <RouterLink to={`/activities/${activity.slug}`} className="mt-4 inline-flex min-h-11 items-center text-sm font-semibold text-[#1677A8]">
-          อ่านเพิ่มเติม <ArrowUpRight className="ml-1 h-4 w-4" />
-        </RouterLink>
-      </div>
+    <article className="group overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition duration-300 hover:-translate-y-0.5 hover:shadow-lg">
+      <RouterLink to={`/activities/${activity.slug}`} className="block h-full">
+        <div className="aspect-[4/3] overflow-hidden bg-slate-100">
+          <img
+            src={activity.featuredImage}
+            alt=""
+            className="h-full w-full object-cover transition duration-500 group-hover:scale-[1.03]"
+            loading="lazy"
+            decoding="async"
+          />
+        </div>
+        <div className="p-5 sm:p-6">
+          <div className="flex flex-wrap items-center gap-2 text-[11px] font-medium">
+            <span className="rounded-full bg-[#F7E9E3] px-2.5 py-1 text-[#C66B4F]">{activityCategory(activity)}</span>
+            {activity.centerName && <span className="text-slate-400">{activity.centerName}</span>}
+          </div>
+          <h3 className="mt-3 line-clamp-2 text-lg font-semibold leading-7 text-[#123B63]">{activity.title}</h3>
+          <p className="mt-2 text-xs font-medium text-slate-400">{formatActivityDate(activity.activityDate)}</p>
+          <p className="mt-3 line-clamp-2 text-sm leading-6 text-slate-500">{activity.summary}</p>
+          <div className="mt-5 flex items-center justify-between border-t border-slate-100 pt-4 text-xs font-semibold text-[#1677A8]">
+            <span>อ่านรายละเอียด</span>
+            <ArrowUpRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+          </div>
+        </div>
+      </RouterLink>
     </article>
   );
 }
@@ -93,27 +95,27 @@ export function HomePage() {
         </div>
       </section>
 
-      <section className="mx-auto max-w-[1280px] px-4 py-12 sm:px-6 lg:px-8">
-        <div>
-          <p className="text-xs font-black uppercase tracking-[0.18em] text-[#C66B4F]">CORE SYSTEMS</p>
-          <h2 className="mt-2 text-2xl font-black text-[#123B63]">3 ระบบหลักของพื้นที่</h2>
-          <p className="mt-1 text-sm text-slate-500">แต่ละระบบมี Learning Experience เป็นส่วนหนึ่งของระบบนั้น</p>
-        </div>
-        <div className="mt-6 grid gap-6 md:grid-cols-3">
-          {CORE_SYSTEMS.map((system) => (
-            <article key={system.slug} className="group overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-xl">
-              <img src={system.image} alt={system.title} className="h-52 w-full object-cover transition duration-500 group-hover:scale-105" loading="lazy" decoding="async" width="640" height="416" />
-              <div className="p-6">
-                <p className="text-xs font-bold uppercase tracking-widest text-[#C66B4F]">CORE SYSTEM</p>
-                <h3 className="mt-2 text-2xl font-black text-[#123B63]">{system.title}</h3>
-                <p className="mt-2 text-sm leading-6 text-slate-500">{system.subtitle}</p>
-                <div className="mt-5 flex items-center justify-between">
-                  <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-bold text-[#123B63]">Learning Experience</span>
-                  <a href={system.href} target={system.href.startsWith("http") ? "_blank" : undefined} rel="noreferrer" className="min-h-11 inline-flex items-center text-sm font-bold text-[#1677A8]">เข้าสู่ระบบ <ExternalLink className="ml-1 inline h-4 w-4" /></a>
-                </div>
-              </div>
-            </article>
-          ))}
+      <section className="bg-[#F7F4ED] py-12 sm:py-14 lg:py-16">
+        <div className="mx-auto max-w-[1280px] px-4 sm:px-6 lg:px-8">
+          <div className="flex items-end justify-between gap-6">
+            <div>
+              <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-[#1677A8]">COMMUNITY &amp; EDUCATION</p>
+              <h2 className="mt-2 text-2xl font-bold tracking-tight text-[#123B63] sm:text-3xl">กิจกรรมและโครงการล่าสุด</h2>
+            </div>
+            <RouterLink to="/activities" className="hidden min-h-11 shrink-0 items-center text-sm font-semibold text-[#1677A8] sm:inline-flex">
+              ดูกิจกรรมทั้งหมด <ArrowUpRight className="ml-1 h-4 w-4" />
+            </RouterLink>
+          </div>
+
+          <div className="mt-6 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
+            {activities.slice(0, 3).map((activity) => (
+              <ActivityPreview key={activity.id} activity={activity} />
+            ))}
+          </div>
+
+          <RouterLink to="/activities" className="mt-6 inline-flex min-h-11 items-center text-sm font-semibold text-[#1677A8] sm:hidden">
+            ดูกิจกรรมทั้งหมด <ArrowUpRight className="ml-1 h-4 w-4" />
+          </RouterLink>
         </div>
       </section>
 
@@ -127,7 +129,7 @@ export function HomePage() {
             <RouterLink to="/activities" className="hidden min-h-11 items-center text-sm font-bold text-[#1677A8] sm:inline-flex">ดูทั้งหมด <ArrowUpRight className="ml-1 h-4 w-4" /></RouterLink>
           </div>
           <div className="mt-6 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {activities.map((activity) => <ActivityPreview key={activity.id} activity={activity} />)}
+            {activities.slice(3).map((activity) => <ActivityPreview key={activity.id} activity={activity} />)}
           </div>
         </div>
       </section>
@@ -141,7 +143,7 @@ export function HomePage() {
               <p className="mt-3 max-w-2xl text-sm leading-7 text-slate-500">เชื่อมองค์ความรู้ งานวิจัย และการลงมือทำ เพื่อสร้างประโยชน์แก่ชุมชนและพัฒนาพื้นที่อย่างยั่งยืน</p>
             </div>
             <div className="rounded-2xl border border-slate-200 bg-[#123B63] p-6 text-white shadow-sm">
-              <p className="text-xs font-black uppercase tracking-[0.18em] text-[#D6A84F]">JOIN & LEARN</p>
+              <p className="text-xs font-black uppercase tracking-[0.18em] text-[#D6A84F]">JOIN &amp; LEARN</p>
               <h3 className="mt-2 text-xl font-black">เข้ามาเรียนรู้ร่วมกัน</h3>
               <p className="mt-2 text-sm leading-6 text-blue-100">สำรวจศูนย์ปฏิบัติการ กิจกรรม และองค์ความรู้จากพื้นที่จริง</p>
               <RouterLink to="/centers" className="mt-5 inline-flex min-h-11 items-center rounded-xl bg-[#D6A84F] px-4 py-2.5 text-sm font-bold text-[#123B63]">สำรวจศูนย์ <ArrowUpRight className="ml-1 h-4 w-4" /></RouterLink>
