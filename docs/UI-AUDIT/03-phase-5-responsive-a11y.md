@@ -20,6 +20,11 @@ Harden the shared responsive and accessibility foundation at page/runtime level 
 - added explicit live/alert semantics for loading and connection failure states
 - integrated Site Map into the shared `PublicAppShell`, including skip navigation and global public navigation/footer
 - guarded Site Map content against narrow-screen overflow
+- hardened the public header breakpoint strategy: full desktop navigation now starts at `xl` instead of `lg`, preventing navigation/control crowding at 1024px
+- reduced the three existing logo widths only at sub-400px viewports to prevent horizontal overflow while preserving all three logos and the locked agency identity
+- added `Escape` handling for the Centers menu and explicit `aria-controls` relationships
+- removed the menu `onBlur` auto-close behavior so keyboard focus can move from the trigger into menu items reliably
+- ensured desktop center menu items retain a minimum touch target
 
 ## Responsive QA matrix
 
@@ -34,7 +39,7 @@ Target widths:
 
 ## Accessibility QA matrix
 
-- keyboard-only navigation — pending browser verification
+- keyboard-only navigation — implementation hardened; browser verification pending
 - visible focus — implemented; browser verification pending
 - skip navigation — implemented in shared shell
 - semantic landmarks — implemented in shared shell/site map
@@ -44,6 +49,7 @@ Target widths:
 - reduced motion — implemented
 - forced colors — implemented
 - contrast — browser verification pending
+- Escape behavior for the desktop Centers menu — implemented; browser verification pending
 
 ## Known remaining work
 
