@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { ChevronDown, Menu, Search, ShoppingCart, X } from "lucide-react";
+import { ChevronDown, Menu, ShoppingCart, X } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { useLanguage } from "../../i18n/LanguageContext";
 
@@ -97,10 +97,6 @@ export function PublicHeader() {
         </nav>
 
         <div className="hidden items-center gap-2 xl:flex">
-          <div className="relative hidden 2xl:block">
-            <Search className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-white/60" size={16} aria-hidden="true" />
-            <input aria-label={text("ค้นหา", "Search")} type="search" placeholder={text("ค้นหา...", "Search...")} className="h-10 w-[145px] rounded-full border border-white/20 bg-white/10 pl-9 pr-3 text-sm text-white placeholder:text-white/55 outline-none transition focus:border-[#D6A84F] focus:bg-white/15" />
-          </div>
           <button type="button" onClick={() => setLanguage(isEnglish ? "th" : "en")} aria-label={text("เปลี่ยนเป็นภาษาอังกฤษ", "Switch to Thai")} className="inline-flex min-h-11 items-center gap-1 rounded-full border border-white/20 bg-white/10 px-3 text-xs font-bold tracking-wide text-white transition hover:bg-white/15 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#D6A84F]">
             <span className={language === "th" ? "text-[#F4E8C5]" : "text-white/55"}>TH</span>
             <span className="text-white/35">/</span>
