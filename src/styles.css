@@ -1,3 +1,4 @@
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Prompt:wght@400;500;600;700;800&display=swap");
 @import "tailwindcss";
 @import "tw-animate-css";
 
@@ -43,8 +44,9 @@
   --color-chart-4: var(--chart-4);
   --color-chart-5: var(--chart-5);
   --color-chart-6: var(--chart-6);
-  --font-sans: "IBM Plex Sans Thai", "Inter", system-ui, sans-serif;
-  --font-display: "Chakra Petch", "IBM Plex Sans Thai", system-ui, sans-serif;
+  --font-sans: "Prompt", system-ui, sans-serif;
+  --font-numeric: "Inter", "Prompt", system-ui, sans-serif;
+  --font-display: "Prompt", system-ui, sans-serif;
   --font-mono: "IBM Plex Mono", ui-monospace, monospace;
   --color-brand-navy: #123b63;
   --color-brand-blue: #1677a8;
@@ -143,6 +145,7 @@
   }
   .section-space { padding-block: var(--space-section); }
   .text-balance { text-wrap: balance; }
+  .font-numeric { font-family: var(--font-numeric); }
 }
 
 @media (max-width: 639px) {
@@ -178,32 +181,4 @@
   border-radius: var(--radius);
   border: 1px solid var(--color-panel-line);
   background: var(--color-panel);
-  padding: 0.9rem 1rem;
-}
-
-@utility panel-title {
-  font-family: var(--font-display);
-  font-size: 0.68rem;
-  font-weight: 600;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-  color: var(--color-brand-navy);
-}
-
-@utility num-xl {
-  font-family: var(--font-display);
-  font-variant-numeric: tabular-nums;
-  font-weight: 700;
-  line-height: 1;
-  letter-spacing: -0.02em;
-}
-
-@utility hairline {
-  height: 1px;
-  background: linear-gradient(90deg, var(--color-northern-gold) 0%, var(--color-border) 35%, transparent 100%);
-}
-
-@media print {
-  body { background: white !important; color: black !important; }
-  .no-print { display: none !important; }
 }
