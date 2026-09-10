@@ -11,7 +11,7 @@ export function SiteMapPage() {
             สำรวจพื้นที่ปฏิบัติการและพื้นที่เรียนรู้ของมหิดล ลำปาง
           </p>
         </header>
-        <Map3DViewer modelUrl="/site-map-3d.glb" />
+        <Map3DViewer />
       </div>
     </main>
   );
