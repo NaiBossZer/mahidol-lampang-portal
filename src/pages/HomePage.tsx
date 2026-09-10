@@ -4,8 +4,7 @@ import { Link as RouterLink } from "react-router-dom";
 import { CORE_SYSTEMS } from "@/config";
 import { type SocialActivity } from "@/data/socialEngagement";
 import { getActivities } from "@/services/socialEngagementApi";
-import { PublicHeader } from "@/components/layout/PublicHeader";
-import { PublicFooter } from "@/components/layout/PublicFooter";
+import { PublicAppShell } from "@/components/layout/PublicAppShell";
 
 const services = [
   "บริการห้องพัก / ห้องประชุม",
@@ -28,9 +27,7 @@ export function HomePage() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-[#f8f6f0] text-slate-800">
-      <PublicHeader />
-
+    <PublicAppShell>
       <section className="relative overflow-hidden bg-[#123B63] text-white">
         <div className="absolute inset-0 opacity-30">
           <img src="/main banner.jpg" alt="" className="h-full w-full object-cover" width="1920" height="900" fetchPriority="high" />
@@ -41,8 +38,8 @@ export function HomePage() {
             <h1 className="mt-5 text-4xl font-black leading-tight sm:text-6xl">งานพันธกิจเพื่อสังคม<br />จากองค์ความรู้สู่พื้นที่จริง</h1>
             <p className="mt-5 max-w-2xl text-sm leading-7 text-blue-100 sm:text-base">แพลตฟอร์มกลางสำหรับกิจกรรม โครงการ ศูนย์ปฏิบัติการ และระบบการเรียนรู้ของคณะสิ่งแวดล้อมและทรัพยากรศาสตร์ มหาวิทยาลัยมหิดล ในพื้นที่สบปราบ ลำปาง</p>
             <div className="mt-7 flex flex-wrap gap-3">
-              <RouterLink to="/activities" className="rounded-xl bg-[#D6A84F] px-5 py-3 text-sm font-black text-[#123B63]">ดูผลงานและกิจกรรม <ArrowUpRight className="ml-1 inline h-4 w-4" /></RouterLink>
-              <RouterLink to="/centers" className="rounded-xl border border-white/30 px-5 py-3 text-sm font-bold hover:bg-white/10">สำรวจพื้นที่ปฏิบัติการ</RouterLink>
+              <RouterLink to="/activities" className="min-h-11 rounded-xl bg-[#D6A84F] px-5 py-3 text-sm font-black text-[#123B63]">ดูผลงานและกิจกรรม <ArrowUpRight className="ml-1 inline h-4 w-4" /></RouterLink>
+              <RouterLink to="/centers" className="min-h-11 rounded-xl border border-white/30 px-5 py-3 text-sm font-bold hover:bg-white/10">สำรวจพื้นที่ปฏิบัติการ</RouterLink>
             </div>
           </div>
         </div>
@@ -64,7 +61,7 @@ export function HomePage() {
                 <p className="mt-2 text-sm leading-6 text-slate-500">{system.subtitle}</p>
                 <div className="mt-5 flex items-center justify-between">
                   <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-bold text-[#123B63]">Learning Experience</span>
-                  <a href={system.href} target={system.href.startsWith("http") ? "_blank" : undefined} rel="noreferrer" className="text-sm font-bold text-[#1677A8]">เข้าสู่ระบบ <ExternalLink className="inline h-4 w-4" /></a>
+                  <a href={system.href} target={system.href.startsWith("http") ? "_blank" : undefined} rel="noreferrer" className="min-h-11 inline-flex items-center text-sm font-bold text-[#1677A8]">เข้าสู่ระบบ <ExternalLink className="ml-1 inline h-4 w-4" /></a>
                 </div>
               </div>
             </article>
@@ -79,7 +76,7 @@ export function HomePage() {
               <p className="text-xs font-black uppercase tracking-widest text-[#C66B4F]">ACTIVITY EVIDENCE</p>
               <h2 className="mt-2 text-2xl font-black text-[#123B63]">กิจกรรมล่าสุด</h2>
             </div>
-            <RouterLink to="/activities" className="text-sm font-bold text-[#1677A8]">ดูทั้งหมด →</RouterLink>
+            <RouterLink to="/activities" className="min-h-11 inline-flex items-center text-sm font-bold text-[#1677A8]">ดูทั้งหมด →</RouterLink>
           </div>
           <div className="mt-6 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
             {activities.map((activity) => <ActivityPreview key={activity.id} activity={activity} />)}
@@ -93,7 +90,7 @@ export function HomePage() {
             <p className="text-xs font-black uppercase tracking-widest text-[#D6A84F]">SOCIAL IMPACT</p>
             <h2 className="mt-2 text-2xl font-black">จากกิจกรรมสู่รายงานผล</h2>
             <p className="mt-3 text-sm leading-7 text-blue-100">ทุกกิจกรรมสามารถบันทึกวันเวลา พื้นที่ ผู้เข้าร่วม ภาคีเครือข่าย ผลลัพธ์ และหลักฐานภาพถ่าย เพื่อรองรับการสรุปผลระดับผู้บริหารในระยะถัดไป</p>
-            <RouterLink to="/activities" className="mt-5 inline-flex items-center gap-2 rounded-xl bg-[#D6A84F] px-4 py-2.5 text-sm font-black text-[#123B63]">สำรวจ Activity Evidence <BarChart3 className="h-4 w-4" /></RouterLink>
+            <RouterLink to="/activities" className="mt-5 inline-flex min-h-11 items-center gap-2 rounded-xl bg-[#D6A84F] px-4 py-2.5 text-sm font-black text-[#123B63]">สำรวจ Activity Evidence <BarChart3 className="h-4 w-4" /></RouterLink>
           </div>
           <div className="rounded-3xl border border-slate-200 bg-white p-7">
             <p className="text-xs font-black uppercase tracking-widest text-[#C66B4F]">SERVICES</p>
@@ -104,9 +101,7 @@ export function HomePage() {
           </div>
         </div>
       </section>
-
-      <PublicFooter />
-    </div>
+    </PublicAppShell>
   );
 }
 
