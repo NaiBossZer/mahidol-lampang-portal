@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { ArrowUpRight, ExternalLink } from "lucide-react";
 import { Link as RouterLink } from "react-router-dom";
-import PublicAppShell from "../components/layout/PublicAppShell";
+import { PublicAppShell } from "../components/layout/PublicAppShell";
 import { getActivities } from "../services/socialEngagementApi";
 import type { SocialActivity } from "../data/socialEngagement";
 
@@ -51,7 +51,7 @@ function ActivityPreview({ activity }: { activity: SocialActivity }) {
   );
 }
 
-export default function HomePage() {
+export function HomePage() {
   const [activities, setActivities] = useState<SocialActivity[]>([]);
 
   useEffect(() => {
