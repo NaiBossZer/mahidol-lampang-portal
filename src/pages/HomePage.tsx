@@ -4,6 +4,8 @@ import { Link as RouterLink } from "react-router-dom";
 import { CORE_SYSTEMS } from "@/config";
 import { type SocialActivity } from "@/data/socialEngagement";
 import { getActivities } from "@/services/socialEngagementApi";
+import { PublicHeader } from "@/components/layout/PublicHeader";
+import { PublicFooter } from "@/components/layout/PublicFooter";
 
 const services = [
   "บริการห้องพัก / ห้องประชุม",
@@ -27,35 +29,13 @@ export function HomePage() {
 
   return (
     <div className="min-h-screen bg-[#f8f6f0] text-slate-800">
-      <header className="sticky top-0 z-50 border-b border-white/10 bg-[#0e2b42]/95 text-white backdrop-blur">
-        <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-3 sm:px-6 lg:px-8">
-          <RouterLink to="/" className="flex items-center gap-3">
-            <img
-              src="/mahidol-logo.png"
-              alt="Mahidol University"
-              className="h-10 rounded bg-white p-1"
-              width="40"
-              height="40"
-              fetchPriority="high"
-            />
-            <div className="hidden sm:block">
-              <p className="text-sm font-black">งานพันธกิจเพื่อสังคม</p>
-              <p className="text-[11px] text-[#D6A84F]">คณะสิ่งแวดล้อมและทรัพยากรศาสตร์ มหาวิทยาลัยมหิดล</p>
-            </div>
-          </RouterLink>
-          <nav className="flex items-center gap-2 text-xs font-bold">
-            <RouterLink to="/activities" className="rounded-full px-3 py-2 hover:bg-white/10">กิจกรรม</RouterLink>
-            <RouterLink to="/projects" className="rounded-full px-3 py-2 hover:bg-white/10">โครงการ</RouterLink>
-            <RouterLink to="/centers" className="rounded-full px-3 py-2 hover:bg-white/10">ศูนย์ / พื้นที่</RouterLink>
-          </nav>
-        </div>
-      </header>
+      <PublicHeader />
 
       <section className="relative overflow-hidden bg-[#123B63] text-white">
         <div className="absolute inset-0 opacity-30">
           <img src="/main banner.jpg" alt="" className="h-full w-full object-cover" width="1920" height="900" fetchPriority="high" />
         </div>
-        <div className="relative mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8 lg:py-24">
+        <div className="relative mx-auto max-w-[1280px] px-4 py-16 sm:px-6 lg:px-8 lg:py-24">
           <div className="max-w-3xl">
             <span className="rounded-full bg-[#D6A84F] px-3 py-1 text-xs font-black text-[#123B63]">MAHIDOL SOCIAL ENGAGEMENT</span>
             <h1 className="mt-5 text-4xl font-black leading-tight sm:text-6xl">งานพันธกิจเพื่อสังคม<br />จากองค์ความรู้สู่พื้นที่จริง</h1>
@@ -68,7 +48,7 @@ export function HomePage() {
         </div>
       </section>
 
-      <section className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
+      <section className="mx-auto max-w-[1280px] px-4 py-12 sm:px-6 lg:px-8">
         <div>
           <p className="text-xs font-black uppercase tracking-[0.18em] text-[#C66B4F]">CORE SYSTEMS</p>
           <h2 className="mt-2 text-2xl font-black text-[#123B63]">3 ระบบหลักของพื้นที่</h2>
@@ -93,7 +73,7 @@ export function HomePage() {
       </section>
 
       <section className="bg-white py-12">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-[1280px] px-4 sm:px-6 lg:px-8">
           <div className="flex items-end justify-between">
             <div>
               <p className="text-xs font-black uppercase tracking-widest text-[#C66B4F]">ACTIVITY EVIDENCE</p>
@@ -107,7 +87,7 @@ export function HomePage() {
         </div>
       </section>
 
-      <section className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
+      <section className="mx-auto max-w-[1280px] px-4 py-12 sm:px-6 lg:px-8">
         <div className="grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
           <div className="rounded-3xl bg-[#123B63] p-7 text-white">
             <p className="text-xs font-black uppercase tracking-widest text-[#D6A84F]">SOCIAL IMPACT</p>
@@ -125,13 +105,7 @@ export function HomePage() {
         </div>
       </section>
 
-      <footer className="bg-[#0e2b42] py-8 text-white">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <p className="text-sm font-bold">งานพันธกิจเพื่อสังคม คณะสิ่งแวดล้อมและทรัพยากรศาสตร์ มหาวิทยาลัยมหิดล</p>
-          <p className="mt-2 flex items-center gap-2 text-xs text-slate-300"><MapPin className="h-4 w-4" />พื้นที่ปฏิบัติการสบปราบ จังหวัดลำปาง</p>
-          <p className="mt-4 text-[11px] text-slate-400">© 2026 Mahidol Social Engagement Platform</p>
-        </div>
-      </footer>
+      <PublicFooter />
     </div>
   );
 }
