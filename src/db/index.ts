@@ -1,6 +1,7 @@
 import postgres from "postgres";
 import { drizzle } from "drizzle-orm/postgres-js";
 import * as schema from "./schema";
+import * as cmsSchema from "./cms";
 
 let client: ReturnType<typeof postgres> | undefined;
 
@@ -11,5 +12,5 @@ export function getDb() {
   if (!databaseUrl)
     throw new Error("DATABASE_URL is required (Supabase PostgreSQL connection string)");
   client ??= postgres(databaseUrl, { max: 5, prepare: false });
-  return drizzle(client, { schema });
+  return drizzle(client, { schema: { ...schema, ...cmsSchema } });
 }
