@@ -1,5 +1,7 @@
 import { MapPin, ArrowUpRight, BookOpen } from "lucide-react";
-import { Link as RouterLink } from "react-router-dom";
+import { PublicHeader } from "@/components/layout/PublicHeader";
+import { PublicPageHeader } from "@/components/layout/PublicPageHeader";
+import { PublicFooter } from "@/components/layout/PublicFooter";
 
 const centers = [
   {
@@ -33,27 +35,23 @@ const centers = [
 
 export function CentersPage() {
   return (
-    <div className="min-h-screen bg-[#f8f6f0]">
-      <header className="bg-[#123B63] text-white">
-        <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6">
-          <RouterLink to="/" className="text-xs font-bold text-[#D6A84F]">
-            ← กลับหน้าหลัก
-          </RouterLink>
-          <h1 className="mt-4 text-3xl font-black">ศูนย์ / พื้นที่ปฏิบัติการ</h1>
-          <p className="mt-2 text-sm text-blue-100">
-            พื้นที่จริงที่ทำให้พันธกิจเพื่อสังคมเกิดขึ้นและเรียนรู้ได้
-          </p>
-        </div>
-      </header>
-      <main className="mx-auto max-w-7xl px-4 py-10 sm:px-6">
+    <div className="min-h-screen bg-[#f8f6f0] text-slate-800">
+      <PublicHeader />
+      <PublicPageHeader
+        title="ศูนย์ / พื้นที่ปฏิบัติการ"
+        subtitle="พื้นที่จริงที่ทำให้พันธกิจเพื่อสังคมเกิดขึ้นและเรียนรู้ได้"
+      />
+      <main className="mx-auto max-w-[1280px] px-4 py-10 sm:px-6 lg:px-8">
         <div className="grid gap-6 md:grid-cols-3">
           {centers.map((center) => (
             <article
               key={center.slug}
-              className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm"
+              className="group overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm transition duration-200 hover:-translate-y-1 hover:shadow-xl"
             >
-              <img src={center.image} alt={center.title} className="h-48 w-full object-cover" />
-              <div className="p-5">
+              <div className="overflow-hidden bg-slate-100">
+                <img src={center.image} alt={center.title} className="h-48 w-full object-cover transition duration-500 group-hover:scale-105" />
+              </div>
+              <div className="p-6">
                 <span className="text-xs font-bold text-[#C66B4F]">{center.type}</span>
                 <h2 className="mt-2 text-xl font-black text-[#123B63]">{center.title}</h2>
                 <p className="mt-2 text-sm leading-6 text-slate-500">{center.description}</p>
@@ -65,7 +63,7 @@ export function CentersPage() {
                   href={center.href}
                   target={center.href.startsWith("http") ? "_blank" : undefined}
                   rel="noreferrer"
-                  className="mt-5 inline-flex items-center gap-1 text-sm font-bold text-[#1677A8]"
+                  className="mt-5 inline-flex min-h-11 items-center gap-1 text-sm font-bold text-[#1677A8] hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-[#1677A8] focus-visible:ring-offset-2"
                 >
                   เข้าสู่พื้นที่ <ArrowUpRight className="h-4 w-4" />
                 </a>
@@ -73,17 +71,18 @@ export function CentersPage() {
             </article>
           ))}
         </div>
-        <div className="mt-8 rounded-3xl border border-slate-200 bg-white p-6">
+        <div className="mt-8 rounded-3xl border border-slate-200 bg-white p-6 sm:p-7">
           <div className="flex items-center gap-2 text-[#123B63]">
             <BookOpen className="h-5 w-5" />
             <h2 className="font-black">Learning Experience</h2>
           </div>
-          <p className="mt-2 text-sm text-slate-500">
+          <p className="mt-2 text-sm leading-6 text-slate-500">
             แต่ละระบบหลักสามารถมีประสบการณ์การเรียนรู้ของตัวเอง เช่น Interactive Learning,
             Simulation และ Game โดยไม่แยกออกจากระบบหลัก
           </p>
         </div>
       </main>
+      <PublicFooter />
     </div>
   );
 }
