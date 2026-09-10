@@ -108,7 +108,10 @@
 
 @layer base {
   * { border-color: var(--color-border); }
-  html { scroll-behavior: smooth; }
+  html {
+    scroll-behavior: smooth;
+    scroll-padding-top: 5rem;
+  }
   body {
     margin: 0;
     min-width: 320px;
@@ -122,6 +125,7 @@
   img, svg, video, canvas { max-width: 100%; }
   img { height: auto; }
   button, a, input, select, textarea { -webkit-tap-highlight-color: transparent; }
+  button, input, select, textarea { font: inherit; }
   :focus-visible {
     outline: 3px solid var(--focus-ring);
     outline-offset: 3px;
@@ -161,6 +165,12 @@
 @media (prefers-contrast: more) {
   :focus-visible { outline-width: 4px; }
   .border { border-width: 2px; }
+}
+
+@media (forced-colors: active) {
+  * { forced-color-adjust: auto; }
+  :focus-visible { outline: 2px solid CanvasText; }
+  a, button { forced-color-adjust: none; }
 }
 
 @utility panel {
