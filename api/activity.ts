@@ -24,7 +24,8 @@ export default async function handler(req: ApiRequest, res: ApiResponse) {
       .limit(1);
     const activity = rows[0];
     if (!activity) return json(res, 404, { error: "Activity not found" });
-    const [photos, outcomes, partnerRows] = await Promise.all([
+
+    const [photos, outcomes, partnerRows, centerRows, projectRows] = await Promise.all([
       db.select().from(activityPhotos).where(eq(activityPhotos.activityId, activity.id)),
       db.select().from(activityOutcomes).where(eq(activityOutcomes.activityId, activity.id)),
       db
@@ -32,25 +33,14 @@ export default async function handler(req: ApiRequest, res: ApiResponse) {
         .from(activityPartners)
         .innerJoin(partners, eq(activityPartners.partnerId, partners.id))
         .where(eq(activityPartners.activityId, activity.id)),
+      activity.centerId
+        ? db.select().from(learningCenters).where(eq(learningCenters.id, activity.centerId)).limit(1)
+        : Promise.resolve([]),
+      activity.projectId
+        ? db.select().from(socialProjects).where(eq(socialProjects.id, activity.projectId)).limit(1)
+        : Promise.resolve([]),
     ]);
-    const center = activity.centerId
-      ? (
-          await db
-            .select()
-            .from(learningCenters)
-            .where(eq(learningCenters.id, activity.centerId))
-            .limit(1)
-        )[0]
-      : null;
-    const project = activity.projectId
-      ? (
-          await db
-            .select()
-            .from(socialProjects)
-            .where(eq(socialProjects.id, activity.projectId))
-            .limit(1)
-        )[0]
-      : null;
+
     return json(res, 200, {
       success: true,
       data: {
@@ -58,8 +48,8 @@ export default async function handler(req: ApiRequest, res: ApiResponse) {
         photos,
         outcomes,
         partners: partnerRows,
-        center: center ?? null,
-        project: project ?? null,
+        center: centerRows[0] ?? null,
+        project: projectRows[0] ?? null,
       },
     });
   } catch (error) {
