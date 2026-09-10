@@ -7,8 +7,12 @@ import {
 } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { Activity, Award, Map, ShieldCheck } from "lucide-react";
-import { Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+import { lazy, Suspense } from "react";
 import type { Product } from "./mockData";
+
+const SensorTrendChart = lazy(() =>
+  import("./SensorTrendChart").then((module) => ({ default: module.SensorTrendChart })),
+);
 
 type PlotDetailViewProps = {
   product: Product | null;
@@ -40,29 +44,15 @@ export function PlotDetailView({ product, relatedProducts, onClose }: PlotDetail
                   <Activity className="h-4 w-4" /> แนวโน้มเซนเซอร์ 6 ชั่วโมง
                 </h3>
                 <div className="h-48">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <LineChart data={product.sensorTrend}>
-                      <XAxis dataKey="label" tick={{ fontSize: 10 }} />
-                      <YAxis width={30} tick={{ fontSize: 10 }} />
-                      <Tooltip />
-                      <Line
-                        type="monotone"
-                        dataKey="soilMoisturePercent"
-                        name="ความชื้นดิน %"
-                        stroke="#2E7D32"
-                        strokeWidth={2}
-                        dot={false}
-                      />
-                      <Line
-                        type="monotone"
-                        dataKey="humidityPercent"
-                        name="ความชื้นอากาศ %"
-                        stroke="#002D62"
-                        strokeWidth={2}
-                        dot={false}
-                      />
-                    </LineChart>
-                  </ResponsiveContainer>
+                  <Suspense
+                    fallback={
+                      <div className="flex h-full items-center justify-center text-sm text-slate-500">
+                        กำลังโหลดกราฟ…
+                      </div>
+                    }
+                  >
+                    <SensorTrendChart data={product.sensorTrend} />
+                  </Suspense>
                 </div>
               </section>
               <section className="rounded-lg border bg-slate-50 p-4">
