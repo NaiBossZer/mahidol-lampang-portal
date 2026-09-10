@@ -4,14 +4,14 @@ import { Toaster } from "sonner";
 import { RuntimeErrorBoundary } from "./components/RuntimeErrorBoundary";
 import { AdminGuard } from "./components/AdminGuard";
 import { HomePage } from "./pages/HomePage";
-import { SurveyPage } from "./pages/SurveyPage";
-import { SiteMapPage } from "./pages/SiteMapPage";
-import { ActivitiesPage } from "./pages/social/ActivitiesPage";
-import { ActivityDetailPage } from "./pages/social/ActivityDetailPage";
-import { CentersPage } from "./pages/social/CentersPage";
-import { ProjectsPage, ProjectDetailPage } from "./pages/social/ProjectsPage";
-import { ShellacLearningCenterPage } from "./pages/social/ShellacLearningCenterPage";
 
+const ActivitiesPage = lazy(() => import("./pages/social/ActivitiesPage").then((m) => ({ default: m.ActivitiesPage })));
+const ActivityDetailPage = lazy(() => import("./pages/social/ActivityDetailPage").then((m) => ({ default: m.ActivityDetailPage })));
+const CentersPage = lazy(() => import("./pages/social/CentersPage").then((m) => ({ default: m.CentersPage })));
+const ProjectsModule = lazy(() => import("./pages/social/ProjectsPage"));
+const ShellacLearningCenterPage = lazy(() => import("./pages/social/ShellacLearningCenterPage").then((m) => ({ default: m.ShellacLearningCenterPage })));
+const SurveyPage = lazy(() => import("./pages/SurveyPage").then((m) => ({ default: m.SurveyPage })));
+const SiteMapPage = lazy(() => import("./pages/SiteMapPage").then((m) => ({ default: m.SiteMapPage })));
 const LoginPage = lazy(() => import("./pages/admin/LoginPage").then((m) => ({ default: m.LoginPage })));
 const AdminPage = lazy(() => import("./pages/admin/AdminPage").then((m) => ({ default: m.AdminPage })));
 const DashboardPage = lazy(() => import("./pages/admin/DashboardPage").then((m) => ({ default: m.DashboardPage })));
@@ -45,8 +45,8 @@ export default function App() {
           <Route path="/activities" element={<ActivitiesPage />} />
           <Route path="/activities/:slug" element={<ActivityDetailPage />} />
           <Route path="/centers" element={<CentersPage />} />
-          <Route path="/projects" element={<ProjectsPage />} />
-          <Route path="/projects/:slug" element={<ProjectDetailPage />} />
+          <Route path="/projects" element={<ProjectsModule.ProjectsPage />} />
+          <Route path="/projects/:slug" element={<ProjectsModule.ProjectDetailPage />} />
           <Route path="/shellac" element={<ShellacLearningCenterPage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
