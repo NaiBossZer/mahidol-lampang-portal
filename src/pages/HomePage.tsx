@@ -1,20 +1,50 @@
 import { useEffect, useState } from "react";
-import { ArrowUpRight, CalendarDays, ExternalLink, MapPin, Users, BarChart3 } from "lucide-react";
+import { ArrowUpRight, ExternalLink } from "lucide-react";
 import { Link as RouterLink } from "react-router-dom";
-import { CORE_SYSTEMS } from "@/config";
-import { type SocialActivity } from "@/data/socialEngagement";
-import { getActivities } from "@/services/socialEngagementApi";
-import { PublicAppShell } from "@/components/layout/PublicAppShell";
+import PublicAppShell from "../components/layout/PublicAppShell";
+import { getActivities, type Activity } from "../lib/api";
 
-const services = [
-  "บริการห้องพัก / ห้องประชุม",
-  "บริการพื้นที่เรียนรู้และศึกษาดูงาน",
-  "บริการพื้นที่ปฏิบัติการ",
-  "ผลิตภัณฑ์และองค์ความรู้จากโครงการ",
+const CORE_SYSTEMS = [
+  {
+    slug: "lac",
+    title: "Shellac Learning Center",
+    subtitle: "เรียนรู้ครั่งครบวงจร ตั้งแต่ภูมิปัญญาท้องถิ่นถึงการต่อยอด",
+    image: "/learning-centers-bg.jpeg",
+    href: "https://mahidol-shellac.vercel.app/",
+  },
+  {
+    slug: "smart-farm",
+    title: "Smart Farm Station",
+    subtitle: "พื้นที่เรียนรู้เกษตรอัจฉริยะและการจัดการทรัพยากรอย่างยั่งยืน",
+    image: "/activities-bg.jpeg",
+    href: "/smart-farm",
+  },
+  {
+    slug: "clean-energy",
+    title: "Clean Energy Station",
+    subtitle: "ระบบพลังงานสะอาดและการใช้พลังงานอย่างมีประสิทธิภาพ",
+    image: "/research-bg.jpeg",
+    href: "/clean-energy",
+  },
 ];
 
-export function HomePage() {
-  const [activities, setActivities] = useState<SocialActivity[]>([]);
+function ActivityPreview({ activity }: { activity: Activity }) {
+  return (
+    <article className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+      <div className="p-5">
+        <p className="text-xs font-medium text-[#C66B4F]">{activity.category}</p>
+        <h3 className="mt-2 line-clamp-2 text-lg font-semibold text-[#123B63]">{activity.title}</h3>
+        <p className="mt-2 line-clamp-2 text-sm leading-6 text-slate-500">{activity.excerpt}</p>
+        <RouterLink to={`/activities/${activity.slug}`} className="mt-4 inline-flex min-h-11 items-center text-sm font-semibold text-[#1677A8]">
+          อ่านเพิ่มเติม <ArrowUpRight className="ml-1 h-4 w-4" />
+        </RouterLink>
+      </div>
+    </article>
+  );
+}
+
+export default function HomePage() {
+  const [activities, setActivities] = useState<Activity[]>([]);
 
   useEffect(() => {
     let active = true;
@@ -29,8 +59,8 @@ export function HomePage() {
   return (
     <PublicAppShell>
       <section className="relative overflow-hidden bg-[#123B63] text-white">
-        <img src="/hero-bg.jpeg" alt="" aria-hidden="true" className="pointer-events-none absolute inset-0 h-full w-full object-cover opacity-[0.08]" width="1920" height="1080" fetchPriority="high" />
-        <div aria-hidden="true" className="absolute inset-0 bg-[#123B63]/60" />
+        <img src="/hero-bg.jpeg" alt="" aria-hidden="true" className="pointer-events-none absolute inset-0 h-full w-full object-cover opacity-[0.18]" width="1920" height="1080" fetchPriority="high" />
+        <div aria-hidden="true" className="absolute inset-0 bg-[#123B63]/58" />
         <div className="relative mx-auto grid max-w-[1280px] items-center gap-8 px-4 py-12 sm:px-6 sm:py-14 lg:grid-cols-[1.05fr_0.95fr] lg:gap-12 lg:px-8 lg:py-16">
           <div className="max-w-3xl">
             <span className="inline-flex min-h-8 items-center rounded-full bg-[#D6A84F] px-3.5 py-1 text-xs font-bold tracking-wide text-[#123B63]">MAHIDOL SOCIAL ENGAGEMENT</span>
@@ -83,53 +113,34 @@ export function HomePage() {
         <div className="mx-auto max-w-[1280px] px-4 sm:px-6 lg:px-8">
           <div className="flex items-end justify-between">
             <div>
-              <p className="text-xs font-black uppercase tracking-widest text-[#C66B4F]">ACTIVITY EVIDENCE</p>
-              <h2 className="mt-2 text-2xl font-black text-[#123B63]">กิจกรรมล่าสุด</h2>
+              <p className="text-xs font-black uppercase tracking-[0.18em] text-[#C66B4F]">ACTIVITY EVIDENCE</p>
+              <h2 className="mt-2 text-2xl font-black text-[#123B63]">กิจกรรมและโครงการ</h2>
             </div>
-            <RouterLink to="/activities" className="min-h-11 inline-flex items-center text-sm font-bold text-[#1677A8]">ดูทั้งหมด →</RouterLink>
+            <RouterLink to="/activities" className="hidden min-h-11 items-center text-sm font-bold text-[#1677A8] sm:inline-flex">ดูทั้งหมด <ArrowUpRight className="ml-1 h-4 w-4" /></RouterLink>
           </div>
-          <div className="mt-6 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
+          <div className="mt-6 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             {activities.map((activity) => <ActivityPreview key={activity.id} activity={activity} />)}
           </div>
         </div>
       </section>
 
-      <section className="mx-auto max-w-[1280px] px-4 py-12 sm:px-6 lg:px-8">
-        <div className="grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
-          <div className="rounded-3xl bg-[#123B63] p-7 text-white">
-            <p className="text-xs font-black uppercase tracking-widest text-[#D6A84F]">SOCIAL IMPACT</p>
-            <h2 className="mt-2 text-2xl font-black">จากกิจกรรมสู่รายงานผล</h2>
-            <p className="mt-3 text-sm leading-7 text-blue-100">ทุกกิจกรรมสามารถบันทึกวันเวลา พื้นที่ ผู้เข้าร่วม ภาคีเครือข่าย ผลลัพธ์ และหลักฐานภาพถ่าย เพื่อรองรับการสรุปผลระดับผู้บริหารในระยะถัดไป</p>
-            <RouterLink to="/activities" className="mt-5 inline-flex min-h-11 items-center gap-2 rounded-xl bg-[#D6A84F] px-4 py-2.5 text-sm font-black text-[#123B63]">สำรวจ Activity Evidence <BarChart3 className="h-4 w-4" /></RouterLink>
-          </div>
-          <div className="rounded-3xl border border-slate-200 bg-white p-7">
-            <p className="text-xs font-black uppercase tracking-widest text-[#C66B4F]">SERVICES</p>
-            <h2 className="mt-2 text-xl font-black text-[#123B63]">บริการของเรา</h2>
-            <ul className="mt-4 space-y-3">
-              {services.map((service) => <li key={service} className="flex items-center gap-2 text-sm text-slate-600"><span className="h-2 w-2 rounded-full bg-[#D6A84F]" />{service}</li>)}
-            </ul>
+      <section className="bg-[#F8FAFC] py-12">
+        <div className="mx-auto max-w-[1280px] px-4 sm:px-6 lg:px-8">
+          <div className="grid gap-6 md:grid-cols-3">
+            <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm md:col-span-2">
+              <p className="text-xs font-black uppercase tracking-[0.18em] text-[#C66B4F]">SOCIAL IMPACT</p>
+              <h2 className="mt-2 text-2xl font-black text-[#123B63]">จากพื้นที่เรียนรู้สู่การเปลี่ยนแปลง</h2>
+              <p className="mt-3 max-w-2xl text-sm leading-7 text-slate-500">เชื่อมองค์ความรู้ งานวิจัย และการลงมือทำ เพื่อสร้างประโยชน์แก่ชุมชนและพัฒนาพื้นที่อย่างยั่งยืน</p>
+            </div>
+            <div className="rounded-2xl border border-slate-200 bg-[#123B63] p-6 text-white shadow-sm">
+              <p className="text-xs font-black uppercase tracking-[0.18em] text-[#D6A84F]">JOIN & LEARN</p>
+              <h3 className="mt-2 text-xl font-black">เข้ามาเรียนรู้ร่วมกัน</h3>
+              <p className="mt-2 text-sm leading-6 text-blue-100">สำรวจศูนย์ปฏิบัติการ กิจกรรม และองค์ความรู้จากพื้นที่จริง</p>
+              <RouterLink to="/centers" className="mt-5 inline-flex min-h-11 items-center rounded-xl bg-[#D6A84F] px-4 py-2.5 text-sm font-bold text-[#123B63]">สำรวจศูนย์ <ArrowUpRight className="ml-1 h-4 w-4" /></RouterLink>
+            </div>
           </div>
         </div>
       </section>
     </PublicAppShell>
   );
-}
-
-function ActivityPreview({ activity }: { activity: SocialActivity }) {
-  return (
-    <RouterLink to={`/activities/${activity.slug}`} className="group overflow-hidden rounded-3xl border border-slate-200 bg-[#f8f6f0] transition hover:shadow-lg">
-      <img src={activity.featuredImage} alt={activity.title} className="h-44 w-full object-cover transition duration-500 group-hover:scale-105" loading="lazy" decoding="async" width="640" height="352" />
-      <div className="p-5">
-        <div className="flex items-center gap-2 text-[11px] font-bold text-[#C66B4F]"><CalendarDays className="h-4 w-4" />{formatDate(activity.activityDate)}</div>
-        <h3 className="mt-2 text-lg font-black leading-snug text-[#123B63]">{activity.title}</h3>
-        <p className="mt-2 line-clamp-2 text-sm leading-6 text-slate-500">{activity.summary}</p>
-        <div className="mt-4 flex items-center justify-between text-xs text-slate-500"><span className="flex items-center gap-1"><MapPin className="h-4 w-4" />{activity.location}</span>{activity.participantCount !== undefined && <span className="flex items-center gap-1"><Users className="h-4 w-4" />{activity.participantCount}</span>}</div>
-      </div>
-    </RouterLink>
-  );
-}
-
-function formatDate(value: string) {
-  const date = new Date(value);
-  return Number.isNaN(date.getTime()) ? value : new Intl.DateTimeFormat("th-TH", { dateStyle: "medium" }).format(date);
 }
