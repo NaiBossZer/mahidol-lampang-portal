@@ -1,10 +1,18 @@
-import { desc, eq, sql } from "drizzle-orm";
+import { desc, eq, inArray, sql } from "drizzle-orm";
 import { getDb } from "../src/db/index";
 import { orders, orderItems, products } from "../src/db/schema";
 import { json, methodNotAllowed, readJson, type ApiRequest, type ApiResponse } from "./_http";
 import { isAdmin } from "./_auth";
 
 const statuses = ["pending", "paid", "fulfilled", "cancelled"] as const;
+
+type OrderItemRow = {
+  orderId: string;
+  productId: string;
+  productName: string | null;
+  quantity: number;
+  pricePerUnit: string;
+};
 
 async function signedSlipUrl(path: string | null) {
   if (!path) return null;
@@ -33,15 +41,35 @@ export default async function handler(req: ApiRequest, res: ApiResponse) {
   try {
     if (req.method === "GET") {
       if (!isAdmin(req)) return json(res, 401, { error: "Unauthorized" });
-      const rows = await getDb().select().from(orders).orderBy(desc(orders.createdAt));
-      const items = rows.length
-        ? await getDb()
-            .select({ orderId: orderItems.orderId, productId: orderItems.productId, productName: products.name, quantity: orderItems.quantity, pricePerUnit: orderItems.pricePerUnit })
+
+      const db = getDb();
+      const rows = await db.select().from(orders).orderBy(desc(orders.createdAt));
+      const items: OrderItemRow[] = rows.length
+        ? await db
+            .select({
+              orderId: orderItems.orderId,
+              productId: orderItems.productId,
+              productName: products.name,
+              quantity: orderItems.quantity,
+              pricePerUnit: orderItems.pricePerUnit,
+            })
             .from(orderItems)
             .leftJoin(products, eq(orderItems.productId, products.id))
         : [];
+
+      const itemsByOrder = new Map<string, OrderItemRow[]>();
+      for (const item of items) {
+        const existing = itemsByOrder.get(item.orderId);
+        if (existing) existing.push(item);
+        else itemsByOrder.set(item.orderId, [item]);
+      }
+
       const data = await Promise.all(
-        rows.map(async (o) => ({ ...o, slipUrl: await signedSlipUrl(o.slipUrl), items: items.filter((i) => i.orderId === o.id) })),
+        rows.map(async (o) => ({
+          ...o,
+          slipUrl: await signedSlipUrl(o.slipUrl),
+          items: itemsByOrder.get(o.id) ?? [],
+        })),
       );
       return json(res, 200, { success: true, data });
     }
@@ -56,8 +84,7 @@ export default async function handler(req: ApiRequest, res: ApiResponse) {
         return json(res, 400, { error: "ข้อมูลคำสั่งซื้อไม่ครบถ้วน" });
 
       const db = getDb();
-      let total = 0;
-      const lines: { productId: string; quantity: number; pricePerUnit: string }[] = [];
+      const requested = new Map<string, number>();
       for (const x of raw) {
         if (!x || typeof x !== "object") return json(res, 400, { error: "รายการสินค้าไม่ถูกต้อง" });
         const item = x as Record<string, unknown>;
@@ -65,7 +92,17 @@ export default async function handler(req: ApiRequest, res: ApiResponse) {
         const quantity = Number(item["quantity"]);
         if (!productId || !Number.isInteger(quantity) || quantity <= 0)
           return json(res, 400, { error: "จำนวนสินค้าไม่ถูกต้อง" });
-        const [row] = await db.select().from(products).where(eq(products.id, productId));
+        requested.set(productId, (requested.get(productId) ?? 0) + quantity);
+      }
+
+      const productIds = [...requested.keys()];
+      const productRows = await db.select().from(products).where(inArray(products.id, productIds));
+      const productsById = new Map(productRows.map((product) => [product.id, product]));
+      let total = 0;
+      const lines: { productId: string; quantity: number; pricePerUnit: string }[] = [];
+
+      for (const [productId, quantity] of requested) {
+        const row = productsById.get(productId);
         if (!row || row.stockQuantity < quantity)
           return json(res, 409, { error: `สินค้า ${row?.name ?? productId} มีสต็อกไม่เพียงพอ` });
         total += Number(row.price) * quantity;
@@ -105,7 +142,8 @@ export default async function handler(req: ApiRequest, res: ApiResponse) {
       const b = (await readJson(req)) as Record<string, unknown>;
       const status = b["status"];
       if (!statuses.includes(status as (typeof statuses)[number])) return json(res, 400, { error: "สถานะไม่ถูกต้อง" });
-      const [row] = await getDb()
+      const db = getDb();
+      const [row] = await db
         .update(orders)
         .set({ status: status as (typeof statuses)[number] })
         .where(eq(orders.id, id))
