@@ -1,5 +1,5 @@
 import { useState, type ReactNode } from "react";
-import { BarChart3, Building2, ClipboardList, FileText, LayoutDashboard, Menu, Settings2, ShoppingBag, X } from "lucide-react";
+import { Building2, ClipboardList, FileText, LayoutDashboard, Menu, Settings2, ShoppingBag, X } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
 
