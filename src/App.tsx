@@ -8,7 +8,8 @@ import { HomePage } from "./pages/HomePage";
 const ActivitiesPage = lazy(() => import("./pages/social/ActivitiesPage").then((m) => ({ default: m.ActivitiesPage })));
 const ActivityDetailPage = lazy(() => import("./pages/social/ActivityDetailPage").then((m) => ({ default: m.ActivityDetailPage })));
 const CentersPage = lazy(() => import("./pages/social/CentersPage").then((m) => ({ default: m.CentersPage })));
-const ProjectsModule = lazy(() => import("./pages/social/ProjectsPage"));
+const ProjectsPage = lazy(() => import("./pages/social/ProjectsPage").then((m) => ({ default: m.ProjectsPage })));
+const ProjectDetailPage = lazy(() => import("./pages/social/ProjectsPage").then((m) => ({ default: m.ProjectDetailPage })));
 const ShellacLearningCenterPage = lazy(() => import("./pages/social/ShellacLearningCenterPage").then((m) => ({ default: m.ShellacLearningCenterPage })));
 const SurveyPage = lazy(() => import("./pages/SurveyPage").then((m) => ({ default: m.SurveyPage })));
 const SiteMapPage = lazy(() => import("./pages/SiteMapPage").then((m) => ({ default: m.SiteMapPage })));
@@ -45,8 +46,8 @@ export default function App() {
           <Route path="/activities" element={<ActivitiesPage />} />
           <Route path="/activities/:slug" element={<ActivityDetailPage />} />
           <Route path="/centers" element={<CentersPage />} />
-          <Route path="/projects" element={<ProjectsModule.ProjectsPage />} />
-          <Route path="/projects/:slug" element={<ProjectsModule.ProjectDetailPage />} />
+          <Route path="/projects" element={<ProjectsPage />} />
+          <Route path="/projects/:slug" element={<ProjectDetailPage />} />
           <Route path="/shellac" element={<ShellacLearningCenterPage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
