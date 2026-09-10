@@ -16,6 +16,7 @@ const LoginPage = lazy(() => import("./pages/admin/LoginPage").then((m) => ({ de
 const AdminPage = lazy(() => import("./pages/admin/AdminPage").then((m) => ({ default: m.AdminPage })));
 const DashboardPage = lazy(() => import("./pages/admin/DashboardPage").then((m) => ({ default: m.DashboardPage })));
 const LacSatisfactionPage = lazy(() => import("./pages/admin/LacSatisfactionPage").then((m) => ({ default: m.LacSatisfactionPage })));
+const FacilitySafetyAdminPage = lazy(() => import("./pages/admin/FacilitySafetyAdminPage").then((m) => ({ default: m.FacilitySafetyAdminPage })));
 const StorefrontPage = lazy(() => import("./pages/store/StorefrontPage").then((m) => ({ default: m.StorefrontPage })));
 const SmartFarmPage = lazy(() => import("./pages/systems/SmartFarmPage").then((m) => ({ default: m.SmartFarmPage })));
 const CleanEnergyPage = lazy(() => import("./pages/systems/CleanEnergyPage").then((m) => ({ default: m.CleanEnergyPage })));
@@ -51,6 +52,7 @@ export default function App() {
           <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
           <Route path="/admin" element={<ProtectedRoute><AdminPage /></ProtectedRoute>} />
           <Route path="/admin/lac-satisfaction" element={<ProtectedRoute><LacSatisfactionPage /></ProtectedRoute>} />
+          <Route path="/admin/facility-safety" element={<ProtectedRoute><FacilitySafetyAdminPage /></ProtectedRoute>} />
           <Route path="/storefront" element={<StorefrontPage />} />
           <Route path="/support-vegetables" element={<StorefrontPage />} />
           <Route path="/smart-farm" element={<SmartFarmPage />} />
