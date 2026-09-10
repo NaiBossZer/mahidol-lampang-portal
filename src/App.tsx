@@ -15,6 +15,7 @@ import { ShellacLearningCenterPage } from "./pages/social/ShellacLearningCenterP
 const LoginPage = lazy(() => import("./pages/admin/LoginPage").then((m) => ({ default: m.LoginPage })));
 const AdminPage = lazy(() => import("./pages/admin/AdminPage").then((m) => ({ default: m.AdminPage })));
 const DashboardPage = lazy(() => import("./pages/admin/DashboardPage").then((m) => ({ default: m.DashboardPage })));
+const LacSatisfactionPage = lazy(() => import("./pages/admin/LacSatisfactionPage").then((m) => ({ default: m.LacSatisfactionPage })));
 const StorefrontPage = lazy(() => import("./pages/store/StorefrontPage").then((m) => ({ default: m.StorefrontPage })));
 const SmartFarmPage = lazy(() => import("./pages/systems/SmartFarmPage").then((m) => ({ default: m.SmartFarmPage })));
 const CleanEnergyPage = lazy(() => import("./pages/systems/CleanEnergyPage").then((m) => ({ default: m.CleanEnergyPage })));
@@ -26,21 +27,13 @@ function NotFoundComponent() {
       <div className="max-w-md text-center">
         <h1 className="text-7xl font-black text-[#123B63]">404</h1>
         <h2 className="mt-4 text-xl font-bold text-[#123B63]">ไม่พบหน้าที่ต้องการ</h2>
-        <RouterLink to="/" className="mt-6 inline-flex rounded-xl bg-[#123B63] px-4 py-2 text-sm font-bold text-white">
-          กลับหน้าหลัก
-        </RouterLink>
+        <RouterLink to="/" className="mt-6 inline-flex rounded-xl bg-[#123B63] px-4 py-2 text-sm font-bold text-white">กลับหน้าหลัก</RouterLink>
       </div>
     </div>
   );
 }
-
-function ProtectedRoute({ children }: { children: ReactNode }) {
-  return <AdminGuard>{children}</AdminGuard>;
-}
-
-function RouteFallback() {
-  return <div className="flex min-h-[40vh] items-center justify-center text-sm font-bold text-slate-500">กำลังโหลด...</div>;
-}
+function ProtectedRoute({ children }: { children: ReactNode }) { return <AdminGuard>{children}</AdminGuard>; }
+function RouteFallback() { return <div className="flex min-h-[40vh] items-center justify-center text-sm font-bold text-slate-500">กำลังโหลด...</div>; }
 
 export default function App() {
   return (
@@ -57,6 +50,7 @@ export default function App() {
           <Route path="/login" element={<LoginPage />} />
           <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
           <Route path="/admin" element={<ProtectedRoute><AdminPage /></ProtectedRoute>} />
+          <Route path="/admin/lac-satisfaction" element={<ProtectedRoute><LacSatisfactionPage /></ProtectedRoute>} />
           <Route path="/storefront" element={<StorefrontPage />} />
           <Route path="/support-vegetables" element={<StorefrontPage />} />
           <Route path="/smart-farm" element={<SmartFarmPage />} />
