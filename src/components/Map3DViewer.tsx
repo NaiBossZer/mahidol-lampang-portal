@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 
 type Map3DViewerProps = {
-  modelUrl: string;
+  modelUrl?: string;
 };
 
 const FALLBACK_MODEL_URL =
