@@ -31,21 +31,21 @@ export function HomePage() {
       <section className="relative overflow-hidden bg-[#123B63] text-white">
         <img src="/hero-bg.jpeg" alt="" aria-hidden="true" className="pointer-events-none absolute inset-0 h-full w-full object-cover opacity-15" width="1920" height="1080" fetchPriority="high" />
         <div aria-hidden="true" className="absolute inset-0 bg-[#123B63]/80" />
-        <div className="relative mx-auto grid max-w-[1280px] items-center gap-10 px-4 py-14 sm:px-6 lg:grid-cols-[1.05fr_0.95fr] lg:gap-14 lg:px-8 lg:py-20">
+        <div className="relative mx-auto grid max-w-[1280px] items-center gap-8 px-4 py-12 sm:px-6 sm:py-14 lg:grid-cols-[1.05fr_0.95fr] lg:gap-12 lg:px-8 lg:py-16">
           <div className="max-w-3xl">
-            <span className="inline-flex rounded-full bg-[#D6A84F] px-3 py-1 text-xs font-black text-[#123B63]">MAHIDOL SOCIAL ENGAGEMENT</span>
-            <h1 className="mt-5 text-4xl font-black leading-tight sm:text-6xl">งานพันธกิจเพื่อสังคม<br />จากองค์ความรู้สู่พื้นที่จริง</h1>
-            <p className="mt-5 max-w-2xl text-sm leading-7 text-blue-100 sm:text-base">แพลตฟอร์มกลางสำหรับกิจกรรม โครงการ ศูนย์ปฏิบัติการ และระบบการเรียนรู้ของคณะสิ่งแวดล้อมและทรัพยากรศาสตร์ มหาวิทยาลัยมหิดล ในพื้นที่สบปราบ ลำปาง</p>
+            <span className="inline-flex min-h-8 items-center rounded-full bg-[#D6A84F] px-3.5 py-1 text-xs font-bold tracking-wide text-[#123B63]">MAHIDOL SOCIAL ENGAGEMENT</span>
+            <h1 className="mt-5 max-w-2xl text-4xl font-bold leading-[1.15] tracking-tight sm:text-5xl lg:text-[52px]">งานพันธกิจเพื่อสังคม<br />จากองค์ความรู้สู่พื้นที่จริง</h1>
+            <p className="mt-5 max-w-2xl text-sm font-normal leading-7 text-blue-100 sm:text-base sm:leading-7">แพลตฟอร์มกลางสำหรับกิจกรรม โครงการ ศูนย์ปฏิบัติการ และระบบการเรียนรู้ของคณะสิ่งแวดล้อมและทรัพยากรศาสตร์ มหาวิทยาลัยมหิดล ในพื้นที่สบปราบ ลำปาง</p>
             <div className="mt-7 flex flex-wrap gap-3">
-              <RouterLink to="/activities" className="inline-flex min-h-11 items-center rounded-xl bg-[#D6A84F] px-5 py-3 text-sm font-black text-[#123B63]">ดูผลงานและกิจกรรม <ArrowUpRight className="ml-1 h-4 w-4" /></RouterLink>
-              <RouterLink to="/centers" className="inline-flex min-h-11 items-center rounded-xl border border-white/30 px-5 py-3 text-sm font-bold hover:bg-white/10">สำรวจพื้นที่ปฏิบัติการ</RouterLink>
+              <RouterLink to="/activities" className="inline-flex min-h-11 items-center rounded-xl bg-[#D6A84F] px-5 py-3 text-sm font-semibold text-[#123B63] transition hover:brightness-95">ดูผลงานและกิจกรรม <ArrowUpRight className="ml-1 h-4 w-4" /></RouterLink>
+              <RouterLink to="/centers" className="inline-flex min-h-11 items-center rounded-xl border border-white/30 px-5 py-3 text-sm font-semibold transition hover:bg-white/10">สำรวจพื้นที่ปฏิบัติการ</RouterLink>
             </div>
           </div>
-          <div className="relative mx-auto w-full max-w-[560px]">
-            <div className="overflow-hidden rounded-2xl border border-white/10 bg-white/10 shadow-2xl backdrop-blur-[2px]">
-              <img src="/hero-bg.jpeg" alt="" aria-hidden="true" className="h-[250px] w-full object-cover sm:h-[320px]" width="1120" height="640" />
-              <div className="bg-[#123B63]/90 px-5 py-3 sm:px-6">
-                <p className="text-xs font-bold leading-5 text-[#D6A84F]">พื้นที่แห่งการเรียนรู้ ภูมิปัญญาท้องถิ่น และการพัฒนาที่ยั่งยืน</p>
+          <div className="relative mx-auto w-full max-w-[560px] lg:justify-self-end">
+            <div className="overflow-hidden rounded-2xl border border-white/10 bg-white/10 shadow-xl backdrop-blur-[2px]">
+              <img src="/hero-bg.jpeg" alt="" aria-hidden="true" className="aspect-[16/10] w-full object-cover" width="1120" height="700" />
+              <div className="bg-[#123B63]/90 px-5 py-3 sm:px-6 sm:py-3.5">
+                <p className="text-xs font-medium leading-5 text-[#D6A84F]">พื้นที่แห่งการเรียนรู้ ภูมิปัญญาท้องถิ่น และการพัฒนาที่ยั่งยืน</p>
               </div>
             </div>
           </div>
