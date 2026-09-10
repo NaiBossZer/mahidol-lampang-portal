@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { HomePartners } from "../home/HomePartners";
 import { PublicFooter } from "./PublicFooter";
 import { PublicHeader } from "./PublicHeader";
 
@@ -11,6 +12,7 @@ export function PublicAppShell({ children }: { children: ReactNode }) {
       <PublicHeader />
       <main id="main-content" className="min-w-0">
         {children}
+        <HomePartners />
       </main>
       <PublicFooter />
     </div>
