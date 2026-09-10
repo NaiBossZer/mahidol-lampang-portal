@@ -3,6 +3,9 @@ import { CalendarDays, MapPin, Users, ArrowUpRight, Search } from "lucide-react"
 import { Link as RouterLink } from "react-router-dom";
 import { getActivities } from "@/services/socialEngagementApi";
 import { type SocialActivity } from "@/data/socialEngagement";
+import { PublicHeader } from "@/components/layout/PublicHeader";
+import { PublicPageHeader } from "@/components/layout/PublicPageHeader";
+import { PublicFooter } from "@/components/layout/PublicFooter";
 
 const labels: Record<SocialActivity["system"], string> = {
   "smart-farm": "Smart Farm",
@@ -28,20 +31,22 @@ export function ActivitiesPage() {
   );
   return (
     <div className="min-h-screen bg-[#f8f6f0] text-slate-800">
-      <PageHeader
+      <PublicHeader />
+      <PublicPageHeader
         title="กิจกรรมพันธกิจเพื่อสังคม"
         subtitle="หลักฐานการดำเนินงานจากพื้นที่จริง โครงการจริง และความร่วมมือจริง"
       />
-      <main className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
+      <main className="mx-auto max-w-[1280px] px-4 py-10 sm:px-6 lg:px-8">
         <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <p className="text-sm text-slate-500">กิจกรรมล่าสุด {activities.length} รายการ</p>
           <div className="relative w-full sm:w-80">
-            <Search className="absolute left-3 top-3 h-4 w-4 text-slate-400" />
+            <Search className="absolute left-3 top-3 h-4 w-4 text-slate-400" aria-hidden="true" />
             <input
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="ค้นหากิจกรรม..."
-              className="w-full rounded-xl border border-slate-200 bg-white py-2.5 pl-9 pr-4 text-sm outline-none focus:ring-2 focus:ring-[#1677A8]/30"
+              aria-label="ค้นหากิจกรรม"
+              className="min-h-11 w-full rounded-xl border border-slate-200 bg-white py-2.5 pl-9 pr-4 text-sm outline-none focus:border-[#1677A8] focus:ring-2 focus:ring-[#1677A8]/30"
             />
           </div>
         </div>
@@ -51,6 +56,7 @@ export function ActivitiesPage() {
           ))}
         </div>
       </main>
+      <PublicFooter />
     </div>
   );
 }
@@ -89,7 +95,7 @@ export function ActivityCard({ activity }: { activity: SocialActivity }) {
         </div>
         <RouterLink
           to={`/activities/${activity.slug}`}
-          className="mt-5 inline-flex items-center gap-1 text-sm font-bold text-[#1677A8] hover:underline"
+          className="mt-5 inline-flex min-h-11 items-center gap-1 text-sm font-bold text-[#1677A8] hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-[#1677A8] focus-visible:ring-offset-2"
         >
           ดูหลักฐานกิจกรรม <ArrowUpRight className="h-4 w-4" />
         </RouterLink>
@@ -99,17 +105,7 @@ export function ActivityCard({ activity }: { activity: SocialActivity }) {
 }
 
 export function PageHeader({ title, subtitle }: { title: string; subtitle: string }) {
-  return (
-    <header className="bg-[#123B63] text-white">
-      <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
-        <RouterLink to="/" className="text-xs font-bold text-[#D6A84F] hover:underline">
-          ← กลับหน้าหลัก
-        </RouterLink>
-        <h1 className="mt-4 text-3xl font-black sm:text-4xl">{title}</h1>
-        <p className="mt-2 max-w-2xl text-sm leading-6 text-blue-100">{subtitle}</p>
-      </div>
-    </header>
-  );
+  return <PublicPageHeader title={title} subtitle={subtitle} />;
 }
 
 function formatDate(value: string) {
