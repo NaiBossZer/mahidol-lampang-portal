@@ -4,6 +4,17 @@ import { activities } from "../../src/db/schema";
 import { json, methodNotAllowed, readJson, type ApiRequest, type ApiResponse } from "../_http";
 import { isAdmin } from "../_auth";
 
+type SurveyPatchInput = {
+  surveyEnabled?: unknown;
+  surveyOpenAt?: unknown;
+  surveyCloseAt?: unknown;
+  surveyWelcomeText?: unknown;
+};
+
+function isSurveyPatchInput(value: unknown): value is SurveyPatchInput {
+  return typeof value === "object" && value !== null;
+}
+
 function cleanOptionalDate(value: unknown): Date | null {
   if (value == null || value === "") return null;
   const date = new Date(String(value));
@@ -34,10 +45,11 @@ export default async function handler(req: ApiRequest, res: ApiResponse) {
     }
     if (!activityId) return json(res, 400, { error: "ต้องระบุ activity" });
     const body = await readJson(req);
-    const surveyEnabled = body && typeof body === "object" && "surveyEnabled" in body ? Boolean((body as { surveyEnabled?: unknown }).surveyEnabled) : true;
-    const openAt = cleanOptionalDate(body && typeof body === "object" ? (body as any).surveyOpenAt : null);
-    const closeAt = cleanOptionalDate(body && typeof body === "object" ? (body as any).surveyCloseAt : null);
-    const welcome = body && typeof body === "object" && "surveyWelcomeText" in body ? String((body as { surveyWelcomeText?: unknown }).surveyWelcomeText ?? "").trim() : "";
+    const patch = isSurveyPatchInput(body) ? body : {};
+    const surveyEnabled = "surveyEnabled" in patch ? Boolean(patch.surveyEnabled) : true;
+    const openAt = cleanOptionalDate(patch.surveyOpenAt);
+    const closeAt = cleanOptionalDate(patch.surveyCloseAt);
+    const welcome = "surveyWelcomeText" in patch ? String(patch.surveyWelcomeText ?? "").trim() : "";
     if (openAt && closeAt && openAt > closeAt) return json(res, 400, { error: "วันเปิดแบบประเมินต้องไม่เกินวันปิด" });
     await db.execute(sql`update public.activities set survey_enabled = ${surveyEnabled}, survey_open_at = ${openAt}, survey_close_at = ${closeAt}, survey_welcome_text = ${welcome || null}, updated_at = now() where id = ${activityId}::uuid`);
     const [updated] = await db.select().from(activities).where(eq(activities.id, activityId)).limit(1);
