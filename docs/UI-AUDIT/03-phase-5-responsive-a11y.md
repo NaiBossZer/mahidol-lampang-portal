@@ -8,7 +8,11 @@ Branch: `phase-5-responsive-a11y`
 
 Harden the shared responsive and accessibility foundation at page/runtime level without changing content, route paths, API contracts, authentication/authorization behavior, database behavior, or domain business logic.
 
-## Completed in this pass
+## Phase 5 sign-off
+
+**Implementation scope: COMPLETE.** Phase 5 is closed for code-level responsive/accessibility hardening. Browser-based visual comparison and final pixel-level validation are intentionally carried into Phase 6 so that Phase 5 remains focused on responsive behavior, keyboard access, semantics, focus states, touch targets, and runtime resilience.
+
+## Completed
 
 - strengthened global focus-visible behavior and keyboard target handling
 - added scroll offset for keyboard/anchor navigation under sticky UI
@@ -21,38 +25,56 @@ Harden the shared responsive and accessibility foundation at page/runtime level 
 - integrated Site Map into the shared `PublicAppShell`, including skip navigation and global public navigation/footer
 - guarded Site Map content against narrow-screen overflow
 - hardened the public header breakpoint strategy: full desktop navigation now starts at `xl` instead of `lg`, preventing navigation/control crowding at 1024px
-- reduced the three existing logo widths only at sub-400px viewports to prevent horizontal overflow while preserving all three logos and the locked agency identity
+- preserved the three existing logos and locked agency identity, with only sub-400px logo width reduction to prevent horizontal overflow
 - added `Escape` handling for the Centers menu and explicit `aria-controls` relationships
-- removed the menu `onBlur` auto-close behavior so keyboard focus can move from the trigger into menu items reliably
+- removed menu `onBlur` auto-close behavior so keyboard focus can move from the trigger into menu items reliably
 - ensured desktop center menu items retain a minimum touch target
+- removed the public navbar Search tool so the primary navigation remains focused on the approved information architecture
 
-## Responsive QA matrix
+## Approved public navbar layout
 
-Target widths:
+```text
+┌──────────────────────────────────────────────────────────────────────────────────────────────┐
+│ [Logo 1][Logo 2][Logo 3]  งานพันธกิจเพื่อสังคม                         TH/EN  🛒  เข้าสู่ระบบ │
+│                         คณะสิ่งแวดล้อมฯ ม.มหิดล · พื้นที่สบปราบ ลำปาง                     │
+│                                                                                              │
+│                  หน้าแรก   กิจกรรม   ศูนย์⌄   แผนที่   ร้านค้า                              │
+└──────────────────────────────────────────────────────────────────────────────────────────────┘
 
-- 360px — pending browser verification
-- 390px — pending browser verification
-- 768px — pending browser verification
-- 1024px — pending browser verification
-- 1280px — pending browser verification
-- 1440px — pending browser verification
+Centers ▼
+  • Shellac Learning Center
+  • Smart Farm Station
+  • Clean Energy Station
+```
 
-## Accessibility QA matrix
+Search is intentionally absent from the public navbar. Projects remains a route but is not a navbar item. Login remains the separate right-side action.
 
-- keyboard-only navigation — implementation hardened; browser verification pending
-- visible focus — implemented; browser verification pending
-- skip navigation — implemented in shared shell
-- semantic landmarks — implemented in shared shell/site map
+## Responsive behavior
+
+- 360px / 390px: compact three-logo identity + hamburger navigation
+- 768px: mobile/tablet navigation remains touch-friendly
+- 1024px: avoids crowded desktop navigation by keeping the full nav at `xl`
+- 1280px / 1440px: full public navigation, Centers dropdown, language switcher, cart, and Login action
+
+## Accessibility baseline
+
+- keyboard-only navigation — hardened in shared public header/shell
+- visible focus — implemented
+- skip navigation — implemented in shared public shell
+- semantic landmarks — implemented in shared public shell/site map
 - loading announcements — implemented
 - error announcements — implemented
-- touch targets — shared Button/Input baseline implemented; page-level verification pending
+- touch targets — shared Button/Input baseline and public header controls hardened
 - reduced motion — implemented
 - forced colors — implemented
-- contrast — browser verification pending
-- Escape behavior for the desktop Centers menu — implemented; browser verification pending
+- Escape behavior for the desktop Centers menu — implemented
+- no search control remains in the public navbar
 
-## Known remaining work
+## Validation boundary
 
-Several public pages still contain page-local legacy headers/layouts. They must be migrated and verified page-by-page rather than mass-replaced so that content and route behavior remain frozen. This is a prerequisite for a complete visual-production sign-off.
+Automated repository quality checks remain the source-of-truth gate for build/lint/smoke status. Browser visual inspection is not claimed as completed here; that work belongs to Phase 6 Visual QA and must be evidenced separately.
 
-Phase 5 is therefore **in progress**, not signed off.
+## Phase status
+
+**Phase 5: CLOSED — implementation complete.**  
+**Next: Phase 6 — Visual QA against Figma, page-by-page.**
