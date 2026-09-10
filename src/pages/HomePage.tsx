@@ -95,8 +95,10 @@ export function HomePage() {
         </div>
       </section>
 
-      <section className="bg-[#F7F4ED] py-12 sm:py-14 lg:py-16">
-        <div className="mx-auto max-w-[1280px] px-4 sm:px-6 lg:px-8">
+      <section className="relative overflow-hidden py-12 sm:py-14 lg:py-16">
+        <img src="/activities-bg.jpeg" alt="" aria-hidden="true" className="pointer-events-none absolute inset-0 h-full w-full object-cover opacity-[0.16]" loading="lazy" decoding="async" width="1920" height="1080" />
+        <div aria-hidden="true" className="absolute inset-0 bg-[#F7F4ED]/90" />
+        <div className="relative mx-auto max-w-[1280px] px-4 sm:px-6 lg:px-8">
           <div className="flex items-end justify-between gap-6">
             <div>
               <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-[#1677A8]">COMMUNITY &amp; EDUCATION</p>
