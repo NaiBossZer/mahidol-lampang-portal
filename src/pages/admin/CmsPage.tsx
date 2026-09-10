@@ -1,133 +1,35 @@
-import { useEffect, useState } from "react";
-import { Plus, Save, Trash2 } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { Save, Plus, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 
-type Service = {
-  id: string;
-  title: string;
-  slug: string;
-  summary: string | null;
-  description: string | null;
-  icon: string | null;
-  featuredImage: string | null;
-  linkType: "INTERNAL" | "EXTERNAL" | "CONTACT";
-  linkUrl: string | null;
-  sortOrder: number;
-  status: "draft" | "published" | "archived";
+type Tab = "services" | "home" | "navigation" | "footer" | "projects" | "centers" | "partners";
+type Row = Record<string, unknown> & { id?: string };
+const tabs: Array<{ id: Tab; label: string }> = [
+  { id: "services", label: "Services" }, { id: "home", label: "Home" }, { id: "navigation", label: "Navigation" }, { id: "footer", label: "Footer" }, { id: "projects", label: "Projects" }, { id: "centers", label: "Learning Centers" }, { id: "partners", label: "Partners" },
+];
+const endpoints: Record<Tab, string> = { services: "/api/admin/services", home: "/api/admin/home", navigation: "/api/admin/navigation", footer: "/api/admin/footer", projects: "/api/admin/projects", centers: "/api/admin/learning-centers", partners: "/api/admin/partners" };
+const emptyRows: Record<Tab, Row> = {
+  services: { title: "", slug: "", summary: "", description: "", icon: "", featuredImage: "", linkType: "INTERNAL", linkUrl: "", sortOrder: 0, status: "draft" },
+  home: { sectionKey: "HOME_HERO", title: "", subtitle: "", description: "", image: "", sortOrder: 0, isEnabled: true },
+  navigation: { label: "", slug: "", targetType: "INTERNAL", targetUrl: "", sortOrder: 0, isEnabled: true, openNewTab: false },
+  footer: { organizationName: "", address: "", phone: "", email: "", facebookUrl: "", lineUrl: "", copyrightText: "", privacyUrl: "", termsUrl: "" },
+  projects: { title: "", slug: "", description: "", objective: "", status: "active", coverImage: "" },
+  centers: { name: "", slug: "", type: "LEARNING_CENTER", description: "", province: "", district: "", subdistrict: "", address: "", coverImage: "", status: "active" },
+  partners: { name: "", type: "", logo: "", description: "" },
 };
-
-const emptyService: Omit<Service, "id"> = {
-  title: "",
-  slug: "",
-  summary: "",
-  description: "",
-  icon: "",
-  featuredImage: "",
-  linkType: "INTERNAL",
-  linkUrl: "",
-  sortOrder: 0,
-  status: "draft",
-};
-
+function labelFor(key: string) { const labels: Record<string, string> = { sectionKey: "Section Key", targetType: "Target Type", targetUrl: "Target URL", sortOrder: "ลำดับ", isEnabled: "เปิดใช้งาน", openNewTab: "เปิดแท็บใหม่", linkType: "Link Type", linkUrl: "Link URL", featuredImage: "รูปภาพหลัก", coverImage: "Cover Image", organizationName: "ชื่อองค์กร", copyrightText: "Copyright" }; return labels[key] ?? key.replace(/[A-Z]/g, (m) => ` ${m}`).replace(/^./, (m) => m.toUpperCase()); }
+function inputFor(key: string, value: unknown, onChange: (value: unknown) => void) {
+  if (["description", "summary", "subtitle", "address", "objective", "copyrightText"].includes(key)) return <textarea value={String(value ?? "")} onChange={(e) => onChange(e.target.value)} rows={3} className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />;
+  if (["isEnabled", "openNewTab"].includes(key)) return <input type="checkbox" checked={value === true} onChange={(e) => onChange(e.target.checked)} className="mt-2 h-4 w-4" />;
+  if (key === "sortOrder") return <input type="number" value={Number(value ?? 0)} onChange={(e) => onChange(Number(e.target.value))} className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />;
+  if (key === "status") return <select value={String(value ?? "draft")} onChange={(e) => onChange(e.target.value)} className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"><option value="draft">Draft</option><option value="published">Published</option><option value="archived">Archived</option><option value="active">Active</option></select>;
+  if (["linkType", "targetType"].includes(key)) return <select value={String(value ?? "INTERNAL")} onChange={(e) => onChange(e.target.value)} className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"><option value="INTERNAL">Internal</option><option value="EXTERNAL">External</option><option value="CONTACT">Contact</option></select>;
+  return <input value={String(value ?? "")} onChange={(e) => onChange(e.target.value)} className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />;
+}
 export function CmsPage() {
-  const [services, setServices] = useState<Service[]>([]);
-  const [draft, setDraft] = useState<Service | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  async function load() {
-    setLoading(true);
-    try {
-      const response = await fetch("/api/admin/services", { credentials: "include" });
-      const body = (await response.json()) as { data?: Service[]; error?: string };
-      if (!response.ok) throw new Error(body.error ?? "โหลดข้อมูลไม่สำเร็จ");
-      setServices(body.data ?? []);
-    } catch (error) {
-      toast.error(error instanceof Error ? error.message : "โหลดข้อมูลไม่สำเร็จ");
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  useEffect(() => { void load(); }, []);
-
-  async function save() {
-    if (!draft) return;
-    const isNew = !draft.id;
-    const response = await fetch(isNew ? "/api/admin/services" : `/api/admin/services?id=${draft.id}`, {
-      method: isNew ? "POST" : "PUT",
-      credentials: "include",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(draft),
-    });
-    const body = (await response.json()) as { data?: Service; error?: string };
-    if (!response.ok) return toast.error(body.error ?? "บันทึกไม่สำเร็จ");
-    toast.success(isNew ? "สร้างบริการแล้ว" : "บันทึกบริการแล้ว");
-    setDraft(null);
-    await load();
-  }
-
-  async function remove(id: string) {
-    if (!window.confirm("ยืนยันการลบบริการนี้?")) return;
-    const response = await fetch(`/api/admin/services?id=${id}`, { method: "DELETE", credentials: "include" });
-    if (!response.ok) {
-      const body = (await response.json()) as { error?: string };
-      return toast.error(body.error ?? "ลบไม่สำเร็จ");
-    }
-    toast.success("ลบบริการแล้ว");
-    await load();
-  }
-
-  return (
-    <section className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
-      <div className="flex flex-wrap items-end justify-between gap-4">
-        <div>
-          <p className="text-xs font-bold uppercase tracking-[0.18em] text-emerald-700">Content CMS</p>
-          <h1 className="mt-1 text-3xl font-black text-brand-navy">จัดการเนื้อหา</h1>
-          <p className="mt-2 max-w-2xl text-sm text-slate-600">Semantic CMS V1 · จัดการ Services โดยไม่แก้โค้ดหน้าเว็บไซต์</p>
-        </div>
-        <button type="button" onClick={() => setDraft({ id: "", ...emptyService })} className="inline-flex min-h-11 items-center gap-2 rounded-xl bg-brand-navy px-4 py-2.5 text-sm font-bold text-white">
-          <Plus className="h-4 w-4" /> เพิ่มบริการ
-        </button>
-      </div>
-
-      <div className="mt-6 grid gap-6 lg:grid-cols-[1fr_420px]">
-        <div className="rounded-2xl border border-slate-200 bg-white shadow-sm">
-          <div className="border-b border-slate-100 px-5 py-4 font-bold text-brand-navy">Services</div>
-          {loading ? <p className="p-5 text-sm text-slate-500">กำลังโหลด...</p> : services.length === 0 ? <p className="p-5 text-sm text-slate-500">ยังไม่มีบริการ</p> : (
-            <div className="divide-y divide-slate-100">
-              {services.map((service) => (
-                <div key={service.id} className="flex items-center justify-between gap-4 p-5">
-                  <div className="min-w-0">
-                    <p className="font-bold text-slate-900">{service.title}</p>
-                    <p className="mt-1 text-xs text-slate-500">/{service.slug} · {service.status} · ลำดับ {service.sortOrder}</p>
-                    {service.summary && <p className="mt-2 text-sm text-slate-600">{service.summary}</p>}
-                  </div>
-                  <div className="flex shrink-0 gap-2">
-                    <button type="button" onClick={() => setDraft(service)} className="min-h-10 rounded-lg border border-slate-200 px-3 text-sm font-bold text-brand-navy">แก้ไข</button>
-                    <button type="button" onClick={() => void remove(service.id)} className="inline-flex min-h-10 min-w-10 items-center justify-center rounded-lg border border-red-200 text-red-700" aria-label={`ลบ ${service.title}`}><Trash2 className="h-4 w-4" /></button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-
-        <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-          <h2 className="font-bold text-brand-navy">{draft ? (draft.id ? "แก้ไขบริการ" : "สร้างบริการ") : "เลือกเนื้อหา"}</h2>
-          {!draft ? <p className="mt-3 text-sm text-slate-500">เลือกบริการที่ต้องการแก้ไข หรือสร้างรายการใหม่</p> : (
-            <div className="mt-4 space-y-4">
-              <label className="block text-sm font-semibold">ชื่อบริการ<input value={draft.title} onChange={(e) => setDraft({ ...draft, title: e.target.value })} className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2" /></label>
-              <label className="block text-sm font-semibold">Slug<input value={draft.slug} onChange={(e) => setDraft({ ...draft, slug: e.target.value })} className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2" /></label>
-              <label className="block text-sm font-semibold">คำอธิบายสั้น<textarea value={draft.summary ?? ""} onChange={(e) => setDraft({ ...draft, summary: e.target.value })} rows={3} className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2" /></label>
-              <div className="grid grid-cols-2 gap-3">
-                <label className="block text-sm font-semibold">ลำดับ<input type="number" value={draft.sortOrder} onChange={(e) => setDraft({ ...draft, sortOrder: Number(e.target.value) })} className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2" /></label>
-                <label className="block text-sm font-semibold">สถานะ<select value={draft.status} onChange={(e) => setDraft({ ...draft, status: e.target.value as Service["status"] })} className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2"><option value="draft">Draft</option><option value="published">Published</option><option value="archived">Archived</option></select></label>
-              </div>
-              <div className="flex gap-2 pt-2"><button type="button" onClick={() => void save()} className="inline-flex min-h-11 flex-1 items-center justify-center gap-2 rounded-xl bg-brand-navy px-4 font-bold text-white"><Save className="h-4 w-4" /> บันทึก</button><button type="button" onClick={() => setDraft(null)} className="min-h-11 rounded-xl border border-slate-200 px-4 font-bold">ยกเลิก</button></div>
-            </div>
-          )}
-        </div>
-      </div>
-    </section>
-  );
+  const [tab, setTab] = useState<Tab>("services"); const [rows, setRows] = useState<Row[]>([]); const [draft, setDraft] = useState<Row | null>(null); const [loading, setLoading] = useState(true); const [saving, setSaving] = useState(false); const endpoint = useMemo(() => endpoints[tab], [tab]);
+  async function load() { setLoading(true); try { const response = await fetch(endpoint, { credentials: "include", headers: { Accept: "application/json" } }); const body = (await response.json()) as { data?: Row | Row[]; error?: string }; if (!response.ok) throw new Error(body.error ?? "โหลดข้อมูลไม่สำเร็จ"); const data = body.data; setRows(Array.isArray(data) ? data : data ? [data] : []); if (tab === "footer" && data && !Array.isArray(data)) setDraft(data); } catch (error) { toast.error(error instanceof Error ? error.message : "โหลดข้อมูลไม่สำเร็จ"); } finally { setLoading(false); } }
+  useEffect(() => { setDraft(null); void load(); }, [endpoint]);
+  async function save() { if (!draft) return; setSaving(true); try { const isNew = !draft.id; const response = await fetch(isNew ? endpoint : `${endpoint}?id=${encodeURIComponent(String(draft.id))}`, { method: isNew ? "POST" : "PUT", credentials: "include", headers: { "Content-Type": "application/json", Accept: "application/json" }, body: JSON.stringify(draft) }); const body = (await response.json()) as { error?: string }; if (!response.ok) throw new Error(body.error ?? "บันทึกไม่สำเร็จ"); toast.success("บันทึกเนื้อหาแล้ว"); setDraft(null); await load(); } catch (error) { toast.error(error instanceof Error ? error.message : "บันทึกไม่สำเร็จ"); } finally { setSaving(false); } }
+  return <section className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8"><div className="flex flex-wrap items-end justify-between gap-4"><div><p className="text-xs font-bold uppercase tracking-[0.18em] text-emerald-700">Content CMS</p><h1 className="mt-1 text-3xl font-black text-brand-navy">Central Content Management</h1><p className="mt-2 max-w-3xl text-sm text-slate-600">Semantic CMS V1 · แยกเนื้อหาออกจากโค้ด และคงขอบเขตข้อมูลปฏิบัติการของแต่ละระบบ</p></div><div className="flex gap-2"><button type="button" onClick={() => void load()} className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 text-sm font-bold text-brand-navy"><RefreshCw className="h-4 w-4" /> รีเฟรช</button><button type="button" onClick={() => setDraft({ ...emptyRows[tab] })} className="inline-flex min-h-11 items-center gap-2 rounded-xl bg-brand-navy px-4 text-sm font-bold text-white"><Plus className="h-4 w-4" /> เพิ่มรายการ</button></div></div><div className="mt-6 flex gap-2 overflow-x-auto border-b border-slate-200 pb-2">{tabs.map((item) => <button key={item.id} type="button" onClick={() => setTab(item.id)} className={`shrink-0 rounded-lg px-3 py-2 text-sm font-bold ${tab === item.id ? "bg-brand-navy text-white" : "text-slate-600 hover:bg-slate-100"}`}>{item.label}</button>)}</div><div className="mt-6 grid gap-6 lg:grid-cols-[1fr_420px]"><div className="rounded-2xl border border-slate-200 bg-white shadow-sm"><div className="border-b border-slate-100 px-5 py-4 font-bold text-brand-navy">{tabs.find((x) => x.id === tab)?.label}</div>{loading ? <p className="p-5 text-sm text-slate-500">กำลังโหลด...</p> : rows.length === 0 ? <p className="p-5 text-sm text-slate-500">ยังไม่มีข้อมูล</p> : <div className="divide-y divide-slate-100">{rows.map((row, index) => <button key={String(row.id ?? index)} type="button" onClick={() => setDraft(row)} className="block w-full p-5 text-left hover:bg-slate-50"><p className="font-bold text-slate-900">{String(row.title ?? row.name ?? row.label ?? row.sectionKey ?? "รายการ")}</p><p className="mt-1 text-xs text-slate-500">{String(row.slug ?? row.status ?? row.targetUrl ?? "")} {row.sortOrder !== undefined ? `· ลำดับ ${String(row.sortOrder)}` : ""}</p><p className="mt-2 line-clamp-2 text-sm text-slate-600">{String(row.summary ?? row.description ?? row.subtitle ?? "")}</p></button>)}</div>}</div><div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm"><h2 className="font-bold text-brand-navy">{draft ? (draft.id ? "แก้ไขเนื้อหา" : "สร้างเนื้อหา") : "เลือกเนื้อหา"}</h2>{!draft ? <p className="mt-3 text-sm text-slate-500">เลือกข้อมูลจากรายการ หรือสร้างรายการใหม่</p> : <div className="mt-4 space-y-4">{Object.entries(draft).filter(([key]) => key !== "id" && !["createdAt", "updatedAt", "publishedAt"].includes(key)).map(([key, value]) => <label key={key} className="block text-sm font-semibold text-slate-700">{labelFor(key)}{inputFor(key, value, (next) => setDraft((current) => current ? { ...current, [key]: next } : current))}</label>)}<div className="flex gap-2 pt-2"><button type="button" disabled={saving} onClick={() => void save()} className="inline-flex min-h-11 flex-1 items-center justify-center gap-2 rounded-xl bg-brand-navy px-4 font-bold text-white disabled:opacity-60"><Save className="h-4 w-4" /> {saving ? "กำลังบันทึก..." : "บันทึก"}</button><button type="button" onClick={() => setDraft(null)} className="min-h-11 rounded-xl border border-slate-200 px-4 font-bold">ยกเลิก</button></div></div>}</div></div></section>;
 }
