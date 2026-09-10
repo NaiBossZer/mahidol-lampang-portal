@@ -2,7 +2,8 @@ import { useEffect, useState } from "react";
 import { ArrowUpRight, ExternalLink } from "lucide-react";
 import { Link as RouterLink } from "react-router-dom";
 import PublicAppShell from "../components/layout/PublicAppShell";
-import { getActivities, type Activity } from "../lib/api";
+import { getActivities } from "../services/socialEngagementApi";
+import type { SocialActivity } from "../data/socialEngagement";
 
 const CORE_SYSTEMS = [
   {
@@ -28,13 +29,20 @@ const CORE_SYSTEMS = [
   },
 ];
 
-function ActivityPreview({ activity }: { activity: Activity }) {
+function activityCategory(activity: SocialActivity) {
+  if (activity.system === "shellac") return "SHELLAC";
+  if (activity.system === "smart-farm") return "SMART FARM";
+  if (activity.system === "clean-energy") return "CLEAN ENERGY";
+  return "SOCIAL ENGAGEMENT";
+}
+
+function ActivityPreview({ activity }: { activity: SocialActivity }) {
   return (
     <article className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
       <div className="p-5">
-        <p className="text-xs font-medium text-[#C66B4F]">{activity.category}</p>
+        <p className="text-xs font-medium text-[#C66B4F]">{activityCategory(activity)}</p>
         <h3 className="mt-2 line-clamp-2 text-lg font-semibold text-[#123B63]">{activity.title}</h3>
-        <p className="mt-2 line-clamp-2 text-sm leading-6 text-slate-500">{activity.excerpt}</p>
+        <p className="mt-2 line-clamp-2 text-sm leading-6 text-slate-500">{activity.summary}</p>
         <RouterLink to={`/activities/${activity.slug}`} className="mt-4 inline-flex min-h-11 items-center text-sm font-semibold text-[#1677A8]">
           อ่านเพิ่มเติม <ArrowUpRight className="ml-1 h-4 w-4" />
         </RouterLink>
@@ -44,7 +52,7 @@ function ActivityPreview({ activity }: { activity: Activity }) {
 }
 
 export default function HomePage() {
-  const [activities, setActivities] = useState<Activity[]>([]);
+  const [activities, setActivities] = useState<SocialActivity[]>([]);
 
   useEffect(() => {
     let active = true;
