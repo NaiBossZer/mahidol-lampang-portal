@@ -12,12 +12,7 @@ const researchTopics = ["เทคโนโลยีภูมิปัญญา�
 export function PublicFooter() {
   return (
     <footer className="relative overflow-hidden bg-[#123B63] text-white">
-      <img
-        src="/footer-bg.jpeg"
-        alt=""
-        aria-hidden="true"
-        className="absolute inset-0 h-full w-full object-cover opacity-35"
-      />
+      <img src="/footer-bg.jpeg" alt="" aria-hidden="true" className="absolute inset-0 h-full w-full object-cover opacity-35" />
       <div aria-hidden="true" className="absolute inset-0 bg-[#123B63]/70" />
       <div className="relative mx-auto max-w-[1280px] px-4 py-10 sm:px-6 sm:py-12 lg:px-8 lg:py-14">
         <div className="grid gap-8 md:grid-cols-4 md:gap-7 lg:gap-10">
@@ -25,8 +20,8 @@ export function PublicFooter() {
             <div className="flex items-start gap-3">
               <img src="/mahidol-logo.png" alt="มหาวิทยาลัยมหิดล" className="h-11 w-11 shrink-0 rounded-full bg-white object-contain p-1" width="44" height="44" />
               <div className="min-w-0">
-                <p className="text-sm font-bold leading-6">มหาวิทยาลัยมหิดล โครงการจัดตั้งวิทยาเขตลำปาง</p>
-                <p className="mt-0.5 text-[10px] font-medium leading-4 text-[#D6A84F]">Mahidol University Lampang Project</p>
+                <p className="text-sm font-bold leading-6">มหาวิทยาลัยมหิดล</p>
+                <p className="mt-0.5 text-[10px] font-medium leading-4 text-[#D6A84F]">งานพันธกิจ สิ่งแวดล้อม มหิดล</p>
               </div>
             </div>
             <p className="mt-4 max-w-sm text-xs leading-6 text-blue-100">มุ่งมั่นพัฒนาวิทยาการและการเรียนรู้ร่วมกับชุมชน เพื่อสร้างการเปลี่ยนแปลงที่ยั่งยืน</p>
@@ -57,8 +52,8 @@ export function PublicFooter() {
         </div>
 
         <div className="mt-8 flex flex-col gap-2 border-t border-white/15 pt-4 text-[10px] text-slate-300 sm:flex-row sm:items-center sm:justify-between">
-          <p>© 2026 มหาวิทยาลัยมหิดล โครงการจัดตั้งวิทยาเขตลำปาง</p>
-          <div className="flex gap-4"><Link to="/site-map" className="transition hover:text-white">ผังของการใช้งาน</Link><Link to="/login" className="transition hover:text-white">นโยบายความเป็นส่วนตัว</Link></div>
+          <p>© 2026 มหาวิทยาลัยมหิดล</p>
+          <div className="flex gap-4"><Link to="/site-map" className="transition hover:text-white">ผังของการใช้งาน</Link><Link to="/login" className="transition hover:text-white">เข้าสู่ระบบ</Link></div>
         </div>
       </div>
     </footer>
