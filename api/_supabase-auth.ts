@@ -4,6 +4,13 @@ const ACCESS_COOKIE = "sb_access_token";
 const REFRESH_COOKIE = "sb_refresh_token";
 const MAX_AGE = 60 * 60 * 8;
 
+type SupabaseUser = {
+  id: string;
+  email?: string;
+  user_metadata?: Record<string, unknown>;
+  app_metadata?: Record<string, unknown>;
+};
+
 function env(name: string): string { return process.env[name] ?? ""; }
 function baseUrl(): string { return env("SUPABASE_URL").replace(/\/$/, ""); }
 function anonKey(): string { return env("SUPABASE_ANON_KEY"); }
@@ -24,16 +31,16 @@ export async function signInWithPassword(email: string, password: string) {
   });
   const body = await response.json().catch(() => ({}));
   if (!response.ok) throw new Error(String(body.error_description ?? body.msg ?? "เข้าสู่ระบบไม่สำเร็จ"));
-  return body as { access_token: string; refresh_token: string; expires_in?: number; user?: { id: string; email?: string } };
+  return body as { access_token: string; refresh_token: string; expires_in?: number; user?: SupabaseUser };
 }
 
-export async function getUser(req: ApiRequest) {
+export async function getUser(req: ApiRequest): Promise<SupabaseUser | null> {
   if (!supabaseConfigured()) return null;
   const token = cookies(req)[ACCESS_COOKIE];
   if (!token) return null;
   const response = await fetch(`${baseUrl()}/auth/v1/user`, { headers: { apikey: anonKey(), Authorization: `Bearer ${token}` } });
   if (!response.ok) return null;
-  return (await response.json()) as { id: string; email?: string; user_metadata?: Record<string, unknown> };
+  return (await response.json()) as SupabaseUser;
 }
 
 export function setAuthCookies(res: ApiResponse, access: string, refresh: string, maxAge = MAX_AGE) {
