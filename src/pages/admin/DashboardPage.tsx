@@ -1,965 +1,136 @@
-import { Link as RouterLink, useNavigate } from "react-router-dom";
 import { useEffect, useMemo, useState } from "react";
+import { CalendarDays, ChevronRight, Filter, RefreshCw, Search, ShieldCheck, Users } from "lucide-react";
+import { Link as RouterLink } from "react-router-dom";
+import { getAdminDashboardData, type AdminDashboardData, type DashboardOccurrence, type DashboardResponse } from "@/services/api";
 
-const GOOGLE_SCRIPT_URL =
-  "https://script.google.com/macros/s/AKfycbxIXYFkonDlYf8sb1VqTDoJXlsZ58Pd53qYSP-rxeLc-9_hiHA4kKIUVAUEM-IdcrLIkQ/exec";
-
-interface SurveyResponse {
-  timestamp?: string;
-  ageGroup?: string;
-  affiliation?: string;
-  everJoined?: string;
-  channels?: string;
-  p2_location?: number | string;
-  p2_schedule?: number | string;
-  p2_readiness?: number | string;
-  p2_reception?: number | string;
-  p2_overall?: number | string;
-  p3_interest?: number | string;
-  p3_content?: number | string;
-  p3_clarity?: number | string;
-  p3_benefit?: number | string;
-  p3_application?: number | string;
-  p4_knowledge?: number | string;
-  p4_inspiration?: number | string;
-  p4_communityResource?: number | string;
-  p4_futureReturn?: number | string;
-  feedback?: string;
-}
-
-const QUESTION_MAP: Record<keyof SurveyResponse, { title: string; category: string }> = {
-  p2_location: { title: "ความเหมาะสมของสถานที่", category: "การจัดงาน" },
-  p2_schedule: { title: "ความเหมาะสมของระยะเวลา", category: "การจัดงาน" },
-  p2_readiness: { title: "ความพร้อมของอุปกรณ์/สื่อ", category: "การจัดงาน" },
-  p2_reception: { title: "การต้อนรับและการอำนวยความสะดวก", category: "การจัดงาน" },
-  p2_overall: { title: "ภาพรวมการจัดกิจกรรม", category: "การจัดงาน" },
-  p3_interest: { title: "ความน่าสนใจของเนื้อหา", category: "เนื้อหา/การเรียนรู้" },
-  p3_content: { title: "ความสมบูรณ์ครบถ้วนของเนื้อหา", category: "เนื้อหา/การเรียนรู้" },
-  p3_clarity: { title: "ความชัดเจนในการถ่ายทอด", category: "เนื้อหา/การเรียนรู้" },
-  p3_benefit: { title: "ประโยชน์ที่ได้รับ", category: "เนื้อหา/การเรียนรู้" },
-  p3_application: { title: "การนำไปประยุกต์ใช้", category: "เนื้อหา/การเรียนรู้" },
-  p4_knowledge: { title: "ความรู้ความเข้าใจที่เพิ่มขึ้น", category: "ผลกระทบ" },
-  p4_inspiration: { title: "แรงบันดาลใจในการต่อยอด", category: "ผลกระทบ" },
-  p4_communityResource: { title: "การเป็นแหล่งเรียนรู้ของชุมชน", category: "ผลกระทบ" },
-  p4_futureReturn: { title: "ความสนใจเข้าร่วมอีกในอนาคต", category: "ผลกระทบ" },
-  timestamp: { title: "", category: "" },
-  ageGroup: { title: "", category: "" },
-  affiliation: { title: "", category: "" },
-  everJoined: { title: "", category: "" },
-  channels: { title: "", category: "" },
-  feedback: { title: "", category: "" },
+const SCORE_FIELDS = [
+  "p2_location", "p2_schedule", "p2_readiness", "p2_reception", "p2_overall",
+  "p3_interest", "p3_content", "p3_clarity", "p3_benefit", "p3_application",
+  "p4_knowledge", "p4_inspiration", "p4_community_resource", "p4_future_return",
+] as const;
+type ScoreField = (typeof SCORE_FIELDS)[number];
+const TOPICS: Record<string, { label: string; fields: ScoreField[] }> = {
+  "การจัดงาน": ["p2_location", "p2_schedule", "p2_readiness", "p2_reception", "p2_overall"],
+  "เนื้อหา/การเรียนรู้": ["p3_interest", "p3_content", "p3_clarity", "p3_benefit", "p3_application"],
+  "ผลกระทบ": ["p4_knowledge", "p4_inspiration", "p4_community_resource", "p4_future_return"],
+};
+const QUESTION_LABELS: Record<ScoreField, string> = {
+  p2_location: "ความเหมาะสมของสถานที่", p2_schedule: "ความเหมาะสมของระยะเวลา", p2_readiness: "ความพร้อมของอุปกรณ์/สื่อ", p2_reception: "การต้อนรับและการอำนวยความสะดวก", p2_overall: "ภาพรวมการจัดกิจกรรม",
+  p3_interest: "ความน่าสนใจของเนื้อหา", p3_content: "ความสมบูรณ์ครบถ้วนของเนื้อหา", p3_clarity: "ความชัดเจนในการถ่ายทอด", p3_benefit: "ประโยชน์ที่ได้รับ", p3_application: "การนำไปประยุกต์ใช้",
+  p4_knowledge: "ความรู้ความเข้าใจที่เพิ่มขึ้น", p4_inspiration: "แรงบันดาลใจในการต่อยอด", p4_community_resource: "การเป็นแหล่งเรียนรู้ของชุมชน", p4_future_return: "ความสนใจเข้าร่วมอีกในอนาคต",
 };
 
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === "object" && value !== null;
+type Period = "ALL" | "MONTH" | "QUARTER" | "YEAR" | "CUSTOM";
+type CalendarView = "month" | "week" | "list";
+
+function score(value: unknown) { const n = Number(value); return Number.isFinite(n) && n >= 1 && n <= 5 ? n : null; }
+function formatDate(value?: string | null) { if (!value) return "-"; const d = new Date(value); return Number.isNaN(d.getTime()) ? "-" : new Intl.DateTimeFormat("th-TH", { dateStyle: "medium" }).format(d); }
+function monthKey(value: string) { const d = new Date(value); return Number.isNaN(d.getTime()) ? "" : `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`; }
+function inPeriod(value: string, period: Period, month: string, quarter: string, year: string, from: string, to: string) {
+  const d = new Date(value); if (Number.isNaN(d.getTime())) return false;
+  if (period === "ALL") return true;
+  if (period === "YEAR") return String(d.getFullYear()) === year;
+  if (period === "MONTH") return month ? monthKey(value) === month : true;
+  if (period === "QUARTER") return `${d.getFullYear()}-Q${Math.floor(d.getMonth() / 3) + 1}` === quarter;
+  return (!from || value.slice(0, 10) >= from) && (!to || value.slice(0, 10) <= to);
 }
-
-function isSurveyResponse(value: unknown): value is SurveyResponse {
-  return isRecord(value);
+function calculateSatisfaction(responses: DashboardResponse[]) {
+  let sum = 0; let count = 0;
+  responses.forEach((r) => SCORE_FIELDS.forEach((field) => { const n = score(r[field]); if (n !== null) { sum += n; count++; } }));
+  return { sum, count, avg: count ? sum / count : null, percent: count ? (sum / (count * 5)) * 100 : null };
 }
-
-const COLOR_PALETTE = ["#0284c7", "#6366f1", "#a855f7", "#ec4899", "#f97316", "#10b981", "#f59e0b"];
-
-const MONTH_NAMES = [
-  "มกราคม",
-  "กุมภาพันธ์",
-  "มีนาคม",
-  "เมษายน",
-  "พฤษภาคม",
-  "มิถุนายน",
-  "กรกฎาคม",
-  "สิงหาคม",
-  "กันยายน",
-  "ตุลาคม",
-  "พฤศจิกายน",
-  "ธันวาคม",
-];
 
 export function DashboardPage() {
-  const navigate = useNavigate();
-  const [data, setData] = useState<SurveyResponse[]>([]);
+  const [data, setData] = useState<AdminDashboardData | null>(null);
   const [loading, setLoading] = useState(true);
-  const [lastUpdated, setLastUpdated] = useState<string>("");
-  const [errorMsg, setErrorMsg] = useState<string>("");
-
-  const [selectedYear, setSelectedYear] = useState<string>("ALL");
-  const [selectedMonth, setSelectedMonth] = useState<string>("ALL");
-  const [selectedAge, setSelectedAge] = useState<string>("ALL");
-  const [selectedAffiliation, setSelectedAffiliation] = useState<string>("ALL");
-
-  useEffect(() => {
-    const isAuth = sessionStorage.getItem("dashboard_auth") === "true";
-    if (!isAuth) {
-      navigate("/login?redirect=%2Fdashboard");
-      return;
-    }
-    fetchData();
-  }, [navigate]);
-
-  const handleLogout = () => {
-    sessionStorage.clear();
-    void fetch("/api/auth/logout", { method: "POST" });
-    navigate("/login?redirect=%2Fdashboard", { replace: true });
-  };
-
-  const handleResetFilter = () => {
-    setSelectedYear("ALL");
-    setSelectedMonth("ALL");
-    setSelectedAge("ALL");
-    setSelectedAffiliation("ALL");
-  };
-
-  const fetchData = async () => {
-    setLoading(true);
-    setErrorMsg("");
-    try {
-      const res = await fetch(GOOGLE_SCRIPT_URL, { method: "GET", redirect: "follow" });
-      if (!res.ok) throw new Error("ไม่สามารถเชื่อมต่อกับ Google Apps Script ได้");
-      const json = await res.json();
-
-      if (Array.isArray(json)) {
-        const validData = json.filter(isSurveyResponse).filter((item) => {
-          if (!item || typeof item !== "object") return false;
-          return Object.values(item).some(
-            (val) => val !== null && val !== undefined && String(val).trim() !== "",
-          );
-        });
-        setData(validData);
-      } else {
-        setData([]);
-      }
-
-      const now = new Date();
-      setLastUpdated(
-        `${now.getDate()} ส.ค. ${now.getFullYear() + 543} ${now
-          .getHours()
-          .toString()
-          .padStart(2, "0")}:${now.getMinutes().toString().padStart(2, "0")}`,
-      );
-    } catch (err: unknown) {
-      console.error("Error fetching dashboard data:", err);
-      setErrorMsg("ไม่สามารถดึงข้อมูลได้ในขณะนี้ กรุณากด Refresh อีกครั้ง");
-      setData([]);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const parseNum = (val: unknown): number => {
-    const n = Number(val);
-    return isNaN(n) ? 0 : n;
-  };
-
-  const availableYears = useMemo(() => {
-    const yearSet = new Set<string>();
-    data.forEach((item) => {
-      if (item.timestamp) {
-        const d = new Date(item.timestamp);
-        if (!isNaN(d.getTime())) {
-          yearSet.add(d.getFullYear().toString());
-        }
-      }
-    });
-    return Array.from(yearSet).sort((a, b) => Number(b) - Number(a));
-  }, [data]);
-
-  const availableMonths = useMemo(() => {
-    const monthSet = new Set<number>();
-    data.forEach((item) => {
-      if (item.timestamp) {
-        const d = new Date(item.timestamp);
-        if (!isNaN(d.getTime())) {
-          if (selectedYear === "ALL" || d.getFullYear().toString() === selectedYear) {
-            monthSet.add(d.getMonth());
-          }
-        }
-      }
-    });
-    return Array.from(monthSet).sort((a, b) => a - b);
-  }, [data, selectedYear]);
-
-  const ageGroupList = useMemo(() => {
-    const set = new Set<string>();
-    data.forEach((item) => {
-      if (item.ageGroup?.trim()) set.add(item.ageGroup.trim());
-    });
-    return Array.from(set);
-  }, [data]);
-
-  const affiliationsList = useMemo(() => {
-    const set = new Set<string>();
-    data.forEach((item) => set.add(item.affiliation?.trim() || "ไม่ระบุ"));
-    return Array.from(set);
-  }, [data]);
-
-  const filteredData = useMemo(() => {
-    return data.filter((item) => {
-      if (item.timestamp) {
-        const itemDate = new Date(item.timestamp);
-        if (!isNaN(itemDate.getTime())) {
-          if (selectedYear !== "ALL" && itemDate.getFullYear().toString() !== selectedYear) {
-            return false;
-          }
-          if (selectedMonth !== "ALL" && itemDate.getMonth().toString() !== selectedMonth) {
-            return false;
-          }
-        }
-      }
-
-      if (selectedAge !== "ALL") {
-        const itemAge = item.ageGroup?.trim() || "";
-        if (itemAge !== selectedAge) return false;
-      }
-
-      if (selectedAffiliation !== "ALL") {
-        const itemAff = item.affiliation?.trim() || "ไม่ระบุ";
-        if (itemAff !== selectedAffiliation) return false;
-      }
-
-      return true;
-    });
-  }, [data, selectedYear, selectedMonth, selectedAge, selectedAffiliation]);
-
-  const itemScores = useMemo(() => {
-    const keys = Object.keys(QUESTION_MAP).filter(
-      (k) => QUESTION_MAP[k as keyof SurveyResponse].title !== "",
-    ) as (keyof SurveyResponse)[];
-
-    return keys.map((key) => {
-      let sum = 0;
-      let count = 0;
-      filteredData.forEach((item) => {
-        const val = parseNum(item[key]);
-        if (val > 0) {
-          sum += val;
-          count++;
-        }
-      });
-      const avg = count > 0 ? parseFloat((sum / count).toFixed(2)) : 0;
-      return {
-        key,
-        title: QUESTION_MAP[key].title,
-        category: QUESTION_MAP[key].category,
-        avg,
-      };
-    });
-  }, [filteredData]);
-
-  const categoryGroupedScores = useMemo(() => {
-    const groups: Record<string, { category: string; avg: number; items: typeof itemScores }> = {};
-
-    itemScores.forEach((item) => {
-      if (!groups[item.category]) {
-        groups[item.category] = { category: item.category, avg: 0, items: [] };
-      }
-      groups[item.category]?.items.push(item);
-    });
-
-    const resultList = Object.values(groups).map((group) => {
-      const total = group.items.reduce((sum, i) => sum + i.avg, 0);
-      const avg = group.items.length > 0 ? parseFloat((total / group.items.length).toFixed(2)) : 0;
-
-      const sortedItems = [...group.items].sort((a, b) => b.avg - a.avg);
-
-      return {
-        ...group,
-        avg,
-        items: sortedItems,
-      };
-    });
-
-    return resultList.sort((a, b) => b.avg - a.avg);
-  }, [itemScores]);
-
-  const cardMetrics = useMemo(() => {
-    if (itemScores.length === 0 || filteredData.length === 0) return null;
-
-    const sorted = [...itemScores].sort((a, b) => b.avg - a.avg);
-    const highest = sorted[0];
-    const lowest = sorted[sorted.length - 1];
-    if (!highest || !lowest) return null;
-
-    const rawGrandAvg = itemScores.reduce((acc, curr) => acc + curr.avg, 0) / itemScores.length;
-    const grandAvgPercent = Math.round((rawGrandAvg / 5) * 100);
-
-    return {
-      highest,
-      lowest,
-      grandAvgPercent,
-      totalQuestions: itemScores.length,
-    };
-  }, [itemScores, filteredData]);
-
-  const affiliationBreakdown = useMemo(() => {
-    const counts: Record<string, number> = {};
-    filteredData.forEach((item) => {
-      const key = item.affiliation?.trim() || "ไม่ระบุ";
-      counts[key] = (counts[key] || 0) + 1;
-    });
-    const total = filteredData.length || 1;
-    return Object.entries(counts).map(([name, count], idx) => ({
-      name,
-      count,
-      percent: parseFloat(((count / total) * 100).toFixed(1)),
-      color: COLOR_PALETTE[idx % COLOR_PALETTE.length],
-    }));
-  }, [filteredData]);
-
-  const feedbackAnalysis = useMemo(() => {
-    const rawFeedbacks = filteredData
-      .filter((d) => d.feedback && d.feedback.trim() !== "")
-      .map((d) => ({
-        text: d.feedback!.trim(),
-        affiliation: d.affiliation || "ไม่ระบุ",
-        timestamp: d.timestamp || "N/A",
-      }));
-
-    let positiveCount = 0;
-    let followUpCount = 0;
-    let urgentCount = 0;
-    let generalCount = 0;
-
-    const topicCounts: Record<string, number> = {
-      การให้บริการ: 0,
-      "กิจกรรม/การเรียนรู้": 0,
-      "สิ่งแวดล้อม/สถานที่": 0,
-      "อุปกรณ์/สื่อ": 0,
-    };
-    const incrementTopic = (topic: string) => {
-      topicCounts[topic] = (topicCounts[topic] ?? 0) + 1;
-    };
-
-    const parsedList = rawFeedbacks.map((item) => {
-      const t = item.text.toLowerCase();
-      let status: "positive" | "followup" | "urgent" | "general" = "positive";
-      let tag = "ทั่วไป";
-
-      if (
-        t.includes("ด่วน") ||
-        t.includes("ปรับปรุง") ||
-        t.includes("แย่") ||
-        t.includes("เสีย") ||
-        t.includes("ช้า")
-      ) {
-        status = "urgent";
-        urgentCount++;
-      } else if (
-        t.includes("ควร") ||
-        t.includes("อยากให้") ||
-        t.includes("ติดตาม") ||
-        t.includes("เพิ่ม")
-      ) {
-        status = "followup";
-        followUpCount++;
-      } else if (
-        t.includes("ดี") ||
-        t.includes("ประทับใจ") ||
-        t.includes("ชอบ") ||
-        t.includes("เยี่ยม") ||
-        t.includes("ขอบคุณ")
-      ) {
-        status = "positive";
-        positiveCount++;
-      } else {
-        status = "general";
-        generalCount++;
-      }
-
-      if (
-        t.includes("บริการ") ||
-        t.includes("พนักงาน") ||
-        t.includes("ต้อนรับ") ||
-        t.includes("เจ้าหน้าที่")
-      ) {
-        tag = "การให้บริการ";
-        incrementTopic(tag);
-      } else if (
-        t.includes("จอดรถ") ||
-        t.includes("สถานที่") ||
-        t.includes("ห้อง") ||
-        t.includes("แอร์") ||
-        t.includes("สะอาด")
-      ) {
-        tag = "สิ่งแวดล้อม/สถานที่";
-        incrementTopic(tag);
-      } else if (
-        t.includes("อุปกรณ์") ||
-        t.includes("สื่อ") ||
-        t.includes("ไมค์") ||
-        t.includes("สไลด์")
-      ) {
-        tag = "อุปกรณ์/สื่อ";
-        incrementTopic(tag);
-      } else {
-        tag = "กิจกรรม/การเรียนรู้";
-        incrementTopic(tag);
-      }
-
-      return {
-        ...item,
-        status,
-        tag,
-      };
-    });
-
-    const maxTopicCount = Math.max(...Object.values(topicCounts), 1);
-
-    return {
-      total: rawFeedbacks.length,
-      positiveCount,
-      followUpCount,
-      urgentCount,
-      generalCount,
-      topicCounts,
-      maxTopicCount,
-      latestList: parsedList.slice(0, 5),
-    };
-  }, [filteredData]);
-
-  const getScoreBadge = (score: number) => {
-    if (score >= 4.5)
-      return (
-        <span className="px-2 py-0.5 rounded text-[10px] bg-emerald-100 text-emerald-800 font-bold border border-emerald-200">
-          🟢 ดีมากที่สุด
-        </span>
-      );
-    if (score >= 3.5)
-      return (
-        <span className="px-2 py-0.5 rounded text-[10px] bg-blue-100 text-blue-800 font-bold border border-blue-200">
-          🔵 ดีมาก
-        </span>
-      );
-    if (score >= 2.5)
-      return (
-        <span className="px-2 py-0.5 rounded text-[10px] bg-amber-100 text-amber-800 font-bold border border-amber-200">
-          🟡 ปานกลาง
-        </span>
-      );
-    return (
-      <span className="px-2 py-0.5 rounded text-[10px] bg-red-100 text-red-800 font-bold border border-red-200">
-        🔴 ควรปรับปรุง
-      </span>
-    );
-  };
-
-  const renderPieChart = () => {
-    if (affiliationBreakdown.length === 0) return null;
-
-    let accumulatedPercent = 0;
-    return (
-      <div className="relative w-44 h-44 mx-auto flex items-center justify-center">
-        <svg viewBox="0 0 36 36" className="w-full h-full transform -rotate-90">
-          {affiliationBreakdown.map((item, idx) => {
-            const strokeDasharray = `${item.percent} ${100 - item.percent}`;
-            const strokeDashoffset = -accumulatedPercent;
-            accumulatedPercent += item.percent;
-
-            return (
-              <circle
-                key={idx}
-                cx="18"
-                cy="18"
-                r="15.91549430918954"
-                fill="transparent"
-                stroke={item.color}
-                strokeWidth="4.5"
-                strokeDasharray={strokeDasharray}
-                strokeDashoffset={strokeDashoffset}
-                className="transition-all duration-300 hover:opacity-80 cursor-pointer"
-              />
-            );
-          })}
-        </svg>
-        <div className="absolute text-center pointer-events-none">
-          <p className="text-xl font-black text-amber-600 font-mono">{filteredData.length}</p>
-          <p className="text-[10px] text-slate-500 uppercase tracking-wider font-bold">คนทั้งหมด</p>
-        </div>
-      </div>
-    );
-  };
-
-  return (
-    <div className="min-h-screen bg-slate-50 text-slate-800 p-4 sm:p-6 font-sans selection:bg-amber-100 selection:text-amber-900">
-      <div className="max-w-7xl mx-auto space-y-5">
-        {/* Top Navigation */}
-        <div className="flex justify-between items-center text-xs text-slate-500">
-          <RouterLink
-            to="/"
-            className="hover:text-amber-600 transition-colors flex items-center gap-1 font-semibold"
-          >
-            ← Back to home
-          </RouterLink>
-          <span className="text-amber-700 font-semibold bg-amber-50 px-3 py-1 rounded-full border border-amber-200/80 shadow-sm">
-            Viewing Fixed Google Sheets
-          </span>
-        </div>
-
-        {errorMsg && (
-          <div className="bg-red-50 border border-red-200 text-red-700 p-3 rounded-xl text-xs text-center font-medium shadow-sm">
-            ⚠️ {errorMsg}
-          </div>
-        )}
-
-        {/* Header Banner */}
-        <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
-          <div className="flex items-center gap-4">
-            <div className="w-14 h-14 rounded-full bg-amber-50/50 border border-amber-200 flex items-center justify-center p-1.5 shadow-sm shrink-0 overflow-hidden">
-              <img
-                src="/Mahidol_U.jpg"
-                alt="Mahidol Logo"
-                className="w-full h-full object-contain rounded-full"
-              />
-            </div>
-
-            <div>
-              <p className="text-xs font-bold text-amber-600 tracking-wider uppercase">
-                Mahidol University
-              </p>
-              <h1 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight mt-0.5">
-                พิธีเปิดห้องการเรียนรู้ครั่งครบวงจร
-              </h1>
-              <p className="text-xs text-slate-500 tracking-wider mt-0.5 font-medium">
-                EXECUTIVE ANALYTICS & SATISFACTION INSIGHT
-              </p>
-            </div>
-          </div>
-
-          <div className="flex flex-wrap items-center gap-3 w-full lg:w-auto justify-between lg:justify-end border-t border-slate-100 lg:border-t-0 pt-3 lg:pt-0">
-            <div className="text-right">
-              <div className="flex items-center gap-2 justify-end">
-                <span
-                  className={`w-2 h-2 rounded-full ${loading ? "bg-amber-500 animate-ping" : "bg-emerald-500"}`}
-                ></span>
-                <span
-                  className={`text-xs font-bold ${loading ? "text-amber-600" : "text-emerald-600"}`}
-                >
-                  {loading ? "CONNECTING..." : "LIVE / CONNECTED"}
-                </span>
-              </div>
-              <p className="text-[11px] text-slate-400 mt-0.5">
-                Last Updated: {lastUpdated || "กำลังโหลด..."}
-              </p>
-            </div>
-
-            <button
-              onClick={fetchData}
-              disabled={loading}
-              className="px-3.5 py-2 rounded-xl bg-slate-100 border border-slate-200 text-slate-700 hover:bg-slate-200 text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer disabled:opacity-50 shadow-sm active:scale-95"
-            >
-              🔄 Refresh
-            </button>
-            <button
-              onClick={handleLogout}
-              className="px-3.5 py-2 rounded-xl bg-red-50 border border-red-200 text-red-600 hover:bg-red-100 text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer shadow-sm active:scale-95"
-            >
-              🚪 Logout
-            </button>
-          </div>
-        </div>
-
-        {/* Multi-Filter Bar */}
-        <div className="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm space-y-3 text-xs">
-          <div className="flex justify-between items-center border-b border-slate-100 pb-2">
-            <div className="flex items-center gap-2">
-              <span className="p-1 rounded bg-indigo-50 text-indigo-600 text-sm">🎛️</span>
-              <span className="font-bold text-slate-800 text-sm">ปรับเลือกข้อมูลที่ต้องการดู</span>
-              <span className="text-[11px] text-slate-400 hidden sm:inline">
-                — เลือกตัวกรองได้หลายเงื่อนไขพร้อมกัน
-              </span>
-            </div>
-            <button
-              onClick={handleResetFilter}
-              className="text-slate-500 hover:text-red-600 font-semibold flex items-center gap-1 text-xs transition-colors cursor-pointer bg-slate-50 hover:bg-red-50 px-2.5 py-1 rounded-lg border border-slate-200 hover:border-red-200"
-            >
-              ✕ ล้างตัวกรอง
-            </button>
-          </div>
-
-          <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4">
-            <div className="flex flex-wrap items-center gap-2.5 sm:gap-3">
-              <div className="flex items-center gap-1.5 bg-slate-50 border border-slate-300 rounded-xl px-3 py-1.5 shadow-sm focus-within:border-amber-500 transition-colors">
-                <span className="text-amber-700 font-bold">📅 ปี:</span>
-                <select
-                  value={selectedYear}
-                  onChange={(e) => {
-                    setSelectedYear(e.target.value);
-                    setSelectedMonth("ALL");
-                  }}
-                  className="bg-transparent text-slate-800 outline-none cursor-pointer font-semibold text-xs"
-                >
-                  <option value="ALL">ทุกปี</option>
-                  {availableYears.map((year) => (
-                    <option key={year} value={year}>
-                      พ.ศ. {Number(year) + 543} ({year})
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div className="flex items-center gap-1.5 bg-slate-50 border border-slate-300 rounded-xl px-3 py-1.5 shadow-sm focus-within:border-amber-500 transition-colors">
-                <span className="text-amber-700 font-bold">🗓️ เดือน:</span>
-                <select
-                  value={selectedMonth}
-                  onChange={(e) => setSelectedMonth(e.target.value)}
-                  className="bg-transparent text-slate-800 outline-none cursor-pointer font-semibold text-xs"
-                >
-                  <option value="ALL">ทุกเดือน</option>
-                  {availableMonths.map((mIdx) => (
-                    <option key={mIdx} value={mIdx.toString()}>
-                      {MONTH_NAMES[mIdx]}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div className="flex items-center gap-1.5 bg-slate-50 border border-slate-300 rounded-xl px-3 py-1.5 shadow-sm focus-within:border-amber-500 transition-colors">
-                <span className="text-amber-700 font-bold">🎂 อายุ:</span>
-                <select
-                  value={selectedAge}
-                  onChange={(e) => setSelectedAge(e.target.value)}
-                  className="bg-transparent text-slate-800 outline-none cursor-pointer font-semibold text-xs"
-                >
-                  <option value="ALL">ทุกช่วงอายุ</option>
-                  {ageGroupList.map((age) => (
-                    <option key={age} value={age}>
-                      {age}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div className="flex items-center gap-1.5 bg-slate-50 border border-slate-300 rounded-xl px-3 py-1.5 shadow-sm focus-within:border-amber-500 transition-colors">
-                <span className="text-amber-700 font-bold">📌 สังกัด:</span>
-                <select
-                  value={selectedAffiliation}
-                  onChange={(e) => setSelectedAffiliation(e.target.value)}
-                  className="bg-transparent text-slate-800 outline-none cursor-pointer font-semibold text-xs max-w-[150px] truncate"
-                >
-                  <option value="ALL">ทั้งหมด</option>
-                  {affiliationsList.map((aff) => (
-                    <option key={aff} value={aff}>
-                      {aff}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            </div>
-
-            <div className="flex items-center justify-end gap-1.5 bg-slate-100 border border-slate-200 rounded-xl px-3 py-1.5 self-start md:self-auto font-medium">
-              <span className="text-slate-500">แสดงผล:</span>
-              <span className="text-amber-600 font-bold font-mono text-sm">
-                {filteredData.length}
-              </span>
-              <span className="text-slate-400">/ {data.length} รายการ</span>
-            </div>
-          </div>
-        </div>
-
-        {/* Executive Summary Cards */}
-        {cardMetrics && (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-            {/* Card 1: จำนวนคนประเมิน */}
-            <div className="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm flex flex-col justify-between relative overflow-hidden">
-              <div className="w-8 h-8 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center text-sm mb-2 font-bold">
-                📋
-              </div>
-              <div>
-                <p className="text-xs text-slate-500 font-semibold">จำนวนคนประเมิน</p>
-                <div className="flex items-baseline gap-1 mt-1">
-                  <span className="text-2xl font-black text-slate-800 font-mono">
-                    {filteredData.length}
-                  </span>
-                  <span className="text-xs text-slate-400 font-medium">คน</span>
-                </div>
-                <p className="text-[11px] text-slate-400 mt-1 truncate">
-                  จากทั้งหมด {data.length} รายการ
-                </p>
-              </div>
-            </div>
-
-            {/* Card 2: คะแนนเฉลี่ยรวม คิดเป็นร้อยละ */}
-            <div className="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm flex flex-col justify-between relative overflow-hidden">
-              <div className="w-8 h-8 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center text-sm mb-2 font-bold">
-                ⭐
-              </div>
-              <div>
-                <p className="text-xs text-slate-500 font-semibold">คะแนนเฉลี่ยรวม</p>
-                <div className="flex items-baseline gap-1 mt-1">
-                  <span className="text-2xl font-black text-amber-600 font-mono">
-                    {cardMetrics.grandAvgPercent}%
-                  </span>
-                </div>
-                <p className="text-[11px] text-slate-400 mt-1 truncate">
-                  คำนวณจาก {cardMetrics.totalQuestions} หัวข้อประเมิน
-                </p>
-              </div>
-            </div>
-
-            {/* Card 3: หมวดคะแนนสูงสุด คิดเต็ม 5 */}
-            <div className="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm flex flex-col justify-between relative overflow-hidden">
-              <div className="w-8 h-8 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center text-sm mb-2 font-bold">
-                🏅
-              </div>
-              <div>
-                <p className="text-xs text-slate-500 font-semibold">หมวดคะแนนสูงสุด</p>
-                <p className="text-xs font-bold text-slate-800 line-clamp-1 mt-1">
-                  {cardMetrics.highest.title}
-                </p>
-                <div className="flex items-baseline gap-1 mt-1">
-                  <span className="text-xl font-black text-purple-600 font-mono">
-                    {cardMetrics.highest.avg.toFixed(2)}
-                  </span>
-                  <span className="text-xs text-slate-400">/ 5</span>
-                </div>
-              </div>
-            </div>
-
-            {/* Card 4: หมวดที่ควรปรับปรุง คิดเต็ม 5 */}
-            <div className="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm flex flex-col justify-between relative overflow-hidden">
-              <div className="w-8 h-8 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center text-sm mb-2 font-bold">
-                🛠️
-              </div>
-              <div>
-                <p className="text-xs text-slate-500 font-semibold">หมวดที่ควรปรับปรุง</p>
-                <p className="text-xs font-bold text-slate-800 line-clamp-1 mt-1">
-                  {cardMetrics.lowest.title}
-                </p>
-                <div className="flex items-baseline gap-1 mt-1">
-                  <span className="text-xl font-black text-rose-600 font-mono">
-                    {cardMetrics.lowest.avg.toFixed(2)}
-                  </span>
-                  <span className="text-xs text-slate-400">/ 5</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Visual Chart Section */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-          {/* คะแนนความพึงพอใจเรียงตามหมวดหมู่ (เรียงจากมากไปน้อย) */}
-          <div className="lg:col-span-2 bg-white border border-slate-200 rounded-2xl p-5 shadow-sm space-y-4">
-            <h2 className="text-xs font-bold text-amber-700 tracking-wider uppercase border-b border-slate-100 pb-2.5 flex items-center gap-1.5">
-              <span>📊</span> คะแนนความพึงพอใจแยกตามหมวดหมู่ (เรียงตามคะแนนสูงสุด-ต่ำสุด)
-            </h2>
-
-            <div className="space-y-5 max-h-[420px] overflow-y-auto pr-2">
-              {categoryGroupedScores.map((catGroup, groupIdx) => (
-                <div
-                  key={catGroup.category}
-                  className="bg-slate-50/70 border border-slate-200/80 rounded-xl p-3.5 space-y-3"
-                >
-                  <div className="flex justify-between items-center border-b border-slate-200/60 pb-2">
-                    <div className="flex items-center gap-2">
-                      <span className="w-2.5 h-2.5 rounded-full bg-amber-500"></span>
-                      <span className="font-bold text-slate-800 text-xs sm:text-sm">
-                        ด้าน{catGroup.category}
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-1.5 bg-white px-2.5 py-0.5 rounded-md border border-slate-200 shadow-2xs">
-                      <span className="text-[10px] text-slate-400 font-medium">เฉลี่ยหมวด:</span>
-                      <span className="font-mono font-black text-amber-600 text-xs sm:text-sm">
-                        {catGroup.avg.toFixed(2)}
-                      </span>
-                    </div>
-                  </div>
-
-                  <div className="space-y-3 pl-1">
-                    {catGroup.items.map((item, itemIdx) => {
-                      const globalIdx = groupIdx * 3 + itemIdx;
-                      return (
-                        <div key={item.key} className="space-y-1">
-                          <div className="flex justify-between items-center text-xs">
-                            <span className="text-slate-700 truncate max-w-[65%] font-medium">
-                              {item.title}
-                            </span>
-                            <div className="flex items-center gap-2">
-                              <span className="font-mono font-bold text-slate-800">
-                                {item.avg.toFixed(2)}
-                              </span>
-                              {getScoreBadge(item.avg)}
-                            </div>
-                          </div>
-                          <div className="w-full bg-slate-200/70 h-2.5 rounded-full overflow-hidden">
-                            <div
-                              className="h-full rounded-full transition-all duration-500 shadow-sm"
-                              style={{
-                                width: `${(item.avg / 5) * 100}%`,
-                                backgroundColor: COLOR_PALETTE[globalIdx % COLOR_PALETTE.length],
-                              }}
-                            ></div>
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm space-y-4">
-            <h2 className="text-xs font-bold text-amber-700 tracking-wider uppercase border-b border-slate-100 pb-2.5">
-              🍕 สัดส่วนผู้ตอบจำแนกตามหน่วยงาน
-            </h2>
-
-            {renderPieChart()}
-
-            <div className="space-y-2 pt-2 border-t border-slate-100 max-h-[180px] overflow-y-auto pr-1">
-              {affiliationBreakdown.map((item) => (
-                <div key={item.name} className="flex justify-between items-center text-xs">
-                  <div className="flex items-center gap-2 truncate max-w-[70%]">
-                    <span
-                      className="w-2.5 h-2.5 rounded-full shrink-0 shadow-sm"
-                      style={{ backgroundColor: item.color }}
-                    ></span>
-                    <span className="text-slate-700 truncate font-medium">{item.name}</span>
-                  </div>
-                  <span className="text-slate-500 font-mono shrink-0">
-                    {item.count} คน ({item.percent}%)
-                  </span>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        {/* FEEDBACK & SUGGESTIONS SECTION */}
-        <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm space-y-5">
-          <div className="flex justify-between items-start sm:items-center border-b border-slate-100 pb-3">
-            <div>
-              <h2 className="text-sm sm:text-base font-bold text-slate-900 flex items-center gap-2">
-                <span>💬</span> FEEDBACK & SUGGESTIONS
-              </h2>
-              <p className="text-xs text-slate-500 mt-0.5">ภาพรวมความคิดเห็นและข้อเสนอแนะ</p>
-            </div>
-            <button className="text-xs text-amber-600 hover:text-amber-700 font-bold flex items-center gap-1 cursor-pointer hover:underline">
-              ดูทั้งหมด →
-            </button>
-          </div>
-
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-            <div className="bg-blue-50/60 border border-blue-200/80 rounded-xl p-3.5 text-center">
-              <p className="text-2xl font-black text-blue-700 font-mono">
-                {feedbackAnalysis.total}
-              </p>
-              <p className="text-xs font-bold text-blue-900 mt-0.5">🔵 ความคิดเห็น</p>
-              <p className="text-[10px] text-blue-600/80 mt-0.5">รวมทุกหมวด</p>
-            </div>
-
-            <div className="bg-emerald-50/60 border border-emerald-200/80 rounded-xl p-3.5 text-center">
-              <p className="text-2xl font-black text-emerald-700 font-mono">
-                {feedbackAnalysis.positiveCount}
-              </p>
-              <p className="text-xs font-bold text-emerald-900 mt-0.5">🟢 เชิงบวก / ปกติ</p>
-              <p className="text-[10px] text-emerald-600/80 mt-0.5">ชื่นชมกิจกรรม</p>
-            </div>
-
-            <div className="bg-amber-50/60 border border-amber-200/80 rounded-xl p-3.5 text-center">
-              <p className="text-2xl font-black text-amber-700 font-mono">
-                {feedbackAnalysis.followUpCount}
-              </p>
-              <p className="text-xs font-bold text-amber-900 mt-0.5">🟡 ควรติดตาม</p>
-              <p className="text-[10px] text-amber-600/80 mt-0.5">ข้อเสนอแนะพัฒนา</p>
-            </div>
-
-            <div className="bg-rose-50/60 border border-rose-200/80 rounded-xl p-3.5 text-center">
-              <p className="text-2xl font-black text-rose-700 font-mono">
-                {feedbackAnalysis.urgentCount}
-              </p>
-              <p className="text-xs font-bold text-rose-900 mt-0.5">🔴 เร่งด่วน</p>
-              <p className="text-[10px] text-rose-600/80 mt-0.5">ควรปรับปรุงทันที</p>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-5 pt-2">
-            <div className="space-y-3 bg-slate-50/50 p-4 rounded-xl border border-slate-200/70">
-              <h3 className="text-xs font-bold text-slate-800 flex items-center gap-1.5 border-b border-slate-200 pb-2">
-                <span>🔎</span> ประเด็นสำคัญจำแนกตามเรื่อง
-              </h3>
-
-              <div className="space-y-3 pt-1">
-                {Object.entries(feedbackAnalysis.topicCounts).map(([topic, count]) => {
-                  const percent = Math.round((count / feedbackAnalysis.maxTopicCount) * 100);
-                  return (
-                    <div key={topic} className="space-y-1">
-                      <div className="flex justify-between items-center text-xs">
-                        <span className="font-medium text-slate-700">{topic}</span>
-                        <span className="font-mono font-bold text-slate-900">{count} เรื่อง</span>
-                      </div>
-                      <div className="w-full bg-slate-200 h-2.5 rounded-full overflow-hidden">
-                        <div
-                          className="h-full bg-amber-500 rounded-full transition-all duration-500"
-                          style={{ width: `${percent}%` }}
-                        ></div>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-
-            <div className="space-y-3 bg-slate-50/50 p-4 rounded-xl border border-slate-200/70">
-              <h3 className="text-xs font-bold text-slate-800 flex items-center gap-1.5 border-b border-slate-200 pb-2">
-                <span>🕐</span> ข้อเสนอแนะล่าสุด
-              </h3>
-
-              <div className="space-y-2.5 max-h-[220px] overflow-y-auto pr-1">
-                {feedbackAnalysis.latestList.length === 0 ? (
-                  <p className="text-xs text-slate-400 py-6 text-center">
-                    ไม่มีข้อเสนอแนะเพิ่มเติม
-                  </p>
-                ) : (
-                  feedbackAnalysis.latestList.map((item, idx) => {
-                    const statusBadges = {
-                      positive: {
-                        bg: "bg-emerald-100 text-emerald-800 border-emerald-200",
-                        text: "🟢 ปกติ/เชิงบวก",
-                      },
-                      followup: {
-                        bg: "bg-amber-100 text-amber-800 border-amber-200",
-                        text: "🟡 ควรติดตาม",
-                      },
-                      urgent: {
-                        bg: "bg-rose-100 text-rose-800 border-rose-200",
-                        text: "🔴 เร่งด่วน",
-                      },
-                      general: {
-                        bg: "bg-blue-100 text-blue-800 border-blue-200",
-                        text: "🔵 ข้อมูลทั่วไป",
-                      },
-                    };
-
-                    const statusStyle = statusBadges[item.status];
-
-                    return (
-                      <div
-                        key={idx}
-                        className="bg-white border border-slate-200 rounded-lg p-2.5 text-xs space-y-1.5 shadow-2xs"
-                      >
-                        <p className="text-slate-800 font-medium leading-relaxed">"{item.text}"</p>
-                        <div className="flex flex-wrap items-center gap-1.5 pt-0.5">
-                          <span className="px-2 py-0.5 rounded text-[10px] bg-slate-100 text-slate-700 border border-slate-200 font-medium">
-                            [{item.tag}]
-                          </span>
-                          <span
-                            className={`px-2 py-0.5 rounded text-[10px] font-bold border ${statusStyle.bg}`}
-                          >
-                            {statusStyle.text}
-                          </span>
-                          <span className="text-[10px] text-slate-400 ml-auto font-mono">
-                            {item.affiliation}
-                          </span>
-                        </div>
-                      </div>
-                    );
-                  })
-                )}
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
+  const [error, setError] = useState("");
+  const [period, setPeriod] = useState<Period>("ALL");
+  const [year, setYear] = useState("ALL");
+  const [month, setMonth] = useState("");
+  const [quarter, setQuarter] = useState("");
+  const [from, setFrom] = useState("");
+  const [to, setTo] = useState("");
+  const [center, setCenter] = useState("ALL");
+  const [organization, setOrganization] = useState("ALL");
+  const [activity, setActivity] = useState("ALL");
+  const [surveyStatus, setSurveyStatus] = useState("ALL");
+  const [calendarView, setCalendarView] = useState<CalendarView>("list");
+  const [selectedOccurrenceId, setSelectedOccurrenceId] = useState<string | null>(null);
+  const [query, setQuery] = useState("");
+
+  const load = async () => { setLoading(true); setError(""); try { setData(await getAdminDashboardData()); } catch (e) { setError(e instanceof Error ? e.message : "ไม่สามารถโหลด Dashboard ได้"); } finally { setLoading(false); } };
+  useEffect(() => { void load(); }, []);
+
+  const years = useMemo(() => [...new Set((data?.occurrences ?? []).map((o) => new Date(o.start_at).getFullYear()).filter((n) => Number.isFinite(n)))].sort((a, b) => b - a), [data]);
+  const activeOccurrences = useMemo(() => (data?.occurrences ?? []).filter((o) => o.status !== "cancelled" && o.status !== "archived" && inPeriod(o.start_at, period, month, quarter, year === "ALL" ? "" : year, from, to)), [data, period, month, quarter, year, from, to]);
+  const visibleActivities = useMemo(() => (data?.activities ?? []).filter((a) => activeOccurrences.some((o) => o.activity_id === a.id)).filter((a) => activity === "ALL" || a.id === activity).filter((a) => `${a.title} ${a.category ?? ""}`.toLowerCase().includes(query.toLowerCase())), [data, activeOccurrences, activity, query]);
+  const centerActivityIds = useMemo(() => new Set((data?.activityLearningCenters ?? []).filter((r) => center === "ALL" || r.learning_center_id === center).map((r) => r.activity_id)), [data, center]);
+  const filteredActivityIds = useMemo(() => new Set(visibleActivities.filter((a) => center === "ALL" || centerActivityIds.has(a.id)).map((a) => a.id)), [visibleActivities, center, centerActivityIds]);
+  const filteredOccurrences = useMemo(() => activeOccurrences.filter((o) => filteredActivityIds.has(o.activity_id)).filter((o) => { const survey = data?.surveys.find((s) => s.occurrence_id === o.id); return surveyStatus === "ALL" || (surveyStatus === "none" ? !survey : surveyStatus === "enabled" ? survey?.enabled === true : surveyStatus === "closed" ? Boolean(survey?.close_at && new Date(survey.close_at) < new Date()) : survey?.enabled === false); }), [activeOccurrences, filteredActivityIds, data, surveyStatus]);
+  const responseScope = useMemo(() => { const ids = new Set(filteredOccurrences.map((o) => o.id)); return (data?.responses ?? []).filter((r) => r.occurrence_id ? ids.has(r.occurrence_id) : filteredActivityIds.has(r.activity_id)).filter((r) => organization === "ALL" || r.participant_organization_id === organization); }, [data, filteredOccurrences, filteredActivityIds, organization]);
+  const satisfaction = useMemo(() => calculateSatisfaction(responseScope), [responseScope]);
+  const evaluatedOccurrences = useMemo(() => new Set(responseScope.map((r) => r.occurrence_id).filter(Boolean)).size, [responseScope]);
+  const responseCount = responseScope.length;
+  const responseRate = useMemo(() => { const participants = filteredOccurrences.reduce((sum, o) => sum + Number(o.participant_count || 0), 0); return participants > 0 ? (responseCount / participants) * 100 : null; }, [filteredOccurrences, responseCount]);
+  const selectedOccurrence = selectedOccurrenceId ? data?.occurrences.find((o) => o.id === selectedOccurrenceId) : null;
+  const selectedSurvey = selectedOccurrence ? data?.surveys.find((s) => s.occurrence_id === selectedOccurrence.id) : null;
+  const selectedResponses = selectedOccurrence ? responseScope.filter((r) => r.occurrence_id === selectedOccurrence.id) : [];
+
+  const topicScores = useMemo(() => Object.entries(TOPICS).map(([key, topic]) => { const values = responseScope.flatMap((r) => topic.fields.map((f) => score(r[f])).filter((v): v is number => v !== null)); const avg = values.length ? values.reduce((a, b) => a + b, 0) / values.length : null; return { key, label: topic.label, avg, percent: avg === null ? null : (avg / 5) * 100 }; }), [responseScope]);
+  const trend = useMemo(() => { const map = new Map<string, DashboardResponse[]>(); responseScope.forEach((r) => { const key = monthKey(r.submitted_at); if (key) map.set(key, [...(map.get(key) ?? []), r]); }); return [...map.entries()].sort(([a], [b]) => a.localeCompare(b)).map(([key, values]) => ({ key, ...calculateSatisfaction(values) })); }, [responseScope]);
+  const learningCenters = useMemo(() => (data?.learningCenters ?? []).filter((lc) => center === "ALL" || lc.id === center).filter((lc) => (data?.activityLearningCenters ?? []).some((r) => r.learning_center_id === lc.id && filteredActivityIds.has(r.activity_id))), [data, center, filteredActivityIds]);
+
+  const reset = () => { setPeriod("ALL"); setYear("ALL"); setMonth(""); setQuarter(""); setFrom(""); setTo(""); setCenter("ALL"); setOrganization("ALL"); setActivity("ALL"); setSurveyStatus("ALL"); setQuery(""); setSelectedOccurrenceId(null); };
+
+  if (loading) return <div className="flex min-h-[60vh] items-center justify-center text-sm text-slate-500">กำลังโหลด Dashboard...</div>;
+  if (error) return <div className="mx-auto max-w-3xl p-8"><div className="rounded-2xl border border-red-200 bg-red-50 p-6"><h1 className="text-lg font-bold text-red-800">ไม่สามารถโหลด Dashboard</h1><p className="mt-2 text-sm text-red-700">{error}</p><button onClick={() => void load()} className="mt-4 inline-flex min-h-11 items-center gap-2 rounded-xl bg-brand-navy px-4 text-sm font-semibold text-white"><RefreshCw className="h-4 w-4" />ลองใหม่</button></div></div>;
+
+  return <div className="min-h-screen bg-slate-50">
+    <section className="border-b border-slate-200 bg-white"><div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
+      <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between"><div><p className="text-xs font-semibold tracking-[0.12em] text-emerald-700">EXECUTIVE ANALYTICS & SATISFACTION INSIGHT</p><h1 className="mt-1 text-2xl font-bold tracking-tight text-brand-navy lg:text-3xl">Dashboard ภาพรวมกิจกรรมและความพึงพอใจ</h1><p className="mt-1 text-sm text-slate-600">ดูภาพรวมกิจกรรมที่จัดจริง พร้อม Drill-down ถึง Learning Center, Activity, Occurrence และ Survey Audit</p></div><button onClick={() => void load()} className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 text-sm font-semibold text-brand-navy hover:bg-slate-50"><RefreshCw className="h-4 w-4" />รีเฟรชข้อมูล</button></div>
+    </div></section>
+
+    <main className="mx-auto max-w-7xl space-y-6 px-4 py-6 sm:px-6 lg:px-8">
+      <section className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm"><div className="mb-3 flex items-center gap-2 text-sm font-semibold text-brand-navy"><Filter className="h-4 w-4" />ตัวกรองข้อมูล</div><div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        <select value={period} onChange={(e) => setPeriod(e.target.value as Period)} className="min-h-11 rounded-xl border border-slate-200 px-3 text-sm"><option value="ALL">ทั้งหมด</option><option value="YEAR">รายปี</option><option value="QUARTER">รายไตรมาส</option><option value="MONTH">รายเดือน</option><option value="CUSTOM">กำหนดช่วงวันที่</option></select>
+        {period === "YEAR" && <select value={year} onChange={(e) => setYear(e.target.value)} className="min-h-11 rounded-xl border border-slate-200 px-3 text-sm"><option value="ALL">ทุกปี</option>{years.map((y) => <option key={y} value={y}>{y + 543}</option>)}</select>}
+        {period === "QUARTER" && <select value={quarter} onChange={(e) => setQuarter(e.target.value)} className="min-h-11 rounded-xl border border-slate-200 px-3 text-sm"><option value="">ทุกไตรมาส</option>{years.flatMap((y) => [1,2,3,4].map((q) => <option key={`${y}-${q}`} value={`${y}-Q${q}`}>ไตรมาส {q}/{y + 543}</option>))}</select>}
+        {period === "MONTH" && <input type="month" value={month} onChange={(e) => setMonth(e.target.value)} className="min-h-11 rounded-xl border border-slate-200 px-3 text-sm" />}
+        {period === "CUSTOM" && <><input type="date" value={from} onChange={(e) => setFrom(e.target.value)} className="min-h-11 rounded-xl border border-slate-200 px-3 text-sm" /><input type="date" value={to} onChange={(e) => setTo(e.target.value)} className="min-h-11 rounded-xl border border-slate-200 px-3 text-sm" /></>}
+        <select value={center} onChange={(e) => setCenter(e.target.value)} className="min-h-11 rounded-xl border border-slate-200 px-3 text-sm"><option value="ALL">ทุก Learning Center</option>{data?.learningCenters.map((lc) => <option key={lc.id} value={lc.id}>{lc.name}</option>)}</select>
+        <select value={organization} onChange={(e) => setOrganization(e.target.value)} className="min-h-11 rounded-xl border border-slate-200 px-3 text-sm"><option value="ALL">ทุกหน่วยงาน</option>{data?.organizations.map((org) => <option key={org.id} value={org.id}>{org.name}</option>)}</select>
+        <select value={activity} onChange={(e) => setActivity(e.target.value)} className="min-h-11 rounded-xl border border-slate-200 px-3 text-sm"><option value="ALL">ทุกกิจกรรม</option>{data?.activities.map((a) => <option key={a.id} value={a.id}>{a.title}</option>)}</select>
+        <select value={surveyStatus} onChange={(e) => setSurveyStatus(e.target.value)} className="min-h-11 rounded-xl border border-slate-200 px-3 text-sm"><option value="ALL">ทุกสถานะ Survey</option><option value="enabled">เปิด Survey</option><option value="closed">ปิด Survey</option><option value="none">ไม่มี Survey</option><option value="disabled">ปิดใช้งาน Survey</option></select>
+      </div><div className="mt-3 flex flex-wrap items-center justify-between gap-3"><div className="relative w-full max-w-sm"><Search className="absolute left-3 top-3 h-4 w-4 text-slate-400" /><input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="ค้นหากิจกรรม..." className="min-h-11 w-full rounded-xl border border-slate-200 pl-9 pr-3 text-sm" /></div><button onClick={reset} className="text-sm font-semibold text-brand-navy underline">Reset ตัวกรอง</button></div></section>
+
+      <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+        <Kpi label="กิจกรรมที่จัดจริง" value={String(filteredOccurrences.length)} note="ไม่รวม Cancelled" />
+        <Kpi label="กิจกรรมที่มีผลประเมิน" value={String(evaluatedOccurrences)} note="มี Response อย่างน้อย 1 รายการ" />
+        <Kpi label="ผู้ตอบแบบสอบถาม" value={responseCount.toLocaleString()} note="Response จริง" />
+        <Kpi label="Response Rate" value={responseRate === null ? "—" : `${responseRate.toFixed(2)}%`} note="เทียบกับผู้เข้าร่วมที่บันทึกไว้" />
+        <Kpi label="Satisfaction" value={satisfaction.percent === null ? "—" : `${satisfaction.percent.toFixed(2)}%`} note={satisfaction.avg === null ? "ยังไม่มีข้อมูล" : `${satisfaction.avg.toFixed(2)} / 5.00`} />
+      </section>
+
+      <section className="grid gap-6 lg:grid-cols-[1.2fr_.8fr]"><div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm"><SectionTitle title="ความพึงพอใจตามหัวข้อ" /><div className="mt-5 space-y-5">{topicScores.map((item) => <div key={item.key}><div className="flex justify-between text-sm"><span className="font-medium text-slate-700">{item.label}</span><span className="font-semibold text-brand-navy">{item.avg === null ? "ไม่มีข้อมูล" : `${item.avg.toFixed(2)} / 5.00`}</span></div><div className="mt-2 h-2 overflow-hidden rounded-full bg-slate-100"><div className="h-full rounded-full bg-emerald-600" style={{ width: `${item.percent ?? 0}%` }} /></div></div>)}</div></div>
+        <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm"><SectionTitle title="แนวโน้ม Satisfaction" /><div className="mt-4 space-y-3">{trend.length ? trend.map((item) => <div key={item.key} className="flex items-center gap-3"><span className="w-20 text-xs text-slate-500">{item.key}</span><div className="h-2 flex-1 rounded-full bg-slate-100"><div className="h-full rounded-full bg-brand-navy" style={{ width: `${item.percent ?? 0}%` }} /></div><span className="w-16 text-right text-xs font-semibold">{item.percent === null ? "—" : `${item.percent.toFixed(2)}%`}</span></div>) : <Empty text="ยังไม่มี Response ในช่วงที่เลือก" />}</div></div></section>
+
+      <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm"><div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between"><SectionTitle title="Learning Centers" subtitle="รายการสำหรับ Drill-down — ไม่มีการจัดอันดับหรือเปรียบเทียบ" /><span className="text-xs text-slate-500">{learningCenters.length} รายการ</span></div><div className="mt-4 grid gap-3 md:grid-cols-2 lg:grid-cols-3">{learningCenters.map((lc) => { const ids = new Set((data?.activityLearningCenters ?? []).filter((r) => r.learning_center_id === lc.id).map((r) => r.activity_id)); const count = filteredOccurrences.filter((o) => ids.has(o.activity_id)).length; return <button key={lc.id} onClick={() => setCenter(lc.id)} className="flex items-center justify-between rounded-xl border border-slate-200 bg-slate-50 p-4 text-left hover:border-slate-300"><div><p className="font-semibold text-brand-navy">{lc.name}</p><p className="mt-1 text-xs text-slate-500">{count} Occurrence ที่จัดจริง</p></div><ChevronRight className="h-4 w-4 text-slate-400" /></button>; })}{learningCenters.length === 0 && <Empty text="ไม่มี Learning Center ในเงื่อนไขที่เลือก" />}</div></section>
+
+      <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm"><div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between"><SectionTitle title="Activity Timeline / Calendar" subtitle="กิจกรรมที่จัดแล้วและกิจกรรมที่กำหนดไว้จะแยกตามสถานะ; Cancelled ไม่แสดง" /><div className="flex rounded-xl bg-slate-100 p-1">{(["month","week","list"] as const).map((v) => <button key={v} onClick={() => setCalendarView(v)} className={`rounded-lg px-3 py-2 text-xs font-semibold ${calendarView === v ? "bg-white text-brand-navy shadow-sm" : "text-slate-500"}`}>{v === "month" ? "Month" : v === "week" ? "Week" : "List / Agenda"}</button>)}</div></div><div className="mt-4 space-y-2">{filteredOccurrences.slice(0, calendarView === "list" ? 100 : 31).map((o) => { const a = data?.activities.find((x) => x.id === o.activity_id); const s = data?.surveys.find((x) => x.occurrence_id === o.id); const responses = responseScope.filter((r) => r.occurrence_id === o.id).length; return <button key={o.id} onClick={() => setSelectedOccurrenceId(o.id)} className="grid w-full gap-2 rounded-xl border border-slate-200 p-4 text-left hover:bg-slate-50 sm:grid-cols-[8rem_1fr_auto] sm:items-center"><div className="text-xs text-slate-500"><CalendarDays className="mr-1 inline h-4 w-4" />{formatDate(o.start_at)}</div><div><p className="font-semibold text-brand-navy">{a?.title ?? "กิจกรรม"}</p><p className="mt-1 text-xs text-slate-500">ครั้งที่ {o.occurrence_no} · {o.location_detail || o.location_type || "ไม่ระบุสถานที่"}</p></div><div className="flex flex-wrap gap-2 text-xs"><Badge text={o.status} /><Badge text={s ? (s.enabled ? "Survey เปิดใช้" : "Survey ปิด") : "ไม่มี Survey"} /><Badge text={`${responses} Response`} /></div></button>); })}{filteredOccurrences.length === 0 && <Empty text="ไม่มีกิจกรรมในช่วงที่เลือก" />}</div></section>
+
+      <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm"><div className="flex items-center justify-between"><SectionTitle title="Survey Audit" subtitle="Analytics และ review ระดับ Occurrence — ผู้ที่ไม่ใช่ Admin ไม่สามารถเข้าถึงข้อมูลนี้" /><ShieldCheck className="h-5 w-5 text-emerald-700" /></div>{selectedOccurrence && selectedSurvey ? <AuditPanel occurrence={selectedOccurrence} survey={selectedSurvey} activityTitle={data?.activities.find((a) => a.id === selectedOccurrence.activity_id)?.title ?? "กิจกรรม"} responses={selectedResponses} /> : <div className="mt-4 rounded-xl border border-dashed border-slate-300 p-8 text-center text-sm text-slate-500">เลือก Occurrence จาก Timeline เพื่อดู Survey Audit</div>}</section>
+    </main>
+  </div>;
+}
+
+function Kpi({ label, value, note }: { label: string; value: string; note: string }) { return <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm"><p className="text-xs font-medium text-slate-500">{label}</p><p className="mt-2 text-2xl font-bold tracking-tight text-brand-navy">{value}</p><p className="mt-1 text-xs text-slate-500">{note}</p></div>; }
+function SectionTitle({ title, subtitle }: { title: string; subtitle?: string }) { return <div><h2 className="text-lg font-semibold text-brand-navy">{title}</h2>{subtitle && <p className="mt-1 text-sm text-slate-500">{subtitle}</p>}</div>; }
+function Empty({ text }: { text: string }) { return <div className="w-full rounded-xl border border-dashed border-slate-300 p-6 text-center text-sm text-slate-500">{text}</div>; }
+function Badge({ text }: { text: string }) { return <span className="rounded-full bg-slate-100 px-2.5 py-1 font-medium text-slate-600">{text}</span>; }
+function AuditPanel({ occurrence, survey, activityTitle, responses }: { occurrence: DashboardOccurrence; survey: { anonymous: boolean; enabled: boolean; open_at?: string | null; close_at?: string | null }; activityTitle: string; responses: DashboardResponse[] }) {
+  const satisfaction = calculateSatisfaction(responses);
+  const participants = occurrence.participant_count || 0;
+  const rate = participants ? (responses.length / participants) * 100 : null;
+  const topicScores = Object.entries(TOPICS).map(([key, topic]) => { const values = responses.flatMap((r) => topic.fields.map((f) => score(r[f])).filter((v): v is number => v !== null)); const avg = values.length ? values.reduce((a, b) => a + b, 0) / values.length : null; return { key, label: topic.label, avg }; });
+  return <div className="mt-5 space-y-5"><div className="rounded-xl bg-slate-50 p-4"><div className="flex flex-wrap items-center gap-2"><h3 className="font-bold text-brand-navy">{activityTitle}</h3><Badge text={`ครั้งที่ ${occurrence.occurrence_no}`} /><Badge text={survey.anonymous ? "Anonymous" : "Identified"} /></div><p className="mt-2 text-sm text-slate-500">{formatDate(occurrence.start_at)} · {occurrence.location_detail || occurrence.location_type || "ไม่ระบุสถานที่"}</p><p className="mt-1 text-xs text-slate-500">Survey: {survey.enabled ? "เปิดใช้งาน" : "ปิดใช้งาน"} · เปิด {formatDate(survey.open_at)} · ปิด {formatDate(survey.close_at)}</p></div><div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5"><Kpi label="ผู้เข้าร่วม" value={participants.toLocaleString()} note="ตาม Occurrence" /><Kpi label="ผู้ตอบ" value={responses.length.toLocaleString()} note="Response จริง" /><Kpi label="Response Rate" value={rate === null ? "—" : `${rate.toFixed(2)}%`} note="เทียบผู้เข้าร่วม" /><Kpi label="Average Score" value={satisfaction.avg === null ? "—" : `${satisfaction.avg.toFixed(2)} / 5.00`} note="14 ข้อที่มีข้อมูล" /><Kpi label="Satisfaction" value={satisfaction.percent === null ? "—" : `${satisfaction.percent.toFixed(2)}%`} note="Weighted จาก Response" /></div><div className="grid gap-5 lg:grid-cols-2"><div className="rounded-xl border border-slate-200 p-4"><h4 className="font-semibold text-brand-navy">คะแนนตามหัวข้อ</h4><div className="mt-4 space-y-3">{topicScores.map((t) => <div key={t.key} className="flex items-center justify-between text-sm"><span className="text-slate-600">{t.label}</span><strong className="text-brand-navy">{t.avg === null ? "—" : `${t.avg.toFixed(2)} / 5.00`}</strong></div>)}</div></div><div className="rounded-xl border border-slate-200 p-4"><h4 className="font-semibold text-brand-navy">Comments / Feedback</h4><div className="mt-3 max-h-56 space-y-2 overflow-auto">{responses.filter((r) => r.feedback?.trim()).map((r) => <div key={r.id} className="rounded-lg bg-slate-50 p-3 text-sm text-slate-600">{r.feedback}</div>)}{!responses.some((r) => r.feedback?.trim()) && <p className="text-sm text-slate-500">ไม่มีความคิดเห็น</p>}</div></div></div><div className="rounded-xl border border-slate-200 p-4"><div className="flex items-center gap-2"><Users className="h-4 w-4 text-slate-500" /><h4 className="font-semibold text-brand-navy">Response Detail</h4></div><p className="mt-1 text-xs text-slate-500">{survey.anonymous ? "Survey นี้เป็น Anonymous จึงไม่เปิดเผยตัวตนของผู้ตอบ" : "แสดงข้อมูลผู้ตอบเท่าที่ระบบมีอยู่จริง"}</p><div className="mt-3 overflow-x-auto"><table className="w-full min-w-[600px] text-left text-xs"><thead className="border-b text-slate-500"><tr><th className="p-2">วันที่ตอบ</th><th className="p-2">หน่วยงาน</th><th className="p-2">คะแนนเฉลี่ย</th><th className="p-2">Feedback</th></tr></thead><tbody>{responses.map((r) => { const s = calculateSatisfaction([r]); const org = r.participant_organization_id; return <tr key={r.id} className="border-b last:border-0"><td className="p-2">{formatDate(r.submitted_at)}</td><td className="p-2">{survey.anonymous ? "Anonymous" : org || r.affiliation || "ไม่ระบุ"}</td><td className="p-2">{s.avg === null ? "—" : s.avg.toFixed(2)}</td><td className="max-w-xs truncate p-2">{r.feedback || "-"}</td></tr>; })}</tbody></table></div></div></div>;
 }
