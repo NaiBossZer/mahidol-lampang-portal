@@ -4,13 +4,12 @@
 
 This document locks the Phase 7.2 CMS architecture for `mahidol-lampang-portal`.
 
-### Approved decisions
-
-1. **Supabase Auth** is the target identity architecture.
-2. **Semantic CMS V1** is the canonical content model. A generic page builder is explicitly out of scope for V1.
-3. Central Admin is consolidated into one Admin Shell. Existing duplicate Admin implementations must not become parallel authorities.
-4. Portal-owned content is managed centrally. Operational data remains owned by its domain system.
-5. Existing canonical domain tables are reused where their semantics already match. Duplicate `cms_*` tables are prohibited for those entities.
+1. Supabase Auth is the central identity architecture.
+2. Semantic CMS V1 is canonical; a generic page builder is out of scope.
+3. Central Admin uses one Admin Shell; duplicate admin authorities are not introduced.
+4. Portal-owned content is managed centrally; operational data remains owned by its domain system.
+5. Existing canonical domain tables are reused where semantics already match.
+6. RBAC retains four management roles: `SUPER_ADMIN`, `CONTENT_ADMIN`, `OPERATIONS_ADMIN`, `FACILITY_ADMIN`.
 
 ## 2. Ownership boundary
 
@@ -32,268 +31,86 @@ Domain Operations
   └── Store Operations
 ```
 
-The Central Admin may aggregate operational status for overview screens, but it must not create duplicate operational rows merely to make the dashboard easier to query.
+The Portal may aggregate operational status for overview screens, but must not duplicate operational rows.
 
-## 3. Canonical CMS entities
+## 3. Canonical entities
 
-| Entity | Canonical table/model | V1 ownership | Publishable |
-|---|---|---|---|
-| Activities | `activities` | Portal | Yes |
-| Activity Photos | `activityPhotos` | Portal | Through activity |
-| Activity Outcomes | `activityOutcomes` | Portal | Through activity |
-| Activity Partners | `activityPartners` | Portal | Through activity |
-| Projects | `socialProjects` | Portal | Yes |
-| Learning Centers | `learningCenters` | Portal | Yes |
-| Partners | `partners` | Portal | Yes |
-| Services | `services` | Portal CMS | Yes |
-| Home Sections | `home_sections` | Portal CMS | Yes |
-| Navigation | `navigation_items` | Portal CMS | Yes |
-| Footer | `footer_settings` | Portal CMS | Yes |
+| Entity | Canonical model |
+|---|---|
+| Activities | `activities` |
+| Activity Photos | `activityPhotos` |
+| Activity Outcomes | `activityOutcomes` |
+| Activity Partners | `activityPartners` |
+| Projects | `socialProjects` |
+| Learning Centers | `learningCenters` |
+| Partners | `partners` |
+| Services | `services` |
+| Home Sections | `home_sections` |
+| Navigation | `navigation_items` |
+| Footer | `footer_settings` |
 
-The following existing operational models remain outside CMS governance:
+Operational models such as products, orders, Facility/Safety, Smart Farm and Clean Energy remain outside CMS governance.
 
-- `products`
-- `orders`
-- Facility/Safety operational entities
-- Smart Farm operational entities
-- Clean Energy / EV operational entities
+## 4. Content lifecycle
 
-## 4. Semantic CMS V1
-
-### 4.1 Home composition
-
-Home is a composition layer, not a single HTML document.
-
-Canonical sections:
+Publishable content follows:
 
 ```text
-HOME_HERO
-FEATURED_ACTIVITIES
-LEARNING_CENTERS
-SERVICES
-COMMUNITY_ACTION
-PARTNERS
+CREATE -> DRAFT -> EDIT -> PREVIEW -> PUBLISHED -> ARCHIVED
 ```
 
-A section may reference an existing canonical entity rather than copying its content.
+Saving does not implicitly publish. Publish/archive/delete mutations require server-side permission checks.
 
-Example:
+## 5. RBAC
+
+Supabase Auth provides identity. The role is read from Supabase `app_metadata.role` and mapped to application permissions.
 
 ```text
-Featured Activities -> activities
-Learning Centers    -> learningCenters
-Partners            -> partners
+SUPER_ADMIN       full access
+CONTENT_ADMIN     CMS/content management
+OPERATIONS_ADMIN  activities, learning centers, store/operations
+FACILITY_ADMIN    Facility & Safety
 ```
 
-### 4.2 Home Sections
-
-Conceptual model:
+Permission format is `resource.action`, for example:
 
 ```text
-home_sections
--------------
-id
-section_key
-title
-subtitle
-description
-image
-sort_order
-is_enabled
-created_at
-updated_at
-```
-
-`section_key` is a controlled semantic key, not arbitrary user-defined code.
-
-### 4.3 Services
-
-```text
-services
---------
-id
-title
-slug
-summary
-description
-icon
-featured_image
-link_type
-link_url
-sort_order
-status
-published_at
-created_at
-updated_at
-```
-
-Allowed `link_type` values for V1:
-
-```text
-INTERNAL
-EXTERNAL
-CONTACT
-```
-
-### 4.4 Navigation
-
-```text
-navigation_items
-----------------
-id
-label
-slug
-parent_id
-target_type
-target_url
-sort_order
-is_enabled
-open_new_tab
-created_at
-updated_at
-```
-
-Navigation must support hierarchical items without allowing arbitrary executable content.
-
-### 4.5 Footer
-
-```text
-footer_settings
----------------
-organization_name
-address
-phone
-email
-facebook_url
-line_url
-copyright_text
-privacy_url
-terms_url
-updated_at
-```
-
-Frontend owns presentation and layout; CMS owns editable content.
-
-## 5. Existing entity mapping
-
-### Activities
-
-Reuse the existing `activities` model, including its status lifecycle:
-
-```text
-DRAFT -> PUBLISHED -> ARCHIVED
-```
-
-The existing activity relations remain canonical:
-
-```text
-activities
-  ├── activityPhotos
-  ├── activityPartners
-  └── activityOutcomes
-```
-
-### Projects
-
-Reuse `socialProjects`. Do not introduce `cms_projects`.
-
-### Learning Centers
-
-Reuse `learningCenters`. Do not introduce `cms_learning_centers`.
-
-### Partners
-
-Reuse `partners` and `activityPartners`.
-
-Future CMS metadata may require additional fields such as ordering, visibility, website URL, and updated timestamp. Such schema changes must be made deliberately in an implementation migration; they are not introduced by this design document.
-
-## 6. Content lifecycle
-
-Publishable content follows an explicit workflow:
-
-```text
-CREATE
-  |
-  v
-DRAFT
-  |
-  +--> EDIT
-  |
-  v
-PREVIEW
-  |
-  v
-PUBLISHED
-  |
-  v
-ARCHIVED
-```
-
-Saving content does not implicitly publish it.
-
-Publishing is a separate server-side mutation and must be permission checked.
-
-## 7. RBAC target model
-
-Supabase Auth provides identity. Application authorization maps authenticated identities to Portal roles and permissions.
-
-Target roles:
-
-```text
-SUPER_ADMIN
-CONTENT_ADMIN
-OPERATIONS_ADMIN
-FACILITY_ADMIN
-VIEWER
-```
-
-Target permission shape:
-
-```text
-permission = resource + action
-```
-
-Examples:
-
-```text
+cms.read
+cms.update
+cms.publish
 activities.read
 activities.create
 activities.update
-activities.publish
-activities.archive
-partners.update
-services.publish
-navigation.update
+learning_centers.update
 facility.read
-orders.update
+facility.manage
+store.manage
 ```
 
-Role assignment is separate from authentication. UI visibility is not the security boundary; every protected mutation must be checked server-side.
+`SUPER_ADMIN` bypasses domain permission checks. Other roles receive only their domain permissions.
 
-## 8. Permission matrix
+### Permission matrix
 
-| Resource | SUPER_ADMIN | CONTENT_ADMIN | OPERATIONS_ADMIN | FACILITY_ADMIN | VIEWER |
-|---|---|---|---|---|---|
-| Home CMS | CRUDP | CRUDP | Read | Read | Read |
-| Activities | CRUDP | CRUDP | Read | Read | Read |
-| Projects | CRUDP | CRUDP | Read | Read | Read |
-| Learning Centers | CRUDP | CRUDP | Read | Read | Read |
-| Partners | CRUDP | CRUDP | Read | Read | Read |
-| Services | CRUDP | CRUDP | Read | Read | Read |
-| Navigation | CRUDP | CRUDP | Read | Read | Read |
-| Footer | CRUDP | CRUDP | Read | Read | Read |
-| Store Products | CRUD | Read | CRUD | None | Read |
-| Orders | CRUD | Read | CRUD | None | Read |
-| Facility Operations | Full | Read | Full | Full | Read |
-| Governance | Full | Read | Read | Read | Read |
+| Resource | SUPER_ADMIN | CONTENT_ADMIN | OPERATIONS_ADMIN | FACILITY_ADMIN |
+|---|---|---|---|---|
+| Overview | Full | Read | Read | Read |
+| CMS / Home | Full | Full | None | None |
+| Projects | Full | Full | None | None |
+| Partners | Full | Full | None | None |
+| Services | Full | Full | None | None |
+| Navigation | Full | Full | None | None |
+| Footer | Full | Full | None | None |
+| Activities | Full | None | Full | None |
+| Learning Centers | Full | None | Full | None |
+| Store | Full | None | Full | None |
+| Facility & Safety | Full | None | None | Full |
+| Governance / System | Full | None | None | None |
 
-Legend: `C` create, `R` read, `U` update, `D` delete, `P` publish.
+The matrix is implemented as explicit permissions so future menu/function changes do not require hard-coded role branches across the UI.
 
-The exact permission set may be refined during the RBAC implementation, but the ownership boundary must remain unchanged.
+## 6. API contract
 
-## 9. API contract
-
-Canonical Admin API namespace:
+Canonical CMS namespace:
 
 ```text
 /api/admin/home
@@ -306,129 +123,55 @@ Canonical Admin API namespace:
 /api/admin/footer
 ```
 
-Operational Admin APIs remain separated:
+Operational APIs remain separated, for example:
 
 ```text
 /api/admin/facility-overview
-/api/admin/store
 /api/admin/orders
+/api/admin/products
 ```
 
-Each mutation must:
+Each protected mutation must validate the Supabase-backed identity, resolve the role, verify the action permission, validate input, mutate server-side and record an audit event where required.
 
-1. validate the session;
-2. resolve the authenticated identity and role;
-3. verify the resource/action permission;
-4. validate the payload;
-5. perform the mutation server-side;
-6. write an audit event for important mutations;
-7. return a safe response without secrets or service-role credentials.
-
-## 10. Audit model
-
-Canonical audit event shape:
+## 7. Admin architecture
 
 ```text
-audit_logs
-----------
-id
-actor_id
-action
-resource_type
-resource_id
-metadata
-created_at
-```
-
-Important CMS actions include:
-
-```text
-CONTENT_CREATE
-CONTENT_UPDATE
-CONTENT_PUBLISH
-CONTENT_ARCHIVE
-CONTENT_DELETE
-SETTINGS_UPDATE
-NAVIGATION_UPDATE
-```
-
-Audit history is append-only from the client perspective.
-
-## 11. Admin architecture
-
-The target structure is:
-
-```text
+Supabase Auth
+    |
+    v
 AdminGuard
-   |
-   v
+    |
+    v
 AdminShell
-   |
-   +-- Overview
-   |
-   +-- CMS
-   |    +-- Home
-   |    +-- Activities
-   |    +-- Projects
-   |    +-- Learning Centers
-   |    +-- Partners
-   |    +-- Services
-   |    +-- Navigation
-   |    +-- Footer
-   |
-   +-- Operations
-   |    +-- Facility
-   |    +-- Smart Farm
-   |    +-- Energy / EV
-   |    +-- Store
-   |
-   +-- Governance
-        +-- Users / Roles
-        +-- Audit
-        +-- System Registry
+    +-- Overview
+    +-- CMS
+    +-- Activities / Learning Centers
+    +-- Facility & Safety
+    +-- Store / Operations
+    +-- Governance
 ```
 
-Existing duplicate Admin surfaces must be consolidated into this model rather than extended independently.
+`AdminGuard` loads identity/permissions once and shares them with `AdminAppShell`. Menu visibility is derived from permissions; it is not a security boundary.
 
-## 12. Explicit V1 exclusions
+## 8. Audit model
 
-The following are intentionally excluded from Semantic CMS V1:
+`admin_audit_log` records actor, action, resource, resource id, metadata and timestamp. Client-side callers cannot write audit history directly.
+
+## 9. Explicit exclusions
 
 - generic drag-and-drop page builder;
-- arbitrary HTML/JS blocks;
-- CMS copies of operational Facility/Farm/Energy rows;
+- arbitrary HTML/JS CMS blocks;
+- duplicate operational tables;
 - duplicate activity/project/center/partner tables;
-- client-side service-role access;
+- client-side service-role credentials;
 - implicit publish-on-save;
 - a second independent administrator authentication system.
 
-## 13. Implementation order
+## 10. Security invariants
 
-Phase 7.3 should implement in this order:
-
-```text
-1. Supabase Auth target integration boundary
-2. Admin identity/role adapter
-3. AdminShell consolidation
-4. Server-side permission enforcement
-5. CMS API contracts
-6. Services / Navigation / Footer models
-7. Home composition API
-8. Activities / Projects / Learning Centers / Partners CMS screens
-9. Publish / Archive workflow
-10. Audit integration
-11. Admin QA + lint/build/smoke verification
-```
-
-## 14. Security invariants
-
-The implementation must preserve these invariants:
-
-- No service-role secret in browser bundles.
-- No admin authorization based only on UI state.
-- No cross-domain operational duplication.
-- No client-controlled audit history.
-- No arbitrary executable CMS content.
-- Publish and destructive actions require explicit permission.
-- Supabase Auth is the target identity authority.
+- Supabase Auth is the central identity authority.
+- Browser clients never receive service-role/database credentials.
+- Authorization is enforced server-side.
+- Domain permissions remain separated even though authentication is centralized.
+- Publish and destructive actions require explicit permissions.
 - Central Portal remains the single administrator entry point.
