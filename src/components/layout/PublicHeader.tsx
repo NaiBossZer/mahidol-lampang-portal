@@ -40,9 +40,7 @@ export function PublicHeader() {
   useEffect(() => {
     if (!centersOpen) return;
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") {
-        setCentersOpen(false);
-      }
+      if (event.key === "Escape") setCentersOpen(false);
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
@@ -62,7 +60,7 @@ export function PublicHeader() {
           </div>
           <div className="hidden min-w-0 text-left leading-tight sm:block">
             <p className="truncate text-sm font-bold text-white">งานพันธกิจเพื่อสังคม</p>
-            <p className="mt-0.5 max-w-[360px] text-[11px] font-medium leading-4 text-[#F4E8C5]">คณะสิ่งแวดล้อมและทรัพยากรศาสตร์ มหาวิทยาลัยมหิดล · พื้นที่สบปราบ ลำปาง</p>
+            <p className="mt-0.5 max-w-[360px] text-[11px] font-medium leading-4 text-[#F4E8C5]">คณะสิ่งแวดล้อมและทรัพยากรศาสตร์ มหาวิทยาลัยมหิดล</p>
           </div>
         </Link>
 
@@ -72,7 +70,6 @@ export function PublicHeader() {
               {navLabel(item)}
             </Link>
           ))}
-
           <div className="relative">
             <button type="button" onClick={() => setCentersOpen((open) => !open)} className={`${navItemClass} gap-1.5 ${centersActive || centersOpen ? "bg-[#00A878] text-white shadow-[0_4px_12px_rgba(0,168,120,0.22)]" : "text-white/95 hover:bg-white/10"}`} aria-expanded={centersOpen} aria-haspopup="menu" aria-controls="desktop-centers-menu">
               {text("ศูนย์", "Centers")}
@@ -88,7 +85,6 @@ export function PublicHeader() {
               </div>
             )}
           </div>
-
           {navItems.slice(2).map((item) => (
             <Link key={item.to} to={item.to} className={`${navItemClass} ${isActivePath(location.pathname, item.to) ? "bg-[#00A878] text-white shadow-[0_4px_12px_rgba(0,168,120,0.22)]" : "text-white/95 hover:bg-white/10"}`}>
               {navLabel(item)}
