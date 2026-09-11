@@ -32,12 +32,13 @@ async function handlePost({ request, env }: PagesContext): Promise<Response> {
   const refreshToken = typeof result.refresh_token === "string" ? result.refresh_token : "";
   if (!accessToken || !refreshToken) return json({ error: "ระบบยืนยันตัวตนส่ง session กลับมาไม่ครบ" }, 502);
 
-  const headers = new Headers({ "Content-Type": "application/json; charset=utf-8" });
+  const headers = new Headers({
+    "Content-Type": "application/json; charset=utf-8",
+    "Cache-Control": "no-store, private",
+  });
   const expiresIn = Number(result.expires_in ?? 28800);
   const safeExpiresIn = Number.isFinite(expiresIn) ? expiresIn : 28800;
-  for (const cookie of cookieHeaders(accessToken, refreshToken, safeExpiresIn)) {
-    headers.append("Set-Cookie", cookie);
-  }
+  for (const cookie of cookieHeaders(accessToken, refreshToken, safeExpiresIn)) headers.append("Set-Cookie", cookie);
 
   return new Response(JSON.stringify({
     success: true,
