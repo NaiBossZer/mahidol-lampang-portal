@@ -1,5 +1,5 @@
 import { useState, type ReactNode } from "react";
-import { Building2, ClipboardList, FileText, LayoutDashboard, LogOut, Menu, Settings2, ShoppingBag, X } from "lucide-react";
+import { Building2, ClipboardList, FileText, LayoutDashboard, LogOut, Menu, Settings2, ShoppingBag, X, RefreshCw } from "lucide-react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { useAdminAuth } from "../AdminGuard";
@@ -63,7 +63,6 @@ export function AdminAppShell({ children }: { children: ReactNode }) {
             <img src="/social-engagement-logo.png" alt="งานพันธกิจเพื่อสังคม" className="h-12 w-12 shrink-0 rounded-lg bg-white object-contain p-1" width="48" height="48" />
             <span className="min-w-0 text-left leading-tight"><span className="block truncate text-sm font-bold text-white">งานพันธกิจเพื่อสังคม</span><span className="mt-0.5 block truncate text-[10px] font-medium text-[#F4E8C5]">คณะสิ่งแวดล้อมและทรัพยากรศาสตร์ มหาวิทยาลัยมหิดล</span></span>
           </Link>
-          <div className="mt-3 flex items-center justify-between gap-2"><span className="text-[10px] font-semibold uppercase tracking-[0.16em] text-white/45">Central Admin</span><span className="rounded-full bg-white/10 px-2.5 py-1 text-[10px] font-medium text-white/75">{role}</span></div>
         </div>
         {nav()}
         <div className="border-t border-white/10 p-3"><Link to="/" className="mb-1 flex min-h-10 items-center rounded-xl px-3 text-sm font-medium text-white/75 hover:bg-white/10 hover:text-white">ดูเว็บไซต์</Link><button type="button" onClick={() => void handleLogout()} className="flex min-h-10 w-full items-center gap-3 rounded-xl px-3 text-sm font-medium text-white/70 hover:bg-white/10 hover:text-white"><LogOut className="h-4 w-4" aria-hidden="true"/>ออกจากระบบ</button></div>
@@ -73,15 +72,16 @@ export function AdminAppShell({ children }: { children: ReactNode }) {
         <header className="sticky top-0 z-30 flex min-h-16 items-center justify-between border-b border-[#D6A84F]/70 bg-[#0F3553] px-4 text-white shadow-[0_4px_18px_rgba(15,53,83,0.18)] sm:px-6">
           <div className="flex min-w-0 items-center gap-3">
             <button type="button" onClick={() => setMobileOpen((open) => !open)} className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-xl border border-white/20 text-white hover:bg-white/10 lg:hidden" aria-label={mobileOpen ? "ปิดเมนู Admin" : "เปิดเมนู Admin"} aria-expanded={mobileOpen}>{mobileOpen ? <X className="h-5 w-5"/> : <Menu className="h-5 w-5"/>}</button>
-            <Link to="/" className="flex min-w-0 items-center gap-3 rounded-xl focus:outline-none focus-visible:ring-2 focus-visible:ring-[#D6A84F]">
+            {isDashboard ? <div className="min-w-0 leading-tight"><p className="text-[10px] font-semibold tracking-[0.14em] text-[#6FCF97]">EXECUTIVE ANALYTICS &amp; SATISFACTION INSIGHT</p><h1 className="truncate text-base font-bold text-white sm:text-lg">Dashboard ภาพรวมกิจกรรมและความพึงพอใจ</h1></div> : <Link to="/" className="flex min-w-0 items-center gap-3 rounded-xl focus:outline-none focus-visible:ring-2 focus-visible:ring-[#D6A84F]">
               <img src="/social-engagement-logo.png" alt="งานพันธกิจเพื่อสังคม" className="h-10 w-10 shrink-0 rounded-md bg-white object-contain p-1" width="40" height="40"/>
               <span className="hidden min-w-0 leading-tight sm:block"><span className="block truncate text-sm font-bold text-white">งานพันธกิจเพื่อสังคม</span><span className="block max-w-[430px] truncate text-[10px] font-medium text-[#F4E8C5]">คณะสิ่งแวดล้อมและทรัพยากรศาสตร์ มหาวิทยาลัยมหิดล</span></span>
-            </Link>
+            </Link>}
           </div>
-          <div className="flex items-center gap-2">
-            <div className="hidden text-right sm:block"><p className="text-[10px] text-white/60">ผู้ดูแลระบบ</p><p className="max-w-[220px] truncate text-xs font-semibold text-white">{adminLabel}</p></div>
+          <div className="flex shrink-0 items-center gap-2">
+            {isDashboard && <button type="button" onClick={() => window.dispatchEvent(new CustomEvent("dashboard:refresh"))} className="inline-flex min-h-9 items-center gap-2 rounded-xl border border-white/20 bg-white/10 px-3 text-xs font-semibold text-white hover:bg-white/15" aria-label="รีเฟรช Dashboard"><RefreshCw className="h-3.5 w-3.5"/>รีเฟรช</button>}
+            <div className="hidden text-right sm:block"><p className="text-[10px] text-white/60">ผู้ดูแลระบบ</p><p className="max-w-[180px] truncate text-xs font-semibold text-white">{adminLabel}</p></div>
             <span className="rounded-full border border-white/20 bg-white/10 px-3 py-1.5 text-[10px] font-semibold text-[#F4E8C5]">{role}</span>
-            <Link to="/" className="hidden min-h-10 items-center rounded-full border border-white/20 px-3 text-xs font-semibold text-white hover:bg-white/10 md:inline-flex">ดูเว็บไซต์</Link>
+            <Link to="/" className="hidden min-h-9 items-center rounded-full border border-white/20 px-3 text-xs font-semibold text-white hover:bg-white/10 md:inline-flex">ดูเว็บไซต์</Link>
           </div>
         </header>
 
