@@ -4,20 +4,61 @@ import { useState } from "react";
 export function LoginPage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const redirect = searchParams.get("redirect")?.startsWith("/admin") ? searchParams.get("redirect")! : "/dashboard";
+  const redirectParam = searchParams.get("redirect");
+  const redirect = redirectParam?.startsWith("/admin") || redirectParam === "/dashboard" ? redirectParam : "/dashboard";
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
   const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault(); setLoading(true); setError("");
+    e.preventDefault();
+    setLoading(true);
+    setError("");
+
     try {
-      const response = await fetch("/api/auth/login", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ email, password }) });
-      if (!response.ok) { const body = await response.json().catch(() => ({})) as { error?: string }; setError(body.error ?? "เข้าสู่ระบบไม่สำเร็จ"); return; }
-      sessionStorage.removeItem("dashboard_auth"); navigate(redirect);
-    } catch { setError("ไม่สามารถเชื่อมต่อระบบยืนยันตัวตนได้"); }
-    finally { setLoading(false); }
+      const response = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        cache: "no-store",
+        body: JSON.stringify({ email, password }),
+      });
+      const body = await response.json().catch(() => ({})) as { error?: string };
+
+      if (!response.ok) {
+        setError(body.error ?? "เข้าสู่ระบบไม่สำเร็จ");
+        return;
+      }
+
+      // Verify the newly-created session before navigating. This prevents a silent
+      // login -> guard -> login redirect loop and surfaces cookie/RBAC failures.
+      const sessionResponse = await fetch("/api/auth/me", {
+        method: "GET",
+        credentials: "include",
+        cache: "no-store",
+      });
+      const sessionBody = await sessionResponse.json().catch(() => ({})) as {
+        data?: { authorized?: boolean; role?: string };
+      };
+
+      if (!sessionResponse.ok || !sessionBody.data?.authorized || !sessionBody.data.role) {
+        setError(
+          sessionResponse.status === 403
+            ? "บัญชีเข้าสู่ระบบได้ แต่ยังไม่ได้รับสิทธิ์ Central Admin"
+            : sessionResponse.status === 401
+              ? "สร้าง session สำเร็จ แต่ไม่พบ session จากเบราว์เซอร์"
+              : "ไม่สามารถตรวจสอบสิทธิ์ Central Admin ได้",
+        );
+        return;
+      }
+
+      navigate(redirect, { replace: true });
+    } catch {
+      setError("ไม่สามารถเชื่อมต่อระบบยืนยันตัวตนได้");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4 font-sans"><div className="bg-white border border-slate-200/80 rounded-2xl p-8 shadow-xl max-w-sm w-full space-y-6">
