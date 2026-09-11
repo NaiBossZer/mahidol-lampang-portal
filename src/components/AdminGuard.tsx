@@ -22,9 +22,8 @@ export function AdminGuard({ children }: { children: ReactNode }) {
       .then(async (response) => ({ response, body: await response.json() as { data?: { authorized?: boolean; role?: AdminRole; permissions?: AdminPermission[] } } }))
       .then(({ response, body }) => {
         if (!active) return;
-        if (response.ok && body.data?.authorized && body.data.role) {
-          setAuth({ role: body.data.role, permissions: body.data.permissions ?? [] });
-        } else setState("denied");
+        if (response.ok && body.data?.authorized && body.data.role) setAuth({ role: body.data.role, permissions: body.data.permissions ?? [] });
+        else setState("denied");
       })
       .catch(() => { if (active) setState("denied"); });
     return () => { active = false; };
