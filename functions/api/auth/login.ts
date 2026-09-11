@@ -20,23 +20,20 @@ export async function onRequestPost({ request, env }: { request: Request; env: R
     headers: { apikey: key, "Content-Type": "application/json" },
     body: JSON.stringify({ email, password }),
   });
-
   const result = await response.json().catch(() => ({})) as Record<string, unknown>;
+
   if (!response.ok) {
     return json({ error: String(result.error_description ?? result.msg ?? "เข้าสู่ระบบไม่สำเร็จ") }, 401);
   }
 
+  const accessToken = String(result.access_token ?? "");
+  const refreshToken = String(result.refresh_token ?? "");
+  if (!accessToken || !refreshToken) return json({ error: "ระบบยืนยันตัวตนส่ง session กลับมาไม่ครบ" }, 502);
+
   const headers = new Headers({ "Content-Type": "application/json; charset=utf-8" });
-  headers.append("Set-Cookie", cookieHeaders(
-    String(result.access_token),
-    String(result.refresh_token),
-    Number(result.expires_in ?? 28800),
-  )[0]);
-  headers.append("Set-Cookie", cookieHeaders(
-    String(result.access_token),
-    String(result.refresh_token),
-    Number(result.expires_in ?? 28800),
-  )[1]);
+  for (const cookie of cookieHeaders(accessToken, refreshToken, Number(result.expires_in ?? 28800))) {
+    headers.append("Set-Cookie", cookie);
+  }
 
   return new Response(JSON.stringify({
     success: true,
