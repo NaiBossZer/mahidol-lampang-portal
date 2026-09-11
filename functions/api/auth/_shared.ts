@@ -33,14 +33,14 @@ const ROLE_PERMISSIONS: Record<AdminRole, readonly AdminPermission[]> = {
     "partners.read", "partners.create", "partners.update", "partners.archive",
     "services.read", "services.create", "services.update", "services.publish", "services.archive",
     "navigation.read", "navigation.create", "navigation.update", "navigation.archive",
-    "footer.read", "footer.update",
+    "footer.read", "footer.update", "survey.audit.read",
   ],
   OPERATIONS_ADMIN: [
     "overview.read", "activities.read", "activities.create", "activities.update", "activities.publish", "activities.archive",
     "learning_centers.read", "learning_centers.create", "learning_centers.update", "learning_centers.publish", "learning_centers.archive",
     "store.read", "store.manage", "survey.audit.read",
   ],
-  FACILITY_ADMIN: ["overview.read", "facility.read", "facility.manage"],
+  FACILITY_ADMIN: ["overview.read", "facility.read", "facility.manage", "survey.audit.read"],
 };
 
 export function isAdminRole(value: unknown): value is AdminRole {
