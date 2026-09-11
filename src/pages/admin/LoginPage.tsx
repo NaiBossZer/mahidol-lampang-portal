@@ -51,8 +51,6 @@ export function LoginPage() {
         return;
       }
 
-      // Transitional compatibility marker for legacy admin pages. It is not an
-      // authorization mechanism; AdminGuard remains the server-backed gate.
       sessionStorage.setItem("dashboard_auth", "true");
       navigate(redirect, { replace: true });
     } catch {
@@ -62,14 +60,50 @@ export function LoginPage() {
     }
   };
 
-  return <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4 font-sans"><div className="bg-white border border-slate-200/80 rounded-2xl p-8 shadow-xl max-w-sm w-full space-y-6">
-    <div className="text-center space-y-1"><h1 className="text-2xl font-black text-slate-800 tracking-tight">เข้าสู่ระบบ Central Admin</h1><p className="text-xs text-slate-500 font-medium">ใช้บัญชีบุคลากรที่ได้รับอนุญาตผ่าน Supabase Auth</p></div>
-    <form onSubmit={handleLogin} className="space-y-4" autoComplete="on">
-      <div className="space-y-1.5"><label className="text-xs font-semibold text-slate-700 block">อีเมล</label><input type="email" required value={email} onChange={e => { setEmail(e.target.value); setError(""); }} className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm outline-none focus:ring-2 focus:ring-emerald-500/20 text-slate-800" autoFocus autoComplete="username" /></div>
-      <div className="space-y-1.5"><label className="text-xs font-semibold text-slate-700 block">รหัสผ่าน</label><input type="password" required value={password} onChange={e => { setPassword(e.target.value); setError(""); }} className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm outline-none focus:ring-2 focus:ring-emerald-500/20 text-slate-800" autoComplete="current-password" /></div>
-      {error && <p role="alert" className="text-xs font-semibold text-red-500 text-center">{error}</p>}
-      <button type="submit" disabled={loading} className="w-full py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 disabled:opacity-60 text-white font-bold text-sm">{loading ? "กำลังตรวจสอบ…" : "เข้าสู่ระบบ"}</button>
-    </form>
-    <div className="pt-2 text-center border-t border-slate-100"><RouterLink to="/" className="text-xs text-slate-500 hover:text-emerald-600 font-semibold">← กลับสู่หน้าหลัก</RouterLink></div>
-  </div></div>;
+  return (
+    <div className="min-h-dvh bg-surface-warm px-4 py-8 font-sans sm:px-6 sm:py-10">
+      <main className="mx-auto flex min-h-[calc(100dvh-4rem)] w-full max-w-[520px] flex-col justify-center">
+        <header className="text-center">
+          <img src="/social-engagement-logo.png" alt="งานพันธกิจเพื่อสังคม" className="mx-auto h-20 w-20 object-contain sm:h-24 sm:w-24" width="96" height="96" />
+          <h1 className="mt-3 text-xl font-black tracking-tight text-brand-navy sm:text-2xl">งานพันธกิจเพื่อสังคม</h1>
+          <p className="mt-1 text-xs font-medium leading-5 text-muted-ink sm:text-sm">คณะสิ่งแวดล้อมและทรัพยากรศาสตร์ มหาวิทยาลัยมหิดล</p>
+        </header>
+
+        <section className="mt-6 rounded-2xl border border-panel-line bg-white px-5 py-6 shadow-[0_10px_30px_rgba(18,59,99,0.08)] sm:px-8 sm:py-8">
+          <div className="text-center">
+            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-brand-blue">Central Admin</p>
+            <h2 className="mt-2 text-xl font-black tracking-tight text-brand-navy sm:text-2xl">เข้าสู่ระบบ</h2>
+            <p className="mt-1 text-sm text-muted-ink">ใช้บัญชีบุคลากรที่ได้รับอนุญาต</p>
+          </div>
+
+          <form onSubmit={handleLogin} className="mt-6 space-y-5" autoComplete="on">
+            <div className="space-y-2">
+              <label htmlFor="login-email" className="block text-sm font-semibold text-ink">อีเมล</label>
+              <input id="login-email" type="email" required value={email} onChange={(e) => { setEmail(e.target.value); setError(""); }} placeholder="username@mahidol.ac.th" className="w-full rounded-xl border border-input bg-white px-4 py-3 text-sm text-ink outline-none transition placeholder:text-muted-ink/70 focus:border-brand-blue focus:ring-2 focus:ring-brand-blue/15" autoFocus autoComplete="username" />
+            </div>
+
+            <div className="space-y-2">
+              <div className="flex items-center justify-between gap-3">
+                <label htmlFor="login-password" className="block text-sm font-semibold text-ink">รหัสผ่าน</label>
+                <span className="text-xs font-semibold text-brand-blue">ลืมรหัสผ่าน? ติดต่อผู้ดูแลระบบ</span>
+              </div>
+              <input id="login-password" type="password" required value={password} onChange={(e) => { setPassword(e.target.value); setError(""); }} className="w-full rounded-xl border border-input bg-white px-4 py-3 text-sm text-ink outline-none transition focus:border-brand-blue focus:ring-2 focus:ring-brand-blue/15" autoComplete="current-password" />
+            </div>
+
+            {error && <p role="alert" className="rounded-xl border border-red-100 bg-red-50 px-3 py-2.5 text-center text-xs font-semibold leading-5 text-red-600">{error}</p>}
+
+            <button type="submit" disabled={loading} className="w-full rounded-xl bg-brand-navy py-3 text-sm font-bold text-white shadow-[0_5px_14px_rgba(18,59,99,0.18)] transition hover:bg-[#0F3553] active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-60">{loading ? "กำลังตรวจสอบ…" : "เข้าสู่ระบบ"}</button>
+          </form>
+
+          <div className="mt-5 border-t border-surface-subtle pt-5 text-center">
+            <RouterLink to="/" className="inline-flex min-h-11 items-center rounded-lg px-3 py-2 text-sm font-semibold text-muted-ink transition-colors hover:bg-surface-subtle hover:text-brand-blue">← กลับสู่หน้าหลัก</RouterLink>
+          </div>
+        </section>
+
+        <footer className="mt-6 px-2 text-center text-xs leading-5 text-muted-ink">
+          <p>© 2026 งานพันธกิจเพื่อสังคม คณะสิ่งแวดล้อมและทรัพยากรศาสตร์ มหาวิทยาลัยมหิดล</p>
+        </footer>
+      </main>
+    </div>
+  );
 }
