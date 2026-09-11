@@ -3,7 +3,11 @@ import { getSupabaseRestConfig, json, methodNotAllowed, supabaseRest } from "./_
 export async function onRequestGet({ env }: { env: Record<string, unknown> }) {
   if (!getSupabaseRestConfig(env).configured) return json({ error: "Supabase is not configured" }, 503);
   try {
-    const rows = await supabaseRest<Record<string, unknown>[]>(env, "social_projects", { select: "*", status: "eq.active", order: "title.asc" });
+    const rows = await supabaseRest<Record<string, unknown>[]>(env, "social_projects", {
+      select: "*",
+      status: "eq.active",
+      order: "title.asc",
+    });
     return json({ success: true, data: rows });
   } catch (error) {
     console.error("GET /api/projects", error);

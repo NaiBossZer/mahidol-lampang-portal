@@ -3,7 +3,9 @@ import { getSupabaseRestConfig, json, methodNotAllowed, supabaseRest } from "./_
 export async function onRequestGet({ env }: { env: Record<string, unknown> }) {
   const startedAt = Date.now();
   const config = getSupabaseRestConfig(env);
-  if (!config.configured) return json({ success: false, data: { service: "social-engagement-api", database: "supabase", connected: false }, error: "Supabase is not configured" }, 503);
+  if (!config.configured) {
+    return json({ success: false, data: { service: "social-engagement-api", database: "supabase", connected: false }, error: "Supabase is not configured" }, 503);
+  }
   try {
     await supabaseRest<Record<string, unknown>[]>(env, "activities", { select: "id", limit: "1" });
     return json({ success: true, data: { service: "social-engagement-api", database: "supabase", connected: true, responseTimeMs: Date.now() - startedAt } });

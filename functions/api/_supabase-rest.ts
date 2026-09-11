@@ -8,7 +8,11 @@ export function getSupabaseRestConfig(env: Env) {
   return { url, key, configured: Boolean(url && key) };
 }
 
-export async function supabaseRest<T>(env: Env, table: string, params: Record<string, string> = {}): Promise<T> {
+export async function supabaseRest<T>(
+  env: Env,
+  table: string,
+  params: Record<string, string> = {},
+): Promise<T> {
   const { url, key, configured } = getSupabaseRestConfig(env);
   if (!configured) throw new Error("Supabase is not configured");
   const query = new URLSearchParams(params);
