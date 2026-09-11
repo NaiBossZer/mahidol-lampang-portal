@@ -24,21 +24,19 @@ export function LoginPage() {
         cache: "no-store",
         body: JSON.stringify({ email, password }),
       });
-      const body = await response.json().catch(() => ({})) as { error?: string };
+      const body = (await response.json().catch(() => ({}))) as { error?: string };
 
       if (!response.ok) {
         setError(body.error ?? "เข้าสู่ระบบไม่สำเร็จ");
         return;
       }
 
-      // Verify the newly-created session before navigating. This prevents a silent
-      // login -> guard -> login redirect loop and surfaces cookie/RBAC failures.
       const sessionResponse = await fetch("/api/auth/me", {
         method: "GET",
         credentials: "include",
         cache: "no-store",
       });
-      const sessionBody = await sessionResponse.json().catch(() => ({})) as {
+      const sessionBody = (await sessionResponse.json().catch(() => ({}))) as {
         data?: { authorized?: boolean; role?: string };
       };
 
@@ -53,6 +51,9 @@ export function LoginPage() {
         return;
       }
 
+      // Transitional compatibility marker for legacy admin pages. It is not an
+      // authorization mechanism; AdminGuard remains the server-backed gate.
+      sessionStorage.setItem("dashboard_auth", "true");
       navigate(redirect, { replace: true });
     } catch {
       setError("ไม่สามารถเชื่อมต่อระบบยืนยันตัวตนได้");
