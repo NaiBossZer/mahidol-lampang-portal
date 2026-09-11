@@ -110,10 +110,7 @@
 
 @layer base {
   * { border-color: var(--color-border); }
-  html {
-    scroll-behavior: smooth;
-    scroll-padding-top: 5rem;
-  }
+  html { scroll-behavior: smooth; scroll-padding-top: 5rem; }
   body {
     margin: 0;
     min-width: 320px;
@@ -128,28 +125,94 @@
   img { height: auto; }
   button, a, input, select, textarea { -webkit-tap-highlight-color: transparent; }
   button, input, select, textarea { font: inherit; }
-  :focus-visible {
-    outline: 3px solid var(--focus-ring);
-    outline-offset: 3px;
-  }
-  ::selection {
-    background: color-mix(in srgb, var(--brand-blue) 22%, white);
-    color: var(--brand-navy);
-  }
+  :focus-visible { outline: 3px solid var(--focus-ring); outline-offset: 3px; }
+  ::selection { background: color-mix(in srgb, var(--brand-blue) 22%, white); color: var(--brand-navy); }
 }
 
 @layer utilities {
-  .container-content {
-    width: min(100% - 2rem, var(--content-max));
-    margin-inline: auto;
-  }
+  .container-content { width: min(100% - 2rem, var(--content-max)); margin-inline: auto; }
   .section-space { padding-block: var(--space-section); }
   .text-balance { text-wrap: balance; }
   .font-numeric { font-family: var(--font-numeric); }
 }
 
+/* Dashboard Visual QA: presentation-only polish, scoped to /dashboard. */
+@layer components {
+  .admin-dashboard-shell #admin-main > div {
+    background: #f8fafc;
+  }
+
+  .admin-dashboard-shell #admin-main > div > section:first-child {
+    background: linear-gradient(180deg, #ffffff 0%, #fbfcfe 100%);
+    box-shadow: 0 1px 0 rgba(18, 59, 99, 0.04);
+  }
+
+  .admin-dashboard-shell #admin-main > div > section:first-child h1 {
+    letter-spacing: -0.025em;
+  }
+
+  .admin-dashboard-shell #admin-main main > section,
+  .admin-dashboard-shell #admin-main main > div > section {
+    border-color: #e2e8f0;
+    border-radius: 1rem;
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+  }
+
+  .admin-dashboard-shell #admin-main main select,
+  .admin-dashboard-shell #admin-main main input[type="date"],
+  .admin-dashboard-shell #admin-main main input[type="month"],
+  .admin-dashboard-shell #admin-main main input[type="search"],
+  .admin-dashboard-shell #admin-main main input[type="text"] {
+    background: #ffffff;
+    border-color: #dbe3ec;
+    color: #334155;
+    transition: border-color 160ms ease, box-shadow 160ms ease, background-color 160ms ease;
+  }
+
+  .admin-dashboard-shell #admin-main main select:hover,
+  .admin-dashboard-shell #admin-main main input:hover {
+    border-color: #b8c7d8;
+  }
+
+  .admin-dashboard-shell #admin-main main select:focus,
+  .admin-dashboard-shell #admin-main main input:focus {
+    border-color: #1677a8;
+    box-shadow: 0 0 0 3px rgba(22, 119, 168, 0.12);
+    outline: none;
+  }
+
+  .admin-dashboard-shell #admin-main main button {
+    transition: transform 160ms ease, box-shadow 160ms ease, background-color 160ms ease, border-color 160ms ease;
+  }
+
+  .admin-dashboard-shell #admin-main main button:hover:not(:disabled) {
+    transform: translateY(-1px);
+  }
+
+  .admin-dashboard-shell #admin-main main button:active:not(:disabled) {
+    transform: translateY(0);
+  }
+
+  .admin-dashboard-shell #admin-main main table {
+    font-size: 0.875rem;
+  }
+
+  .admin-dashboard-shell #admin-main main th {
+    background: #f8fafc;
+    color: #475569;
+    font-weight: 600;
+  }
+
+  .admin-dashboard-shell #admin-main main td,
+  .admin-dashboard-shell #admin-main main th {
+    border-color: #e2e8f0;
+  }
+}
+
 @media (max-width: 639px) {
   .container-content { width: min(100% - 2rem, var(--content-max)); }
+  .admin-dashboard-shell #admin-main > div > section:first-child h1 { font-size: 1.5rem; line-height: 1.35; }
+  .admin-dashboard-shell #admin-main main { padding-top: 1rem; }
 }
 
 @media (min-width: 640px) and (max-width: 1023px) {
