@@ -24,6 +24,7 @@ export function AdminAppShell({ children }: { children: ReactNode }) {
   const { role, permissions } = useAdminAuth();
   const [mobileOpen, setMobileOpen] = useState(false);
   const visibleItems = items.filter((item) => permissions.includes(item.permission));
+  const isDashboard = location.pathname === "/dashboard";
 
   const handleLogout = async () => {
     try {
@@ -40,16 +41,7 @@ export function AdminAppShell({ children }: { children: ReactNode }) {
         const Icon = item.icon;
         const active = isActive(location.pathname, item.to);
         return (
-          <Link
-            key={item.to}
-            to={item.to}
-            onClick={() => mobile && setMobileOpen(false)}
-            className={cn(
-              "group flex min-h-11 items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold transition-colors",
-              active ? "bg-white text-brand-navy shadow-sm" : "text-white/75 hover:bg-white/10 hover:text-white",
-            )}
-            aria-current={active ? "page" : undefined}
-          >
+          <Link key={item.to} to={item.to} onClick={() => mobile && setMobileOpen(false)} className={cn("group flex min-h-11 items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold transition-colors", active ? "bg-white text-brand-navy shadow-sm" : "text-white/75 hover:bg-white/10 hover:text-white")} aria-current={active ? "page" : undefined}>
             <Icon className="h-4 w-4 shrink-0" aria-hidden="true" />
             <span>{item.label}</span>
           </Link>
@@ -59,7 +51,7 @@ export function AdminAppShell({ children }: { children: ReactNode }) {
   );
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900">
+    <div className={cn("min-h-screen bg-slate-50 text-slate-900", isDashboard && "admin-dashboard-shell")}>
       <a href="#admin-main" className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[100] focus:rounded-lg focus:bg-brand-navy focus:px-4 focus:py-3 focus:text-white">ข้ามไปยังเนื้อหาหลัก</a>
       <div className="flex min-h-screen">
         <aside className="fixed inset-y-0 left-0 z-40 hidden w-64 border-r border-white/10 bg-brand-navy text-white lg:flex lg:flex-col">
