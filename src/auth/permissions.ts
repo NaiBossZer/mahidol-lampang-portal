@@ -13,9 +13,9 @@ export const ADMIN_PERMISSIONS = [
 ] as const;
 export type AdminPermission = (typeof ADMIN_PERMISSIONS)[number];
 
-const CONTENT: readonly AdminPermission[] = ["overview.read", "cms.read", "cms.create", "cms.update", "cms.publish", "cms.archive", "projects.read", "projects.create", "projects.update", "projects.publish", "projects.archive", "partners.read", "partners.create", "partners.update", "partners.archive", "services.read", "services.create", "services.update", "services.publish", "services.archive", "navigation.read", "navigation.create", "navigation.update", "navigation.archive", "footer.read", "footer.update"];
+const CONTENT: readonly AdminPermission[] = ["overview.read", "cms.read", "cms.create", "cms.update", "cms.publish", "cms.archive", "projects.read", "projects.create", "projects.update", "projects.publish", "projects.archive", "partners.read", "partners.create", "partners.update", "partners.archive", "services.read", "services.create", "services.update", "services.publish", "services.archive", "navigation.read", "navigation.create", "navigation.update", "navigation.archive", "footer.read", "footer.update", "survey.audit.read"];
 const OPERATIONS: readonly AdminPermission[] = ["overview.read", "activities.read", "activities.create", "activities.update", "activities.publish", "activities.archive", "learning_centers.read", "learning_centers.create", "learning_centers.update", "learning_centers.publish", "learning_centers.archive", "store.read", "store.manage", "survey.audit.read"];
-const FACILITY: readonly AdminPermission[] = ["overview.read", "facility.read", "facility.manage"];
+const FACILITY: readonly AdminPermission[] = ["overview.read", "facility.read", "facility.manage", "survey.audit.read"];
 const ROLE_PERMISSIONS: Record<AdminRole, readonly AdminPermission[]> = { SUPER_ADMIN: ADMIN_PERMISSIONS, CONTENT_ADMIN: CONTENT, OPERATIONS_ADMIN: OPERATIONS, FACILITY_ADMIN: FACILITY };
 
 export function isAdminRole(value: unknown): value is AdminRole {
