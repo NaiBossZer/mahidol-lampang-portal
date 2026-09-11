@@ -3,16 +3,11 @@ import {
   ArrowRight,
   ArrowUpRight,
   CalendarDays,
-  ChevronDown,
-  Globe2,
   Leaf,
   MapPin,
   Menu,
-  Microscope,
   ShoppingCart,
   Sparkles,
-  Users,
-  X,
   Zap,
 } from "lucide-react";
 import { Link as RouterLink } from "react-router-dom";
@@ -130,21 +125,11 @@ export function HomePage() {
           <div className="relative mx-auto grid min-h-[500px] max-w-[1280px] items-center gap-8 px-4 py-14 sm:min-h-[560px] sm:px-6 lg:grid-cols-[1.05fr_0.95fr] lg:px-8">
             <div className="max-w-[650px]">
               <span className="inline-flex rounded-md bg-[#E6B84A] px-3 py-1 text-[11px] font-black tracking-wide text-[#163D5E]">Lampang Campus Portal</span>
-              <h1 className="mt-5 text-4xl font-black leading-[1.08] tracking-tight sm:text-6xl lg:text-[62px]">
-                Local Wisdom, <span className="text-[#F2BF4F]">Future</span>
-                <br />
-                <span className="text-[#F2BF4F]">Learning</span>
-              </h1>
-              <p className="mt-5 max-w-[650px] text-sm leading-7 text-white/90 sm:text-base">
-                บูรณาการภูมิปัญญาท้องถิ่นและสิ่งแวดล้อมแห่งอนาคต มหาวิทยาลัยมหิดล จ.ลำปาง เชื่อมโยงองค์ความรู้ เศรษฐกิจ และสิ่งแวดล้อมเพื่อการพัฒนาที่ยั่งยืน
-              </p>
+              <h1 className="mt-5 text-4xl font-black leading-[1.08] tracking-tight sm:text-6xl lg:text-[62px]">Local Wisdom, <span className="text-[#F2BF4F]">Future</span><br /><span className="text-[#F2BF4F]">Learning</span></h1>
+              <p className="mt-5 max-w-[650px] text-sm leading-7 text-white/90 sm:text-base">บูรณาการภูมิปัญญาท้องถิ่นและสิ่งแวดล้อมแห่งอนาคต มหาวิทยาลัยมหิดล จ.ลำปาง เชื่อมโยงองค์ความรู้ เศรษฐกิจ และสิ่งแวดล้อมเพื่อการพัฒนาที่ยั่งยืน</p>
               <div className="mt-7 flex flex-wrap gap-3">
-                <RouterLink to="/activities" className="inline-flex min-h-11 items-center rounded-lg bg-[#E8785A] px-5 py-3 text-sm font-black text-white shadow-lg transition hover:bg-[#D96549]">
-                  สำรวจกิจกรรมและโครงการ <ArrowRight className="ml-2 h-4 w-4" />
-                </RouterLink>
-                <a href="#learning" className="inline-flex min-h-11 items-center rounded-lg border border-white/70 bg-white/5 px-5 py-3 text-sm font-bold text-white backdrop-blur transition hover:bg-white/15">
-                  เกี่ยวกับวิทยาเขต
-                </a>
+                <RouterLink to="/activities" className="inline-flex min-h-11 items-center rounded-lg bg-[#E8785A] px-5 py-3 text-sm font-black text-white shadow-lg transition hover:bg-[#D96549]">สำรวจกิจกรรมและโครงการ <ArrowRight className="ml-2 h-4 w-4" /></RouterLink>
+                <a href="#learning" className="inline-flex min-h-11 items-center rounded-lg border border-white/70 bg-white/5 px-5 py-3 text-sm font-bold text-white backdrop-blur transition hover:bg-white/15">เกี่ยวกับวิทยาเขต</a>
               </div>
             </div>
 
@@ -161,10 +146,7 @@ export function HomePage() {
           <img src="/activities-bg.jpeg" alt="" className="pointer-events-none absolute inset-0 h-full w-full object-cover opacity-20" aria-hidden="true" />
           <div className="relative mx-auto max-w-[1120px] px-4 sm:px-6 lg:px-8">
             <div className="flex items-end justify-between gap-5">
-              <div>
-                <span className="text-[11px] font-black tracking-wide text-[#1695C9]">COMMUNITY & EDUCATION</span>
-                <h2 className="mt-2 text-2xl font-black text-[#123B63] sm:text-3xl">กิจกรรมและโครงการล่าสุด</h2>
-              </div>
+              <div><span className="text-[11px] font-black tracking-wide text-[#1695C9]">COMMUNITY & EDUCATION</span><h2 className="mt-2 text-2xl font-black text-[#123B63] sm:text-3xl">กิจกรรมและโครงการล่าสุด</h2></div>
               <RouterLink to="/activities" className="hidden items-center gap-1 text-sm font-bold text-[#1684B7] sm:inline-flex">ดูทั้งหมดกิจกรรม <ArrowRight className="h-4 w-4" /></RouterLink>
             </div>
             <div className="mt-7 grid gap-5 md:grid-cols-3">
@@ -178,9 +160,7 @@ export function HomePage() {
                 const href = "slug" in activity && activity.slug ? `/activities/${activity.slug}` : "/activities";
                 return (
                   <RouterLink key={"id" in activity ? activity.id : fallback.id} to={href} className="group overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-xl">
-                    <div className="relative h-44 overflow-hidden">
-                      <img src={image} alt={title} className="h-full w-full object-cover transition duration-500 group-hover:scale-105" loading="lazy" />
-                    </div>
+                    <div className="relative h-44 overflow-hidden"><img src={image} alt={title} className="h-full w-full object-cover transition duration-500 group-hover:scale-105" loading="lazy" /></div>
                     <div className="p-4">
                       <span className="inline-flex rounded-full bg-[#EEF8F3] px-2.5 py-1 text-[10px] font-bold text-[#4B9466]">{category || "กิจกรรมชุมชน"}</span>
                       <h3 className="mt-2 text-base font-black leading-snug text-[#123B63]">{title}</h3>
@@ -199,11 +179,7 @@ export function HomePage() {
           <img src="/learning-enters-bg.jpeg" alt="" className="absolute inset-0 h-full w-full object-cover opacity-65" aria-hidden="true" />
           <div className="absolute inset-0 bg-white/45" />
           <div className="relative mx-auto max-w-[1120px] px-4 sm:px-6 lg:px-8">
-            <div className="text-center">
-              <span className="text-[11px] font-black tracking-wide text-[#E4A52F]">SPACE & INNOVATION</span>
-              <h2 className="mt-2 text-2xl font-black text-[#123B63] sm:text-3xl">ศูนย์การเรียนรู้เชิงพื้นที่และบริการวิชาการ</h2>
-              <p className="mx-auto mt-3 max-w-2xl text-sm leading-6 text-slate-600">ผลักดันงานวิจัยและนวัตกรรมต่อยอดคุณภาพชีวิตของชุมชนท้องถิ่น บนพื้นฐานการเรียนรู้และการจัดการอย่างยั่งยืน</p>
-            </div>
+            <div className="text-center"><span className="text-[11px] font-black tracking-wide text-[#E4A52F]">SPACE & INNOVATION</span><h2 className="mt-2 text-2xl font-black text-[#123B63] sm:text-3xl">ศูนย์การเรียนรู้เชิงพื้นที่และบริการวิชาการ</h2><p className="mx-auto mt-3 max-w-2xl text-sm leading-6 text-slate-600">ผลักดันงานวิจัยและนวัตกรรมต่อยอดคุณภาพชีวิตของชุมชนท้องถิ่น บนพื้นฐานการเรียนรู้และการจัดการอย่างยั่งยืน</p></div>
             <div className="mt-9 grid gap-5 md:grid-cols-3">
               {learningCards.map(({ title, description, icon: Icon, href }) => (
                 <a key={title} href={href} className="group rounded-xl border border-white/80 bg-white/90 p-6 shadow-lg backdrop-blur transition hover:-translate-y-1 hover:shadow-xl">
@@ -221,51 +197,20 @@ export function HomePage() {
           <div className="absolute inset-0 bg-gradient-to-r from-white via-white/95 to-white/75" />
           <img src="/research-bg.jpeg" alt="" className="absolute right-0 top-0 h-full w-1/2 object-cover opacity-25" aria-hidden="true" />
           <div className="relative mx-auto grid max-w-[1120px] gap-10 px-4 sm:px-6 lg:grid-cols-[1.05fr_0.95fr] lg:px-8">
-            <div className="flex flex-col justify-center">
-              <span className="text-[11px] font-black tracking-wide text-[#E07859]">RESEARCH & PUBLICATIONS</span>
-              <h2 className="mt-2 text-2xl font-black leading-tight text-[#123B63] sm:text-3xl">ผลงานวิจัยและการจัดสรรคุณค่าสู่สังคมและชุมชน</h2>
-              <p className="mt-4 text-sm leading-7 text-slate-600">วิทยาเขตนำงานวิจัยมาเป็นส่วนหนึ่งในการยกระดับการพัฒนาชุมชน การเกษตร พลังงาน รวมถึงระบบสารสนเทศและนวัตกรรมเทคโนโลยีเพื่อสร้างผลกระทบในระยะยาวอย่างยั่งยืน</p>
-              <div className="mt-8 grid grid-cols-3 gap-5">
-                <div><strong className="text-3xl font-black text-[#E07859]">45+</strong><p className="mt-1 text-[11px] font-medium text-slate-500">โครงการมีส่วนร่วมชุมชน</p></div>
-                <div><strong className="text-3xl font-black text-[#164A70]">22+</strong><p className="mt-1 text-[11px] font-medium text-slate-500">รางวัลนวัตกรรมระดับชาติ</p></div>
-                <div><strong className="text-3xl font-black text-[#56A56F]">120+</strong><p className="mt-1 text-[11px] font-medium text-slate-500">เครือข่ายความร่วมมือ</p></div>
-              </div>
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <img src="/Smart Farm.jpg" alt="งานวิจัยเกษตรอัจฉริยะ" className="h-72 w-full rounded-xl object-cover shadow-lg" loading="lazy" />
-              <img src="/Mahidol_U.jpg" alt="งานวิจัยและนวัตกรรม" className="mt-10 h-72 w-full rounded-xl object-cover shadow-lg" loading="lazy" />
-            </div>
+            <div className="flex flex-col justify-center"><span className="text-[11px] font-black tracking-wide text-[#E07859]">RESEARCH & PUBLICATIONS</span><h2 className="mt-2 text-2xl font-black leading-tight text-[#123B63] sm:text-3xl">ผลงานวิจัยและการจัดสรรคุณค่าสู่สังคมและชุมชน</h2><p className="mt-4 text-sm leading-7 text-slate-600">วิทยาเขตนำงานวิจัยมาเป็นส่วนหนึ่งในการยกระดับการพัฒนาชุมชน การเกษตร พลังงาน รวมถึงระบบสารสนเทศและนวัตกรรมเทคโนโลยีเพื่อสร้างผลกระทบในระยะยาวอย่างยั่งยืน</p><div className="mt-8 grid grid-cols-3 gap-5"><div><strong className="text-3xl font-black text-[#E07859]">45+</strong><p className="mt-1 text-[11px] font-medium text-slate-500">โครงการมีส่วนร่วมชุมชน</p></div><div><strong className="text-3xl font-black text-[#164A70]">22+</strong><p className="mt-1 text-[11px] font-medium text-slate-500">รางวัลนวัตกรรมระดับชาติ</p></div><div><strong className="text-3xl font-black text-[#56A56F]">120+</strong><p className="mt-1 text-[11px] font-medium text-slate-500">เครือข่ายความร่วมมือ</p></div></div></div>
+            <div className="grid grid-cols-2 gap-4"><img src="/Smart Farm.jpg" alt="งานวิจัยเกษตรอัจฉริยะ" className="h-72 w-full rounded-xl object-cover shadow-lg" loading="lazy" /><img src="/Mahidol_U.jpg" alt="งานวิจัยและนวัตกรรม" className="mt-10 h-72 w-full rounded-xl object-cover shadow-lg" loading="lazy" /></div>
           </div>
         </section>
 
         <section id="community" className="relative overflow-hidden py-14 sm:py-16">
-          <img src="/community-action-bg.jpeg" alt="" className="absolute inset-0 h-full w-full object-cover opacity-55" aria-hidden="true" />
-          <div className="absolute inset-0 bg-white/40" />
-          <div className="relative mx-auto flex max-w-[1120px] flex-col items-start justify-between gap-6 px-4 sm:px-6 md:flex-row md:items-center lg:px-8">
-            <div>
-              <span className="text-[11px] font-black tracking-wide text-[#1D9ACB]">COMMUNITY ACTION</span>
-              <h2 className="mt-2 text-2xl font-black text-[#123B63]">ร่วมสร้างสรรค์และบูรณาการชุมชนลำปาง</h2>
-              <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-600">หากคุณเป็นผู้บริหาร เกษตรกร นักวิจัย หรือผู้สนใจพัฒนาพื้นที่ร่วมกับมหิดลลำปาง สามารถร่วมออกแบบกิจกรรมและสนับสนุนการพัฒนาชุมชนอย่างมีส่วนร่วม</p>
-            </div>
-            <RouterLink to="/activities" className="inline-flex shrink-0 items-center rounded-lg bg-[#0F426B] px-5 py-3 text-sm font-black text-white shadow-lg transition hover:bg-[#0A3556]">ติดต่อร่วมโครงการ <ArrowRight className="ml-2 h-4 w-4" /></RouterLink>
-          </div>
+          <img src="/community-action-bg.jpeg" alt="" className="absolute inset-0 h-full w-full object-cover opacity-55" aria-hidden="true" /><div className="absolute inset-0 bg-white/40" />
+          <div className="relative mx-auto flex max-w-[1120px] flex-col items-start justify-between gap-6 px-4 sm:px-6 md:flex-row md:items-center lg:px-8"><div><span className="text-[11px] font-black tracking-wide text-[#1D9ACB]">COMMUNITY ACTION</span><h2 className="mt-2 text-2xl font-black text-[#123B63]">ร่วมสร้างสรรค์และบูรณาการชุมชนลำปาง</h2><p className="mt-3 max-w-3xl text-sm leading-6 text-slate-600">หากคุณเป็นผู้บริหาร เกษตรกร นักวิจัย หรือผู้สนใจพัฒนาพื้นที่ร่วมกับมหิดลลำปาง สามารถร่วมออกแบบกิจกรรมและสนับสนุนการพัฒนาชุมชนอย่างมีส่วนร่วม</p></div><RouterLink to="/activities" className="inline-flex shrink-0 items-center rounded-lg bg-[#0F426B] px-5 py-3 text-sm font-black text-white shadow-lg transition hover:bg-[#0A3556]">ติดต่อร่วมโครงการ <ArrowRight className="ml-2 h-4 w-4" /></RouterLink></div>
         </section>
       </main>
 
       <footer className="relative overflow-hidden bg-[#073B60] py-10 text-white">
         <img src="/footer-bg.jpeg" alt="" className="absolute inset-0 h-full w-full object-cover opacity-10" aria-hidden="true" />
-        <div className="relative mx-auto grid max-w-[1120px] gap-8 px-4 sm:px-6 md:grid-cols-[1.35fr_1fr_1fr_1.1fr] lg:px-8">
-          <div>
-            <div className="flex items-center gap-3">
-              <img src="/mahidol-logo.png" alt="มหาวิทยาลัยมหิดล" className="h-11 w-11 rounded-full bg-white p-1 object-contain" />
-              <div><p className="text-sm font-black">มหาวิทยาลัยมหิดล วิทยาเขตลำปาง</p><p className="text-[10px] text-white/65">Mahidol University, Lampang Campus</p></div>
-            </div>
-            <p className="mt-4 max-w-xs text-xs leading-6 text-white/70">มุ่งพัฒนาคน สร้างความรู้ ร่วมกับชุมชนการเรียนรู้ เพื่อสังคมและสิ่งแวดล้อมที่ยั่งยืน</p>
-          </div>
-          <div><h3 className="text-sm font-black text-[#F0C65B]">ศูนย์การเรียนรู้</h3><p className="mt-3 text-xs leading-6 text-white/70">ศูนย์วิจัยและพัฒนา<br />สมาร์ทฟาร์มอัจฉริยะ<br />สถานีพลังงานทดแทน</p></div>
-          <div><h3 className="text-sm font-black text-[#F0C65B]">งานวิจัยและเทคโนโลยี</h3><p className="mt-3 text-xs leading-6 text-white/70">เทคโนโลยีเพื่อการเรียนรู้<br />นวัตกรรมเพื่อชุมชน<br />ผลิตภัณฑ์และองค์ความรู้</p></div>
-          <div><h3 className="text-sm font-black text-[#F0C65B]">ติดต่อ</h3><p className="mt-3 flex items-start gap-2 text-xs leading-6 text-white/70"><MapPin className="mt-0.5 h-4 w-4 shrink-0" />191 หมู่ 11 ต.สบปราบ อ.สบปราบ จ.ลำปาง 52170</p><p className="mt-2 text-xs text-white/70">054-820-200</p><p className="mt-1 text-xs text-white/70">lampang@mahidol.ac.th</p></div>
-        </div>
+        <div className="relative mx-auto grid max-w-[1120px] gap-8 px-4 sm:px-6 md:grid-cols-[1.35fr_1fr_1fr_1.1fr] lg:px-8"><div><div className="flex items-center gap-3"><img src="/mahidol-logo.png" alt="มหาวิทยาลัยมหิดล" className="h-11 w-11 rounded-full bg-white p-1 object-contain" /><div><p className="text-sm font-black">มหาวิทยาลัยมหิดล วิทยาเขตลำปาง</p><p className="text-[10px] text-white/65">Mahidol University, Lampang Campus</p></div></div><p className="mt-4 max-w-xs text-xs leading-6 text-white/70">มุ่งพัฒนาคน สร้างความรู้ ร่วมกับชุมชนการเรียนรู้ เพื่อสังคมและสิ่งแวดล้อมที่ยั่งยืน</p></div><div><h3 className="text-sm font-black text-[#F0C65B]">ศูนย์การเรียนรู้</h3><p className="mt-3 text-xs leading-6 text-white/70">ศูนย์วิจัยและพัฒนา<br />สมาร์ทฟาร์มอัจฉริยะ<br />สถานีพลังงานทดแทน</p></div><div><h3 className="text-sm font-black text-[#F0C65B]">งานวิจัยและเทคโนโลยี</h3><p className="mt-3 text-xs leading-6 text-white/70">เทคโนโลยีเพื่อการเรียนรู้<br />นวัตกรรมเพื่อชุมชน<br />ผลิตภัณฑ์และองค์ความรู้</p></div><div><h3 className="text-sm font-black text-[#F0C65B]">ติดต่อ</h3><p className="mt-3 flex items-start gap-2 text-xs leading-6 text-white/70"><MapPin className="mt-0.5 h-4 w-4 shrink-0" />191 หมู่ 11 ต.สบปราบ อ.สบปราบ จ.ลำปาง 52170</p><p className="mt-2 text-xs text-white/70">054-820-200</p><p className="mt-1 text-xs text-white/70">lampang@mahidol.ac.th</p></div></div>
         <div className="relative mx-auto mt-8 max-w-[1120px] border-t border-white/15 px-4 pt-5 text-[10px] text-white/50 sm:px-6 lg:px-8">© 2026 มหาวิทยาลัยมหิดล วิทยาเขตลำปาง <span className="float-right">นโยบายความเป็นส่วนตัว | เงื่อนไขการใช้งาน</span></div>
       </footer>
     </div>
