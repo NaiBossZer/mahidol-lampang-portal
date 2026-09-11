@@ -1,6 +1,8 @@
 import { getSupabaseUser, isAdminRole, json, permissionsForRole, supabaseConfig } from "./_shared";
 
-export async function onRequestGet({ request, env }: { request: Request; env: Record<string, unknown> }) {
+type PagesContext = { request: Request; env: Record<string, unknown> };
+
+async function handleGet({ request, env }: PagesContext): Promise<Response> {
   if (!supabaseConfig(env).configured) {
     return json({ error: "Supabase Auth is not configured" }, 503);
   }
@@ -23,4 +25,13 @@ export async function onRequestGet({ request, env }: { request: Request; env: Re
       permissions: permissionsForRole(roleValue),
     },
   });
+}
+
+export async function onRequestGet(context: PagesContext) {
+  return handleGet(context);
+}
+
+export async function onRequest(context: PagesContext) {
+  if (context.request.method === "GET") return handleGet(context);
+  return json({ error: "Method Not Allowed" }, 405, { Allow: "GET" });
 }
