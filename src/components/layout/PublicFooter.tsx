@@ -16,9 +16,9 @@ export function PublicFooter() {
         src="/footer-bg.jpeg"
         alt=""
         aria-hidden="true"
-        className="absolute inset-0 h-full w-full object-cover opacity-25"
+        className="absolute inset-0 h-full w-full object-cover opacity-35"
       />
-      <div aria-hidden="true" className="absolute inset-0 bg-[#123B63]/88" />
+      <div aria-hidden="true" className="absolute inset-0 bg-[#123B63]/70" />
       <div className="relative mx-auto max-w-[1280px] px-4 py-10 sm:px-6 sm:py-12 lg:px-8 lg:py-14">
         <div className="grid gap-8 md:grid-cols-4 md:gap-7 lg:gap-10">
           <div>
