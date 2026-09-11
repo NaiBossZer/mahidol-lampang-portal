@@ -111,16 +111,7 @@
 @layer base {
   * { border-color: var(--color-border); }
   html { scroll-behavior: smooth; scroll-padding-top: 5rem; }
-  body {
-    margin: 0;
-    min-width: 320px;
-    overflow-x: hidden;
-    background-color: var(--surface-warm);
-    color: var(--ink);
-    font-family: var(--font-sans);
-    -webkit-font-smoothing: antialiased;
-    text-rendering: optimizeLegibility;
-  }
+  body { margin: 0; min-width: 320px; overflow-x: hidden; background-color: var(--surface-warm); color: var(--ink); font-family: var(--font-sans); -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; }
   img, svg, video, canvas { max-width: 100%; }
   img { height: auto; }
   button, a, input, select, textarea { -webkit-tap-highlight-color: transparent; }
@@ -136,83 +127,44 @@
   .font-numeric { font-family: var(--font-numeric); }
 }
 
-/* Dashboard Visual QA: presentation-only polish, scoped to /dashboard. */
 @layer components {
-  .admin-dashboard-shell #admin-main > div {
-    background: #f8fafc;
-  }
-
-  .admin-dashboard-shell #admin-main > div > section:first-child {
-    background: linear-gradient(180deg, #ffffff 0%, #fbfcfe 100%);
-    box-shadow: 0 1px 0 rgba(18, 59, 99, 0.04);
-  }
-
-  .admin-dashboard-shell #admin-main > div > section:first-child h1 {
-    letter-spacing: -0.025em;
-  }
-
+  .admin-dashboard-shell #admin-main > div { background: #f8fafc; }
+  .admin-dashboard-shell #admin-main > div > section:first-child { background: linear-gradient(180deg, #ffffff 0%, #fbfcfe 100%); box-shadow: 0 1px 0 rgba(18, 59, 99, 0.04); }
+  .admin-dashboard-shell #admin-main > div > section:first-child h1 { letter-spacing: -0.025em; }
   .admin-dashboard-shell #admin-main main > section,
-  .admin-dashboard-shell #admin-main main > div > section {
-    border-color: #e2e8f0;
-    border-radius: 1rem;
-    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
-  }
-
+  .admin-dashboard-shell #admin-main main > div > section { border-color: #e2e8f0; border-radius: 1rem; box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04); }
   .admin-dashboard-shell #admin-main main select,
   .admin-dashboard-shell #admin-main main input[type="date"],
   .admin-dashboard-shell #admin-main main input[type="month"],
   .admin-dashboard-shell #admin-main main input[type="search"],
-  .admin-dashboard-shell #admin-main main input[type="text"] {
-    background: #ffffff;
-    border-color: #dbe3ec;
-    color: #334155;
-    transition: border-color 160ms ease, box-shadow 160ms ease, background-color 160ms ease;
-  }
-
+  .admin-dashboard-shell #admin-main main input[type="text"] { background: #ffffff; border-color: #dbe3ec; color: #334155; transition: border-color 160ms ease, box-shadow 160ms ease, background-color 160ms ease; }
   .admin-dashboard-shell #admin-main main select:hover,
-  .admin-dashboard-shell #admin-main main input:hover {
-    border-color: #b8c7d8;
-  }
-
+  .admin-dashboard-shell #admin-main main input:hover { border-color: #b8c7d8; }
   .admin-dashboard-shell #admin-main main select:focus,
-  .admin-dashboard-shell #admin-main main input:focus {
-    border-color: #1677a8;
-    box-shadow: 0 0 0 3px rgba(22, 119, 168, 0.12);
-    outline: none;
-  }
-
-  .admin-dashboard-shell #admin-main main button {
-    transition: transform 160ms ease, box-shadow 160ms ease, background-color 160ms ease, border-color 160ms ease;
-  }
-
-  .admin-dashboard-shell #admin-main main button:hover:not(:disabled) {
-    transform: translateY(-1px);
-  }
-
-  .admin-dashboard-shell #admin-main main button:active:not(:disabled) {
-    transform: translateY(0);
-  }
-
-  .admin-dashboard-shell #admin-main main table {
-    font-size: 0.875rem;
-  }
-
-  .admin-dashboard-shell #admin-main main th {
-    background: #f8fafc;
-    color: #475569;
-    font-weight: 600;
-  }
-
+  .admin-dashboard-shell #admin-main main input:focus { border-color: #1677a8; box-shadow: 0 0 0 3px rgba(22, 119, 168, 0.12); outline: none; }
+  .admin-dashboard-shell #admin-main main button { transition: transform 160ms ease, box-shadow 160ms ease, background-color 160ms ease, border-color 160ms ease; }
+  .admin-dashboard-shell #admin-main main button:hover:not(:disabled) { transform: translateY(-1px); }
+  .admin-dashboard-shell #admin-main main button:active:not(:disabled) { transform: translateY(0); }
+  .admin-dashboard-shell #admin-main main th { background: #f8fafc; color: #475569; font-weight: 600; }
   .admin-dashboard-shell #admin-main main td,
-  .admin-dashboard-shell #admin-main main th {
-    border-color: #e2e8f0;
-  }
+  .admin-dashboard-shell #admin-main main th { border-color: #e2e8f0; }
+  .dashboard-control { min-height: 2.25rem; width: 100%; border-radius: 0.75rem; border: 1px solid #dbe3ec; padding: 0.4rem 0.7rem; font-size: 0.75rem; }
+  .dashboard-kpi { min-height: 5.25rem; }
+  .dashboard-screen { min-height: calc(100vh - 4rem); }
+}
+
+@media (min-width: 1024px) {
+  .admin-dashboard-shell #admin-main { height: calc(100vh - 4rem); overflow: hidden; }
+  .admin-dashboard-shell #admin-main .dashboard-screen { height: 100%; overflow: hidden; }
+  .admin-dashboard-shell #admin-main .dashboard-screen > main { height: calc(100% - 5.5rem); overflow: hidden; }
+  .admin-dashboard-shell #admin-main .dashboard-screen > main > section { min-height: 0; }
+  .admin-dashboard-shell #admin-main .dashboard-screen .dashboard-panel { min-height: 0; }
+  .admin-dashboard-shell #admin-main .dashboard-screen img { max-height: 100%; }
 }
 
 @media (max-width: 639px) {
   .container-content { width: min(100% - 2rem, var(--content-max)); }
   .admin-dashboard-shell #admin-main > div > section:first-child h1 { font-size: 1.5rem; line-height: 1.35; }
-  .admin-dashboard-shell #admin-main main { padding-top: 1rem; }
 }
 
 @media (min-width: 640px) and (max-width: 1023px) {
@@ -220,12 +172,7 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after {
-    scroll-behavior: auto !important;
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-  }
+  *, *::before, *::after { scroll-behavior: auto !important; animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
 }
 
 @media (prefers-contrast: more) {
@@ -239,9 +186,4 @@
   a, button { forced-color-adjust: none; }
 }
 
-@utility panel {
-  position: relative;
-  border-radius: var(--radius);
-  border: 1px solid var(--color-panel-line);
-  background: var(--color-panel);
-}
+@utility panel { position: relative; border-radius: var(--radius); border: 1px solid var(--color-panel-line); background: var(--color-panel); }
