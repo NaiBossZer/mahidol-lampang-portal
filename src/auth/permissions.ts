@@ -1,4 +1,11 @@
-export const ADMIN_ROLE = "ADMIN" as const;
+export const ADMIN_ROLES = [
+  "SUPER_ADMIN",
+  "CONTENT_ADMIN",
+  "OPERATIONS_ADMIN",
+  "FACILITY_ADMIN",
+] as const;
+
+export type AdminRole = (typeof ADMIN_ROLES)[number];
 
 export const ADMIN_PERMISSIONS = [
   "overview.read",
@@ -17,6 +24,35 @@ export const ADMIN_PERMISSIONS = [
 
 export type AdminPermission = (typeof ADMIN_PERMISSIONS)[number];
 
-export function hasAdminPermission(permission: string): boolean {
-  return (ADMIN_PERMISSIONS as readonly string[]).includes(permission);
+const ROLE_PERMISSIONS: Record<AdminRole, readonly AdminPermission[]> = {
+  SUPER_ADMIN: ADMIN_PERMISSIONS,
+  CONTENT_ADMIN: [
+    "overview.read",
+    "cms.read", "cms.create", "cms.update", "cms.publish", "cms.archive",
+    "projects.read", "projects.create", "projects.update", "projects.publish", "projects.archive",
+    "partners.read", "partners.create", "partners.update", "partners.archive",
+    "services.read", "services.create", "services.update", "services.publish", "services.archive",
+    "navigation.read", "navigation.create", "navigation.update", "navigation.archive",
+    "footer.read", "footer.update",
+  ],
+  OPERATIONS_ADMIN: [
+    "overview.read",
+    "activities.read", "activities.create", "activities.update", "activities.publish", "activities.archive",
+    "learning_centers.read", "learning_centers.create", "learning_centers.update", "learning_centers.publish", "learning_centers.archive",
+    "store.read", "store.manage",
+  ],
+  FACILITY_ADMIN: ["overview.read", "facility.read", "facility.manage"],
+};
+
+export function isAdminRole(value: unknown): value is AdminRole {
+  return typeof value === "string" && (ADMIN_ROLES as readonly string[]).includes(value);
+}
+
+export function hasAdminPermission(role: AdminRole | null | undefined, permission: string): boolean {
+  if (!role) return false;
+  return role === "SUPER_ADMIN" || (ROLE_PERMISSIONS[role] as readonly string[]).includes(permission);
+}
+
+export function permissionsForRole(role: AdminRole | null | undefined): AdminPermission[] {
+  return role ? [...ROLE_PERMISSIONS[role]] : [];
 }
