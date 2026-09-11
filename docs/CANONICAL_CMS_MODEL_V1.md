@@ -72,41 +72,21 @@ OPERATIONS_ADMIN  activities, learning centers, store/operations
 FACILITY_ADMIN    Facility & Safety
 ```
 
-Permission format is `resource.action`, for example:
+Permission format is `resource.action`.
 
-```text
-cms.read
-cms.update
-cms.publish
-activities.read
-activities.create
-activities.update
-learning_centers.update
-facility.read
-facility.manage
-store.manage
-```
+| Domain | Primary role | Examples |
+|---|---|---|
+| Overview | All roles | `overview.read` |
+| CMS / Home | CONTENT_ADMIN | `cms.read`, `cms.update`, `cms.publish` |
+| Projects / Partners / Services | CONTENT_ADMIN | `projects.update`, `partners.update`, `services.publish` |
+| Navigation / Footer | CONTENT_ADMIN | `navigation.update`, `footer.update` |
+| Activities | OPERATIONS_ADMIN | `activities.create`, `activities.update`, `activities.publish` |
+| Learning Centers | OPERATIONS_ADMIN | `learning_centers.update`, `learning_centers.publish` |
+| Store | OPERATIONS_ADMIN | `store.read`, `store.manage` |
+| Facility & Safety | FACILITY_ADMIN | `facility.read`, `facility.manage` |
+| System / Governance | SUPER_ADMIN | `system.read`, `system.manage` |
 
 `SUPER_ADMIN` bypasses domain permission checks. Other roles receive only their domain permissions.
-
-### Permission matrix
-
-| Resource | SUPER_ADMIN | CONTENT_ADMIN | OPERATIONS_ADMIN | FACILITY_ADMIN |
-|---|---|---|---|---|
-| Overview | Full | Read | Read | Read |
-| CMS / Home | Full | Full | None | None |
-| Projects | Full | Full | None | None |
-| Partners | Full | Full | None | None |
-| Services | Full | Full | None | None |
-| Navigation | Full | Full | None | None |
-| Footer | Full | Full | None | None |
-| Activities | Full | None | Full | None |
-| Learning Centers | Full | None | Full | None |
-| Store | Full | None | Full | None |
-| Facility & Safety | Full | None | None | Full |
-| Governance / System | Full | None | None | None |
-
-The matrix is implemented as explicit permissions so future menu/function changes do not require hard-coded role branches across the UI.
 
 ## 6. API contract
 
