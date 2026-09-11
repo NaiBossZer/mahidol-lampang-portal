@@ -9,7 +9,7 @@ const items: readonly { to: string; label: string; icon: typeof LayoutDashboard;
   { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard, permission: "overview.read" },
   { to: "/admin", label: "Admin Center", icon: Settings2, permission: "system.read" },
   { to: "/admin/cms", label: "Content CMS", icon: FileText, permission: "cms.read" },
-  { to: "/admin/lac-satisfaction", label: "LAC Satisfaction", icon: ClipboardList, permission: "activities.read" },
+  { to: "/admin/lac-satisfaction", label: "LAC Satisfaction", icon: ClipboardList, permission: "survey.audit.read" },
   { to: "/admin/facility-safety", label: "Facility & Safety", icon: Building2, permission: "facility.read" },
   { to: "/storefront", label: "Storefront", icon: ShoppingBag, permission: "store.read" },
 ];
