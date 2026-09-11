@@ -8,25 +8,15 @@ export function AdminGuard({ children }: { children: ReactNode }) {
   useEffect(() => {
     let active = true;
     fetch("/api/auth/me", { credentials: "include" })
-      .then((response) => response.json() as Promise<{ data?: { authenticated?: boolean } }>)
-      .then((body) => {
-        if (active) setState(body.data?.authenticated ? "ok" : "denied");
+      .then(async (response) => ({ response, body: await response.json() as { data?: { authorized?: boolean } } }))
+      .then(({ response, body }) => {
+        if (active) setState(response.ok && body.data?.authorized ? "ok" : "denied");
       })
-      .catch(() => {
-        if (active) setState("denied");
-      });
-    return () => {
-      active = false;
-    };
+      .catch(() => { if (active) setState("denied"); });
+    return () => { active = false; };
   }, []);
 
-  if (state === "loading")
-    return (
-      <div className="min-h-screen grid place-items-center text-slate-500">
-        กำลังตรวจสอบสิทธิ์...
-      </div>
-    );
-  if (state === "denied")
-    return <Navigate to={`/login?redirect=${encodeURIComponent(location.pathname)}`} replace />;
+  if (state === "loading") return <div className="min-h-screen grid place-items-center text-slate-500">กำลังตรวจสอบสิทธิ์...</div>;
+  if (state === "denied") return <Navigate to={`/login?redirect=${encodeURIComponent(location.pathname)}`} replace />;
   return <>{children}</>;
 }
