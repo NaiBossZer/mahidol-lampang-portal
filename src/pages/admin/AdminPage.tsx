@@ -1,26 +1,28 @@
-import { useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
 import { AdminDashboard } from "@/components/storefront/AdminDashboard";
 
 export function AdminPage() {
-  const navigate = useNavigate();
-  useEffect(() => {
-    if (sessionStorage.getItem("dashboard_auth") !== "true")
-      navigate("/login?redirect=%2Fadmin", { replace: true });
-  }, [navigate]);
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col">
-      <div className="mx-auto w-full max-w-7xl px-4 pt-4 md:px-8 flex flex-wrap gap-3">
-        <Link to="/admin/control-center" className="inline-flex items-center gap-2 rounded-xl bg-[#123B63] px-4 py-2.5 text-sm font-bold text-white shadow-sm hover:bg-[#0f3152]">
-          🛡️ Central Admin Control Center
-        </Link>
-        <Link to="/admin/lac-satisfaction" className="inline-flex items-center gap-2 rounded-xl bg-rose-700 px-4 py-2.5 text-sm font-bold text-white shadow-sm hover:bg-rose-800">
-          🎮 Lac Learning Game — แบบประเมิน / Dashboard / Export
-        </Link>
-        <Link to="/admin/facility-safety" className="inline-flex items-center gap-2 rounded-xl bg-emerald-700 px-4 py-2.5 text-sm font-bold text-white shadow-sm hover:bg-emerald-800">
-          🏢 Facility & Safety
-        </Link>
-      </div>
+    <div className="min-h-screen bg-slate-50">
+      <section className="border-b border-slate-200 bg-white">
+        <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.12em] text-emerald-700">
+                Mahidol Social Engagement Platform
+              </p>
+              <h1 className="mt-1 text-2xl font-bold tracking-tight text-brand-navy lg:text-3xl">
+                ศูนย์จัดการระบบหลังบ้าน
+              </h1>
+              <p className="mt-1 text-sm text-slate-600">
+                จัดการกิจกรรม ผลผลิต และคำสั่งซื้อจากฐานข้อมูลส่วนกลาง
+              </p>
+            </div>
+            <div className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs font-medium text-slate-500">
+              Central Administration
+            </div>
+          </div>
+        </div>
+      </section>
       <AdminDashboard />
     </div>
   );
