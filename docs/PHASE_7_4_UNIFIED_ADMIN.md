@@ -26,7 +26,7 @@ Supabase Auth is the central identity boundary. Authorization remains domain-spe
 - System/governance: `system.*` for `SUPER_ADMIN`
 
 ## UI boundary
-`AdminGuard` loads `/api/auth/me` once and shares role/permissions with `AdminAppShell`. Navigation is filtered by permission, so changing functions does not require hard-coded role logic throughout the menu.
+`AdminGuard` loads `/api/auth/me` once and shares role/permissions with `AdminAppShell`. Navigation is filtered by permission, so function/menu changes do not require hard-coded role logic throughout the UI.
 
 UI visibility is convenience only; every protected API operation remains server-authorized.
 
@@ -45,7 +45,7 @@ UI visibility is convenience only; every protected API operation remains server-
 The duplicate `0002` migration number has been removed. `admin_users` stores approved identity/profile mapping and `admin_audit_log` stores server-side audit events; Supabase Auth remains the identity/RBAC authority.
 
 ## Optimization
-Shared role/permission definitions remove duplicated authorization logic. `AdminGuard` fetches `/api/auth/me` once and reuses the result in the shell, avoiding a second identity request.
+Shared role/permission definitions remove duplicated authorization logic. `AdminGuard` fetches `/api/auth/me` once and reuses the result in the shell, avoiding a second identity request. Legacy API checks are compatibility-routed to the same Supabase identity boundary.
 
 ## Security/E2E gate
 Repository-side role/permission enforcement and migration ordering are implemented. Live Supabase Auth role configuration, live migration/RLS behavior, build and Vercel deployment still require environment execution evidence and are not marked passed here.
