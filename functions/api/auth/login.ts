@@ -34,7 +34,8 @@ async function handlePost({ request, env }: PagesContext): Promise<Response> {
 
   const headers = new Headers({ "Content-Type": "application/json; charset=utf-8" });
   const expiresIn = Number(result.expires_in ?? 28800);
-  for (const cookie of cookieHeaders(accessToken, refreshToken, Number.isFinite(expiresIn) ? expiresIn : 28800)) {
+  const safeExpiresIn = Number.isFinite(expiresIn) ? expiresIn : 28800;
+  for (const cookie of cookieHeaders(accessToken, refreshToken, safeExpiresIn)) {
     headers.append("Set-Cookie", cookie);
   }
 
