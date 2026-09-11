@@ -1,43 +1,59 @@
 import { getSupabaseRestConfig, json, methodNotAllowed, supabaseRest } from "./_supabase-rest";
 
-const SELECT = "id,project_id,center_id,title,slug,summary,content,activity_date,location,participant_count,objective,process,outcome,impact,featured_image,published_at,created_at,updated_at";
+type Env = Record<string, unknown>;
+type ActivityRow = Record<string, unknown>;
 
-export async function onRequestGet({ request, env }: { request: Request; env: Record<string, unknown> }) {
-  if (!getSupabaseRestConfig(env).configured) return json({ error: "Supabase Auth is not configured" }, 503);
+const SELECT =
+  "id,title,activity_date,category,featured_image,images,objective,key_activities,outcomes,participants,status,created_at,updated_at,survey_enabled,survey_open_at,survey_close_at,survey_welcome_text";
+
+function toActivity(row: ActivityRow) {
+  return {
+    id: String(row.id),
+    slug: String(row.id),
+    title: String(row.title ?? ""),
+    summary: String(row.objective ?? row.outcomes ?? "กิจกรรมพันธกิจเพื่อสังคม"),
+    activityDate: String(row.activity_date ?? ""),
+    location: "พื้นที่ปฏิบัติการลำปาง",
+    featuredImage: String(row.featured_image ?? "") || "/main banner.jpg",
+    objective: String(row.objective ?? ""),
+    process: Array.isArray(row.key_activities) ? row.key_activities.join("\n") : String(row.key_activities ?? ""),
+    outcome: String(row.outcomes ?? ""),
+    impact: "",
+    participantCount: Number.isFinite(Number(row.participants)) && String(row.participants ?? "").trim() !== "" ? Number(row.participants) : undefined,
+    category: String(row.category ?? ""),
+    status: String(row.status ?? "draft"),
+    images: Array.isArray(row.images) ? row.images : [],
+    surveyEnabled: row.survey_enabled === true,
+    surveyOpenAt: row.survey_open_at ?? null,
+    surveyCloseAt: row.survey_close_at ?? null,
+    surveyWelcomeText: row.survey_welcome_text ?? null,
+    createdAt: String(row.created_at ?? ""),
+    updatedAt: String(row.updated_at ?? ""),
+  };
+}
+
+export async function onRequestGet({ request, env }: { request: Request; env: Env }) {
+  if (!getSupabaseRestConfig(env).configured) return json({ error: "Supabase is not configured" }, 503);
+
   const slug = new URL(request.url).searchParams.get("slug")?.trim();
   if (!slug) return json({ error: "slug is required" }, 400);
 
   try {
-    const rows = await supabaseRest<Record<string, unknown>[]>(env, "activities", {
+    const rows = await supabaseRest<ActivityRow[]>(env, "activities", {
       select: SELECT,
-      slug: `eq.${slug}`,
       status: "eq.published",
-      limit: "1",
+      order: "activity_date.desc",
     });
-    const activity = rows[0];
+    const activity = rows.map(toActivity).find((row) => row.slug === slug || row.id === slug);
     if (!activity) return json({ error: "Activity not found" }, 404);
-
-    const activityId = String(activity.id);
-    const [photos, outcomes] = await Promise.all([
-      supabaseRest<Record<string, unknown>[]>(env, "activity_photos", {
-        select: "id,activity_id,image_url,thumbnail_url,caption,alt_text,sort_order,is_cover,created_at",
-        activity_id: `eq.${activityId}`,
-        order: "sort_order.asc",
-      }),
-      supabaseRest<Record<string, unknown>[]>(env, "activity_outcomes", {
-        select: "id,activity_id,metric_name,metric_value,unit,description,created_at",
-        activity_id: `eq.${activityId}`,
-      }),
-    ]);
-
-    return json({ success: true, data: { ...activity, photos, outcomes } });
+    return json({ success: true, data: activity });
   } catch (error) {
     console.error("GET /api/activity", error);
     return json({ error: "ไม่สามารถโหลดรายละเอียดกิจกรรมได้" }, 500);
   }
 }
 
-export function onRequest({ request, env }: { request: Request; env: Record<string, unknown> }) {
+export function onRequest({ request, env }: { request: Request; env: Env }) {
   if (request.method === "GET") return onRequestGet({ request, env });
   return methodNotAllowed("GET");
 }

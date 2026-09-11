@@ -1,14 +1,11 @@
--- Lac Learning Game satisfaction fields on the canonical Social Engagement activity table.
--- The shared Supabase database already owns public.activities and public.survey_responses.
-
+-- Phase 7.3/7.4: LAC satisfaction fields on the canonical Social Engagement activity table.
 ALTER TABLE public.activities
   ADD COLUMN IF NOT EXISTS survey_enabled boolean NOT NULL DEFAULT true,
   ADD COLUMN IF NOT EXISTS survey_open_at timestamptz,
   ADD COLUMN IF NOT EXISTS survey_close_at timestamptz,
   ADD COLUMN IF NOT EXISTS survey_welcome_text text;
 
-CREATE INDEX IF NOT EXISTS activities_survey_enabled_idx
-  ON public.activities (survey_enabled);
+CREATE INDEX IF NOT EXISTS activities_survey_enabled_idx ON public.activities (survey_enabled);
 
 CREATE TABLE IF NOT EXISTS public.survey_responses (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),

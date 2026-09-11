@@ -1,10 +1,10 @@
 import { sql } from "drizzle-orm";
 import { getDb } from "../../src/db/index";
 import { json, methodNotAllowed, type ApiRequest, type ApiResponse } from "../_http";
-import { isAdmin } from "../_auth";
+import { requirePermission } from "../_authorization";
 
 export default async function handler(req: ApiRequest, res: ApiResponse) {
-  if (!isAdmin(req)) return json(res, 401, { error: "Unauthorized" });
+  if (!requirePermission(req, res, "facility.read")) return;
   if (req.method !== "GET") return methodNotAllowed(res, ["GET"]);
 
   try {
@@ -17,20 +17,10 @@ export default async function handler(req: ApiRequest, res: ApiResponse) {
       db.execute(sql`select count(*)::int as total, count(*) filter (where date >= current_date - interval '30 days')::int as last_30_days from public.inspections`),
       db.execute(sql`select count(*)::int as total, count(*) filter (where created_at >= now() - interval '24 hours')::int as last_24_hours from public.audit_logs`),
     ]);
-
-    return json(res, 200, {
-      success: true,
-      data: {
-        systems,
-        buildings: buildings[0] ?? { total: 0, active: 0 },
-        assets: assets[0] ?? { total: 0, active: 0, repairing: 0 },
-        workOrders: workOrders[0] ?? { total: 0, open: 0, completed: 0 },
-        inspections: inspections[0] ?? { total: 0, last_30_days: 0 },
-        auditLogs: auditLogs[0] ?? { total: 0, last_24_hours: 0 },
-      },
-    });
-  } catch (error) {
-    console.error(error);
-    return json(res, 500, { error: "ไม่สามารถอ่านข้อมูลระบบ Facility & Safety จากฐานกลางได้" });
-  }
+    return json(res, 200, { success: true, data: {
+      systems, buildings: buildings[0] ?? { total: 0, active: 0 }, assets: assets[0] ?? { total: 0, active: 0, repairing: 0 },
+      workOrders: workOrders[0] ?? { total: 0, open: 0, completed: 0 }, inspections: inspections[0] ?? { total: 0, last_30_days: 0 },
+      auditLogs: auditLogs[0] ?? { total: 0, last_24_hours: 0 },
+    }});
+  } catch (error) { console.error(error); return json(res, 500, { error: "ไม่สามารถอ่านข้อมูลระบบ Facility & Safety จากฐานกลางได้" }); }
 }
