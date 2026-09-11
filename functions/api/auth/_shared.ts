@@ -19,7 +19,8 @@ const ADMIN_PERMISSIONS = [
   "partners.read", "partners.create", "partners.update", "partners.archive",
   "services.read", "services.create", "services.update", "services.publish", "services.archive",
   "navigation.read", "navigation.create", "navigation.update", "navigation.archive",
-  "footer.read", "footer.update", "facility.read", "facility.manage", "store.read", "store.manage", "system.read", "system.manage",
+  "footer.read", "footer.update", "facility.read", "facility.manage", "store.read", "store.manage",
+  "survey.audit.read",
 ] as const;
 
 type AdminPermission = (typeof ADMIN_PERMISSIONS)[number];
@@ -37,7 +38,7 @@ const ROLE_PERMISSIONS: Record<AdminRole, readonly AdminPermission[]> = {
   OPERATIONS_ADMIN: [
     "overview.read", "activities.read", "activities.create", "activities.update", "activities.publish", "activities.archive",
     "learning_centers.read", "learning_centers.create", "learning_centers.update", "learning_centers.publish", "learning_centers.archive",
-    "store.read", "store.manage",
+    "store.read", "store.manage", "survey.audit.read",
   ],
   FACILITY_ADMIN: ["overview.read", "facility.read", "facility.manage"],
 };
