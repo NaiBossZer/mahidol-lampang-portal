@@ -151,17 +151,18 @@ export function HomePage() {
             <div className="mt-7 grid gap-5 md:grid-cols-3">
               {visibleActivities.map((activity, index) => {
                 const fallback = fallbackActivities[index % fallbackActivities.length];
-                const title = "title" in activity ? activity.title : fallback.title;
-                const image = "featuredImage" in activity && activity.featuredImage ? activity.featuredImage : fallback.image;
-                const date = "activityDate" in activity ? activity.activityDate : fallback.activityDate;
-                const summary = "summary" in activity ? activity.summary : fallback.summary;
-                const category = "category" in activity ? activity.category : fallback.category;
-                const href = "slug" in activity && activity.slug ? `/activities/${activity.slug}` : "/activities";
+                const title = "title" in activity ? String(activity.title) : fallback.title;
+                const image = "featuredImage" in activity && activity.featuredImage ? String(activity.featuredImage) : fallback.image;
+                const date = "activityDate" in activity ? String(activity.activityDate) : fallback.activityDate;
+                const summary = "summary" in activity ? String(activity.summary ?? "") : fallback.summary;
+                const category = "category" in activity ? String(activity.category ?? fallback.category) : fallback.category;
+                const href = "slug" in activity && activity.slug ? `/activities/${String(activity.slug)}` : "/activities";
+                const key = "id" in activity ? String(activity.id) : fallback.id;
                 return (
-                  <RouterLink key={"id" in activity ? activity.id : fallback.id} to={href} className="group overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-xl">
+                  <RouterLink key={key} to={href} className="group overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-xl">
                     <div className="relative h-44 overflow-hidden"><img src={image} alt={title} className="h-full w-full object-cover transition duration-500 group-hover:scale-105" loading="lazy" /></div>
                     <div className="p-4">
-                      <span className="inline-flex rounded-full bg-[#EEF8F3] px-2.5 py-1 text-[10px] font-bold text-[#4B9466]">{category || "กิจกรรมชุมชน"}</span>
+                      <span className="inline-flex rounded-full bg-[#EEF8F3] px-2.5 py-1 text-[10px] font-bold text-[#4B9466]">{category}</span>
                       <h3 className="mt-2 text-base font-black leading-snug text-[#123B63]">{title}</h3>
                       <div className="mt-2 flex items-center gap-1 text-[11px] text-slate-500"><CalendarDays className="h-3.5 w-3.5" />{formatDate(date)}</div>
                       <p className="mt-2 line-clamp-2 text-xs leading-5 text-slate-500">{summary}</p>
@@ -197,28 +198,26 @@ export function HomePage() {
           <img src="/research-bg.jpeg" alt="" className="absolute right-0 top-0 h-full w-1/2 object-cover opacity-25" aria-hidden="true" />
           <div className="relative mx-auto grid max-w-[1120px] gap-10 px-4 sm:px-6 lg:grid-cols-[1.05fr_0.95fr] lg:px-8">
             <div className="flex flex-col justify-center"><span className="text-[11px] font-black tracking-wide text-[#E07859]">RESEARCH & PUBLICATIONS</span><h2 className="mt-2 text-2xl font-black leading-tight text-[#123B63] sm:text-3xl">ผลงานวิจัยและการจัดสรรคุณค่าสู่สังคมและชุมชน</h2><p className="mt-4 text-sm leading-7 text-slate-600">วิทยาเขตนำงานวิจัยมาเป็นส่วนหนึ่งในการยกระดับการพัฒนาชุมชน การเกษตร พลังงาน รวมถึงระบบสารสนเทศและนวัตกรรมเทคโนโลยีเพื่อสร้างผลกระทบในระยะยาวอย่างยั่งยืน</p><div className="mt-8 grid grid-cols-3 gap-5"><div><strong className="text-3xl font-black text-[#E07859]">45+</strong><p className="mt-1 text-[11px] font-medium text-slate-500">โครงการมีส่วนร่วมชุมชน</p></div><div><strong className="text-3xl font-black text-[#164A70]">22+</strong><p className="mt-1 text-[11px] font-medium text-slate-500">รางวัลนวัตกรรมระดับชาติ</p></div><div><strong className="text-3xl font-black text-[#56A56F]">120+</strong><p className="mt-1 text-[11px] font-medium text-slate-500">เครือข่ายความร่วมมือ</p></div></div></div>
-+            <div className="grid grid-cols-2 gap-4"><img src="/Smart Farm.jpg" alt="งานวิจัยเกษตรอัจฉริยะ" className="h-72 w-full rounded-xl object-cover shadow-lg" loading="lazy" /><img src="/Mahidol_U.jpg" alt="งานวิจัยและนวัตกรรม" className="mt-10 h-72 w-full rounded-xl object-cover shadow-lg" loading="lazy" /></div>
-+          </div>
-+        </section>
-+
-+        <section id="community" className="relative overflow-hidden py-14 sm:py-16">
-+          <img src="/community-action-bg.jpeg" alt="" className="absolute inset-0 h-full w-full object-cover opacity-55" aria-hidden="true" /><div className="absolute inset-0 bg-white/40" />
-+          <div className="relative mx-auto flex max-w-[1120px] flex-col items-start justify-between gap-6 px-4 sm:px-6 md:flex-row md:items-center lg:px-8"><div><span className="text-[11px] font-black tracking-wide text-[#1D9ACB]">COMMUNITY ACTION</span><h2 className="mt-2 text-2xl font-black text-[#123B63]">ร่วมสร้างสรรค์และบูรณาการชุมชนลำปาง</h2><p className="mt-3 max-w-3xl text-sm leading-6 text-slate-600">หากคุณเป็นผู้บริหาร เกษตรกร นักวิจัย หรือผู้สนใจพัฒนาพื้นที่ร่วมกับมหิดลลำปาง สามารถร่วมออกแบบกิจกรรมและสนับสนุนการพัฒนาชุมชนอย่างมีส่วนร่วม</p></div><RouterLink to="/activities" className="inline-flex shrink-0 items-center rounded-lg bg-[#0F426B] px-5 py-3 text-sm font-black text-white shadow-lg transition hover:bg-[#0A3556]">ติดต่อร่วมโครงการ <ArrowRight className="ml-2 h-4 w-4" /></RouterLink></div>
-+        </section>
-+      </main>
-+
-+      <footer className="relative overflow-hidden bg-[#073B60] py-10 text-white">
-+        <img src="/footer-bg.jpeg" alt="" className="absolute inset-0 h-full w-full object-cover opacity-10" aria-hidden="true" />
-+        <div className="relative mx-auto grid max-w-[1120px] gap-8 px-4 sm:px-6 md:grid-cols-[1.35fr_1fr_1fr_1.1fr] lg:px-8"><div><div className="flex items-center gap-3"><img src="/mahidol-logo.png" alt="มหาวิทยาลัยมหิดล" className="h-11 w-11 rounded-full bg-white p-1 object-contain" /><div><p className="text-sm font-black">มหาวิทยาลัยมหิดล วิทยาเขตลำปาง</p><p className="text-[10px] text-white/65">Mahidol University, Lampang Campus</p></div></div><p className="mt-4 max-w-xs text-xs leading-6 text-white/70">มุ่งพัฒนาคน สร้างความรู้ ร่วมกับชุมชนการเรียนรู้ เพื่อสังคมและสิ่งแวดล้อมที่ยั่งยืน</p></div><div><h3 className="text-sm font-black text-[#F0C65B]">ศูนย์การเรียนรู้</h3><p className="mt-3 text-xs leading-6 text-white/70">ศูนย์วิจัยและพัฒนา<br />สมาร์ทฟาร์มอัจฉริยะ<br />สถานีพลังงานทดแทน</p></div><div><h3 className="text-sm font-black text-[#F0C65B]">งานวิจัยและเทคโนโลยี</h3><p className="mt-3 text-xs leading-6 text-white/70">เทคโนโลยีเพื่อการเรียนรู้<br />นวัตกรรมเพื่อชุมชน<br />ผลิตภัณฑ์และองค์ความรู้</p></div><div><h3 className="text-sm font-black text-[#F0C65B]">ติดต่อ</h3><p className="mt-3 flex items-start gap-2 text-xs leading-6 text-white/70"><MapPin className="mt-0.5 h-4 w-4 shrink-0" />191 หมู่ 11 ต.สบปราบ อ.สบปราบ จ.ลำปาง 52170</p><p className="mt-2 text-xs text-white/70">054-820-200</p><p className="mt-1 text-xs text-white/70">lampang@mahidol.ac.th</p></div></div>
-+        <div className="relative mx-auto mt-8 max-w-[1120px] border-t border-white/15 px-4 pt-5 text-[10px] text-white/50 sm:px-6 lg:px-8">© 2026 มหาวิทยาลัยมหิดล วิทยาเขตลำปาง <span className="float-right">นโยบายความเป็นส่วนตัว | เงื่อนไขการใช้งาน</span></div>
-+      </footer>
-+    </div>
-+  );
-+}
- 
- function formatDate(value: string) {
-   const date = new Date(value);
--  return Number.isNaN(date.getTime()) ? value : new Intl.DateTimeFormat("th-TH", { dateStyle: "medium" }).format(date);
--}
-+  return Number.isNaN(date.getTime()) ? value : new Intl.DateTimeFormat("th-TH", { dateStyle: "medium" }).format(date);
-+}
+            <div className="grid grid-cols-2 gap-4"><img src="/Smart Farm.jpg" alt="งานวิจัยเกษตรอัจฉริยะ" className="h-72 w-full rounded-xl object-cover shadow-lg" loading="lazy" /><img src="/Mahidol_U.jpg" alt="งานวิจัยและนวัตกรรม" className="mt-10 h-72 w-full rounded-xl object-cover shadow-lg" loading="lazy" /></div>
+          </div>
+        </section>
+
+        <section id="community" className="relative overflow-hidden py-14 sm:py-16">
+          <img src="/community-action-bg.jpeg" alt="" className="absolute inset-0 h-full w-full object-cover opacity-55" aria-hidden="true" /><div className="absolute inset-0 bg-white/40" />
+          <div className="relative mx-auto flex max-w-[1120px] flex-col items-start justify-between gap-6 px-4 sm:px-6 md:flex-row md:items-center lg:px-8"><div><span className="text-[11px] font-black tracking-wide text-[#1D9ACB]">COMMUNITY ACTION</span><h2 className="mt-2 text-2xl font-black text-[#123B63]">ร่วมสร้างสรรค์และบูรณาการชุมชนลำปาง</h2><p className="mt-3 max-w-3xl text-sm leading-6 text-slate-600">หากคุณเป็นผู้บริหาร เกษตรกร นักวิจัย หรือผู้สนใจพัฒนาพื้นที่ร่วมกับมหิดลลำปาง สามารถร่วมออกแบบกิจกรรมและสนับสนุนการพัฒนาชุมชนอย่างมีส่วนร่วม</p></div><RouterLink to="/activities" className="inline-flex shrink-0 items-center rounded-lg bg-[#0F426B] px-5 py-3 text-sm font-black text-white shadow-lg transition hover:bg-[#0A3556]">ติดต่อร่วมโครงการ <ArrowRight className="ml-2 h-4 w-4" /></RouterLink></div>
+        </section>
+      </main>
+
+      <footer className="relative overflow-hidden bg-[#073B60] py-10 text-white">
+        <img src="/footer-bg.jpeg" alt="" className="absolute inset-0 h-full w-full object-cover opacity-10" aria-hidden="true" />
+        <div className="relative mx-auto grid max-w-[1120px] gap-8 px-4 sm:px-6 md:grid-cols-[1.35fr_1fr_1fr_1.1fr] lg:px-8"><div><div className="flex items-center gap-3"><img src="/mahidol-logo.png" alt="มหาวิทยาลัยมหิดล" className="h-11 w-11 rounded-full bg-white p-1 object-contain" /><div><p className="text-sm font-black">มหาวิทยาลัยมหิดล วิทยาเขตลำปาง</p><p className="text-[10px] text-white/65">Mahidol University, Lampang Campus</p></div></div><p className="mt-4 max-w-xs text-xs leading-6 text-white/70">มุ่งพัฒนาคน สร้างความรู้ ร่วมกับชุมชนการเรียนรู้ เพื่อสังคมและสิ่งแวดล้อมที่ยั่งยืน</p></div><div><h3 className="text-sm font-black text-[#F0C65B]">ศูนย์การเรียนรู้</h3><p className="mt-3 text-xs leading-6 text-white/70">ศูนย์วิจัยและพัฒนา<br />สมาร์ทฟาร์มอัจฉริยะ<br />สถานีพลังงานทดแทน</p></div><div><h3 className="text-sm font-black text-[#F0C65B]">งานวิจัยและเทคโนโลยี</h3><p className="mt-3 text-xs leading-6 text-white/70">เทคโนโลยีเพื่อการเรียนรู้<br />นวัตกรรมเพื่อชุมชน<br />ผลิตภัณฑ์และองค์ความรู้</p></div><div><h3 className="text-sm font-black text-[#F0C65B]">ติดต่อ</h3><p className="mt-3 flex items-start gap-2 text-xs leading-6 text-white/70"><MapPin className="mt-0.5 h-4 w-4 shrink-0" />191 หมู่ 11 ต.สบปราบ อ.สบปราบ จ.ลำปาง 52170</p><p className="mt-2 text-xs text-white/70">054-820-200</p><p className="mt-1 text-xs text-white/70">lampang@mahidol.ac.th</p></div></div>
+        <div className="relative mx-auto mt-8 max-w-[1120px] border-t border-white/15 px-4 pt-5 text-[10px] text-white/50 sm:px-6 lg:px-8">© 2026 มหาวิทยาลัยมหิดล วิทยาเขตลำปาง <span className="float-right">นโยบายความเป็นส่วนตัว | เงื่อนไขการใช้งาน</span></div>
+      </footer>
+    </div>
+  );
+}
+
+function formatDate(value: string) {
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? value : new Intl.DateTimeFormat("th-TH", { dateStyle: "medium" }).format(date);
+}
