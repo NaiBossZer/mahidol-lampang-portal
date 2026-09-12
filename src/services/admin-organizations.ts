@@ -9,12 +9,14 @@ export type AdminOrganization = {
   display_order: number;
 };
 
+export type AdminOrganizationInput = Omit<AdminOrganization, "id">;
+
 export async function getAdminOrganizations(): Promise<AdminOrganization[]> {
   const data = await apiRequest<AdminOrganization[]>("/api/admin/organizations");
   return Array.isArray(data) ? data : [];
 }
 
-export async function createAdminOrganization(input: Omit<AdminOrganization, "id">) {
+export async function createAdminOrganization(input: AdminOrganizationInput) {
   return apiRequest<AdminOrganization>("/api/admin/organizations", { method: "POST", body: JSON.stringify(input) });
 }
 
