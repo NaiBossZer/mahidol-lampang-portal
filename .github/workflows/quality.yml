@@ -2,7 +2,7 @@ name: Portal Quality Gate
 
 on:
   push:
-    branches: [main, qa/dashboard-visual]
+    branches: [main, qa/dashboard-visual, refactor/5-domain-architecture]
   pull_request:
     branches: [main, phase-6-dashboard-normalization]
 
@@ -18,6 +18,7 @@ jobs:
       - run: npm ci
       # Normalize repository formatting before the strict lint gate.
       - run: npx prettier --write .
+      - run: npm run typecheck
       - run: npm run lint
       - run: npm run build
       - run: npm run smoke
