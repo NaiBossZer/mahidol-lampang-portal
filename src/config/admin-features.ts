@@ -1,5 +1,4 @@
 import type { AdminPermission } from "@/auth/permissions";
-
 export type AdminFeatureArea = "core" | "operations" | "insights" | "ai" | "governance";
 export type AdminFeatureStatus = "foundation" | "planned" | "future";
 export interface AdminFeatureDefinition { id:string; label:string; area:AdminFeatureArea; status:AdminFeatureStatus; route?:string; permission?:AdminPermission; children?:readonly string[]; }
@@ -14,7 +13,7 @@ export const ADMIN_FEATURES: readonly AdminFeatureDefinition[] = [
 { id:"survey-responses",label:"คำตอบแบบสอบถาม",area:"operations",status:"planned",permission:"survey.audit.read" },
 { id:"survey-analytics",label:"วิเคราะห์แบบสอบถาม",area:"insights",status:"foundation",route:"/admin/surveys/analytics",permission:"survey.audit.read" },
 { id:"learning-centers",label:"Learning Centers",area:"operations",status:"foundation",route:"/admin/learning-centers",permission:"learning_centers.read" },
-{ id:"organizations",label:"Organizations",area:"operations",status:"planned",permission:"overview.read" },
+{ id:"organizations",label:"Organizations",area:"operations",status:"foundation",route:"/admin/organizations",permission:"overview.read" },
 { id:"cms",label:"Content / CMS",area:"operations",status:"foundation",route:"/admin/cms",permission:"cms.read" },
 { id:"partners",label:"Partners",area:"operations",status:"planned",permission:"partners.read" },
 { id:"analytics",label:"Analytics",area:"insights",status:"foundation",route:"/admin/analytics",permission:"overview.read" },
@@ -31,7 +30,7 @@ export const ADMIN_FEATURES: readonly AdminFeatureDefinition[] = [
 { id:"ai-analytics-agent",label:"AI Analytics Agent",area:"ai",status:"planned",permission:"ai.command.read" },
 { id:"admin-users",label:"Admin Users",area:"governance",status:"planned",permission:"system.manage" },
 { id:"permissions",label:"Permissions",area:"governance",status:"foundation",permission:"system.manage" },
-{ id:"audit-trail",label:"Audit Trail",area:"governance",status:"planned",permission:"system.read" },
+{ id:"audit-trail",label:"Audit Trail",area:"governance",status:"foundation",route:"/admin/audit-trail",permission:"system.read" },
 { id:"data-lifecycle",label:"Data Lifecycle",area:"governance",status:"planned",permission:"system.manage" },
 { id:"system-settings",label:"System Settings",area:"governance",status:"foundation",route:"/admin/settings",permission:"system.read" },
 { id:"facility-future",label:"Facility Integration",area:"governance",status:"future",permission:"facility.read" },
