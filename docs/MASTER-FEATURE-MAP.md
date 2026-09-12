@@ -1,12 +1,41 @@
 # Mahidol Lampang Central Admin — Master Feature Map
 
-> Master scope for the Central Admin platform. This document is the planning and architecture contract for implementation. It does not authorize bypassing existing security boundaries.
+> Master scope and implementation contract for the Central Admin platform.
+
+## Implementation status — Autonomous Vertical Implementation
+
+| Domain | Status | Production boundary |
+|---|---|---|
+| Dashboard | FOUNDATION | Portal React + `/api/admin/dashboard` |
+| Activities | FOUNDATION | Portal API + Supabase |
+| Activity Occurrences | FOUNDATION | Portal API + Supabase |
+| Activity Photos | FOUNDATION | Supabase Storage `activity-media` + `activity_media` metadata |
+| Activity ↔ Learning Center ↔ Organization | FOUNDATION | Junction tables + Portal API |
+| Surveys | FOUNDATION | Occurrence Survey + Portal API |
+| Question Builder | FOUNDATION | Data-driven `survey_questions` |
+| Survey Responses / Detail | FOUNDATION | `survey_responses` + `survey_answers` |
+| Survey Analytics | FOUNDATION | Portal analytics API |
+| Learning Centers | FOUNDATION | Portal API + Supabase |
+| Organizations | FOUNDATION | Portal API + Supabase |
+| CMS | FOUNDATION | Existing Portal CMS boundary |
+| Analytics / Reports | FOUNDATION | Portal API |
+| Global Search | FOUNDATION | Permission-aware Portal API |
+| Notifications | FOUNDATION | `admin_notifications` + Portal API |
+| AI Tool Registry | FOUNDATION | `ai_tools` |
+| AI Manager | FOUNDATION | Governed Portal API execution |
+| Activity Agent | FOUNDATION | Registered Activity tools |
+| Survey Agent | FOUNDATION | Registered Survey tools |
+| Learning Center / CMS Agent | FOUNDATION | Registered content tools |
+| Analytics Agent | FOUNDATION | Read-only analytics tools |
+| Admin Users / RBAC | FOUNDATION | Supabase Auth metadata + controlled role RPC |
+| Audit Trail | FOUNDATION | Append-only `audit_logs` |
+| Data Lifecycle | FOUNDATION | Active → Archived → Retired + lifecycle events |
+| System Administration | FOUNDATION | System registry / health view |
+| Facility Integration | FUTURE | Separate Facility-Safety system; untouched |
 
 ## Product principle
 
-**ZERO UNNECESSARY ADMIN WORK**
-
-Admin defines the intent and makes decisions. The Portal executes the workflow through governed APIs and data services. AI assists with planning, preparation, analysis and execution where permitted. Every consequential action remains authenticated, authorized and traceable.
+**ZERO UNNECESSARY ADMIN WORK** — Admin defines intent and makes consequential decisions. Portal APIs execute governed workflows. AI assists with planning, preparation, analysis and approved execution.
 
 ## System boundaries
 
@@ -17,227 +46,42 @@ Admin defines the intent and makes decisions. The Portal executes the workflow t
 - Portal API is the browser-to-server execution boundary.
 - AI never accesses SQL directly and never bypasses Portal API, RBAC or policy checks.
 - `NaiBossZer/Facility-Safety` is a separate system and is not modified by this feature map.
-- AI Facility is deferred to a future integration track.
-- AI Media is not a separate domain; media belongs inside each Activity workspace.
-- AI Self-QA and AI-Native Admin are intentionally excluded; operational QA and final admin decisions remain human responsibilities.
+- `mahidol-rac` remains a read-only reference and is not modified by this implementation.
+- AI Facility is deferred.
+- AI Media is not a separate domain; media belongs inside Activity.
+- AI Self-QA and AI-Native Admin are excluded; operational QA and final decisions remain human responsibilities.
 
-## Feature domains
+## Core data model
 
-### CORE
+```text
+Activity
+  ├── Occurrence (1:N)
+  │     ├── Survey (0:1)
+  │     └── Responses (1:N)
+  ├── Learning Centers (N:M)
+  ├── Organizations / Organizers (N:M)
+  └── Media → Supabase Storage
 
-1. **Dashboard**
-   - Executive KPI overview
-   - Satisfaction and evaluation insight
-   - Activity outcome overview
-   - Post-event activity photo gallery
-   - Global filters
-   - Empty/loading/error states
+Survey
+  ├── Questions (1:N)
+  └── Answers / Responses (1:N)
 
-2. **AI Command Center**
-   - Natural-language intent capture
-   - Context-aware commands
-   - Quick actions
-   - Link to work queue, execution and history
-   - Permission-aware AI entry point
+Organization
+  └── Parent → Child hierarchy
 
-### OPERATIONS
-
-3. **Activities Management**
-   - Activity list/search/filter
-   - Create/edit/publish/archive
-   - Activity information
-   - Activity objectives/process/outcomes
-   - Activity cover and post-event photos
-   - Learning Center relationship
-   - Organization relationship
-   - Survey relationship
-
-4. **Activity Occurrences**
-   - One Activity → many Occurrences
-   - Scheduled/ongoing/completed/cancelled/archived lifecycle
-   - Per-occurrence location/date/organizer/participant context
-   - Cancelled occurrences hidden from normal views but retained for history/audit
-
-5. **Activity Photos**
-   - Managed inside Activity/Occurrence workspace
-   - Cover image and post-event images
-   - Supabase Storage as file source of truth
-   - Database stores references/metadata
-
-6. **Survey Management**
-   - Survey list
-   - Create/edit/publish/archive
-   - Anonymous/Identified mode
-   - Open/close window
-   - Survey-to-Activity/Occurrence relationship
-
-7. **Survey Question Builder**
-   - Dynamic sections/questions
-   - 5-level rating scale support
-   - Required/optional questions
-   - Ordering
-   - Question types/options
-   - No hard-coded production question schema
-
-8. **Survey Responses**
-   - Response list
-   - Identified/anonymous handling
-   - Respondent data only when actually collected
-   - Per-question answers
-   - Comments/feedback
-   - Historical response preservation
-
-9. **Survey Analytics**
-   - Average score
-   - Satisfaction percentage
-   - Respondent count
-   - Evaluated activity count
-   - Category/topic scores
-   - Activity and occurrence drill-down
-   - No response/no survey is not treated as score zero
-
-10. **Learning Centers**
-    - Learning Center list
-    - Create/edit/publish/archive
-    - Detail view
-    - Activity relationships
-    - Content relationships
-
-11. **Organizations**
-    - Parent/child organization structure
-    - Organization metadata
-    - Activity/survey respondent relationships
-
-12. **CMS / Content**
-    - Managed content
-    - Draft/publish/archive lifecycle
-    - Public website content blocks
-    - Navigation/content relationships
-
-13. **Partners / Network**
-    - Partner records
-    - Logo/media reference
-    - Public presentation metadata
-    - Archive lifecycle
-
-14. **Analytics / Reports**
-    - Operational reporting
-    - Exportable views
-    - Activity/survey aggregation
-    - Executive reporting surfaces
-
-15. **Global Search**
-    - Search activities, occurrences, surveys, learning centers, organizations and content
-    - Permission-aware result scope
-
-16. **Notifications**
-    - Admin task notifications
-    - Approval requests
-    - AI workflow updates
-    - Important system notices
-
-### AI WORKSPACE
-
-17. **AI Work Queue**
-    - Running work
-    - Approval-required work
-    - Needs-data work
-    - Failed/recoverable work
-    - No fake execution records
-
-18. **AI Plan / Live Execution**
-    - Intent
-    - Context
-    - Permission decision
-    - Plan steps
-    - Tool execution
-    - Verification result
-
-19. **AI Approval / Confirmation**
-    - Reusable approval gate
-    - Risk-aware confirmation
-    - Clear impact summary
-    - Explicit admin decision
-
-20. **AI Execution History**
-    - Completed AI workflows
-    - Inputs/context references
-    - Tools/actions used
-    - Results
-    - Audit linkage
-
-21. **AI Activity Agent**
-    - Document ingestion
-    - Document completeness: `FOUND` / `NOT FOUND` only
-    - Create/update Activity drafts
-    - Detect duplicate candidates
-    - Create Occurrence structures
-    - Prepare survey drafts
-    - Summarize outcomes
-
-22. **AI Survey Agent**
-    - Generate question drafts from activity context
-    - Build sections
-    - Detect duplicate/ambiguous questions
-    - Prepare survey preview
-    - Analyze responses and feedback
-    - Never publish without the required governance decision
-
-23. **AI Learning Center + CMS Agent**
-    - Prepare structured content
-    - Map activities to learning centers
-    - Draft public-facing content
-    - Reuse approved content context
-
-24. **AI Analytics Agent**
-    - Query approved analytics through tools
-    - Explain KPI movement
-    - Summarize trends and anomalies
-    - Read/explain only unless an explicit governed action is introduced later
-
-### GOVERNANCE
-
-25. **Admin / User Management**
-    - Admin identity visibility
-    - Role assignment workflow
-    - Account lifecycle
-    - No duplicate admin identity system
-
-26. **RBAC / Permissions**
-    - `SUPER_ADMIN`
-    - `CONTENT_ADMIN`
-    - `OPERATIONS_ADMIN`
-    - `FACILITY_ADMIN`
-    - Permission-driven navigation and actions
-    - Server-side authorization required
-
-27. **Audit Trail**
-    - System-wide append-only important-change log
-    - Survey/activity/occurrence/learning-center/organization/RBAC/admin actions
-    - Privacy-sensitive and high-risk data access where required
-    - AI action linkage
-    - Not used for satisfaction calculation
-
-28. **Data Lifecycle**
-    - Active → Archived → Retired
-    - Preserve historical records
-    - No hard delete where historical survey/response relationships exist
-    - Cancelled is a business state, hidden from normal operational views but retained for audit/history
-
-29. **System Administration**
-    - System configuration
-    - Integration configuration
-    - Operational health information
-    - Policy/configuration management
+Lifecycle
+  Active → Archived → Retired
+       └→ Cancelled (business state; retained for audit/history)
+```
 
 ## AI orchestration contract
 
 ```text
 Admin Intent
   ↓
-Context Collection
+Context
   ↓
-Authentication
+Supabase Auth
   ↓
 AdminGuard
   ↓
@@ -247,7 +91,7 @@ Policy + Risk
   ↓
 AI Plan
   ↓
-Approval (when required)
+Approval when required
   ↓
 AI Tool Registry
   ↓
@@ -257,107 +101,43 @@ Supabase / Storage
   ↓
 Verification
   ↓
-Result
-  ↓
-Audit Trail
+Result + Audit
 ```
 
-## Domain data model direction
+## Verification contract
 
-```text
-Activity
-  ├── Occurrence (1:N)
-  │     ├── Survey (0:1 or 1:1 depending on business rule)
-  │     └── Responses (1:N)
-  ├── Learning Centers (N:M)
-  ├── Organizers (N:M)
-  ├── Organizations (relationships as required)
-  └── Media references
+Every vertical slice is verified independently at:
 
-Survey
-  ├── Sections
-  │    └── Questions
-  └── Answers / Responses
+1. source code
+2. commit/branch
+3. CI Quality Gate
+4. preview deployment
+5. production only when independently evidenced
 
-Organization
-  └── Parent → Child hierarchy
-```
+No branch state is treated as production evidence.
 
-## UX navigation target
+## Security contract
 
-```text
-CORE
-  Dashboard
-  AI Command Center
+- Four roles only: `SUPER_ADMIN`, `CONTENT_ADMIN`, `OPERATIONS_ADMIN`, `FACILITY_ADMIN`.
+- No service-role key in frontend.
+- Auth cookies remain HttpOnly/Secure/SameSite=Lax.
+- Management endpoints require authenticated Central Admin session.
+- Role assignment is SUPER_ADMIN-only through a controlled database function.
+- AI medium/high-risk actions require approval.
+- Audit history is append-only by application policy.
+- Historical activity/survey data is preserved.
+- Storage uploads are authenticated and restricted to the activity-media bucket.
 
-OPERATIONS
-  Activities
-  Surveys
-  Learning Centers
-  Organizations
-  Content / CMS
-  Partners
+## Definition of done
 
-INSIGHTS
-  Analytics
-  Reports
-
-AI WORKSPACE
-  Work Queue
-  Execution
-  History
-
-GOVERNANCE
-  Admin Users
-  Permissions
-  Audit Trail
-  System Settings
-```
-
-## Implementation sequence
-
-### Phase 0 — Architecture Baseline
-Auth, AdminGuard, RBAC, API boundary, central Supabase, data/policy boundaries.
-
-### Phase 1 — Admin Design System
-Shared shell, navigation, filters, tables, forms, cards, drawers, dialogs, empty/loading/error states and AI workspace primitives.
-
-### Phase 2 — Domain Architecture
-Normalize Activity, Occurrence, Learning Center, Organization, Survey, Question, Response, Content, Partner and lifecycle contracts.
-
-### Phase 3 — Portal API + AI Tool Registry
-Create typed server-side domain tools. AI calls tools; tools call Portal API/data services. No direct SQL from AI.
-
-### Phase 4 — AI Admin Manager
-Intent → context → permission → plan → risk → approval → execution → verification → result → audit.
-
-### Phase 5 — Activity Vertical Slice
-Activity management + Occurrences + photos + organizations/learning centers + AI Activity Agent.
-
-### Phase 6 — Survey Vertical Slice
-Survey management + Question Builder + Responses + Analytics + AI Survey Agent.
-
-### Phase 7 — Learning Center + CMS
-Learning Center management, public content management and AI content assistance.
-
-### Phase 8 — Analytics + Reports
-Executive reporting, filters, exports and AI analytics explanations.
-
-### Phase 9 — Governance + Audit
-Admin management, permissions, lifecycle enforcement and system-wide audit trail.
-
-### Future — Facility Integration
-Integrate with the existing Facility Safety system later. Do not modify or merge its internal architecture as part of this roadmap.
-
-## Definition of done for the platform
-
-- Admin can manage core operational data without Excel as a source of truth.
-- Surveys and questions are data-driven rather than hard-coded.
-- Images are stored in object storage with database references.
+- Operational data is managed in Supabase rather than Excel as the source of truth.
+- Survey definitions and questions are data-driven.
+- Responses are normalized and reviewable.
+- Images use Supabase Storage with database metadata.
 - Activity occurrences are first-class records.
-- Historical records are preserved.
-- Server-side RBAC protects every management action.
-- AI reduces repetitive admin work without bypassing governance.
-- AI actions are traceable.
+- Historical records are preserved through lifecycle states.
+- Server-side RBAC protects management actions.
+- AI uses registered Portal APIs only.
+- AI actions are auditable and risk governed.
 - Public Portal and Central Admin share one identity boundary.
-- Stitch remains a UX/design reference; production behavior lives in the Portal React/API architecture.
+- Stitch remains a UX reference, not a production runtime dependency.
