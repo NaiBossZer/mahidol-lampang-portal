@@ -1,0 +1,1 @@
+create policy "public can read active activity occurrences" on public.activity_occurrences for select to anon, authenticated using (status not in ('cancelled','archived') and exists (select 1 from public.activities a where a.id = activity_occurrences.activity_id and a.status = 'published'));
