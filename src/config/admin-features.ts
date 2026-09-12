@@ -13,16 +13,11 @@ export interface AdminFeatureDefinition {
   children?: readonly string[];
 }
 
-/**
- * Single product-level registry for the Central Admin Master Feature Map.
- * Route modules remain responsible for their implementation; this registry
- * prevents navigation, documentation and planning from drifting apart.
- */
 export const ADMIN_FEATURES: readonly AdminFeatureDefinition[] = [
   { id: "dashboard", label: "Dashboard", area: "core", status: "foundation", route: "/dashboard", permission: "overview.read" },
   { id: "ai-command-center", label: "ศูนย์สั่งการอัจฉริยะ", area: "ai", status: "foundation", route: "/admin/ai", permission: "ai.command.read" },
   { id: "activities", label: "กิจกรรม", area: "operations", status: "foundation", route: "/admin/activities", permission: "activities.read", children: ["activity-occurrences", "activity-photos"] },
-  { id: "activity-occurrences", label: "กิจกรรมที่จัดจริง", area: "operations", status: "planned", permission: "activities.read" },
+  { id: "activity-occurrences", label: "กิจกรรมที่จัดจริง", area: "operations", status: "foundation", route: "/admin/activities/occurrences", permission: "activities.read" },
   { id: "activity-photos", label: "ภาพกิจกรรม", area: "operations", status: "foundation", permission: "activities.read" },
   { id: "surveys", label: "แบบสอบถาม", area: "operations", status: "planned", permission: "activities.read", children: ["survey-question-builder", "survey-responses", "survey-analytics"] },
   { id: "survey-question-builder", label: "ตัวสร้างคำถาม", area: "operations", status: "planned", permission: "activities.update" },
