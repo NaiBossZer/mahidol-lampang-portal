@@ -3,16 +3,11 @@ import { Building2, Pencil, Plus, RefreshCw, Search } from "lucide-react";
 import { toast } from "sonner";
 import { createAdminOrganization, getAdminOrganizations, updateAdminOrganization, type AdminOrganization } from "@/services/admin-organizations";
 
-const emptyForm = { name: "", organization_type: "external" as const, parent_organization_id: "", status: "active" as const, display_order: 0 };
+type OrganizationForm = { name: string; organization_type: "internal" | "external"; parent_organization_id: string; status: "active" | "inactive"; display_order: number };
+const emptyForm: OrganizationForm = { name: "", organization_type: "external", parent_organization_id: "", status: "active", display_order: 0 };
 
 export function OrganizationsManagementPage() {
-  const [rows, setRows] = useState<AdminOrganization[]>([]);
-  const [query, setQuery] = useState("");
-  const [editing, setEditing] = useState<AdminOrganization | null>(null);
-  const [form, setForm] = useState(emptyForm);
-  const [open, setOpen] = useState(false);
-  const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
+  const [rows, setRows] = useState<AdminOrganization[]>([]); const [query, setQuery] = useState(""); const [editing, setEditing] = useState<AdminOrganization | null>(null); const [form, setForm] = useState<OrganizationForm>(emptyForm); const [open, setOpen] = useState(false); const [loading, setLoading] = useState(true); const [saving, setSaving] = useState(false);
   async function load() { setLoading(true); try { setRows(await getAdminOrganizations()); } catch (e) { toast.error(e instanceof Error ? e.message : "โหลดองค์กรไม่สำเร็จ"); } finally { setLoading(false); } }
   useEffect(() => { void load(); }, []);
   const filtered = useMemo(() => { const q = query.trim().toLowerCase(); return rows.filter((x) => !q || x.name.toLowerCase().includes(q)); }, [rows, query]);
