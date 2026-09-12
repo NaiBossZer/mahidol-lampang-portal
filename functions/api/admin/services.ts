@@ -14,11 +14,11 @@ export async function onRequest({ request, env }: { request: Request; env: Env }
   const auth = await authorize(request, env, permission); if ("error" in auth) return auth.error;
   try {
     if (request.method === "GET") return json({ success: true, data: await rest(env, auth.token, "services?select=*&order=sort_order.asc,created_at.desc") });
-    const id = idFromUrl(request); const body = await request.json() as Record<string, unknown>; const row = values(body); if (!row) return json({ success: false, error: "ข้อมูลบริการไม่ถูกต้อง" }, 400);
+    const id = idFromUrl(request); if (!id && request.method !== "POST") return json({ success: false, error: "id required" }, 400);
+    if (request.method === "DELETE") { const rows = await rest(env, auth.token, `services?id=eq.${id}`, { method: "PATCH", headers: { Prefer: "return=representation" }, body: JSON.stringify({ status: "archived", published_at: null, updated_at: new Date().toISOString() }) }) as Row[]; if (!rows[0]) return json({ success: false, error: "ไม่พบบริการ" }, 404); return json({ success: true, data: rows[0] }); }
+    if (!["POST", "PUT", "PATCH"].includes(request.method)) return methodNotAllowed(["GET", "POST", "PUT", "PATCH", "DELETE"]);
+    const body = await request.json() as Record<string, unknown>; const row = values(body); if (!row) return json({ success: false, error: "ข้อมูลบริการไม่ถูกต้อง" }, 400);
     if (request.method === "POST") { const rows = await rest(env, auth.token, "services", { method: "POST", headers: { Prefer: "return=representation" }, body: JSON.stringify(row) }) as Row[]; return json({ success: true, data: rows[0] ?? null }, 201); }
-    if (!id) return json({ success: false, error: "id required" }, 400);
-    if (request.method === "DELETE") { const rows = await rest(env, auth.token, `services?id=eq.${id}`, { method: "PATCH", headers: { Prefer: "return=representation" }, body: JSON.stringify({ status: "archived", published_at: null, updated_at: new Date().toISOString() }) }) as Row[]; return json({ success: true, data: rows[0] ?? null }); }
-    if (!["PUT", "PATCH"].includes(request.method)) return methodNotAllowed(["GET", "POST", "PUT", "PATCH", "DELETE"]);
     const rows = await rest(env, auth.token, `services?id=eq.${id}`, { method: "PATCH", headers: { Prefer: "return=representation" }, body: JSON.stringify(row) }) as Row[]; if (!rows[0]) return json({ success: false, error: "ไม่พบบริการ" }, 404); return json({ success: true, data: rows[0] });
   } catch (error) { console.error("/api/admin/services", error); return json({ success: false, error: error instanceof Error ? error.message : "ไม่สามารถจัดการบริการได้" }, 500); }
 }
