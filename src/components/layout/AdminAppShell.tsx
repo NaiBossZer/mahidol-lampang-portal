@@ -8,8 +8,8 @@ import type { AdminPermission } from "@/auth/permissions";
 type NavItem = { to: string; label: string; icon: typeof LayoutDashboard; permission: AdminPermission };
 type NavGroup = { id: string; label: string; icon: typeof LayoutDashboard; items: readonly NavItem[] };
 
+const activityItem: NavItem = { to: "/admin/activities", label: "กิจกรรม", icon: CalendarRange, permission: "activities.read" };
 const operationGroups: readonly NavGroup[] = [
-  { id: "activities", label: "กิจกรรม", icon: CalendarRange, items: [{ to: "/admin/activities", label: "กิจกรรม", icon: CalendarRange, permission: "activities.read" }] },
   { id: "engagement", label: "Engagement & Insights", icon: BarChart3, items: [
     { to: "/admin/surveys", label: "แบบสอบถาม", icon: ClipboardList, permission: "survey.read" },
     { to: "/admin/analytics", label: "Analytics", icon: BarChart3, permission: "overview.read" },
@@ -39,6 +39,7 @@ export function AdminAppShell({ children }: { children: ReactNode }) {
   const location = useLocation(); const navigate = useNavigate(); const { role, permissions } = useAdminAuth();
   const [mobileOpen, setMobileOpen] = useState(false); const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({});
   const hasPermission = (permission: AdminPermission) => role === "SUPER_ADMIN" || permissions.includes(permission);
+  const visibleActivity = hasPermission(activityItem.permission);
   const visibleGroups = [...operationGroups, coreGroup].map((group) => ({ ...group, items: group.items.filter((item) => hasPermission(item.permission)) })).filter((group) => group.items.length > 0);
   function toggleGroup(id: string) { setOpenGroups((current) => ({ ...current, [id]: !(current[id] ?? isGroupActive(location.pathname, visibleGroups.find((group) => group.id === id) ?? coreGroup)) })); }
   async function logout() { try { await fetch("/api/auth/logout", { method: "POST", headers: { Accept: "application/json" } }); } finally { sessionStorage.removeItem("dashboard_auth"); navigate("/login", { replace: true }); } }
@@ -51,6 +52,7 @@ export function AdminAppShell({ children }: { children: ReactNode }) {
       <nav className="flex-1 overflow-y-auto px-3 py-4" aria-label="Admin navigation">
         <Link to="/dashboard" onClick={() => setMobileOpen(false)} className={cn("mb-1 flex min-h-10 items-center gap-3 rounded-xl px-3 text-sm font-semibold", isDashboard ? "bg-white text-brand-navy" : "text-white/75 hover:bg-white/10 hover:text-white")}><LayoutDashboard className="h-4 w-4" />Dashboard</Link>
         <p className="px-3 pb-2 pt-4 text-[11px] font-semibold uppercase tracking-[.14em] text-white/40">Operations</p>
+        {visibleActivity && <Link to={activityItem.to} onClick={() => setMobileOpen(false)} className={cn("mb-1 flex min-h-10 items-center gap-3 rounded-xl px-3 text-sm font-semibold", isItemActive(location.pathname, activityItem) ? "bg-white text-brand-navy" : "text-white/75 hover:bg-white/10 hover:text-white")}><CalendarRange className="h-4 w-4" />กิจกรรม</Link>}
         {visibleGroups.map((group) => { const Icon = group.icon; const active = isGroupActive(location.pathname, group); const open = openGroups[group.id] ?? active; return <div key={group.id} className="mb-1"><button type="button" onClick={() => toggleGroup(group.id)} className={cn("flex min-h-10 w-full items-center gap-3 rounded-xl px-3 text-left text-sm font-semibold", active ? "bg-white/10 text-white" : "text-white/75 hover:bg-white/10 hover:text-white")} aria-expanded={open}><Icon className="h-4 w-4" /><span className="flex-1">{group.label}</span><ChevronDown className={cn("h-4 w-4 transition-transform", open && "rotate-180")} /></button>{open && <div className="ml-3 mt-1 border-l border-white/10 pl-2">{group.items.map((item) => { const ItemIcon = item.icon; const itemActive = isItemActive(location.pathname, item); return <Link key={item.to} to={item.to} onClick={() => setMobileOpen(false)} className={cn("mb-1 flex min-h-9 items-center gap-3 rounded-lg px-3 text-[13px] font-medium", itemActive ? "bg-white text-brand-navy" : "text-white/65 hover:bg-white/10 hover:text-white")}><ItemIcon className="h-3.5 w-3.5" />{item.label}</Link>; })}</div>}</div>; })}
       </nav>
       <div className="border-t border-white/10 p-3"><button type="button" onClick={() => void logout()} className="flex min-h-10 w-full items-center gap-3 rounded-xl px-3 text-sm font-semibold text-white/75 hover:bg-white/10 hover:text-white"><LogOut className="h-4 w-4" />ออกจากระบบ</button></div>
