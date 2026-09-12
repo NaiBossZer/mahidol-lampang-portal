@@ -13,7 +13,6 @@ const operationGroups: readonly NavGroup[] = [
   { id: "engagement", label: "Engagement & Insights", icon: BarChart3, items: [
     { to: "/admin/surveys", label: "แบบสอบถาม", icon: ClipboardList, permission: "survey.read" },
     { to: "/admin/analytics", label: "Analytics", icon: BarChart3, permission: "overview.read" },
-    { to: "/admin/lac-satisfaction", label: "LAC Satisfaction", icon: ClipboardList, permission: "survey.audit.read" },
   ] },
   { id: "ai", label: "AI Workspace", icon: Bot, items: [
     { to: "/admin/ai", label: "AI Command Center", icon: Bot, permission: "ai.command.read" },
