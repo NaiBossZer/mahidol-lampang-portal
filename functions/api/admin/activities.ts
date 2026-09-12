@@ -1,6 +1,7 @@
 import { getSupabaseUser, isAdminRole, json, supabaseConfig } from "../auth/_shared";
 
 type Env = Record<string, unknown>;
+type ActivityStatus = "draft" | "published" | "scheduled" | "ongoing" | "completed" | "cancelled" | "archived";
 type ActivityInput = {
   id?: string;
   title?: string;
@@ -15,9 +16,8 @@ type ActivityInput = {
   outcome?: string;
   impact?: string;
   featuredImage?: string;
-  status?: "draft" | "published" | "archived";
+  status?: ActivityStatus;
 };
-
 type ActivityRow = Record<string, unknown>;
 
 function cookieValue(request: Request, name: string) {
@@ -48,40 +48,48 @@ async function supabaseRequest<T>(env: Env, accessToken: string, path: string, i
 }
 
 function toActivity(row: ActivityRow) {
+  const participantCount = Number(row.participant_count ?? row.participants ?? 0);
   return {
     id: String(row.id),
-    slug: String(row.id),
+    slug: String(row.slug ?? ""),
     title: String(row.title ?? ""),
-    summary: String(row.objective ?? row.outcomes ?? ""),
-    content: String(row.objective ?? ""),
+    summary: String(row.summary ?? ""),
+    content: String(row.content ?? ""),
     activityDate: String(row.activity_date ?? ""),
-    location: "",
-    participantCount: Number.isFinite(Number(row.participants)) ? Number(row.participants) : 0,
+    location: String(row.location ?? ""),
+    participantCount: Number.isFinite(participantCount) ? participantCount : 0,
     objective: String(row.objective ?? ""),
     process: Array.isArray(row.key_activities) ? row.key_activities.map(String).join("\n") : String(row.key_activities ?? ""),
     outcome: String(row.outcomes ?? ""),
-    impact: "",
+    impact: String(row.impact ?? ""),
     featuredImage: String(row.featured_image ?? ""),
-    status: String(row.status ?? "draft") as "draft" | "published",
+    status: String(row.status ?? "draft") as ActivityStatus,
     createdAt: String(row.created_at ?? ""),
     updatedAt: String(row.updated_at ?? ""),
   };
 }
 
 function toRow(input: ActivityInput) {
-  const status = input.status === "published" ? "published" : "draft";
+  const status: ActivityStatus = input.status ?? "draft";
   const keyActivities = String(input.process ?? "")
     .split(/\r?\n/)
     .map((item) => item.trim())
     .filter(Boolean);
+  const participantCount = Math.max(0, Number(input.participantCount ?? 0));
   return {
     title: String(input.title ?? "").trim(),
+    slug: String(input.slug ?? "").trim(),
+    summary: String(input.summary ?? "").trim(),
+    content: String(input.content ?? "").trim(),
     activity_date: String(input.activityDate ?? "").slice(0, 10),
-    featured_image: String(input.featuredImage ?? "").trim(),
+    location: String(input.location ?? "").trim(),
+    participant_count: Number.isFinite(participantCount) ? participantCount : 0,
+    participants: String(Number.isFinite(participantCount) ? participantCount : 0),
     objective: String(input.objective ?? input.summary ?? "").trim(),
     key_activities: keyActivities,
     outcomes: String(input.outcome ?? "").trim(),
-    participants: String(Math.max(0, Number(input.participantCount ?? 0))),
+    impact: String(input.impact ?? "").trim(),
+    featured_image: String(input.featuredImage ?? "").trim(),
     status,
   };
 }
@@ -92,8 +100,9 @@ async function authorize(request: Request, env: Env, permission: "activities.rea
   if (!user || !isAdminRole(role)) return { error: json({ success: false, error: "Forbidden" }, 403) } as const;
   const accessToken = cookieValue(request, "sb_access_token");
   if (!accessToken) return { error: json({ success: false, error: "Unauthorized" }, 401) } as const;
-  const allowed = role === "SUPER_ADMIN" || (permission === "activities.read" && role === "OPERATIONS_ADMIN") || (permission !== "activities.read" && role === "OPERATIONS_ADMIN");
+  const allowed = role === "SUPER_ADMIN" || role === "OPERATIONS_ADMIN";
   if (!allowed) return { error: json({ success: false, error: "Forbidden" }, 403) } as const;
+  void permission;
   return { accessToken } as const;
 }
 
@@ -107,8 +116,10 @@ export async function onRequest({ request, env }: { request: Request; env: Env }
 
   try {
     const id = new URL(request.url).searchParams.get("id");
+    const select = "id,title,slug,summary,content,activity_date,location,participant_count,participants,featured_image,objective,key_activities,outcomes,impact,status,created_at,updated_at";
+
     if (method === "GET") {
-      const rows = await supabaseRequest<ActivityRow[]>(env, auth.accessToken, "activities?select=id,title,activity_date,featured_image,objective,key_activities,outcomes,participants,status,created_at,updated_at&order=activity_date.desc");
+      const rows = await supabaseRequest<ActivityRow[]>(env, auth.accessToken, `activities?select=${select}&order=activity_date.desc`);
       return json({ success: true, data: rows.map(toActivity) });
     }
 
@@ -129,7 +140,8 @@ export async function onRequest({ request, env }: { request: Request; env: Env }
       return json({ success: true, data: toActivity(rows[0]) });
     }
 
-    const rows = await supabaseRequest<ActivityRow[]>(env, auth.accessToken, `activities?id=eq.${encodeURIComponent(id)}&select=id,title,activity_date,featured_image,objective,key_activities,outcomes,participants,status,created_at,updated_at`, { method: "DELETE", headers: { Prefer: "return=representation" } });
+    // DELETE is intentionally a lifecycle transition, never a hard delete.
+    const rows = await supabaseRequest<ActivityRow[]>(env, auth.accessToken, `activities?id=eq.${encodeURIComponent(id)}`, { method: "PATCH", headers: { Prefer: "return=representation" }, body: JSON.stringify({ status: "archived" }) });
     if (!rows[0]) return json({ success: false, error: "ไม่พบกิจกรรม" }, 404);
     return json({ success: true, data: toActivity(rows[0]) });
   } catch (error) {
