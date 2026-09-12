@@ -1,5 +1,5 @@
 import { useState, type ReactNode } from "react";
-import { Building2, CalendarRange, ClipboardList, FileText, LayoutDashboard, LogOut, Menu, Settings2, ShoppingBag, X, RefreshCw, Bot, History, ListTodo, Search, Bell, BookOpen, ShieldCheck } from "lucide-react";
+import { BarChart3, Building2, CalendarRange, ClipboardList, FileText, LayoutDashboard, LogOut, Menu, Settings2, ShoppingBag, X, RefreshCw, Bot, History, ListTodo, Search, Bell, BookOpen, ShieldCheck } from "lucide-react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { useAdminAuth } from "../AdminGuard";
@@ -11,6 +11,7 @@ const items: readonly { to: string; label: string; icon: typeof LayoutDashboard;
   { to: "/admin/surveys", label: "แบบสอบถาม", icon: ClipboardList, permission: "survey.read" },
   { to: "/admin/learning-centers", label: "Learning Centers", icon: BookOpen, permission: "learning_centers.read" },
   { to: "/admin/organizations", label: "Organizations", icon: Building2, permission: "overview.read" },
+  { to: "/admin/analytics", label: "Analytics", icon: BarChart3, permission: "overview.read" },
   { to: "/admin/audit-trail", label: "Audit Trail", icon: ShieldCheck, permission: "system.read" },
   { to: "/admin", label: "Admin Center", icon: Settings2, permission: "system.read" },
   { to: "/admin/cms", label: "Content CMS", icon: FileText, permission: "cms.read" },
