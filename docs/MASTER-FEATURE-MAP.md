@@ -1,59 +1,118 @@
-# Mahidol Lampang Central Admin — Master Feature Map
+# Mahidol Lampang Central Portal — Master Feature Map
 
-> Master scope and implementation contract for the Central Admin platform.
+> Canonical product scope and ownership contract. The Portal is consolidated into five domains; individual screens, APIs and tables remain implementation details under their owning domain.
 
-## Implementation status — Autonomous Vertical Implementation
+## Five canonical domains
 
-| Domain | Status | Production boundary |
-|---|---|---|
-| Dashboard | FOUNDATION | Portal React + `/api/admin/dashboard` |
-| Activities | FOUNDATION | Portal API + Supabase |
-| Activity Occurrences | FOUNDATION | Portal API + Supabase |
-| Activity Photos | FOUNDATION | Supabase Storage `activity-media` + `activity_media` metadata |
-| Activity ↔ Learning Center ↔ Organization | FOUNDATION | Junction tables + Portal API |
-| Surveys | FOUNDATION | Occurrence Survey + Portal API |
-| Question Builder | FOUNDATION | Data-driven `survey_questions` |
-| Survey Responses / Detail | FOUNDATION | `survey_responses` + `survey_answers` |
-| Survey Analytics | FOUNDATION | Portal analytics API |
-| Learning Centers | FOUNDATION | Portal API + Supabase |
-| Organizations | FOUNDATION | Portal API + Supabase |
-| CMS | FOUNDATION | Existing Portal CMS boundary |
-| Analytics / Reports | FOUNDATION | Portal API |
-| Global Search | FOUNDATION | Permission-aware Portal API |
-| Notifications | FOUNDATION | `admin_notifications` + Portal API |
-| AI Tool Registry | FOUNDATION | `ai_tools` |
-| AI Manager | FOUNDATION | Governed Portal API execution |
-| Activity Agent | FOUNDATION | Registered Activity tools |
-| Survey Agent | FOUNDATION | Registered Survey tools |
-| Learning Center / CMS Agent | FOUNDATION | Registered content tools |
-| Analytics Agent | FOUNDATION | Read-only analytics tools |
-| Admin Users / RBAC | FOUNDATION | Supabase Auth metadata + controlled role RPC |
-| Audit Trail | FOUNDATION | Append-only `audit_logs` |
-| Data Lifecycle | FOUNDATION | Active → Archived → Retired + lifecycle events |
-| System Administration | FOUNDATION | System registry / health view |
-| Facility Integration | FUTURE | Separate Facility-Safety system; untouched |
+### 1. Portal Core
 
-## Product principle
+**Purpose:** one shared identity, authorization, master-data and governance foundation.
 
-**ZERO UNNECESSARY ADMIN WORK** — Admin defines intent and makes consequential decisions. Portal APIs execute governed workflows. AI assists with planning, preparation, analysis and approved execution.
+- Authentication / session
+- AdminGuard
+- Admin Users / RBAC
+- Organizations master data and hierarchy
+- Audit Trail
+- Data Lifecycle
+- Global Search
+- Notifications
+- System Settings
 
-## System boundaries
+### 2. Programs & Activities
 
-- Portal is the Central Admin platform.
-- Supabase is the central data and authentication source of truth.
-- Supabase Auth `app_metadata.role` is the RBAC source of truth.
-- `AdminGuard` is the protected route boundary.
-- Portal API is the browser-to-server execution boundary.
-- AI never accesses SQL directly and never bypasses Portal API, RBAC or policy checks.
-- `NaiBossZer/Facility-Safety` is a separate system and is not modified by this feature map.
-- `mahidol-rac` remains a read-only reference and is not modified by this implementation.
-- AI Facility is deferred.
-- AI Media is not a separate domain; media belongs inside Activity.
-- AI Self-QA and AI-Native Admin are excluded; operational QA and final decisions remain human responsibilities.
+**Purpose:** manage the complete activity lifecycle from definition through delivery and historical record.
+
+- Activities
+- Activity Occurrences
+- Activity ↔ Learning Center ↔ Organization relations
+- Activity Photos / Media
+- Activity lifecycle
+- Occurrence survey linkage
+
+### 3. Learning & Content
+
+**Purpose:** manage learning resources and public-facing content in one content domain.
+
+- Learning Centers
+- CMS
+- Partners
+- Content/media resources
+
+### 4. Engagement & Insights
+
+**Purpose:** collect structured engagement data and turn it into trustworthy insight.
+
+- Surveys
+- Survey Question Builder
+- Survey Responses
+- Response Detail
+- Satisfaction calculation
+- Analytics
+- Reports
+
+### 5. AI Workspace
+
+**Purpose:** governed AI assistance over the four non-AI domains without creating a second data or authorization boundary.
+
+- AI Manager
+- AI Agent Registry
+- Activity Agent
+- Survey Agent
+- Learning Center / CMS Agent
+- Analytics Agent
+- AI Tool Registry
+- Intent / Plan
+- Work Queue
+- Approval
+- Execution
+- History
+
+## Cross-domain presentation layer
+
+The following are presentation/system UI capabilities, not additional business domains:
+
+- Public Website
+- PublicAppShell
+- AdminAppShell
+- AppNavbar
+- Dashboard
+
+Dashboard consumes domain data and does not own operational data.
+
+## Infrastructure layer
+
+Also not business domains:
+
+- Supabase Auth
+- PostgreSQL
+- Supabase Storage
+- RLS / database policies
+- Cloudflare Pages / Functions
+- CI Quality Gate
+
+## Ownership rules
+
+| Capability | Owner domain |
+|---|---|
+| Organizations | Portal Core / Master Data |
+| Occurrences | Programs & Activities |
+| Activity Photos | Programs & Activities |
+| Activity Relations | Programs & Activities |
+| Learning Centers | Learning & Content |
+| CMS / Partners | Learning & Content |
+| Survey + Question Builder + Responses | Engagement & Insights |
+| Analytics + Reports | Engagement & Insights |
+| Search + Notifications | Portal Core |
+| Audit + Lifecycle + RBAC | Portal Core |
+| AI Manager + Agents + Tools | AI Workspace |
+| Dashboard + AppNavbar | Presentation layer |
 
 ## Core data model
 
 ```text
+Organization
+  └── Parent → Child hierarchy
+
 Activity
   ├── Occurrence (1:N)
   │     ├── Survey (0:1)
@@ -65,14 +124,9 @@ Activity
 Survey
   ├── Questions (1:N)
   └── Answers / Responses (1:N)
-
-Organization
-  └── Parent → Child hierarchy
-
-Lifecycle
-  Active → Archived → Retired
-       └→ Cancelled (business state; retained for audit/history)
 ```
+
+Repeated delivery is one Activity with multiple Occurrences. Cancelled activity/occurrence records remain stored for audit/history but are hidden from normal views and excluded from KPI/satisfaction calculations where specified. No Survey response is a score of zero by absence.
 
 ## AI orchestration contract
 
@@ -104,40 +158,29 @@ Verification
 Result + Audit
 ```
 
-## Verification contract
+AI never accesses SQL directly and never bypasses the Portal API, Auth, AdminGuard, RBAC or policy checks.
 
-Every vertical slice is verified independently at:
+## Security and system boundaries
 
-1. source code
-2. commit/branch
-3. CI Quality Gate
-4. preview deployment
-5. production only when independently evidenced
-
-No branch state is treated as production evidence.
-
-## Security contract
-
-- Four roles only: `SUPER_ADMIN`, `CONTENT_ADMIN`, `OPERATIONS_ADMIN`, `FACILITY_ADMIN`.
+- Supabase Auth `app_metadata.role` is the RBAC source of truth.
+- Roles are exactly `SUPER_ADMIN`, `CONTENT_ADMIN`, `OPERATIONS_ADMIN`, `FACILITY_ADMIN`.
 - No service-role key in frontend.
-- Auth cookies remain HttpOnly/Secure/SameSite=Lax.
-- Management endpoints require authenticated Central Admin session.
-- Role assignment is SUPER_ADMIN-only through a controlled database function.
-- AI medium/high-risk actions require approval.
-- Audit history is append-only by application policy.
-- Historical activity/survey data is preserved.
-- Storage uploads are authenticated and restricted to the activity-media bucket.
+- Management endpoints require authenticated Central Admin session and server-side permission enforcement.
+- Medium/high-risk AI actions require approval.
+- Audit history is preserved.
+- `NaiBossZer/Facility-Safety` is a separate system and remains untouched.
+- `mahidol-rac` is read-only reference and remains untouched.
+- Facility AI is deferred.
 
 ## Definition of done
 
-- Operational data is managed in Supabase rather than Excel as the source of truth.
-- Survey definitions and questions are data-driven.
-- Responses are normalized and reviewable.
-- Images use Supabase Storage with database metadata.
-- Activity occurrences are first-class records.
-- Historical records are preserved through lifecycle states.
-- Server-side RBAC protects management actions.
-- AI uses registered Portal APIs only.
-- AI actions are auditable and risk governed.
-- Public Portal and Central Admin share one identity boundary.
-- Stitch remains a UX reference, not a production runtime dependency.
+- Each feature has one canonical domain owner.
+- Operational data is managed through Supabase/Portal APIs rather than disconnected mock stores.
+- Activity occurrences, media, relations and survey linkage are first-class records.
+- Survey definitions/questions are data-driven and responses are normalized/reviewable.
+- Learning and content capabilities share a coherent domain boundary.
+- Analytics and reports share the Engagement & Insights boundary.
+- Governance and shared services live in Portal Core.
+- AI uses registered Portal APIs only and remains auditable/risk governed.
+- Presentation surfaces consume domain services without becoming data owners.
+- CI, runtime, visual, integration, security and production-readiness checks remain separate verification gates.
