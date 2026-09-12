@@ -2,9 +2,9 @@ name: Portal Quality Gate
 
 on:
   push:
-    branches: [main]
+    branches: [main, qa/dashboard-visual]
   pull_request:
-    branches: [main]
+    branches: [main, phase-6-dashboard-normalization]
 
 jobs:
   quality:
