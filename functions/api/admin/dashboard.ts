@@ -31,7 +31,7 @@ export async function onRequestGet({ request, env }: { request: Request; env: En
   if (!accessToken) return json({ success: false, error: "Unauthorized" }, 401);
 
   try {
-    const [activities, occurrences, centers, organizations, surveys, responses, activityCenters, activityOrganizers] = await Promise.all([
+    const [activities, occurrences, centers, organizations, surveys, responses, activityCenters, activityOrganizers, activityMedia] = await Promise.all([
       supabaseUserRest(env, accessToken, "activities", { select: "id,title,activity_date,category,status,participants,featured_image", order: "activity_date.desc" }),
       supabaseUserRest(env, accessToken, "activity_occurrences", { select: "id,activity_id,occurrence_no,start_at,end_at,status,cancellation_reason,participant_count,location_type,location_detail", order: "start_at.desc" }),
       supabaseUserRest(env, accessToken, "learning_centers", { select: "id,name,slug,type,status", status: "eq.active", order: "name.asc" }),
@@ -40,8 +40,9 @@ export async function onRequestGet({ request, env }: { request: Request; env: En
       supabaseUserRest(env, accessToken, "survey_responses", { select: "id,activity_id,occurrence_id,survey_id,participant_organization_id,submitted_at,age_group,affiliation,p2_location,p2_schedule,p2_readiness,p2_reception,p2_overall,p3_interest,p3_content,p3_clarity,p3_benefit,p3_application,p4_knowledge,p4_inspiration,p4_community_resource,p4_future_return,feedback", order: "submitted_at.desc" }),
       supabaseUserRest(env, accessToken, "activity_learning_centers", { select: "activity_id,learning_center_id" }),
       supabaseUserRest(env, accessToken, "activity_organizers", { select: "activity_id,organization_id,organizer_role" }),
+      supabaseUserRest(env, accessToken, "activity_media", { select: "id,activity_id,occurrence_id,public_url,media_type,caption,is_post_event,display_order,status,created_at", is_post_event: "eq.true", status: "neq.archived", order: "display_order.asc,created_at.desc" }),
     ]);
-    return json({ success: true, data: { activities, occurrences, learningCenters: centers, organizations, surveys, responses, activityLearningCenters: activityCenters, activityOrganizers: activityOrganizers } });
+    return json({ success: true, data: { activities, occurrences, learningCenters: centers, organizations, surveys, responses, activityLearningCenters: activityCenters, activityOrganizers, activityMedia } });
   } catch (error) {
     console.error("GET /api/admin/dashboard", error);
     return json({ success: false, error: "ไม่สามารถโหลดข้อมูล Dashboard ได้" }, 500);
