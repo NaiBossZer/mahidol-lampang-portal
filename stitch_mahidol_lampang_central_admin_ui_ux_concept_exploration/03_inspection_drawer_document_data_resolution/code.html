@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+
+<html lang="th"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/><link href="https://fonts.googleapis.com" rel="preconnect"/><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><style>@layer base { html, body { margin: 0; padding: 0; } body { overscroll-behavior: none; } main > :first-child { margin-top: 0 !important; } main > :last-child { margin-bottom: 0 !important; } } ::-webkit-scrollbar { width: 6px; height: 6px; } ::-webkit-scrollbar-track { background: transparent; } ::-webkit-scrollbar-thumb { background: rgba(148, 163, 184, 0.4); border-radius: 4px; }</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config = { darkMode: "class", theme: { extend: { "colors": { "surface-container-highest": "#d3e4fe", "on-primary-fixed": "#001b3f", "surface-container-high": "#dce9ff", "secondary-container": "#a8c8ff", "tertiary-fixed-dim": "#79db8d", "on-error-container": "#93000a", "on-secondary-fixed-variant": "#254776", "on-background": "#0b1c30", "on-tertiary-fixed-variant": "#005323", "surface-container": "#e5eeff", "on-secondary": "#ffffff", "surface-bright": "#f8f9ff", "surface-variant": "#d3e4fe", "surface": "#f8f9ff", "error-container": "#ffdad6", "on-surface": "#0b1c30", "primary-fixed-dim": "#abc7ff", "inverse-on-surface": "#eaf1ff", "background": "#f8f9ff", "surface-container-lowest": "#ffffff", "primary": "#00193c", "on-error": "#ffffff", "secondary-fixed": "#d5e3ff", "on-tertiary-fixed": "#00210a", "secondary-fixed-dim": "#a8c8ff", "on-secondary-container": "#325383", "tertiary-fixed": "#95f8a7", "on-primary": "#ffffff", "primary-fixed": "#d7e2ff", "on-secondary-fixed": "#001b3c", "inverse-primary": "#abc7ff", "on-tertiary": "#ffffff", "primary-container": "#002d62", "surface-tint": "#3e5e95", "secondary": "#3f5f8f", "on-surface-variant": "#43474f", "on-primary-fixed-variant": "#24467c", "outline-variant": "#c4c6d1", "inverse-surface": "#213145", "tertiary-container": "#003715", "surface-dim": "#cbdbf5", "outline": "#747781", "surface-container-low": "#eff4ff", "tertiary": "#001f09", "on-primary-container": "#7796d1", "on-tertiary-container": "#47a960", "error": "#ba1a1a" }, "borderRadius": { "DEFAULT": "0.125rem", "lg": "0.25rem", "xl": "0.5rem", "full": "0.75rem" }, "spacing": { "space-xs": "0.25rem", "space-md": "0.75rem", "space-xl": "2rem", "gutter-lg": "2rem", "space-lg": "1.25rem", "gutter-sm": "0.75rem", "margin-mobile": "1rem", "gutter": "1.5rem", "margin": "2rem", "space-sm": "0.5rem" }, "fontFamily": { "body-sm": [ "Inter" ], "headline-lg": [ "Inter" ], "display-lg-mobile": [ "Inter" ], "metric-lg": [ "Inter" ], "label-sm": [ "Inter" ], "headline-sm": [ "Inter" ], "headline-md": [ "Inter" ], "body-md": [ "Inter" ], "display-lg": [ "Inter" ], "label-lg": [ "Inter" ], "body-lg": [ "Inter" ], "label-md": [ "Inter" ], "metric-md": [ "Inter" ] }, "fontSize": { "body-sm": [ "12px", { "lineHeight": "18px", "fontWeight": "400" } ], "headline-lg": [ "24px", { "lineHeight": "32px", "letterSpacing": "-0.015em", "fontWeight": "600" } ], "display-lg-mobile": [ "26px", { "lineHeight": "34px", "letterSpacing": "-0.015em", "fontWeight": "700" } ], "metric-lg": [ "28px", { "lineHeight": "32px", "letterSpacing": "-0.02em", "fontWeight": "700" } ], "label-sm": [ "11px", { "lineHeight": "14px", "letterSpacing": "0.04em", "fontWeight": "600" } ], "headline-sm": [ "16px", { "lineHeight": "24px", "letterSpacing": "-0.005em", "fontWeight": "600" } ], "headline-md": [ "20px", { "lineHeight": "28px", "letterSpacing": "-0.01em", "fontWeight": "600" } ], "body-md": [ "14px", { "lineHeight": "20px", "fontWeight": "400" } ], "display-lg": [ "32px", { "lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "700" } ], "label-lg": [ "14px", { "lineHeight": "20px", "fontWeight": "500" } ], "body-lg": [ "16px", { "lineHeight": "24px", "fontWeight": "400" } ], "label-md": [ "12px", { "lineHeight": "16px", "letterSpacing": "0.01em", "fontWeight": "500" } ], "metric-md": [ "20px", { "lineHeight": "24px", "letterSpacing": "-0.01em", "fontWeight": "600" } ] } } } };</script></head>
+<body class="bg-background font-body-md text-body-md text-on-surface antialiased overflow-hidden">
+<!-- ========================================================================= -->
+<!-- BACKGROUND CONTEXT: AI Work Queue & Institution Operations Workspace     -->
+<!-- (Subtly blurred & scrimmed underneath to provide immediate operational context) -->
+<!-- ========================================================================= -->
+<div class="h-screen w-screen overflow-hidden flex filter blur-[2px] pointer-events-none select-none opacity-80 scale-[0.995] origin-top-left transition-all">
+<!-- Left Institutional Sidebar -->
+<aside class="w-[260px] bg-surface-container-lowest border-r border-surface-container flex flex-col justify-between h-full shrink-0">
+<div class="flex flex-col">
+<div class="h-14 px-space-md flex items-center gap-space-sm border-b border-surface-container-high">
+<img alt="Mahidol Lampang Central Admin Logo" class="h-8 w-auto object-contain" src="https://lh3.googleusercontent.com/aida/AEtjO1VFAkqaiHm7Qs6ZOiDdsCPW7wHH5YmsP4FKTuE0nAS9zRAj2rVyL341f3O1kf_P4a3n5vDz1eNJFtCOhDlzQfqeJlhuLVHiXQitVUQtWHNWcc2Ox6Ywac3FulrZo4b0oB_UYv3xa4sL0rqim7vGeIb53p8YM8lGedE-1LI7x7OMjKM35QAPSyXhYpEMwgFpOR9JXP7-qWI-Y04Mrtlx8OORcNHELWfEW-4xKAkj-jGVtdrwqi_pet8qYG8"/>
+<div class="flex flex-col min-w-0">
+<span class="font-label-md text-label-md text-primary font-bold truncate leading-tight">ม.มหิดล วิทยาเขตลำปาง</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant truncate">ระบบบริหารส่วนกลาง</span>
+</div>
+</div>
+<div class="px-space-md py-space-sm"><span class="font-label-sm text-label-sm text-on-surface-variant tracking-wider uppercase font-semibold">AI Autonomous Pipelines</span></div>
+<div class="px-space-md flex flex-col gap-1">
+<div class="flex items-center gap-space-sm px-space-sm py-2 rounded bg-primary-container text-on-primary font-semibold text-label-md">
+<span class="material-symbols-outlined text-[18px]">smart_toy</span>
+<span>AI Task Queue &amp; Ingestion</span>
+<span class="ml-auto px-1.5 py-0.5 rounded-full bg-amber-500 text-white font-bold text-[10px]">1 Paused</span>
+</div>
+<div class="flex items-center gap-space-sm px-space-sm py-2 rounded text-on-surface-variant text-label-md">
+<span class="material-symbols-outlined text-[18px]">event_available</span>
+<span>กิจกรรม &amp; กำหนดการ</span>
+</div>
+<div class="flex items-center gap-space-sm px-space-sm py-2 rounded text-on-surface-variant text-label-md">
+<span class="material-symbols-outlined text-[18px]">assignment</span>
+<span>แบบประเมินและสำรวจ</span>
+</div>
+<div class="flex items-center gap-space-sm px-space-sm py-2 rounded text-on-surface-variant text-label-md">
+<span class="material-symbols-outlined text-[18px]">analytics</span>
+<span>การวิเคราะห์ &amp; รายงานผล</span>
+</div>
+</div>
+</div>
+<div class="p-space-md border-t border-surface-container bg-surface-container-low/40">
+<div class="flex items-center gap-space-xs text-on-tertiary-container font-label-sm font-semibold">
+<span class="w-2 h-2 rounded-full bg-emerald-600"></span>
+        Ingestion Engine v2.4 Active
+      </div>
+</div>
+</aside>
+<!-- Main Background Dashboard Table (AI Work Queue) -->
+<div class="flex-1 flex flex-col h-full bg-surface-container-low/50">
+<header class="h-14 bg-surface-container-lowest border-b border-surface-container px-space-lg flex items-center justify-between">
+<div class="flex items-center gap-space-sm">
+<span class="font-label-lg font-bold text-primary">ศูนย์ปฏิบัติการประมวลผลเอกสารอัจฉริยะ (AI Document Orchestrator)</span>
+<span class="px-2 py-0.5 rounded bg-primary-fixed text-primary font-label-sm">Live Queue</span>
+</div>
+<div class="flex items-center gap-space-md">
+<div class="w-8 h-8 rounded-full bg-primary text-on-primary flex items-center justify-center font-bold text-xs">ผศ</div>
+</div>
+</header>
+<div class="p-space-lg flex flex-col gap-space-md overflow-hidden">
+<!-- Summary metrics cards -->
+<div class="grid grid-cols-4 gap-space-md">
+<div class="p-4 bg-surface-container-lowest rounded-xl shadow-xs border border-surface-container">
+<div class="text-on-surface-variant text-xs font-semibold">รายการในคิวทั้งหมด</div>
+<div class="text-2xl font-bold text-primary mt-1">18 รายการ</div>
+</div>
+<div class="p-4 bg-surface-container-lowest rounded-xl shadow-xs border border-surface-container">
+<div class="text-emerald-700 text-xs font-semibold">ประมวลผลสำเร็จอัตโนมัติ</div>
+<div class="text-2xl font-bold text-emerald-800 mt-1">14 รายการ</div>
+</div>
+<div class="p-4 bg-amber-50 rounded-xl shadow-xs border border-amber-200">
+<div class="text-amber-800 text-xs font-semibold flex items-center gap-1">
+<span class="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span>
+            ต้องการการตรวจสอบด้วยตนเอง
+          </div>
+<div class="text-2xl font-bold text-amber-900 mt-1">1 รายการ</div>
+</div>
+<div class="p-4 bg-surface-container-lowest rounded-xl shadow-xs border border-surface-container">
+<div class="text-on-surface-variant text-xs font-semibold">ค่าเฉลี่ยความแม่นยำ AI</div>
+<div class="text-2xl font-bold text-primary mt-1">98.4%</div>
+</div>
+</div>
+<!-- Simulated Queue Table Row with Selected/Paused Item -->
+<div class="bg-surface-container-lowest rounded-xl border border-surface-container overflow-hidden shadow-xs">
+<div class="px-4 py-3 bg-surface-container-high/40 border-b border-surface-container flex items-center justify-between text-xs font-bold text-on-surface-variant uppercase tracking-wider">
+<span>คิวงานเอกสาร (Work Queue Items)</span>
+<span>สถานะ Pipeline</span>
+</div>
+<div class="divide-y divide-surface-container">
+<!-- Active Target Row -->
+<div class="p-4 bg-primary-container/5 border-l-4 border-l-amber-500 flex items-center justify-between">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-amber-600 text-2xl">error</span>
+<div>
+<div class="font-bold text-primary text-sm">Q-88195: ขออนุมัติจัดโครงการตรวจคัดกรองสุขภาพเชิงรุกฯ เกาะคา</div>
+<div class="text-xs text-on-surface-variant">บันทึกข้อความ PDF • ACT-68-012 • 45,000 บาท</div>
+</div>
+</div>
+<span class="px-3 py-1 rounded-full bg-amber-100 text-amber-800 font-bold text-xs">Waiting for Manual Inspection</span>
+</div>
+<div class="p-4 opacity-50 flex items-center justify-between">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-emerald-600 text-2xl">check_circle</span>
+<div>
+<div class="font-bold text-primary text-sm">Q-88194: สรุปผลสัมมนาวิชาการสมุนไพรล้านนาสู่สากล</div>
+<div class="text-xs text-on-surface-variant">ACT-68-011 • สำเร็จ 100%</div>
+</div>
+</div>
+<span class="px-3 py-1 rounded-full bg-emerald-100 text-emerald-800 font-bold text-xs">Approved &amp; Published</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- ========================================================================= -->
+<!-- BACKDROP SCRIM: Deep Slate Dimming & Blur Overlay                        -->
+<!-- ========================================================================= -->
+<div class="fixed inset-0 z-40 bg-slate-950/65 backdrop-blur-sm transition-opacity flex justify-end">
+<!-- ======================================================================= -->
+<!-- SLIDE-OVER INSPECTION DRAWER (68% Width on Desktop)                    -->
+<!-- Specialized Deep Inspection & Resolution Panel                          -->
+<!-- ======================================================================= -->
+<aside aria-label="Deep Inspection Drawer" class="relative w-full lg:w-[68%] xl:w-[66%] h-full bg-surface flex flex-col shadow-2xl z-50 border-l border-surface-container-high transition-transform duration-300 ease-out">
+<!-- 1. DRAWER TOP HEADER -->
+<header class="shrink-0 bg-surface-container-lowest border-b border-surface-container px-space-lg py-3 flex items-center justify-between gap-space-md z-10 shadow-xs">
+<div class="flex flex-col gap-1 min-w-0">
+<!-- Tag & Status pill -->
+<div class="flex items-center gap-2 flex-wrap">
+<span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded bg-primary-container text-on-primary font-label-sm text-[11px] font-bold tracking-wide uppercase">
+<span class="material-symbols-outlined text-[14px] text-tertiary-fixed">troubleshoot</span>
+            Specialized Inspection Drawer
+          </span>
+<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-900 font-label-sm text-[11px] font-bold border border-amber-300/80">
+<span class="w-2 h-2 rounded-full bg-amber-600 animate-ping"></span>
+            Workflow Paused - Needs Manual Verification
+          </span>
+</div>
+<!-- Title & Queue Reference -->
+<div class="flex items-baseline gap-2 flex-wrap mt-0.5">
+<h1 class="font-headline-sm text-headline-sm text-primary font-bold tracking-tight truncate">
+            ตรวจสอบเอกสารและแก้ไขข้อมูลสกัด ACT-68-012
+          </h1>
+<span class="font-body-sm text-body-sm text-on-surface-variant font-medium">
+            (Queue ID: <span class="text-primary font-semibold">Q-88195</span> • บันทึกข้อความ_ขออนุมัติโครงการบริการสุขภาพ_อ.เกาะคา_ปี68.pdf)
+          </span>
+</div>
+</div>
+<!-- Quick Header Utility & Dismiss Buttons -->
+<div class="flex items-center gap-space-xs shrink-0">
+<button class="hidden sm:inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border border-surface-container-high text-on-surface-variant hover:bg-surface-container hover:text-primary font-label-md text-label-md transition-colors" title="บันทึกร่างและปิด" type="button">
+<span class="material-symbols-outlined text-[18px]">bookmark_border</span>
+<span>บันทึกร่างและปิด</span>
+</button>
+<button class="w-9 h-9 rounded-lg flex items-center justify-center text-on-surface-variant hover:bg-surface-container-high hover:text-primary transition-colors" title="ยกเลิก / ปิดหน้าต่าง (Esc)" type="button">
+<span class="material-symbols-outlined text-[22px]">close</span>
+</button>
+</div>
+</header>
+<!-- 2. DRAWER BODY: DUAL WORKHORSE COLUMNS (Left 45% Document, Right 55% Resolution) -->
+<div class="flex-1 overflow-hidden grid grid-cols-1 lg:grid-cols-12 bg-surface-container-low/40">
+<!-- =================================================================== -->
+<!-- LEFT COLUMN (45%): Original Document Viewer & Bounding Audit Trail -->
+<!-- =================================================================== -->
+<section class="lg:col-span-5 h-full border-r border-surface-container-high flex flex-col bg-surface-container-low/30 overflow-hidden">
+<!-- Viewer Control Bar -->
+<div class="h-11 px-space-md bg-surface-container-lowest border-b border-surface-container flex items-center justify-between shrink-0">
+<div class="flex items-center gap-1.5 text-primary font-label-md text-label-md font-semibold">
+<span class="material-symbols-outlined text-secondary text-[18px]">picture_as_pdf</span>
+<span>ต้นฉบับบันทึกข้อความ</span>
+<span class="text-[11px] px-1.5 py-0.2 rounded bg-surface-container text-on-surface-variant font-normal">หน้า 1 / 1</span>
+</div>
+<!-- Document tools: Zoom, Rotate, Fit -->
+<div class="flex items-center gap-1 bg-surface-container-low rounded-lg p-0.5 border border-surface-container">
+<button class="w-7 h-7 rounded flex items-center justify-center text-on-surface-variant hover:bg-surface-container-lowest hover:text-primary transition-colors" title="ย่อภาพ" type="button">
+<span class="material-symbols-outlined text-[16px]">zoom_out</span>
+</button>
+<span class="font-label-sm text-[11px] text-on-surface font-semibold px-1 select-none">100%</span>
+<button class="w-7 h-7 rounded flex items-center justify-center text-on-surface-variant hover:bg-surface-container-lowest hover:text-primary transition-colors" title="ขยายภาพ" type="button">
+<span class="material-symbols-outlined text-[16px]">zoom_in</span>
+</button>
+<div class="h-4 w-[1px] bg-surface-container-high mx-0.5"></div>
+<button class="w-7 h-7 rounded flex items-center justify-center text-on-surface-variant hover:bg-surface-container-lowest hover:text-primary transition-colors" title="หมุนเอกสาร" type="button">
+<span class="material-symbols-outlined text-[16px]">rotate_right</span>
+</button>
+<button class="w-7 h-7 rounded flex items-center justify-center text-on-surface-variant hover:bg-surface-container-lowest hover:text-primary transition-colors" title="แสดงเต็มหน้า" type="button">
+<span class="material-symbols-outlined text-[16px]">fit_screen</span>
+</button>
+</div>
+</div>
+<!-- Canvas Container with Visual Bounding Boxes & Missing Alerts -->
+<div class="flex-1 overflow-y-auto p-space-md flex flex-col gap-space-sm bg-slate-200/50">
+<!-- Bounding Legend & Quick Hint -->
+<div class="flex items-center justify-between text-xs px-1">
+<div class="flex items-center gap-2 flex-wrap">
+<span class="inline-flex items-center gap-1 text-[11px] text-on-surface-variant">
+<span class="w-2.5 h-2.5 rounded bg-blue-500/30 border border-blue-600"></span> สกัดแล้ว 100%
+              </span>
+<span class="inline-flex items-center gap-1 text-[11px] font-semibold text-amber-700">
+<span class="w-2.5 h-2.5 rounded bg-amber-300/60 border border-amber-600 animate-pulse"></span> จุดที่ต้องยืนยัน (Needs Resolution)
+              </span>
+<span class="inline-flex items-center gap-1 text-[11px] text-emerald-700">
+<span class="w-2.5 h-2.5 rounded bg-emerald-300/50 border border-emerald-600"></span> งบประมาณ
+              </span>
+</div>
+<span class="text-[11px] text-on-surface-variant">2.4 MB • สแกน OCR สำเร็จ</span>
+</div>
+<!-- Official Paper Sheet Canvas -->
+<div class="relative bg-surface-container-lowest rounded-lg shadow-md border border-slate-300/80 p-space-lg font-body-sm text-[12px] leading-relaxed text-on-surface select-none">
+<!-- Thai Garuda Simulation Header -->
+<div class="flex flex-col items-center justify-center mb-space-md">
+<div class="w-10 h-10 rounded-full bg-surface-container-high flex items-center justify-center text-primary mb-1 shadow-xs">
+<span class="material-symbols-outlined text-[24px]">account_balance</span>
+</div>
+<span class="font-label-sm text-label-sm font-bold tracking-widest text-primary">บันทึกข้อความ</span>
+</div>
+<!-- Official Document Meta Grid -->
+<div class="flex flex-col gap-1 mb-space-md text-[12px] bg-surface-container-low/50 p-space-sm rounded border border-surface-container">
+<div class="flex gap-2">
+<span class="font-semibold text-on-surface-variant w-20 shrink-0">ส่วนงาน:</span>
+<span class="text-on-surface">โครงการจัดตั้งวิทยาเขตลำปาง มหาวิทยาลัยมหิดล</span>
+</div>
+<div class="flex gap-2">
+<span class="font-semibold text-on-surface-variant w-20 shrink-0">ที่:</span>
+<span class="text-on-surface">อว 78.14/ว 0482</span>
+<span class="font-semibold text-on-surface-variant ml-auto">วันที่:</span>
+<span class="text-on-surface">24 พฤษภาคม 2568</span>
+</div>
+<div class="flex gap-2 items-baseline mt-1">
+<span class="font-semibold text-on-surface-variant w-20 shrink-0">เรื่อง:</span>
+<!-- Bounding Box: Activity Title (Green / Blue Matched) -->
+<div class="relative p-1 rounded bg-blue-100/80 border-2 border-blue-500 font-semibold text-primary group cursor-pointer" title="สกัดเป็น: ชื่อโครงการ">
+<span class="absolute -top-2.5 -right-2 px-1.5 py-0.2 bg-blue-600 text-white rounded text-[9px] font-bold uppercase shadow-xs">Title Match (99%)</span>
+                  ขออนุมัติจัดโครงการตรวจคัดกรองสุขภาพเชิงรุกและพัฒนาโภชนาการสำหรับผู้สูงอายุ ตำบลลำปางหลวง อ.เกาะคา
+                </div>
+</div>
+</div>
+<!-- Body Paragraphs & Ambiguity Bounding Boxes -->
+<div class="flex flex-col gap-space-sm text-[12px] leading-relaxed">
+<p>เรียน รองผู้อำนวยการฝ่ายบริหารกลาง วิทยาเขตลำปาง</p>
+<p class="indent-6 text-justify">
+                ด้วย <span class="px-1.5 py-0.5 rounded bg-blue-50 border border-blue-400 font-medium text-primary cursor-pointer">ศูนย์สุขภาวะชุมชนลำปาง (แจ้ห่ม-เกาะคา)</span> มีความประสงค์จะดำเนินกิจกรรมเพื่อขับเคลื่อนสุขภาวะระดับปฐมภูมิ จึงใคร่ขออนุมัติดำเนินงานโครงการตามรายละเอียดดังนี้
+              </p>
+<!-- Extracted Items Container -->
+<div class="flex flex-col gap-2 pl-3 bg-surface-container-low/40 p-space-sm rounded-lg border border-surface-container">
+<!-- Bounding Alert 1: Dates (Ambiguous Format) -->
+<div class="flex items-start gap-2 relative">
+<span class="font-semibold text-on-surface-variant shrink-0 w-24">1. กำหนดการ:</span>
+<div class="flex-1 relative p-1 rounded bg-amber-100/90 border-2 border-amber-500 font-bold text-amber-950">
+<span class="absolute -top-2.5 -right-1 px-1.5 py-0.2 bg-amber-600 text-white rounded text-[9px] font-bold tracking-tight shadow-xs flex items-center gap-0.5">
+<span class="material-symbols-outlined text-[10px]">priority_high</span>
+                      Needs Date Split Confirmation
+                    </span>
+                    ระหว่างวันที่ 18 - 20 กรกฎาคม 2568 รวมระยะเวลา 3 วัน
+                  </div>
+</div>
+<div class="flex items-start gap-2">
+<span class="font-semibold text-on-surface-variant shrink-0 w-24">2. สถานที่:</span>
+<span class="px-1 rounded bg-blue-50 border border-blue-300 text-on-surface">
+                    ณ อาคารอเนกประสงค์ เทศบาลตำบลลำปางหลวง และหน่วยบริการเคลื่อนที่
+                  </span>
+</div>
+<!-- Bounding Alert 2: Beneficiary Breakdown -->
+<div class="flex items-start gap-2 relative">
+<span class="font-semibold text-on-surface-variant shrink-0 w-24">3. กลุ่มเป้าหมาย:</span>
+<div class="flex-1 relative p-1 rounded bg-amber-100/90 border-2 border-amber-500 font-semibold text-amber-950">
+<span class="absolute -top-2.5 -right-1 px-1.5 py-0.2 bg-amber-600 text-white rounded text-[9px] font-bold tracking-tight shadow-xs">
+                      Verify Count (≥250)
+                    </span>
+                    จำนวนผู้เข้าร่วมไม่น้อยกว่า 250 คน (ผู้สูงอายุและ อสม. เครือข่าย)
+                  </div>
+</div>
+<!-- Bounding 3: Budget (High Precision Green) -->
+<div class="flex items-start gap-2 relative">
+<span class="font-semibold text-on-surface-variant shrink-0 w-24">4. งบประมาณ:</span>
+<div class="flex-1 relative p-1 rounded bg-emerald-100/90 border-2 border-emerald-600 text-emerald-950 font-bold">
+<span class="absolute -top-2.5 -right-1 px-1.5 py-0.2 bg-emerald-700 text-white rounded text-[9px] font-bold tracking-tight shadow-xs">
+                      Budget Extracted ฿45,000
+                    </span>
+                    งบประมาณรวมทั้งสิ้น 45,000 บาท (สี่หมื่นห้าพันบาทถ้วน)
+                  </div>
+</div>
+</div>
+<p class="indent-6 text-justify">
+                จึงเรียนมาเพื่อโปรดพิจารณาอนุมัติการดำเนินโครงการและเบิกจ่ายงบประมาณบริการวิชาการต่อไป
+              </p>
+</div>
+<!-- Document Electronic Signature Section -->
+<div class="mt-space-md flex flex-col items-end text-center pr-space-md">
+<div class="w-32 h-7 flex items-center justify-center border border-dashed border-secondary/40 rounded bg-surface-container-low/40">
+<span class="text-[10px] text-secondary italic font-serif">[ ลายมือชื่ออิเล็กทรอนิกส์ ม.มหิดล ]</span>
+</div>
+<span class="font-label-sm text-label-sm font-semibold text-on-surface mt-1">ผศ.ดร. นภัสสร ธนโกเศศ</span>
+<span class="font-body-sm text-[11px] text-on-surface-variant">หัวหน้ากลุ่มงานบริการวิชาการสุขภาวะ</span>
+</div>
+<!-- Watermark -->
+<div class="absolute inset-0 pointer-events-none flex items-center justify-center opacity-5">
+<span class="material-symbols-outlined text-[160px]">task</span>
+</div>
+</div>
+<!-- Bottom Audit Verification Badge -->
+<div class="p-2 rounded bg-surface-container-lowest border border-surface-container flex items-center justify-between text-[11px] text-on-surface-variant">
+<span class="flex items-center gap-1 font-medium">
+<span class="material-symbols-outlined text-[14px] text-emerald-600">verified</span>
+              MD5 Hash: c97b8e...33fa (เอกสารต้นฉบับไม่ถูกแก้ไข)
+            </span>
+<button class="text-primary hover:underline font-semibold" type="button">ดาวน์โหลด PDF</button>
+</div>
+</div>
+</section>
+<!-- =================================================================== -->
+<!-- RIGHT COLUMN (55%): AI Extracted Fields & Resolution Panel          -->
+<!-- =================================================================== -->
+<section class="lg:col-span-7 h-full flex flex-col bg-surface overflow-hidden">
+<!-- Resolution Panel Scrollable Area -->
+<div class="flex-1 overflow-y-auto p-space-lg flex flex-col gap-space-md">
+<!-- 1. Visual Status & Warning Banner (Action Required) -->
+<div class="p-space-md rounded-xl bg-amber-50 border border-amber-200 shadow-xs flex items-start gap-3">
+<div class="w-9 h-9 rounded-full bg-amber-200 text-amber-900 flex items-center justify-center shrink-0 mt-0.5 font-bold">
+<span class="material-symbols-outlined text-[20px]">warning</span>
+</div>
+<div class="flex flex-col flex-1 min-w-0">
+<div class="flex items-center gap-2">
+<span class="font-label-md text-label-md font-bold text-amber-950">
+                  ตรวจพบ 2 จุดที่ต้องการการยืนยันจากผู้ดูแลระบบ (Human-in-the-loop Required)
+                </span>
+<span class="px-2 py-0.2 rounded-full bg-amber-200/80 text-amber-900 font-label-sm text-[10px] font-bold">ATTENTION</span>
+</div>
+<p class="font-body-sm text-body-sm text-amber-900 leading-snug mt-1">
+                AI สกัดข้อความสำเร็จแต่ต้องการความชัดเจนในการแยก <strong>“วันที่เริ่มต้น-สิ้นสุด”</strong> และ <strong>“เป้าหมายตัวเลขผู้เข้าร่วม”</strong> โปรดตรวจสอบฟิลด์ไฮไลต์สีส้มด้านล่างก่อนสั่งดำเนินการต่อ
+              </p>
+</div>
+</div>
+<!-- 2. Form Sheets: Interactive Field Verification -->
+<div class="flex flex-col gap-space-md">
+<!-- Field Group 1: Identity & Classification -->
+<div class="bg-surface-container-lowest rounded-xl p-space-md border border-surface-container shadow-xs flex flex-col gap-space-sm">
+<div class="flex items-center justify-between pb-1 border-b border-surface-container">
+<div class="flex items-center gap-1.5 text-primary font-label-md font-bold">
+<span class="material-symbols-outlined text-primary-container text-[18px]">badge</span>
+<span>1. ข้อมูลพื้นฐานกิจกรรมและหน่วยงาน</span>
+</div>
+<span class="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded">
+<span class="material-symbols-outlined text-[13px]">check_circle</span> สกัดตรง 100%
+                </span>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-space-sm">
+<!-- Activity Code -->
+<div class="flex flex-col gap-1">
+<label class="font-label-sm text-label-sm text-on-surface-variant font-semibold">รหัสกิจกรรม</label>
+<div class="relative">
+<input class="w-full h-9 px-space-sm rounded bg-surface-container-low font-label-md text-primary font-bold outline-none cursor-not-allowed text-xs border border-surface-container" readonly="" type="text" value="ACT-68-012"/>
+<span class="material-symbols-outlined absolute right-2.5 top-1/2 -translate-y-1/2 text-on-surface-variant text-[16px]">lock</span>
+</div>
+</div>
+<!-- Classification Select -->
+<div class="md:col-span-2 flex flex-col gap-1">
+<label class="font-label-sm text-label-sm text-on-surface-variant font-semibold">ประเภทกิจกรรม <span class="text-error">*</span></label>
+<select class="w-full h-9 px-space-sm rounded bg-surface-container-low font-body-sm text-body-sm text-on-surface outline-none border border-surface-container focus:ring-2 focus:ring-primary-container">
+<option selected="">บริการวิชาการสู่สังคม (Social Academic Services)</option>
+<option>การวิจัยและนวัตกรรมชุมชน (Community Research)</option>
+<option>การเรียนการสอนบูรณาการ (Integrated Teaching)</option>
+</select>
+</div>
+</div>
+<!-- Full Name (Readonly or Editable with badge) -->
+<div class="flex flex-col gap-1">
+<div class="flex items-center justify-between">
+<label class="font-label-sm text-label-sm text-on-surface-variant font-semibold">ชื่อโครงการ / กิจกรรม (ภาษาไทย) <span class="text-error">*</span></label>
+<span class="text-[11px] text-emerald-700 font-medium">ดึงตรงจากชื่อเรื่องในบันทึก</span>
+</div>
+<textarea class="w-full p-2 rounded bg-surface-container-low font-body-sm text-on-surface border border-surface-container focus:ring-2 focus:ring-primary-container outline-none leading-snug" rows="2">โครงการตรวจคัดกรองสุขภาพเชิงรุกและพัฒนาโภชนาการสำหรับผู้สูงอายุ ตำบลลำปางหลวง อ.เกาะคา</textarea>
+</div>
+<!-- Host Learning Center -->
+<div class="flex flex-col gap-1">
+<label class="font-label-sm text-label-sm text-on-surface-variant font-semibold">ศูนย์การเรียนรู้ / หน่วยงานต้นสังกัด <span class="text-error">*</span></label>
+<div class="relative">
+<span class="material-symbols-outlined absolute left-2.5 top-1/2 -translate-y-1/2 text-secondary text-[18px]">account_balance</span>
+<input class="w-full h-9 pl-8 pr-space-sm rounded bg-surface-container-low font-body-sm text-on-surface border border-surface-container focus:ring-2 focus:ring-primary-container outline-none" type="text" value="ศูนย์สุขภาวะชุมชนลำปาง (แจ้ห่ม-เกาะคา)"/>
+</div>
+</div>
+</div>
+<!-- Field Group 2: HIGHLIGHTED ISSUE (Date Split Confirmation) -->
+<div class="bg-surface-container-lowest rounded-xl p-space-md border-2 border-amber-400/90 shadow-sm flex flex-col gap-space-sm relative">
+<!-- Floating Alert Badge -->
+<div class="flex items-center justify-between pb-1 border-b border-amber-200">
+<div class="flex items-center gap-1.5 text-amber-950 font-label-md font-bold">
+<span class="material-symbols-outlined text-amber-600 text-[20px]">event_repeat</span>
+<span>2. กำหนดการและสถานที่จัดกิจกรรม</span>
+<span class="px-2 py-0.2 rounded bg-amber-200 text-amber-950 font-bold text-[10px]">โปรดตรวจสอบวันที่</span>
+</div>
+<button class="text-[11px] text-primary-container hover:underline font-bold flex items-center gap-0.5" type="button">
+<span class="material-symbols-outlined text-[13px]">location_searching</span>
+                  ดูจุดที่พบในเอกสาร
+                </button>
+</div>
+<!-- AI Suggestion Callout inside this group -->
+<div class="p-2 rounded bg-amber-50 border border-amber-200 flex items-start gap-2 text-xs text-amber-900">
+<span class="material-symbols-outlined text-[16px] text-amber-700 shrink-0 mt-0.5">psychology</span>
+<div>
+<strong>AI Suggestion:</strong> ตรวจพบข้อความในย่อหน้าที่ 3: <em>“ระหว่างวันที่ 18 - 20 กรกฎาคม 2568 รวมระยะเวลา 3 วัน”</em> ระบบทำการแยกฟิลด์ให้อัตโนมัติ โปรดยืนยันความถูกต้อง
+                </div>
+</div>
+<!-- Resolved Dates Grid -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-space-sm">
+<div class="flex flex-col gap-1">
+<label class="font-label-sm text-label-sm text-on-surface font-semibold flex items-center gap-1">
+<span>วันเริ่มต้น</span>
+<span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
+</label>
+<div class="relative">
+<input class="w-full h-9 px-space-sm rounded bg-surface-container-low font-body-sm text-on-surface font-medium border border-amber-300 focus:ring-2 focus:ring-primary-container outline-none" type="text" value="18 กรกฎาคม 2568"/>
+<span class="material-symbols-outlined absolute right-2.5 top-1/2 -translate-y-1/2 text-on-surface-variant text-[16px]">calendar_today</span>
+</div>
+</div>
+<div class="flex flex-col gap-1">
+<label class="font-label-sm text-label-sm text-on-surface font-semibold flex items-center gap-1">
+<span>วันสิ้นสุด</span>
+<span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
+</label>
+<div class="relative">
+<input class="w-full h-9 px-space-sm rounded bg-surface-container-low font-body-sm text-on-surface font-medium border border-amber-300 focus:ring-2 focus:ring-primary-container outline-none" type="text" value="20 กรกฎาคม 2568"/>
+<span class="material-symbols-outlined absolute right-2.5 top-1/2 -translate-y-1/2 text-on-surface-variant text-[16px]">calendar_today</span>
+</div>
+</div>
+<div class="flex flex-col gap-1">
+<label class="font-label-sm text-label-sm text-on-surface-variant font-semibold">ระยะเวลารวม (คำนวณอัตโนมัติ)</label>
+<input class="w-full h-9 px-space-sm rounded bg-surface-container-low font-body-sm text-on-surface-variant border border-surface-container outline-none" readonly="" type="text" value="3 วัน (ภาคสนาม)"/>
+</div>
+</div>
+<!-- Location -->
+<div class="flex flex-col gap-1">
+<label class="font-label-sm text-label-sm text-on-surface-variant font-semibold">สถานที่ดำเนินการ / จุดบริการ</label>
+<div class="relative">
+<span class="material-symbols-outlined absolute left-2.5 top-1/2 -translate-y-1/2 text-secondary text-[16px]">location_on</span>
+<input class="w-full h-9 pl-8 pr-space-sm rounded bg-surface-container-low font-body-sm text-on-surface border border-surface-container focus:ring-2 focus:ring-primary-container outline-none" type="text" value="อาคารอเนกประสงค์ เทศบาลตำบลลำปางหลวง และหน่วยบริการเคลื่อนที่"/>
+</div>
+</div>
+</div>
+<!-- Field Group 3: Beneficiaries & Financials -->
+<div class="bg-surface-container-lowest rounded-xl p-space-md border border-surface-container shadow-xs flex flex-col gap-space-sm">
+<div class="flex items-center justify-between pb-1 border-b border-surface-container">
+<div class="flex items-center gap-1.5 text-primary font-label-md font-bold">
+<span class="material-symbols-outlined text-primary-container text-[18px]">payments</span>
+<span>3. กลุ่มเป้าหมายและงบประมาณที่ได้รับอนุมัติ</span>
+</div>
+<span class="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded">
+<span class="material-symbols-outlined text-[13px]">check</span> งบตรงตามบันทึก
+                </span>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-space-sm">
+<!-- Participants with Target Indicator -->
+<div class="p-space-sm rounded-lg bg-surface-container-low/60 border border-surface-container flex flex-col gap-1">
+<div class="flex items-center justify-between">
+<span class="font-label-sm text-label-sm text-on-surface-variant font-semibold">เป้าหมายผู้เข้าร่วม (คน)</span>
+<span class="text-[10px] text-amber-800 font-bold bg-amber-100 px-1 rounded">ไม่น้อยกว่า 250</span>
+</div>
+<div class="flex items-baseline gap-2">
+<input class="w-24 h-8 px-2 rounded bg-surface-container-lowest font-metric-md text-metric-md text-primary font-bold border border-surface-container outline-none focus:ring-2 focus:ring-primary-container" type="number" value="250"/>
+<span class="font-body-sm text-xs text-on-surface-variant">คน (ผู้สูงอายุ + อสม.)</span>
+</div>
+</div>
+<!-- Approved Budget -->
+<div class="p-space-sm rounded-lg bg-surface-container-low/60 border border-surface-container flex flex-col gap-1">
+<div class="flex items-center justify-between">
+<span class="font-label-sm text-label-sm text-on-surface-variant font-semibold">งบประมาณที่ได้รับอนุมัติ (บาท)</span>
+<span class="material-symbols-outlined text-emerald-700 text-[16px]">verified</span>
+</div>
+<div class="flex items-baseline gap-2">
+<input class="w-28 h-8 px-2 rounded bg-surface-container-lowest font-metric-md text-metric-md text-emerald-800 font-bold border border-emerald-300 outline-none focus:ring-2 focus:ring-emerald-600" type="text" value="45,000"/>
+<span class="font-body-sm text-xs text-on-surface-variant">บาท (งบส่วนกลาง 68)</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Field Group 4: Strategic Alignment & Smart Recommendation -->
+<div class="bg-surface-container-lowest rounded-xl p-space-md border border-surface-container shadow-xs flex flex-col gap-space-sm">
+<div class="flex items-center justify-between pb-1 border-b border-surface-container">
+<div class="flex items-center gap-1.5 text-primary font-label-md font-bold">
+<span class="material-symbols-outlined text-primary-container text-[18px]">explore</span>
+<span>4. การผูกยุทธศาสตร์มหาวิทยาลัย &amp; ข้อเสนอแนะเชิงรุก</span>
+</div>
+<span class="font-label-sm text-label-sm text-primary bg-primary-fixed px-2 py-0.5 rounded font-bold text-[10px]">
+                  AI MATCHED
+                </span>
+</div>
+<!-- Tags -->
+<div class="flex flex-wrap items-center gap-1.5">
+<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded bg-surface-container text-primary font-label-sm text-xs font-semibold">
+<span class="w-2 h-2 rounded-full bg-emerald-600"></span>
+                  SDG 3: สุขภาพและความเป็นอยู่ที่ดี (Good Health)
+                </span>
+<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded bg-surface-container text-primary font-label-sm text-xs font-semibold">
+<span class="w-2 h-2 rounded-full bg-secondary"></span>
+                  ยุทธศาสตร์ที่ 1: การบริการสุขภาพชุมชนเมืองและชนบท
+                </span>
+<button class="inline-flex items-center gap-0.5 px-2 py-1 rounded text-secondary hover:bg-surface-container font-label-sm text-xs transition-colors" type="button">
+<span class="material-symbols-outlined text-[14px]">add</span> เพิ่มตัวชี้วัด
+                </button>
+</div>
+<!-- AI Proactive Automation Option -->
+<div class="p-2.5 rounded-lg bg-blue-50/70 border border-blue-200/80 flex items-start gap-2.5 mt-1">
+<div class="w-7 h-7 rounded-full bg-primary-container text-on-primary flex items-center justify-center shrink-0 mt-0.5">
+<span class="material-symbols-outlined text-[16px]">auto_awesome</span>
+</div>
+<div class="flex flex-col flex-1 text-xs">
+<span class="font-bold text-primary">ระบบแนะนำการสร้างแบบประเมินความพึงพอใจคู่ขนาน</span>
+<p class="text-on-surface-variant mt-0.5 leading-normal">
+                    ระบบตรวจพบกิจกรรมอบรมโภชนาการ แนะนำให้เปิดใช้งานแบบสำรวจการนำความรู้ไปใช้เพื่อประกันคุณภาพการศึกษา (EdPEx) ทันที
+                  </p>
+<label class="mt-2 inline-flex items-center gap-2 cursor-pointer select-none">
+<input checked="" class="w-4 h-4 rounded text-primary-container focus:ring-primary-container" type="checkbox"/>
+<span class="font-semibold text-primary">สร้างแบบประเมินความพึงพอใจ (Auto-generate Survey) ทันทีหลังยืนยัน</span>
+</label>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+</div>
+<!-- 3. DRAWER BOTTOM FOOTER: AUDIT TRACE & AUTONOMOUS PIPELINE RESUME ACTIONS -->
+<footer class="shrink-0 bg-surface-container-lowest border-t border-surface-container px-space-lg py-3 flex flex-col sm:flex-row items-center justify-between gap-space-md z-10 shadow-lg">
+<!-- Left: Institutional Audit Trace -->
+<div class="flex items-center gap-2 text-xs text-on-surface-variant w-full sm:w-auto">
+<span class="material-symbols-outlined text-secondary text-[18px]">verified_user</span>
+<div class="flex flex-col">
+<span class="font-semibold text-primary">
+            Audit Trace: บันทึกการแก้ไขโดย ผศ.ดร. นภัสสร ธนโกเศศ (AdminGuard Level 3)
+          </span>
+<span class="text-[11px] text-on-surface-variant">การยืนยันนี้จะถูกบันทึกลงใน System Audit Trail ทันที</span>
+</div>
+</div>
+<!-- Right: Action Buttons -->
+<div class="flex items-center gap-space-sm w-full sm:w-auto justify-end">
+<button class="h-10 px-4 rounded-lg border border-surface-container-high text-on-surface-variant hover:bg-surface-container hover:text-primary font-label-md text-label-md font-medium transition-colors" type="button">
+          ยกเลิก / ปิด Drawer
+        </button>
+<button class="h-10 px-5 rounded-lg bg-primary-container hover:bg-primary text-on-primary font-label-md text-label-md font-bold shadow-md transition-all flex items-center gap-2 group" type="button">
+<span class="material-symbols-outlined text-tertiary-fixed text-[18px]">play_arrow</span>
+<span>บันทึกข้อมูลและส่งกลับเข้า Autonomous Pipeline ต่อทันที (Resume Workflow)</span>
+<span class="material-symbols-outlined text-[16px] group-hover:translate-x-0.5 transition-transform">arrow_forward</span>
+</button>
+</div>
+</footer>
+</aside>
+</div>
+</body></html>

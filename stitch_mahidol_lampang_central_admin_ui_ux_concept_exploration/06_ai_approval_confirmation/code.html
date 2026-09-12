@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+
+<html lang="th"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><link href="https://fonts.googleapis.com" rel="preconnect"/><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Prompt:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><style>@layer base{html,body{margin:0;padding:0;}body{overscroll-behavior:none;font-family:'Prompt','Inter',sans-serif;}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config = { darkMode: 'class', theme: { extend: { 'colors': { 'on-error': '#ffffff', 'surface-bright': '#f8f9ff', 'on-primary-fixed-variant': '#24467c', 'on-secondary-fixed-variant': '#254776', 'primary-fixed': '#d7e2ff', 'tertiary-container': '#003715', 'primary-container': '#002d62', 'on-secondary-container': '#325383', 'inverse-primary': '#abc7ff', 'on-background': '#0b1c30', 'error-container': '#ffdad6', 'surface-container-high': '#dce9ff', 'secondary': '#3f5f8f', 'on-tertiary-fixed-variant': '#005323', 'on-primary-container': '#7796d1', 'on-primary-fixed': '#001b3f', 'surface-container': '#e5eeff', 'inverse-on-surface': '#eaf1ff', 'inverse-surface': '#213145', 'outline-variant': '#c4c6d1', 'surface-container-low': '#eff4ff', 'tertiary-fixed': '#95f8a7', 'primary-fixed-dim': '#abc7ff', 'secondary-fixed-dim': '#a8c8ff', 'on-surface-variant': '#43474f', 'background': '#f8f9ff', 'on-secondary-fixed': '#001b3c', 'on-tertiary-fixed': '#00210a', 'on-primary': '#ffffff', 'error': '#ba1a1a', 'tertiary': '#001f09', 'secondary-container': '#a8c8ff', 'on-tertiary': '#ffffff', 'on-secondary': '#ffffff', 'secondary-fixed': '#d5e3ff', 'on-tertiary-container': '#47a960', 'surface-dim': '#cbdbf5', 'surface-container-lowest': '#ffffff', 'on-error-container': '#93000a', 'tertiary-fixed-dim': '#79db8d', 'surface-variant': '#d3e4fe', 'outline': '#747781', 'on-surface': '#0b1c30', 'surface-container-highest': '#d3e4fe', 'primary': '#00193c', 'surface-tint': '#3e5e95', 'surface': '#f8f9ff' }, 'borderRadius': { 'DEFAULT': '0.125rem', 'lg': '0.25rem', 'xl': '0.5rem', 'full': '0.75rem' }, 'spacing': { 'margin': '2rem', 'space-lg': '1.25rem', 'space-sm': '0.5rem', 'gutter': '1.5rem', 'space-xs': '0.25rem', 'gutter-sm': '0.75rem', 'space-md': '0.75rem', 'margin-mobile': '1rem', 'space-xl': '2rem', 'gutter-lg': '2rem' }, 'fontFamily': { 'label-md': ['Inter'], 'body-sm': ['Inter'], 'label-sm': ['Inter'], 'label-lg': ['Inter'], 'body-md': ['Inter'], 'metric-lg': ['Inter'], 'body-lg': ['Inter'], 'display-lg': ['Inter'], 'display-lg-mobile': ['Inter'], 'metric-md': ['Inter'], 'headline-md': ['Inter'], 'headline-lg': ['Inter'], 'headline-sm': ['Inter'] }, 'fontSize': { 'label-md': ['12px', { 'lineHeight': '16px', 'letterSpacing': '0.01em', 'fontWeight': '500' }], 'body-sm': ['12px', { 'lineHeight': '18px', 'fontWeight': '400' }], 'label-sm': ['11px', { 'lineHeight': '14px', 'letterSpacing': '0.04em', 'fontWeight': '600' }], 'label-lg': ['14px', { 'lineHeight': '20px', 'fontWeight': '500' }], 'body-md': ['14px', { 'lineHeight': '20px', 'fontWeight': '400' }], 'metric-lg': ['28px', { 'lineHeight': '32px', 'letterSpacing': '-0.02em', 'fontWeight': '700' }], 'body-lg': ['16px', { 'lineHeight': '24px', 'fontWeight': '400' }], 'display-lg': ['32px', { 'lineHeight': '40px', 'letterSpacing': '-0.02em', 'fontWeight': '700' }], 'display-lg-mobile': ['26px', { 'lineHeight': '34px', 'letterSpacing': '-0.015em', 'fontWeight': '700' }], 'metric-md': ['20px', { 'lineHeight': '24px', 'letterSpacing': '-0.01em', 'fontWeight': '600' }], 'headline-md': ['20px', { 'lineHeight': '28px', 'letterSpacing': '-0.01em', 'fontWeight': '600' }], 'headline-lg': ['24px', { 'lineHeight': '32px', 'letterSpacing': '-0.015em', 'fontWeight': '600' }], 'headline-sm': ['16px', { 'lineHeight': '24px', 'letterSpacing': '-0.005em', 'fontWeight': '600' }] } } } };</script></head><body class="bg-background text-on-surface antialiased"><aside class="fixed left-0 top-0 h-full w-64 bg-surface-container-lowest shadow-[0_1px_8px_rgba(0,0,0,0.04)] z-50 flex flex-col justify-between select-none"><div class="flex flex-col h-full"><div class="h-16 px-space-md flex items-center gap-space-sm bg-primary-container text-on-primary"><img alt="Brand logo. - Primary color: #002d62
+- Font: inter
+- Mode: light
+- Roundness: rounded-sm
+" class="h-8 w-auto object-contain" src="https://lh3.googleusercontent.com/aida/AEtjO1VFAkqaiHm7Qs6ZOiDdsCPW7wHH5YmsP4FKTuE0nAS9zRAj2rVyL341f3O1kf_P4a3n5vDz1eNJFtCOhDlzQfqeJlhuLVHiXQitVUQtWHNWcc2Ox6Ywac3FulrZo4b0oB_UYv3xa4sL0rqim7vGeIb53p8YM8lGedE-1LI7x7OMjKM35QAPSyXhYpEMwgFpOR9JXP7-qWI-Y04Mrtlx8OORcNHELWfEW-4xKAkj-jGVtdrwqi_pet8qYG8"/><div class="flex flex-col min-w-0"><span class="font-headline-sm text-headline-sm tracking-tight truncate text-on-primary font-bold">MU LAMPANG</span><span class="font-label-sm text-label-sm text-on-primary-container uppercase tracking-wider truncate">Central Admin</span></div></div><div class="flex-1 overflow-y-auto py-space-md px-space-sm"><nav class="space-y-space-md" data-active-classes="bg-primary-container text-on-primary font-semibold shadow-sm"><div class="space-y-space-xs"><div class="px-space-sm py-space-xs font-label-sm text-label-sm uppercase tracking-wider text-outline">CORE OVERVIEW</div><a class="group flex items-center gap-space-sm px-space-sm py-space-xs rounded font-label-lg text-label-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors" data-path="dashboard" href="#"><span class="material-symbols-outlined text-[20px]">space_dashboard</span><span>ภาพรวมระบบ (Dashboard)</span></a></div><div class="space-y-space-xs"><div class="px-space-sm py-space-xs font-label-sm text-label-sm uppercase tracking-wider text-outline">OPERATIONS</div><a class="group flex items-center gap-space-sm px-space-sm py-space-xs rounded font-label-lg text-label-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors" data-path="activities" href="#"><span class="material-symbols-outlined text-[20px]">event_available</span><span>กิจกรรม &amp; กำหนดการ</span></a><a class="group flex items-center gap-space-sm px-space-sm py-space-xs rounded font-label-lg text-label-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors" data-path="surveys" href="#"><span class="material-symbols-outlined text-[20px]">quiz</span><span>แบบประเมินและแบบสำรวจ</span></a><a class="group flex items-center gap-space-sm px-space-sm py-space-xs rounded font-label-lg text-label-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors" data-path="learning-centers" href="#"><span class="material-symbols-outlined text-[20px]">school</span><span>ศูนย์การเรียนรู้ &amp; แหล่งวิชาการ</span></a><a class="group flex items-center gap-space-sm px-space-sm py-space-xs rounded font-label-lg text-label-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors" data-path="cms" href="#"><span class="material-symbols-outlined text-[20px]">article</span><span>สารสนเทศและเนื้อหา CMS</span></a><a class="group flex items-center gap-space-sm px-space-sm py-space-xs rounded font-label-lg text-label-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors" data-path="analytics" href="#"><span class="material-symbols-outlined text-[20px]">analytics</span><span>การวิเคราะห์ &amp; รายงานผล</span></a></div><div class="space-y-space-xs"><div class="px-space-sm py-space-xs font-label-sm text-label-sm uppercase tracking-wider text-outline">AI WORKSPACE</div><a class="group flex items-center gap-space-sm px-space-sm py-space-xs rounded font-label-lg text-label-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors" data-path="ai-command-center" href="#"><span class="material-symbols-outlined text-[20px]">smart_toy</span><span>ศูนย์สั่งการอัจฉริยะ</span></a><a aria-current="page" class="group flex items-center gap-space-sm px-space-sm py-space-xs rounded transition-colors bg-primary-container text-on-primary font-semibold shadow-sm" data-path="ai-work-queue" href="#"><span class="material-symbols-outlined text-[20px]">pending_actions</span><span>คิวงาน AI และรออนุมัติ</span></a><a class="group flex items-center gap-space-sm px-space-sm py-space-xs rounded font-label-lg text-label-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors" data-path="ai-execution-history" href="#"><span class="material-symbols-outlined text-[20px]">history_toggle_off</span><span>ประวัติการประมวลผล</span></a></div><div class="space-y-space-xs"><div class="px-space-sm py-space-xs font-label-sm text-label-sm uppercase tracking-wider text-outline">GOVERNANCE</div><a class="group flex items-center gap-space-sm px-space-sm py-space-xs rounded font-label-lg text-label-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors" data-path="administration-and-rbac" href="#"><span class="material-symbols-outlined text-[20px]">verified_user</span><span>การบริหารจัดการสิทธิ์</span></a><a class="group flex items-center gap-space-sm px-space-sm py-space-xs rounded font-label-lg text-label-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors" data-path="system-settings" href="#"><span class="material-symbols-outlined text-[20px]">settings</span><span>ตั้งค่าระบบสถาบัน</span></a><a class="group flex items-center gap-space-sm px-space-sm py-space-xs rounded font-label-lg text-label-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors" data-path="audit-trail" href="#"><span class="material-symbols-outlined text-[20px]">receipt_long</span><span>บันทึกประวัติการตรวจสอบ</span></a></div></nav></div><div class="p-space-sm bg-surface-container-low m-space-sm rounded"><div class="flex items-center gap-space-sm"><span class="material-symbols-outlined text-secondary text-[20px]">domain</span><div class="flex flex-col min-w-0"><span class="font-label-sm text-label-sm text-on-surface font-semibold truncate">วิทยาเขตลำปาง</span><span class="font-body-sm text-body-sm text-on-surface-variant truncate">Lampang Campus Node</span></div></div></div></div></aside><div class="pl-64 flex flex-col min-h-screen"><header class="fixed top-0 left-64 right-0 h-16 bg-primary-container text-on-primary z-40 shadow-[0_1px_8px_rgba(0,0,0,0.04)] flex items-center justify-between px-space-lg"><div class="flex items-center gap-space-md flex-1 max-w-xl"><div class="relative w-full max-w-md"><span class="material-symbols-outlined absolute left-space-sm top-1/2 -translate-y-1/2 text-on-primary-container text-[20px]">search</span><input class="w-full h-9 pl-9 pr-12 bg-primary text-on-primary placeholder-on-primary-container rounded font-body-sm text-body-sm focus:outline-none focus:ring-1 focus:ring-on-primary-container border-0" placeholder="ค้นหาข้อมูล บริการ หรือคำสั่งด่วน (Ctrl+K)" type="text"/><kbd class="absolute right-space-sm top-1/2 -translate-y-1/2 bg-primary-container text-on-primary-container px-1 py-0.5 rounded font-label-sm text-[10px]">Ctrl+K</kbd></div><div class="flex items-center gap-space-xs bg-primary px-space-sm py-1 rounded text-on-primary"><span class="material-symbols-outlined text-[16px] text-on-primary-container">calendar_month</span><select class="bg-transparent font-label-sm text-label-sm text-on-primary focus:outline-none cursor-pointer border-0 py-0"><option class="bg-primary-container text-on-primary" value="2567-2">ปีการศึกษา 2567 / เทอม 2</option><option class="bg-primary-container text-on-primary" value="2567-1">ปีการศึกษา 2567 / เทอม 1</option><option class="bg-primary-container text-on-primary" value="2566-2">ปีการศึกษา 2566 / เทอม 2</option></select></div></div><div class="flex items-center gap-space-md"><button class="relative p-space-xs rounded hover:bg-primary text-on-primary transition-colors" title="การแจ้งเตือน"><span class="material-symbols-outlined text-[22px]">notifications</span><span class="absolute top-1 right-1 w-2 h-2 bg-error rounded-full ring-2 ring-primary-container"></span></button><div class="h-6 w-px bg-on-primary-container/30"></div><div class="flex items-center gap-space-sm"><div class="text-right hidden sm:block"><div class="flex items-center justify-end gap-space-xs"><span class="font-label-lg text-label-lg font-semibold text-on-primary leading-tight">ผศ.ดร. นภัสสร ชนโกเศศ</span><span class="px-1.5 py-0.5 bg-secondary-container text-on-secondary-container font-label-sm text-[10px] font-bold rounded uppercase tracking-wider">AdminGuard</span></div><span class="font-body-sm text-body-sm text-on-primary-container block leading-tight">รองผู้อำนวยการฝ่ายบริหารกลาง</span></div><div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center"><span class="material-symbols-outlined text-on-primary text-[18px]">person</span></div></div></div></header><main class="w-full pt-16 px-space-lg py-space-lg flex-1 bg-background"><div class="flex flex-col w-full space-y-space-md">
+<!-- Breadcrumb & Top Context Tracker -->
+<div class="flex flex-wrap items-center justify-between gap-space-sm">
+<nav class="flex items-center gap-space-xs font-label-md text-label-md text-on-surface-variant">
+<span class="flex items-center gap-1 hover:text-on-surface cursor-pointer transition-colors">
+<span class="material-symbols-outlined text-[16px] text-secondary">smart_toy</span>
+<span>AI Workspace</span>
+</span>
+<span class="material-symbols-outlined text-[14px] text-outline-variant">chevron_right</span>
+<span class="hover:text-on-surface cursor-pointer transition-colors">รายการรออนุมัติ</span>
+<span class="material-symbols-outlined text-[14px] text-outline-variant">chevron_right</span>
+<span class="font-semibold text-primary-container bg-surface-container px-space-xs py-0.5 rounded">การยืนยันความปลอดภัยและเผยแพร่</span>
+</nav>
+<div class="flex items-center gap-space-sm">
+<span class="inline-flex items-center gap-1 px-2.5 py-1 bg-surface-container-high rounded text-on-surface font-label-sm text-label-sm">
+<span class="w-2 h-2 rounded-full bg-error animate-pulse"></span>
+<span>GATEKEEPER TIER 3</span>
+</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant font-mono">FLOW-ID: #WF-6807-MU049</span>
+</div>
+</div>
+<!-- Page Header (Compact, High-Authority) -->
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-space-sm bg-surface-container-lowest p-space-md rounded shadow-sm">
+<div class="space-y-0.5">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-primary-container text-[24px]">verified_user</span>
+<h1 class="font-headline-md text-headline-md text-on-surface tracking-tight">การยืนยันการเผยแพร่กิจกรรมและเปิดใช้งานแบบประเมิน</h1>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">
+        สิทธิ์ความปลอดภัยสูงสุด: Admin Decides WHAT • AI Synthesizes HOW • Human Confirms HIGH RISK
+      </p>
+</div>
+<div class="flex items-center gap-space-xs self-start sm:self-auto bg-surface-container-low px-space-md py-1.5 rounded text-on-surface font-label-sm text-label-sm">
+<span class="material-symbols-outlined text-secondary text-[18px]">lock_clock</span>
+<span>Session Auth: <strong class="font-semibold text-primary-container">AdminGuard Validated (29:48s)</strong></span>
+</div>
+</div>
+<!-- Risk Tier Classification Banner -->
+<div class="relative overflow-hidden rounded bg-surface-container-lowest p-space-md shadow-sm">
+<div class="absolute left-0 top-0 bottom-0 w-1.5 bg-error"></div>
+<div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-space-md pl-space-xs">
+<div class="flex items-start gap-space-md">
+<div class="w-10 h-10 rounded bg-error-container text-on-error-container flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-[24px]" style="font-variation-settings: 'FILL' 1;">security_update_warning</span>
+</div>
+<div>
+<div class="flex items-center gap-space-xs">
+<span class="px-1.5 py-0.5 rounded font-label-sm text-[10px] uppercase font-bold tracking-wider bg-error-container text-on-error-container">
+              High-Risk Institutional Action Alert
+            </span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">• ระดับความเสี่ยงภายนอก: Tier A (Public Release)</span>
+</div>
+<p class="font-body-md text-body-md text-on-surface font-medium mt-0.5">
+            การเผยแพร่ข้อมูลสู่ภายนอกและการเปิดใช้งานแบบสอบถามสาธารณะ จำเป็นต้องได้รับการยืนยันโดยผู้มีอำนาจตามสิทธิ์ RBAC (AdminGuard Verified)
+          </p>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-0.5">
+            เมื่อได้รับการอนุมัติ ข้อมูลจะถูกบันทึกผ่านระบบกลาง ม.มหิดล วิทยาเขตลำปาง และส่งสัญญาน Webhook ไปยังพอร์ทัลหลักทันที
+          </p>
+</div>
+</div>
+<div class="flex items-center gap-space-xs shrink-0 self-end md:self-center">
+<div class="text-right">
+<div class="font-label-sm text-label-sm text-on-surface-variant uppercase">ผู้รับผิดชอบพิจารณา</div>
+<div class="font-label-lg text-label-lg font-semibold text-primary-container">ผศ.ดร. นภัสสร ชนโกเศศ</div>
+</div>
+<div class="w-9 h-9 rounded bg-primary-container text-on-primary flex items-center justify-center">
+<span class="material-symbols-outlined text-[20px]">how_to_reg</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Compact Decision Card: 5-Second Comprehension Grid -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-space-md">
+<!-- Left Column: Activity & Survey Final Synthesis Summary (7 cols) -->
+<div class="lg:col-span-7 flex flex-col space-y-space-md">
+<div class="bg-surface-container-lowest rounded p-space-md shadow-sm space-y-space-md">
+<!-- Card Sub-header -->
+<div class="flex items-center justify-between pb-space-xs bg-surface-container-low -mx-space-md -mt-space-md px-space-md pt-space-xs rounded-t">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-primary-container text-[18px]">summarize</span>
+<h2 class="font-headline-sm text-headline-sm text-primary-container font-semibold">Activity &amp; Survey Final Synthesis Summary</h2>
+</div>
+<span class="font-mono font-label-sm text-label-sm text-on-surface-variant bg-surface-container-highest px-2 py-0.5 rounded">
+            ID: ACT-68-012
+          </span>
+</div>
+<!-- Project Hero Card with Image & Title -->
+<div class="flex flex-col sm:flex-row gap-space-md bg-surface-container-low p-space-sm rounded">
+<img class="w-full sm:w-36 h-28 object-cover rounded shadow-inner shrink-0" data-alt="Senior citizens and healthcare university students interacting joyfully during a proactive community health screening in a well-lit civic municipal building in Lampang Thailand. Warm, clear, administrative documentary style with emerald and deep navy tints." src="https://lh3.googleusercontent.com/aida-public/AB6AXuApW7tSHPi5Zpoh525vCO5fSBAG2bbd9b3myOvj2nA0iNxZFwXlVt8Y_E98EHbQP_xvlg7jQSmlu0TwHWwJjOu91Ft2QAGLURdo1JZGrS_WaNg-hqYbehxQbgtbyxcbYo4pjSr3wC--bgh9UveYXSqoMa_yfjsR3FdphmdWvzCga0tPqjfrdOGiSS-mINMFg5s1iPZ3AnjVOe0Z0YoUwi07I72xfrg-8h849XT2Y5p2xrd_8PIrx-qw"/>
+<div class="flex flex-col justify-between min-w-0 flex-1">
+<div>
+<div class="flex items-center gap-space-xs">
+<span class="px-1.5 py-0.5 bg-secondary-container text-on-secondary-container font-label-sm text-[11px] font-semibold rounded">งานบริการวิชาการชีวอนามัย</span>
+<span class="px-1.5 py-0.5 bg-tertiary-fixed text-on-tertiary-fixed-variant font-label-sm text-[11px] font-semibold rounded">SDG 3: Good Health</span>
+</div>
+<h3 class="font-headline-sm text-headline-sm text-on-surface font-semibold mt-1 leading-snug">
+                โครงการตรวจคัดกรองสุขภาพเชิงรุกและพัฒนาโภชนาการสำหรับผู้สูงอายุ ตำบลลำปางหลวง
+              </h3>
+</div>
+<div class="flex items-center gap-space-xs font-label-sm text-label-sm text-on-surface-variant">
+<span class="material-symbols-outlined text-[16px] text-secondary">corporate_fare</span>
+<span class="truncate">หน่วยรับผิดชอบ: ภาควิชาสาธารณสุขศาสตร์ชุมชน มหาวิทยาลัยมหิดล</span>
+</div>
+</div>
+</div>
+<!-- Metric & Spec Matrix -->
+<div class="grid grid-cols-2 sm:grid-cols-3 gap-space-sm">
+<div class="bg-surface p-space-sm rounded">
+<div class="flex items-center gap-1 font-label-sm text-label-sm text-on-surface-variant">
+<span class="material-symbols-outlined text-[16px] text-secondary">calendar_today</span>
+<span>กำหนดการดำเนินงาน</span>
+</div>
+<div class="font-label-lg text-label-lg font-semibold text-on-surface mt-1">18 - 20 ก.ค. 2568</div>
+<span class="font-body-sm text-body-sm text-on-surface-variant">รวมระยะเวลา 3 วัน</span>
+</div>
+<div class="bg-surface p-space-sm rounded">
+<div class="flex items-center gap-1 font-label-sm text-label-sm text-on-surface-variant">
+<span class="material-symbols-outlined text-[16px] text-secondary">account_balance_wallet</span>
+<span>งบประมาณอนุมัติ</span>
+</div>
+<div class="font-metric-md text-metric-md font-bold text-primary-container mt-1">฿45,000</div>
+<span class="font-body-sm text-body-sm text-on-surface-variant truncate block">ทุนบริการวิชาการ ม.มหิดล</span>
+</div>
+<div class="bg-surface p-space-sm rounded col-span-2 sm:col-span-1">
+<div class="flex items-center gap-1 font-label-sm text-label-sm text-on-surface-variant">
+<span class="material-symbols-outlined text-[16px] text-secondary">hub</span>
+<span>ศูนย์การเรียนรู้เชื่อมโยง</span>
+</div>
+<div class="font-label-lg text-label-lg font-semibold text-on-surface mt-1 truncate">ศูนย์สุขภาวะชุมชนลำปาง</div>
+<span class="font-body-sm text-body-sm text-on-surface-variant truncate block">โหนด (แจ้ห่ม-เกาะคา)</span>
+</div>
+</div>
+<!-- Venue & Target Detailed Specs -->
+<div class="space-y-space-xs font-body-md text-body-md">
+<div class="flex items-start gap-space-sm bg-surface p-space-sm rounded">
+<span class="material-symbols-outlined text-secondary text-[20px] shrink-0">pin_drop</span>
+<div>
+<span class="font-label-sm text-label-sm text-on-surface-variant block uppercase font-semibold">สถานที่ปฏิบัติการและตรวจร่างกาย</span>
+<span class="text-on-surface">อาคารอเนกประสงค์ เทศบาลตำบลลำปางหลวง | สนับสนุนด้วยหน่วยบริการปฐมภูมิเคลื่อนที่ Mobile Unit #02</span>
+</div>
+</div>
+</div>
+<!-- Survey & CMS Output Synthesis Box -->
+<div class="grid grid-cols-1 sm:grid-cols-2 gap-space-sm pt-space-xs">
+<!-- Survey Module -->
+<div class="bg-surface-container-low p-space-sm rounded space-y-1">
+<div class="flex items-center justify-between">
+<span class="font-label-sm text-label-sm font-semibold uppercase text-secondary flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px]">poll</span>
+                แบบประเมินความพึงพอใจ
+              </span>
+<span class="px-1.5 py-0.2 bg-tertiary-fixed text-on-tertiary-fixed-variant font-label-sm text-[10px] font-bold rounded">
+                PDPA 100%
+              </span>
+</div>
+<div class="font-label-lg text-label-lg font-semibold text-on-surface">
+              7 ข้อคำถาม (Likert Scale 5 ระดับ)
+            </div>
+<div class="font-body-sm text-body-sm text-on-surface-variant flex items-center gap-1">
+<span class="material-symbols-outlined text-on-tertiary-container text-[14px]">shield</span>
+<span>โหมดนิรนาม (Anonymous Mode เข้ารหัส SHA-256)</span>
+</div>
+</div>
+<!-- CMS Publication Module -->
+<div class="bg-surface-container-low p-space-sm rounded space-y-1">
+<div class="flex items-center justify-between">
+<span class="font-label-sm text-label-sm font-semibold uppercase text-secondary flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px]">newspaper</span>
+                สื่อเผยแพร่ CMS อัตโนมัติ
+              </span>
+<span class="px-1.5 py-0.2 bg-surface-container text-on-surface font-label-sm text-[10px] font-bold rounded">
+                Portal Ready
+              </span>
+</div>
+<div class="font-label-lg text-label-lg font-semibold text-on-surface">
+              ร่างข่าวประชาสัมพันธ์และแบนเนอร์
+            </div>
+<div class="font-body-sm text-body-sm text-on-surface-variant flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px] text-secondary">language</span>
+<span>พร้อมนำขึ้นหน้าแรก mu-lampang.mahidol.ac.th</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Live Payload Preview Accordion -->
+<div class="bg-surface-container-lowest rounded p-space-md shadow-sm">
+<div class="flex items-center justify-between cursor-pointer" onclick="document.getElementById('payload-detail').classList.toggle('hidden'); document.getElementById('arrow-icon').classList.toggle('rotate-180')">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-secondary text-[20px]">code</span>
+<span class="font-label-lg text-label-lg font-semibold text-on-surface">ตรวจสอบชุดข้อมูล AI Generated Synthesis Payload (Data Inspection)</span>
+</div>
+<span class="material-symbols-outlined text-outline transition-transform text-[20px]" id="arrow-icon">expand_more</span>
+</div>
+<div class="hidden mt-space-sm pt-space-sm bg-surface-container-lowest space-y-space-xs font-mono text-[11px] text-on-surface-variant leading-relaxed" id="payload-detail">
+<div class="bg-surface-container p-space-sm rounded overflow-x-auto text-on-surface">
+            {<br/>
+              "workflow_uuid": "e817a-8802-lampang-hilo",<br/>
+              "activity_id": "ACT-68-012",<br/>
+              "synthesizer_agents": ["HealthCurator-Agent-v2", "PrivacyGuard-L3"],<br/>
+              "eval_survey": { "scale": 5, "dimensions": ["Access", "CareQuality", "Facility", "Satisfaction"], "anonymized": true },<br/>
+              "edpex_tagging": ["Category_3_Customer_Focus", "Action_3.1"],<br/>
+              "destination_queues": ["portal.cms.publish", "evaluation.forms.bind", "audit.ledger.append"]<br/>
+            }
+          </div>
+</div>
+</div>
+</div>
+<!-- Right Column: Verification Checklist & Multi-Agent Audit Check (5 cols) -->
+<div class="lg:col-span-5 flex flex-col space-y-space-md">
+<!-- Multi-Agent Audit Score Card -->
+<div class="bg-surface-container-lowest rounded p-space-md shadow-sm space-y-space-md">
+<div class="flex items-center justify-between pb-space-xs bg-surface-container-low -mx-space-md -mt-space-md px-space-md pt-space-xs rounded-t">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-on-tertiary-container text-[18px]">verified</span>
+<h2 class="font-headline-sm text-headline-sm text-primary-container font-semibold">Multi-Agent Verification</h2>
+</div>
+<span class="px-2 py-0.5 bg-tertiary-fixed text-on-tertiary-fixed-variant font-label-sm text-label-sm font-bold rounded">
+            100% Verified
+          </span>
+</div>
+<!-- Visual Verification Progress Graphic -->
+<div class="flex items-center gap-space-md bg-surface p-space-sm rounded">
+<div class="relative w-16 h-16 shrink-0 flex items-center justify-center">
+<svg class="w-16 h-16 transform -rotate-90" viewbox="0 0 36 36">
+<path class="text-surface-container" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="currentColor" stroke-width="3.5"></path>
+<path class="text-on-tertiary-container" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="currentColor" stroke-dasharray="100, 100" stroke-linecap="round" stroke-width="3.5"></path>
+</svg>
+<div class="absolute inset-0 flex flex-col items-center justify-center">
+<span class="material-symbols-outlined text-on-tertiary-container text-[22px]" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+</div>
+</div>
+<div class="min-w-0">
+<div class="font-headline-sm text-headline-sm font-bold text-on-surface">5 / 5 มาตรวัดผ่านเกณฑ์</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">
+              การตรวจสอบความสอดคล้องระดับกฎหมาย มหาวิทยาลัย และสิทธิ์การจัดการครบถ้วน
+            </p>
+</div>
+</div>
+<!-- Systematic 5-Point Human-in-the-Loop Checklist -->
+<div class="space-y-space-xs">
+<!-- Check 1 -->
+<div class="flex items-start gap-space-sm p-space-sm bg-surface-container-low rounded">
+<div class="w-6 h-6 rounded-full bg-tertiary-fixed text-on-tertiary-fixed-variant flex items-center justify-center shrink-0 mt-0.5">
+<span class="material-symbols-outlined text-[16px] font-bold">check</span>
+</div>
+<div class="flex-1 min-w-0">
+<div class="font-label-md text-label-md font-semibold text-on-surface">ตรวจสอบความถูกต้องของข้อมูลบังคับ</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Mandatory fields, วันที่, สถานที่ และผู้ประสานงานได้รับการยืนยัน</p>
+</div>
+<span class="material-symbols-outlined text-outline-variant text-[16px]">info</span>
+</div>
+<!-- Check 2 -->
+<div class="flex items-start gap-space-sm p-space-sm bg-surface-container-low rounded">
+<div class="w-6 h-6 rounded-full bg-tertiary-fixed text-on-tertiary-fixed-variant flex items-center justify-center shrink-0 mt-0.5">
+<span class="material-symbols-outlined text-[16px] font-bold">check</span>
+</div>
+<div class="flex-1 min-w-0">
+<div class="font-label-md text-label-md font-semibold text-on-surface">ตรวจสอบไม่พบกิจกรรมซ้ำซ้อนในฐานข้อมูล</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">No duplicate collision ในช่วงวันที่ 18-20 ก.ค. 68 ณ พื้นที่ลำปางหลวง</p>
+</div>
+<span class="material-symbols-outlined text-outline-variant text-[16px]">calendar_view_day</span>
+</div>
+<!-- Check 3 -->
+<div class="flex items-start gap-space-sm p-space-sm bg-surface-container-low rounded">
+<div class="w-6 h-6 rounded-full bg-tertiary-fixed text-on-tertiary-fixed-variant flex items-center justify-center shrink-0 mt-0.5">
+<span class="material-symbols-outlined text-[16px] font-bold">check</span>
+</div>
+<div class="flex-1 min-w-0">
+<div class="font-label-md text-label-md font-semibold text-on-surface">ผ่านการตรวจสอบสิทธิ์ RBAC Super Admin</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">ผู้ดำเนินการมีบทบาท AdminGuard Tier 1 ได้รับอนุญาตให้ Sign-off</p>
+</div>
+<span class="material-symbols-outlined text-outline-variant text-[16px]">badge</span>
+</div>
+<!-- Check 4 -->
+<div class="flex items-start gap-space-sm p-space-sm bg-surface-container-low rounded">
+<div class="w-6 h-6 rounded-full bg-tertiary-fixed text-on-tertiary-fixed-variant flex items-center justify-center shrink-0 mt-0.5">
+<span class="material-symbols-outlined text-[16px] font-bold">check</span>
+</div>
+<div class="flex-1 min-w-0">
+<div class="font-label-md text-label-md font-semibold text-on-surface">สอดคล้องกับ EdPEx หมวด 3 และ SDG 3</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">เกณฑ์ชี้วัดด้านลูกค้า ชุมชน และเป้าหมายการพัฒนาสุขภาวะยั่งยืน</p>
+</div>
+<span class="material-symbols-outlined text-outline-variant text-[16px]">workspace_premium</span>
+</div>
+<!-- Check 5 -->
+<div class="flex items-start gap-space-sm p-space-sm bg-surface-container-low rounded">
+<div class="w-6 h-6 rounded-full bg-tertiary-fixed text-on-tertiary-fixed-variant flex items-center justify-center shrink-0 mt-0.5">
+<span class="material-symbols-outlined text-[16px] font-bold">check</span>
+</div>
+<div class="flex-1 min-w-0">
+<div class="font-label-md text-label-md font-semibold text-on-surface">ข้อมูลส่วนบุคคลถูกเข้ารหัสและปกปิดตัวตน</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">PDPA Compliant: ไม่มีการจัดเก็บเลขบัตร ปชช. หรือข้อมูลสุขภาพแบบเปิดเผย</p>
+</div>
+<span class="material-symbols-outlined text-outline-variant text-[16px]">lock</span>
+</div>
+</div>
+<!-- Quick Summary Notice -->
+<div class="p-space-xs bg-surface-container rounded flex items-center gap-space-xs font-label-sm text-label-sm text-on-surface">
+<span class="material-symbols-outlined text-primary text-[18px]">verified</span>
+<span>ระบบ AI Agent แนะนำ: <strong>พร้อมสำหรับการเผยแพร่ทันที (Recommended Action: APPROVE)</strong></span>
+</div>
+</div>
+<!-- Campus Deployment Location Preview -->
+<div class="bg-surface-container-lowest rounded p-space-md shadow-sm space-y-space-xs">
+<div class="flex items-center justify-between">
+<span class="font-label-sm text-label-sm font-semibold text-secondary uppercase flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px]">location_on</span>
+            พิกัดพื้นที่ปฏิบัติการ (Geolocation Anchor)
+          </span>
+<span class="font-label-sm text-label-sm text-on-surface-variant font-mono">18.2045° N, 99.3908° E</span>
+</div>
+<div class="w-full h-28 bg-cover bg-center rounded shadow-inner relative flex items-end p-space-xs" data-location="Lampang Luang, Ko Kha District, Lampang, Thailand" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuCG8AUzzKBn1oO2J08NPVnTGR9x9axe6WUxwFd1T8vz4m7ZfaJ1bLaeWHDi7bKGI1FcVph8tVcltRbq9LLWdK9JC6KTC8OFlWjYaCKxw0h5ud-i5jHJ3LPC3j2u98TGU2c4J1xO9_8M0qgwDKG7DueTdWGCuLu7xuODTilq2ZlxG5kAj882rQELRcmwXx5DxU_T833OUQSS8PTIvtgw6Vm7fV6Kiivo0EzPmHJ0CPNCVjQWnwOhOzBi')">
+<div class="bg-surface-container-lowest/90 backdrop-blur-sm px-2 py-1 rounded shadow-sm text-on-surface font-label-sm text-[11px] flex items-center gap-1">
+<span class="material-symbols-outlined text-error text-[14px]">home_pin</span>
+<span>ศูนย์บริการสุขภาพเทศบาลตำบลลำปางหลวง อ.เกาะคา จ.ลำปาง</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Decision Action Bar (Rigorous, Affirmative & Clear) -->
+<div class="sticky bottom-2 z-30 bg-surface-container-lowest p-space-md rounded shadow-xl flex flex-col md:flex-row items-center justify-between gap-space-md">
+<div class="flex items-center gap-space-md w-full md:w-auto">
+<div class="w-11 h-11 rounded-full bg-primary-container text-on-primary flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-[24px]">fingerprint</span>
+</div>
+<div>
+<div class="flex items-center gap-space-xs">
+<span class="font-headline-sm text-headline-sm text-primary font-bold">ยืนยันการตัดสินใจระดับผู้บริหาร</span>
+<span class="px-2 py-0.5 bg-secondary-container text-on-secondary-container font-label-sm text-[10px] font-bold rounded uppercase">Human-in-the-Loop Gate</span>
+</div>
+<div class="font-body-sm text-body-sm text-on-surface-variant">
+          โปรดตรวจสอบเงื่อนไขก่อนดำเนินการ การเผยแพร่จะมีผลต่อฐานข้อมูลกลางและแอปพลิเคชันทันที
+        </div>
+</div>
+</div>
+<!-- Action Button Group -->
+<div class="flex flex-wrap items-center justify-end gap-space-sm w-full md:w-auto shrink-0">
+<!-- Edit Manually -->
+<button class="h-10 px-space-md rounded font-label-lg text-label-lg font-medium text-on-surface bg-surface-container-low hover:bg-surface-container-high transition-colors flex items-center gap-space-xs focus:outline-none focus:ring-1 focus:ring-outline" onclick="triggerEditModal()" type="button">
+<span class="material-symbols-outlined text-[18px]">edit_note</span>
+<span>ปรับแต่งรายละเอียดด้วยตนเอง</span>
+</button>
+<!-- Reject / Cancel Workflow -->
+<button class="h-10 px-space-md rounded font-label-lg text-label-lg font-medium text-error bg-error-container/40 hover:bg-error-container transition-colors flex items-center gap-space-xs focus:outline-none focus:ring-1 focus:ring-error" onclick="triggerRejectConfirmation()" type="button">
+<span class="material-symbols-outlined text-[18px]">block</span>
+<span>ระงับ / ยกเลิกคำขอ</span>
+</button>
+<!-- High-Impact Primary Button -->
+<button class="h-10 px-space-lg rounded font-label-lg text-label-lg font-semibold text-on-primary bg-primary-container hover:bg-primary transition-all flex items-center gap-space-xs shadow-md focus:outline-none focus:ring-2 focus:ring-on-primary-container" id="confirm-publish-btn" onclick="triggerApprovePublish()" type="button">
+<span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 1;">send_and_archive</span>
+<span>ยืนยันการเผยแพร่และเปิดระบบทันที</span>
+</button>
+</div>
+</div>
+<!-- Audit Commitment & Cryptographic Proof Footer -->
+<div class="bg-surface-container-lowest p-space-md rounded flex flex-col sm:flex-row items-start sm:items-center justify-between gap-space-sm text-on-surface-variant font-label-sm text-label-sm shadow-sm">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-secondary text-[18px]">receipt_long</span>
+<span>
+<strong>Audit Commitment:</strong> ทุกการตัดสินใจจะถูกบันทึกใน Audit Trail แบบ Append-only พร้อมรหัสผู้บริหาร เวลา และลายนิ้วมือการประมวลผลของ AI
+      </span>
+</div>
+<div class="flex items-center gap-space-md shrink-0">
+<span class="font-mono text-outline">HASH: 8f9b...a104c</span>
+<span class="text-on-surface-variant flex items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-tertiary-fixed-variant"></span>
+<span>ISO/IEC 27001 &amp; PDPA Aligned</span>
+</span>
+</div>
+</div>
+<!-- Interactive Feedback Toast / State Overlay (Hidden by Default) -->
+<div class="hidden fixed inset-0 z-50 flex items-center justify-center bg-primary/40 backdrop-blur-[2px] p-space-md" id="success-notification">
+<div class="bg-surface-container-lowest max-w-md w-full p-space-lg rounded shadow-xl space-y-space-md text-center">
+<div class="w-14 h-14 bg-tertiary-fixed text-on-tertiary-fixed-variant rounded-full mx-auto flex items-center justify-center">
+<span class="material-symbols-outlined text-[32px]">task_alt</span>
+</div>
+<div>
+<h3 class="font-headline-lg text-headline-lg font-bold text-on-surface">การอนุมัติและเผยแพร่สำเร็จ</h3>
+<p class="font-body-md text-body-md text-on-surface-variant mt-1">
+          กิจกรรม ACT-68-012 ได้รับการเปิดใช้งานและส่งข้อมูลสู่พอร์ทัลกลาง มหาวิทยาลัยมหิดล วิทยาเขตลำปาง เรียบร้อยแล้ว
+        </p>
+</div>
+<div class="bg-surface-container p-space-sm rounded font-mono text-[12px] text-on-surface text-left">
+<div>• Transaction: TX-2568-0718-44910</div>
+<div>• Approver: Asst.Prof.Napassorn (ID: ADM-0081)</div>
+<div>• Status: LIVE (Publicly Accessible)</div>
+</div>
+<button class="w-full h-10 rounded font-label-lg text-label-lg font-semibold text-on-primary bg-primary-container hover:bg-primary transition-colors" onclick="window.location.reload()" type="button">
+        กลับไปยังหน้ารายการรออนุมัติ (Queue Overview)
+      </button>
+</div>
+</div>
+<!-- Interactive Client-side Script for Micro-interactions -->
+<script>
+    function triggerApprovePublish() {
+      const btn = document.getElementById('confirm-publish-btn');
+      btn.innerHTML = '<span class="material-symbols-outlined text-[20px] animate-spin">progress_activity</span><span>กำลังบันทึกและซิงค์ระบบ...</span>';
+      btn.disabled = true;
+      setTimeout(() => {
+        document.getElementById('success-notification').classList.remove('hidden');
+      }, 900);
+    }
+
+    function triggerRejectConfirmation() {
+      if (confirm('คุณต้องการระงับคำขอของกิจกรรม ACT-68-012 หรือไม่? เวิร์กโฟลว์จะถูกส่งกลับไปยังสถานะแบบร่าง (Draft)')) {
+        alert('ส่งกลับเวิร์กโฟลว์สำเร็จและบันทึกเหตุผลใน Audit Log เรียบร้อยแล้ว');
+      }
+    }
+
+    function triggerEditModal() {
+      alert('เปิดโหมดการแก้ไขข้อมูลแมนนวล (Direct Override Mode) สำหรับผู้ดูแลระบบ');
+    }
+  </script>
+</div></main><footer class="w-full bg-surface-container-low px-space-lg py-space-sm text-on-surface-variant font-label-sm text-label-sm"><div class="flex flex-col sm:flex-row items-center justify-between gap-space-xs"><span class="text-on-surface-variant">มหาวิทยาลัยมหิดล วิทยาเขตลำปาง • Mahidol University Lampang Campus Administrative System</span><span class="text-on-surface-variant">v4.2.0-PROD (Secured &amp; Audited Node)</span></div></footer></div></body></html>
