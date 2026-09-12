@@ -8,6 +8,8 @@ import type { AdminPermission } from "@/auth/permissions";
 const items: readonly { to: string; label: string; icon: typeof LayoutDashboard; permission: AdminPermission }[] = [
   { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard, permission: "overview.read" },
   { to: "/admin/activities", label: "กิจกรรม", icon: CalendarRange, permission: "activities.read" },
+  { to: "/admin/activities/occurrences", label: "รอบกิจกรรม", icon: CalendarRange, permission: "activities.read" },
+  { to: "/admin/surveys", label: "แบบสอบถาม", icon: ClipboardList, permission: "survey.read" },
   { to: "/admin", label: "Admin Center", icon: Settings2, permission: "system.read" },
   { to: "/admin/cms", label: "Content CMS", icon: FileText, permission: "cms.read" },
   { to: "/admin/lac-satisfaction", label: "LAC Satisfaction", icon: ClipboardList, permission: "survey.audit.read" },
@@ -19,7 +21,7 @@ const aiItems: readonly { to: string; label: string; icon: typeof Bot; permissio
   { to: "/admin/ai/work-queue", label: "คิวงาน AI", icon: ListTodo, permission: "ai.queue.read" },
   { to: "/admin/ai/history", label: "ประวัติ AI", icon: History, permission: "ai.execution.read" },
 ];
-const iconTone: Record<string, string> = { Dashboard: "text-[#00A878]", กิจกรรม: "text-[#5FA8D3]", "Admin Center": "text-[#D6A84F]", "Content CMS": "text-[#5FA8D3]", "LAC Satisfaction": "text-[#6FCF97]", "Facility & Safety": "text-[#F2994A]", Storefront: "text-[#D6A84F]" };
+const iconTone: Record<string, string> = { Dashboard: "text-[#00A878]", กิจกรรม: "text-[#5FA8D3]", "รอบกิจกรรม": "text-[#5FA8D3]", แบบสอบถาม: "text-[#6FCF97]", "Admin Center": "text-[#D6A84F]", "Content CMS": "text-[#5FA8D3]", "LAC Satisfaction": "text-[#6FCF97]", "Facility & Safety": "text-[#F2994A]", Storefront: "text-[#D6A84F]" };
 function isActive(pathname: string, to: string) { return pathname === to || (to !== "/admin" && pathname.startsWith(`${to}/`)); }
 
 export function AdminAppShell({ children }: { children: ReactNode }) {
