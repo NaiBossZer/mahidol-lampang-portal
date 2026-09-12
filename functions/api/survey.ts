@@ -18,7 +18,10 @@ export async function onRequest({ request, env }: { request: Request; env: Env }
     const url = new URL(request.url);
     if (request.method === "GET") {
       const surveyId = url.searchParams.get("surveyId");
-      if (!surveyId) return json({ success: false, error: "ต้องระบุ surveyId" }, 400);
+      if (!surveyId) {
+        const surveys = await sb<Row[]>(env, "occurrence_surveys?enabled=eq.true&select=id,occurrence_id,anonymous,welcome_text,open_at,close_at&order=created_at.desc");
+        return json({ success: true, data: surveys });
+      }
       const surveys = await sb<Row[]>(env, `occurrence_surveys?id=eq.${encodeURIComponent(surveyId)}&enabled=eq.true&select=id,occurrence_id,anonymous,open_at,close_at,welcome_text`);
       if (!surveys[0]) return json({ success: false, error: "ไม่พบแบบสอบถามหรือแบบสอบถามปิดอยู่" }, 404);
       const survey = surveys[0];
@@ -42,10 +45,7 @@ export async function onRequest({ request, env }: { request: Request; env: Env }
     const responseId = responseRows[0]?.id;
     if (!responseId) throw new Error("ไม่สามารถสร้าง response ได้");
     const answers = Array.isArray(body.answers) ? body.answers : [];
-    if (answers.length) {
-      const rows = answers.map((a) => ({ response_id: responseId, question_id: a.questionId, answer_number: a.number ?? null, answer_text: a.text ?? null, answer_options: Array.isArray(a.options) ? a.options : [] }));
-      await sb<Row[]>(env, "survey_answers", { method: "POST", body: JSON.stringify(rows) });
-    }
+    if (answers.length) await sb<Row[]>(env, "survey_answers", { method: "POST", body: JSON.stringify(answers.map((a) => ({ response_id: responseId, question_id: a.questionId, answer_number: a.number ?? null, answer_text: a.text ?? null, answer_options: Array.isArray(a.options) ? a.options : [] }))) });
     return json({ success: true, data: { responseId } }, 201);
   } catch (error) {
     console.error("/api/survey", error);
