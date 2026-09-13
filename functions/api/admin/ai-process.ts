@@ -178,7 +178,6 @@ async function parseIntentWithGemini(
           systemInstruction: { parts: [{ text: systemPrompt }] },
           contents: [{ role: "user", parts: [{ text: userIntent }] }],
           generationConfig: {
-            temperature,
             maxOutputTokens: maxTokens,
             responseMimeType: "application/json",
             responseJsonSchema: {
