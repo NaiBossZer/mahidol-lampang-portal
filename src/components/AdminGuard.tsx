@@ -2,7 +2,7 @@ import { createContext, useContext, useEffect, useState, type ReactNode } from "
 import { Navigate, useLocation } from "react-router-dom";
 import type { AdminPermission, AdminRole } from "@/auth/permissions";
 
-type AdminAuth = { role: AdminRole; permissions: AdminPermission[] };
+type AdminAuth = { role: AdminRole; email: string | null; permissions: AdminPermission[] };
 const AdminAuthContext = createContext<AdminAuth | null>(null);
 
 export function useAdminAuth(): AdminAuth {
@@ -19,11 +19,12 @@ export function AdminGuard({ children }: { children: ReactNode }) {
   useEffect(() => {
     let active = true;
     fetch("/api/auth/me", { credentials: "include" })
-      .then(async (response) => ({ response, body: await response.json() as { data?: { authorized?: boolean; role?: AdminRole; permissions?: AdminPermission[] } } }))
+      .then(async (response) => ({ response, body: await response.json() as { data?: { authorized?: boolean; role?: AdminRole; permissions?: AdminPermission[]; user?: { email?: string | null } } } }))
       .then(({ response, body }) => {
         if (!active) return;
-        if (response.ok && body.data?.authorized && body.data.role) setAuth({ role: body.data.role, permissions: body.data.permissions ?? [] });
-        else setState("denied");
+        if (response.ok && body.data?.authorized && body.data.role) {
+          setAuth({ role: body.data.role, email: body.data.user?.email ?? null, permissions: body.data.permissions ?? [] });
+        } else setState("denied");
       })
       .catch(() => { if (active) setState("denied"); });
     return () => { active = false; };

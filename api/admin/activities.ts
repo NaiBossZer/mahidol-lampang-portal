@@ -1,6 +1,6 @@
 import { desc, eq } from "drizzle-orm";
 import { getDb } from "../../src/db/index";
-import { activities, activityPhotos, activityOutcomes, learningCenters, socialProjects } from "../../src/db/schema";
+import { activities } from "../../src/db/schema";
 import { json, methodNotAllowed, readJson, type ApiRequest, type ApiResponse } from "../_http";
 import { requirePermission } from "../_authorization";
 
@@ -37,7 +37,27 @@ export default async function handler(req: ApiRequest, res: ApiResponse) {
   try {
     const db = getDb();
     if (req.method === "GET") {
-      const rows = await db.select().from(activities).orderBy(desc(activities.activityDate));
+      const rows = await db.select({
+        id: activities.id,
+        projectId: activities.projectId,
+        centerId: activities.centerId,
+        title: activities.title,
+        slug: activities.slug,
+        summary: activities.summary,
+        content: activities.content,
+        activityDate: activities.activityDate,
+        location: activities.location,
+        participantCount: activities.participantCount,
+        objective: activities.objective,
+        process: activities.process,
+        outcome: activities.outcome,
+        impact: activities.impact,
+        featuredImage: activities.featuredImage,
+        status: activities.status,
+        publishedAt: activities.publishedAt,
+        createdAt: activities.createdAt,
+        updatedAt: activities.updatedAt,
+      }).from(activities).orderBy(desc(activities.activityDate));
       return json(res, 200, { success: true, data: rows });
     }
     if (req.method === "POST") {

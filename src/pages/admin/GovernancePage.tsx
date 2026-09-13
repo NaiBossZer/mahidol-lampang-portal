@@ -1,0 +1,182 @@
+import { useEffect, useMemo, useState } from "react";
+import { Bell, Bot, RefreshCw, Search, Shield, UserCog, Workflow } from "lucide-react";
+import { toast } from "sonner";
+import { useAdminAuth } from "@/components/AdminGuard";
+
+type Tab = "users" | "reports" | "search" | "notifications" | "ai" | "lifecycle";
+type UserRow = { user_id: string; full_name: string; position?: string; department?: string; central_role?: string | null; active: boolean };
+type Tool = { id: string; tool_key: string; name: string; description?: string; domain: string; risk_level: string; enabled: boolean; endpoint?: string; method: string };
+type Life = { id: string; entity_type: string; entity_id: string; from_status: string; to_status: string; actor_id?: string; created_at: string };
+
+async function getJson<T>(url: string, init?: RequestInit) {
+  const r = await fetch(url, {
+    ...init,
+    credentials: "include",
+    headers: { Accept: "application/json", "Content-Type": "application/json", ...(init?.headers ?? {}) },
+  });
+  const b = await r.json().catch(() => null);
+  if (!r.ok) throw new Error(b?.error || "Request failed");
+  return b.data as T;
+}
+
+export function GovernancePage() {
+  const { role } = useAdminAuth();
+  const [tab, setTab] = useState<Tab>("users");
+  const [users, setUsers] = useState<UserRow[]>([]);
+  const [tools, setTools] = useState<Tool[]>([]);
+  const [notifications, setNotifications] = useState<any[]>([]);
+  const [report, setReport] = useState<any>(null);
+  const [life, setLife] = useState<Life[]>([]);
+  const [results, setResults] = useState<any[]>([]);
+  const [q, setQ] = useState("");
+  const [loading, setLoading] = useState(false);
+  const canManage = role === "SUPER_ADMIN";
+
+  async function load() {
+    setLoading(true);
+    try {
+      if (tab === "users") setUsers(await getJson<UserRow[]>("/api/admin/users"));
+      if (tab === "ai") setTools(await getJson<Tool[]>("/api/admin/ai-tools"));
+      if (tab === "notifications") setNotifications(await getJson<any[]>("/api/admin/notifications"));
+      if (tab === "reports") setReport(await getJson<any>("/api/admin/reports"));
+      if (tab === "lifecycle") setLife(await getJson<Life[]>("/api/admin/lifecycle"));
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "โหลดข้อมูลไม่สำเร็จ");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  useEffect(() => {
+    void load();
+  }, [tab]);
+
+  async function setRole(userId: string, value: string) {
+    if (!canManage) return toast.error("เฉพาะ SUPER_ADMIN เท่านั้น");
+    try {
+      await getJson("/api/admin/users", { method: "PATCH", body: JSON.stringify({ userId, role: value }) });
+      toast.success("ปรับ Role แล้ว");
+      void load();
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "ปรับ Role ไม่สำเร็จ");
+    }
+  }
+
+  async function search() {
+    if (q.trim().length < 2) return toast.error("พิมพ์อย่างน้อย 2 ตัวอักษร");
+    try {
+      setResults(await getJson<any[]>(`/api/admin/search?q=${encodeURIComponent(q)}`));
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "ค้นหาไม่สำเร็จ");
+    }
+  }
+
+  async function execute(toolKey: string) {
+    try {
+      const x = await getJson<any>("/api/admin/ai-tools", { method: "POST", body: JSON.stringify({ toolKey, input: {} }) });
+      toast.success(x.requiresApproval ? "ส่งเข้า Approval แล้ว" : "AI execution สำเร็จ");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "AI execution ไม่สำเร็จ");
+    }
+  }
+
+  const tabs = useMemo(
+    () => [
+      { id: "users", label: "Admin Users / RBAC", icon: UserCog },
+      { id: "reports", label: "Reports", icon: Shield },
+      { id: "search", label: "Global Search", icon: Search },
+      { id: "notifications", label: "Notifications", icon: Bell },
+      { id: "ai", label: "AI Tools / Agents", icon: Bot },
+      { id: "lifecycle", label: "Data Lifecycle", icon: Workflow },
+    ] as const,
+    [],
+  );
+  const agents = ["Activity Agent", "Survey Agent", "Learning Center / CMS Agent", "Analytics Agent"];
+
+  return (
+    <section className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
+      <div className="flex items-end justify-between gap-3">
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-[.14em] text-emerald-700">Governance & Automation</p>
+          <h1 className="mt-1 text-2xl font-bold text-brand-navy lg:text-3xl">System Governance</h1>
+          <p className="mt-1 text-sm text-slate-600">RBAC · lifecycle · audit · reports · search · notifications · governed AI</p>
+        </div>
+        <button type="button" onClick={() => void load()} className="inline-flex min-h-11 items-center gap-2 rounded-xl border bg-white px-4 text-sm font-semibold">
+          <RefreshCw className="h-4 w-4" />รีเฟรช
+        </button>
+      </div>
+      <div className="mt-6 flex gap-2 overflow-x-auto border-b">
+        {tabs.map((t) => {
+          const I = t.icon;
+          return (
+            <button key={t.id} type="button" onClick={() => setTab(t.id)} className={`whitespace-nowrap border-b-2 px-3 py-3 text-sm font-semibold ${tab === t.id ? "border-brand-navy text-brand-navy" : "border-transparent text-slate-500"}`}>
+              <I className="mr-2 inline h-4 w-4" />{t.label}
+            </button>
+          );
+        })}
+      </div>
+      {loading ? (
+        <div className="mt-6 rounded-2xl border bg-white p-10 text-center text-sm text-slate-500">กำลังโหลด...</div>
+      ) : (
+        <div className="mt-6 rounded-2xl border bg-white p-5 shadow-sm">
+          {tab === "users" && (
+            <>
+              <h2 className="font-bold text-brand-navy">Admin Users & RBAC</h2>
+              {!canManage && <p className="mt-1 text-xs text-slate-500">Role assignment ถูกจำกัดให้ SUPER_ADMIN</p>}
+              <div className="mt-4 divide-y">
+                {users.map((u) => (
+                  <div key={u.user_id} className="flex flex-col gap-3 py-4 md:flex-row md:items-center md:justify-between">
+                    <div><p className="font-semibold">{u.full_name}</p><p className="text-xs text-slate-500">{u.position ?? ""} {u.department ? `· ${u.department}` : ""}</p></div>
+                    <select disabled={!canManage} value={u.central_role ?? ""} onChange={(e) => void setRole(u.user_id, e.target.value)} className="dashboard-control w-full md:w-60">
+                      <option value="">ยังไม่กำหนด</option>
+                      {["SUPER_ADMIN", "CONTENT_ADMIN", "OPERATIONS_ADMIN", "FACILITY_ADMIN"].map((r) => <option key={r}>{r}</option>)}
+                    </select>
+                  </div>
+                ))}
+              </div>
+            </>
+          )}
+          {tab === "reports" && (
+            <>
+              <h2 className="font-bold text-brand-navy">Reports</h2>
+              <div className="mt-5 grid gap-4 md:grid-cols-5">
+                {[["กิจกรรม", report?.activities], ["Learning Centers", report?.learningCenters], ["Responses", report?.responses], ["Avg score", report?.averageScore ?? "—"], ["Satisfaction", report?.satisfaction == null ? "—" : `${report.satisfaction}%`]].map(([k, v]) => (
+                  <div key={String(k)} className="rounded-xl bg-slate-50 p-4"><p className="text-xs text-slate-500">{k}</p><p className="mt-2 text-2xl font-black text-brand-navy">{String(v ?? 0)}</p></div>
+                ))}
+              </div>
+            </>
+          )}
+          {tab === "search" && (
+            <>
+              <h2 className="font-bold text-brand-navy">Global Search</h2>
+              <div className="mt-4 flex gap-2"><input value={q} onChange={(e) => setQ(e.target.value)} onKeyDown={(e) => e.key === "Enter" && void search()} placeholder="Activity / Learning Center / Organization" className="dashboard-control flex-1" /><button type="button" onClick={() => void search()} className="inline-flex min-h-11 items-center gap-2 rounded-xl bg-brand-navy px-4 text-sm font-bold text-white"><Search className="h-4 w-4" />ค้นหา</button></div>
+              <div className="mt-5 space-y-2">{results.map((r, i) => <div key={`${r.type}-${r.id}-${i}`} className="rounded-xl border p-3"><span className="text-[11px] font-bold uppercase text-emerald-700">{r.type}</span><p className="mt-1 font-semibold">{r.title ?? r.name}</p></div>)}</div>
+            </>
+          )}
+          {tab === "notifications" && (
+            <>
+              <h2 className="font-bold text-brand-navy">Notifications</h2>
+              <div className="mt-4 space-y-2">{notifications.length ? notifications.map((n) => <button type="button" key={n.id} onClick={() => void getJson(`/api/admin/notifications`, { method: "PATCH", body: JSON.stringify({ id: n.id }) }).then(load)} className="w-full rounded-xl border p-4 text-left"><p className="font-semibold">{n.title}</p><p className="text-xs text-slate-500">{n.body ?? ""}</p></button>) : <p className="text-sm text-slate-500">ยังไม่มีการแจ้งเตือน</p>}</div>
+            </>
+          )}
+          {tab === "ai" && (
+            <>
+              <h2 className="font-bold text-brand-navy">AI Tool Registry / Manager</h2>
+              <p className="mt-1 text-xs text-slate-500">AI เรียกได้เฉพาะ Portal API ที่ลงทะเบียนใน registry; medium/high risk เข้าสู่ approval</p>
+              <div className="mt-4 space-y-2">{tools.map((t) => <div key={t.id} className="flex flex-col gap-3 rounded-xl border p-4 md:flex-row md:items-center md:justify-between"><div><p className="font-semibold">{t.name}</p><p className="text-xs text-slate-500">{t.tool_key} · {t.domain} · {t.risk_level} · {t.method} {t.endpoint}</p></div><button type="button" onClick={() => void execute(t.tool_key)} className="rounded-xl border px-3 py-2 text-xs font-bold">Run</button></div>)}
+                <div className="grid gap-3 pt-3 md:grid-cols-2">{agents.map((a) => <div key={a} className="rounded-xl bg-slate-50 p-4"><p className="font-semibold text-brand-navy">{a}</p><p className="mt-1 text-xs text-slate-500">Uses registered tools + existing Portal APIs; no direct SQL.</p></div>)}</div>
+              </div>
+            </>
+          )}
+          {tab === "lifecycle" && (
+            <>
+              <h2 className="font-bold text-brand-navy">Active → Archived → Retired</h2>
+              <p className="mt-1 text-xs text-slate-500">Historical records are preserved; cancelled records remain audit/history and are excluded from normal views/calculations.</p>
+              <div className="mt-4 divide-y">{life.map((x) => <div key={x.id} className="grid gap-1 py-3 md:grid-cols-[140px_1fr_180px_180px]"><span className="text-xs font-semibold text-emerald-700">{x.entity_type}</span><span className="font-mono text-xs text-slate-500">{x.entity_id}</span><span className="text-sm">{x.from_status || "—"} → <b>{x.to_status}</b></span><span className="text-xs text-slate-500">{new Date(x.created_at).toLocaleString("th-TH")}</span></div>)}{!life.length && <p className="py-6 text-sm text-slate-500">ยังไม่มี lifecycle events</p>}</div>
+            </>
+          )}
+        </div>
+      )}
+    </section>
+  );
+}

@@ -1,0 +1,46 @@
+create table if not exists public.services (id uuid primary key default gen_random_uuid(), title varchar(255) not null, slug varchar(255) not null unique, summary text, description text, icon varchar(100), featured_image text, link_type text not null default 'INTERNAL', link_url text, sort_order integer not null default 0, status text not null default 'draft', published_at timestamptz, created_at timestamptz not null default now(), updated_at timestamptz not null default now());
+create table if not exists public.home_sections (id uuid primary key default gen_random_uuid(), section_key varchar(80) not null unique, title varchar(255), subtitle varchar(500), description text, image text, sort_order integer not null default 0, is_enabled boolean not null default true, created_at timestamptz not null default now(), updated_at timestamptz not null default now());
+create table if not exists public.navigation_items (id uuid primary key default gen_random_uuid(), label varchar(255) not null, slug varchar(255) not null unique, parent_id uuid, target_type varchar(30) not null default 'INTERNAL', target_url text, sort_order integer not null default 0, is_enabled boolean not null default true, open_new_tab boolean not null default false, created_at timestamptz not null default now(), updated_at timestamptz not null default now());
+create table if not exists public.footer_settings (id uuid primary key default gen_random_uuid(), organization_name varchar(255), address text, phone varchar(100), email varchar(255), facebook_url text, line_url text, copyright_text varchar(500), privacy_url text, terms_url text, updated_at timestamptz not null default now());
+create table if not exists public.partners (id uuid primary key default gen_random_uuid(), name varchar(255) not null, type varchar(100), logo text, description text, created_at timestamptz not null default now());
+create table if not exists public.activity_photos (id uuid primary key default gen_random_uuid(), activity_id uuid not null references public.activities(id) on delete cascade, image_url text not null, thumbnail_url text, caption varchar(500), alt_text varchar(500), sort_order integer not null default 0, is_cover boolean not null default false, created_at timestamptz not null default now());
+create table if not exists public.activity_outcomes (id uuid primary key default gen_random_uuid(), activity_id uuid not null references public.activities(id) on delete cascade, metric_name varchar(255) not null, metric_value varchar(255), unit varchar(100), description text, created_at timestamptz not null default now());
+create table if not exists public.portal_media_assets (id uuid primary key default gen_random_uuid(), bucket_id text not null, storage_path text not null, public_url text, entity_type text not null, entity_id uuid not null, field_key text not null, media_type text not null, mime_type text not null, size_bytes bigint not null, original_name text not null, caption text, alt_text text, display_order integer not null default 0, status text not null default 'active', created_by uuid references auth.users(id) on delete set null, created_at timestamptz not null default now(), updated_at timestamptz not null default now(), unique(bucket_id, storage_path));
+create index if not exists portal_media_assets_entity_idx on public.portal_media_assets(entity_type, entity_id, field_key, display_order);
+create index if not exists portal_media_assets_created_by_idx on public.portal_media_assets(created_by);
+create index if not exists activity_photos_activity_sort_idx on public.activity_photos(activity_id, sort_order);
+
+insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+values ('portal-media', 'portal-media', true, 26214400, array['image/jpeg','image/png','image/webp','application/pdf']::text[])
+on conflict (id) do update set public = excluded.public, file_size_limit = excluded.file_size_limit, allowed_mime_types = excluded.allowed_mime_types;
+
+alter table public.services enable row level security;
+alter table public.home_sections enable row level security;
+alter table public.navigation_items enable row level security;
+alter table public.footer_settings enable row level security;
+alter table public.partners enable row level security;
+alter table public.activity_photos enable row level security;
+alter table public.activity_outcomes enable row level security;
+alter table public.portal_media_assets enable row level security;
+
+create policy services_public_read on public.services for select to anon, authenticated using (status = 'published');
+create policy services_admin_all on public.services for all to authenticated using ((select auth.jwt() -> 'app_metadata' ->> 'role') in ('SUPER_ADMIN','CONTENT_ADMIN','OPERATIONS_ADMIN')) with check ((select auth.jwt() -> 'app_metadata' ->> 'role') in ('SUPER_ADMIN','CONTENT_ADMIN','OPERATIONS_ADMIN'));
+create policy home_public_read on public.home_sections for select to anon, authenticated using (is_enabled = true);
+create policy home_admin_all on public.home_sections for all to authenticated using ((select auth.jwt() -> 'app_metadata' ->> 'role') in ('SUPER_ADMIN','CONTENT_ADMIN','OPERATIONS_ADMIN')) with check ((select auth.jwt() -> 'app_metadata' ->> 'role') in ('SUPER_ADMIN','CONTENT_ADMIN','OPERATIONS_ADMIN'));
+create policy navigation_public_read on public.navigation_items for select to anon, authenticated using (is_enabled = true);
+create policy navigation_admin_all on public.navigation_items for all to authenticated using ((select auth.jwt() -> 'app_metadata' ->> 'role') in ('SUPER_ADMIN','CONTENT_ADMIN','OPERATIONS_ADMIN')) with check ((select auth.jwt() -> 'app_metadata' ->> 'role') in ('SUPER_ADMIN','CONTENT_ADMIN','OPERATIONS_ADMIN'));
+create policy footer_public_read on public.footer_settings for select to anon, authenticated using (true);
+create policy footer_admin_all on public.footer_settings for all to authenticated using ((select auth.jwt() -> 'app_metadata' ->> 'role') in ('SUPER_ADMIN','CONTENT_ADMIN','OPERATIONS_ADMIN')) with check ((select auth.jwt() -> 'app_metadata' ->> 'role') in ('SUPER_ADMIN','CONTENT_ADMIN','OPERATIONS_ADMIN'));
+create policy partners_public_read on public.partners for select to anon, authenticated using (true);
+create policy partners_admin_all on public.partners for all to authenticated using ((select auth.jwt() -> 'app_metadata' ->> 'role') in ('SUPER_ADMIN','CONTENT_ADMIN','OPERATIONS_ADMIN')) with check ((select auth.jwt() -> 'app_metadata' ->> 'role') in ('SUPER_ADMIN','CONTENT_ADMIN','OPERATIONS_ADMIN'));
+create policy activity_photos_public_read on public.activity_photos for select to anon, authenticated using (true);
+create policy activity_photos_admin_all on public.activity_photos for all to authenticated using ((select auth.jwt() -> 'app_metadata' ->> 'role') in ('SUPER_ADMIN','CONTENT_ADMIN','OPERATIONS_ADMIN')) with check ((select auth.jwt() -> 'app_metadata' ->> 'role') in ('SUPER_ADMIN','CONTENT_ADMIN','OPERATIONS_ADMIN'));
+create policy activity_outcomes_public_read on public.activity_outcomes for select to anon, authenticated using (true);
+create policy activity_outcomes_admin_all on public.activity_outcomes for all to authenticated using ((select auth.jwt() -> 'app_metadata' ->> 'role') in ('SUPER_ADMIN','CONTENT_ADMIN','OPERATIONS_ADMIN')) with check ((select auth.jwt() -> 'app_metadata' ->> 'role') in ('SUPER_ADMIN','CONTENT_ADMIN','OPERATIONS_ADMIN'));
+create policy portal_media_assets_admin_select on public.portal_media_assets for select to authenticated using ((select auth.jwt() -> 'app_metadata' ->> 'role') in ('SUPER_ADMIN','CONTENT_ADMIN','OPERATIONS_ADMIN'));
+create policy portal_media_assets_admin_insert on public.portal_media_assets for insert to authenticated with check ((select auth.jwt() -> 'app_metadata' ->> 'role') in ('SUPER_ADMIN','CONTENT_ADMIN','OPERATIONS_ADMIN') and created_by = (select auth.uid()));
+create policy portal_media_assets_admin_update on public.portal_media_assets for update to authenticated using ((select auth.jwt() -> 'app_metadata' ->> 'role') in ('SUPER_ADMIN','CONTENT_ADMIN','OPERATIONS_ADMIN')) with check ((select auth.jwt() -> 'app_metadata' ->> 'role') in ('SUPER_ADMIN','CONTENT_ADMIN','OPERATIONS_ADMIN'));
+create policy portal_media_assets_admin_delete on public.portal_media_assets for delete to authenticated using ((select auth.jwt() -> 'app_metadata' ->> 'role') in ('SUPER_ADMIN','CONTENT_ADMIN','OPERATIONS_ADMIN'));
+create policy portal_media_admin_insert on storage.objects for insert to authenticated with check (bucket_id = 'portal-media' and (select auth.jwt() -> 'app_metadata' ->> 'role') in ('SUPER_ADMIN','CONTENT_ADMIN','OPERATIONS_ADMIN'));
+create policy portal_media_admin_update on storage.objects for update to authenticated using (bucket_id = 'portal-media' and (select auth.jwt() -> 'app_metadata' ->> 'role') in ('SUPER_ADMIN','CONTENT_ADMIN','OPERATIONS_ADMIN')) with check (bucket_id = 'portal-media' and (select auth.jwt() -> 'app_metadata' ->> 'role') in ('SUPER_ADMIN','CONTENT_ADMIN','OPERATIONS_ADMIN'));
+create policy portal_media_admin_delete on storage.objects for delete to authenticated using (bucket_id = 'portal-media' and (select auth.jwt() -> 'app_metadata' ->> 'role') in ('SUPER_ADMIN','CONTENT_ADMIN','OPERATIONS_ADMIN'));
