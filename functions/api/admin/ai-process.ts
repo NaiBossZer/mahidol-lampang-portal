@@ -53,11 +53,10 @@ function safeJson(value: unknown): Record<string, unknown> {
   return value && typeof value === "object" && !Array.isArray(value) ? (value as Record<string, unknown>) : {};
 }
 
-function validateParameters(tool: Tool, parameters: Record<string, unknown>) {
+function getMissingRequiredParameters(tool: Tool, parameters: Record<string, unknown>): string[] {
   const schema = safeJson(tool.input_schema);
   const required = Array.isArray(schema.required) ? schema.required.filter((v): v is string => typeof v === "string") : [];
-  const missing = required.filter((key) => parameters[key] === undefined || parameters[key] === null || parameters[key] === "");
-  if (missing.length) throw new Error(`Missing required parameter(s): ${missing.join(", ")}`);
+  return required.filter((key) => parameters[key] === undefined || parameters[key] === null || parameters[key] === "");
 }
 
 function buildToolUrl(request: Request, endpoint: string, parameters: Record<string, unknown>): URL {
@@ -241,7 +240,24 @@ export async function onRequest({ request, env }: { request: Request; env: Env }
 
     if (!matchedTool || confidence < 0.5) return json({ success: false, error: "AI could not confidently map the request to a governed tool", data: { intent: parsed, matchedTool: null, confidence } }, 422);
     if (matchedTool.permission && !permissionsForRole(role).some((permission) => permission === matchedTool.permission)) return json({ success: false, error: "Forbidden: tool permission denied for current role" }, 403);
-    validateParameters(matchedTool, parameters);
+
+    const missingParameters = getMissingRequiredParameters(matchedTool, parameters);
+    if (missingParameters.length) {
+      return json(
+        {
+          success: false,
+          error: `Missing required parameter(s): ${missingParameters.join(", ")}`,
+          code: "AI_MISSING_PARAMETERS",
+          data: {
+            intent: parsed,
+            matchedTool,
+            missingParameters,
+            message: "กรุณาระบุข้อมูลที่จำเป็นก่อนสั่งให้ AI ดำเนินการ",
+          },
+        },
+        422,
+      );
+    }
 
     const requiresApproval = matchedTool.risk_level !== "low";
     const executionPlan = {
@@ -269,7 +285,11 @@ export async function onRequest({ request, env }: { request: Request; env: Env }
     const result = await executeTool(request, env, token, execution.id, matchedTool, parameters);
     return json({ success: result.status === "completed", geminiUsed: true, requiresApproval: false, data: { executionId: execution.id, intent: parsed, matchedTool, executionPlan, result: result.result }, error: result.error }, result.status === "completed" ? 200 : 502);
   } catch (error) {
-    console.error("/api/admin/ai-process", error instanceof Error ? error.message : "AI processing failed");
-    return json({ success: false, error: error instanceof Error ? error.message : "AI intent processing failed" }, 500);
+    const message = error instanceof Error ? error.message : "AI processing failed";
+    console.error("/api/admin/ai-process", message);
+    if (message.startsWith("Gemini API error")) return json({ success: false, error: message }, 502);
+    if (message.startsWith("Supabase REST 401")) return json({ success: false, error: "Supabase authorization failed" }, 401);
+    if (message === "Supabase environment is not configured") return json({ success: false, error: message }, 503);
+    return json({ success: false, error: message }, 500);
   }
 }
