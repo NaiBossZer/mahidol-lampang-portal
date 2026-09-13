@@ -7,7 +7,6 @@ import {
   ClipboardList,
   FileText,
   LayoutDashboard,
-  ListTodo,
   LogOut,
   Menu,
   Search,
@@ -16,7 +15,6 @@ import {
   X,
   RefreshCw,
   Bot,
-  History,
   ChevronDown,
 } from "lucide-react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
@@ -43,6 +41,12 @@ const activityItem: NavItem = {
   icon: CalendarRange,
   permission: "activities.read",
 };
+const aiItem: NavItem = {
+  to: "/admin/ai",
+  label: "AI Workspace",
+  icon: Bot,
+  permission: "ai.command.read",
+};
 const operationGroups: readonly NavGroup[] = [
   {
     id: "engagement",
@@ -51,38 +55,6 @@ const operationGroups: readonly NavGroup[] = [
     items: [
       { to: "/admin/surveys", label: "แบบสอบถาม", icon: ClipboardList, permission: "survey.read" },
       { to: "/admin/analytics", label: "Analytics", icon: BarChart3, permission: "overview.read" },
-    ],
-  },
-  {
-    id: "ai",
-    label: "AI Workspace",
-    icon: Bot,
-    items: [
-      { to: "/admin/ai", label: "AI Command Center", icon: Bot, permission: "ai.command.read" },
-      {
-        to: "/admin/ai/work-queue",
-        label: "AI Work Queue",
-        icon: ListTodo,
-        permission: "ai.queue.read",
-      },
-      {
-        to: "/admin/ai/execution",
-        label: "AI Execution",
-        icon: Bot,
-        permission: "ai.execution.read",
-      },
-      {
-        to: "/admin/ai/approval",
-        label: "AI Approval",
-        icon: ShieldCheck,
-        permission: "ai.approval.read",
-      },
-      {
-        to: "/admin/ai/history",
-        label: "AI History",
-        icon: History,
-        permission: "ai.execution.read",
-      },
     ],
   },
 ];
@@ -126,6 +98,7 @@ export function AdminAppShell({ children }: { children: ReactNode }) {
   const hasPermission = (permission: AdminPermission) =>
     role === "SUPER_ADMIN" || permissions.includes(permission);
   const visibleActivity = hasPermission(activityItem.permission);
+  const visibleAI = hasPermission(aiItem.permission);
   const visibleGroups = [...operationGroups, coreGroup]
     .map((group) => ({
       ...group,
@@ -228,6 +201,21 @@ export function AdminAppShell({ children }: { children: ReactNode }) {
             >
               <CalendarRange className="h-4 w-4" />
               กิจกรรม
+            </Link>
+          )}
+          {visibleAI && (
+            <Link
+              to={aiItem.to}
+              onClick={() => setMobileOpen(false)}
+              className={cn(
+                "mb-1 flex min-h-10 items-center gap-3 rounded-xl px-3 text-sm font-semibold",
+                isItemActive(location.pathname, aiItem)
+                  ? "bg-white text-brand-navy"
+                  : "text-white/75 hover:bg-white/10 hover:text-white",
+              )}
+            >
+              <Bot className="h-4 w-4" />
+              AI Workspace
             </Link>
           )}
           {visibleGroups.map((group) => {
