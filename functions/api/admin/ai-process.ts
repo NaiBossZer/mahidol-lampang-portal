@@ -144,23 +144,31 @@ async function executeTool(
   }
 }
 
+const sleep = (milliseconds: number) => new Promise((resolve) => setTimeout(resolve, milliseconds));
+
+function isRetryableGeminiStatus(status: number): boolean {
+  return status === 429 || status === 500 || status === 503;
+}
+
 async function parseIntentWithGemini(
   userIntent: string,
   tools: Tool[],
   apiKey: string,
   model: string,
   maxTokens: number,
-  temperature: number,
 ): Promise<ParsedIntent> {
   const toolsList = tools.map((tool) => `${tool.tool_key} | ${tool.domain} | ${tool.name} | ${tool.description ?? ""}`).join("\n");
   const systemPrompt = `You are the intent router for Mahidol Lampang Portal.\nChoose exactly one tool from the supplied registry. Never invent a tool.\nReturn JSON only:\n{"domain":"...","action":"...","tool":"exact tool_key","parameters":{},"confidence":0.0,"reasoning":"brief"}\n\nAvailable governed tools:\n${toolsList}\n\nRules:\n- The tool must exactly match one available tool_key.\n- Extract only parameters needed by that tool.\n- Never invent IDs, dates, or values that the user did not provide.\n- If the request is ambiguous or no tool is appropriate, return tool="unknown" and confidence=0.\n- Do not decide permissions or risk; the server does that from the registry.`;
 
-  const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 15_000);
-  try {
-    const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`,
-      {
+  const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`;
+  const maxAttempts = 3;
+
+  for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 15_000);
+
+    try {
+      const response = await fetch(endpoint, {
         method: "POST",
         signal: controller.signal,
         headers: { "Content-Type": "application/json", "x-goog-api-key": apiKey },
@@ -185,26 +193,40 @@ async function parseIntentWithGemini(
             },
           },
         }),
-      },
-    );
-    const payload = (await response.json().catch(() => null)) as Record<string, unknown> | null;
-    if (!response.ok) {
+      });
+      const payload = (await response.json().catch(() => null)) as Record<string, unknown> | null;
+
+      if (response.ok) {
+        const candidates = Array.isArray(payload?.candidates) ? payload.candidates : [];
+        const firstCandidate = safeJson(candidates[0]);
+        const content = safeJson(firstCandidate.content);
+        const parts = Array.isArray(content.parts) ? content.parts : [];
+        const textPart = parts.find((part) => typeof safeJson(part).text === "string");
+        const text = textPart ? String(safeJson(textPart).text) : "";
+        if (!text) throw new Error("Gemini returned no intent payload");
+        return safeJson(JSON.parse(text)) as ParsedIntent;
+      }
+
       const apiError = safeJson(payload?.error);
       const message = typeof apiError.message === "string" ? apiError.message : `Gemini API error ${response.status}`;
-      throw new Error(message);
-    }
 
-    const candidates = Array.isArray(payload?.candidates) ? payload.candidates : [];
-    const firstCandidate = safeJson(candidates[0]);
-    const content = safeJson(firstCandidate.content);
-    const parts = Array.isArray(content.parts) ? content.parts : [];
-    const textPart = parts.find((part) => typeof safeJson(part).text === "string");
-    const text = textPart ? String(safeJson(textPart).text) : "";
-    if (!text) throw new Error("Gemini returned no intent payload");
-    return safeJson(JSON.parse(text)) as ParsedIntent;
-  } finally {
-    clearTimeout(timeout);
+      if (!isRetryableGeminiStatus(response.status) || attempt === maxAttempts) {
+        throw new Error(`Gemini API error ${response.status}: ${message}`);
+      }
+
+      const retryAfterHeader = Number(response.headers.get("Retry-After") ?? "");
+      const retryAfterMs = Number.isFinite(retryAfterHeader) && retryAfterHeader > 0 ? Math.min(10_000, retryAfterHeader * 1000) : Math.min(5_000, 500 * 2 ** (attempt - 1));
+      await sleep(retryAfterMs);
+    } catch (error) {
+      if (error instanceof Error && error.message.startsWith("Gemini API error")) throw error;
+      if (attempt === maxAttempts) throw error;
+      await sleep(Math.min(5_000, 500 * 2 ** (attempt - 1)));
+    } finally {
+      clearTimeout(timeout);
+    }
   }
+
+  throw new Error("Gemini intent processing failed after retries");
 }
 
 export async function onRequest({ request, env }: { request: Request; env: Env }) {
@@ -232,7 +254,6 @@ export async function onRequest({ request, env }: { request: Request; env: Env }
       apiKey,
       String(env.GEMINI_MODEL ?? "gemini-3.8-flash"),
       Math.round(parseNumber(env.GEMINI_MAX_OUTPUT_TOKENS ?? env.OPENAI_MAX_TOKENS, 500, 100, 2000)),
-      parseNumber(env.GEMINI_TEMPERATURE ?? env.OPENAI_TEMPERATURE, 0.3, 0, 1),
     );
     const parameters = safeJson(parsed.parameters);
     const matchedTool = tools.find((tool) => tool.tool_key === parsed.tool);
@@ -287,7 +308,11 @@ export async function onRequest({ request, env }: { request: Request; env: Env }
   } catch (error) {
     const message = error instanceof Error ? error.message : "AI processing failed";
     console.error("/api/admin/ai-process", message);
-    if (message.startsWith("Gemini API error")) return json({ success: false, error: message }, 502);
+    const geminiStatusMatch = message.match(/^Gemini API error (429|500|503):/);
+    if (geminiStatusMatch) {
+      const status = Number(geminiStatusMatch[1]);
+      return json({ success: false, error: message, code: status === 503 ? "GEMINI_CAPACITY" : "GEMINI_RETRYABLE_ERROR", retryable: true }, status === 429 ? 429 : 503);
+    }
     if (message.startsWith("Supabase REST 401")) return json({ success: false, error: "Supabase authorization failed" }, 401);
     if (message === "Supabase environment is not configured") return json({ success: false, error: message }, 503);
     return json({ success: false, error: message }, 500);
