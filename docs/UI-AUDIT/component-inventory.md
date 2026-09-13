@@ -4,13 +4,13 @@ Baseline commit: `bc4b5d31d17786cfbfb1772fb54302133e848a97`.
 
 ## Shared application components
 
-| Area | Current components | Phase 0 assessment |
-|---|---|---|
-| Runtime | `RuntimeErrorBoundary`, `AdminGuard` | Keep; audit visual fallback states |
-| Embedded systems | `EmbeddedSystemView` | Candidate shared shell for external system views |
-| Map | `Map3DViewer` | Specialized component; audit responsive/loading/error states |
-| UI primitives | `components/ui/*` | Existing primitive layer; audit variants and token usage before replacing |
-| Storefront | `components/storefront/*` | Domain component layer; audit against generic UI primitives |
+| Area             | Current components                   | Phase 0 assessment                                                        |
+| ---------------- | ------------------------------------ | ------------------------------------------------------------------------- |
+| Runtime          | `RuntimeErrorBoundary`, `AdminGuard` | Keep; audit visual fallback states                                        |
+| Embedded systems | `EmbeddedSystemView`                 | Candidate shared shell for external system views                          |
+| Map              | `Map3DViewer`                        | Specialized component; audit responsive/loading/error states              |
+| UI primitives    | `components/ui/*`                    | Existing primitive layer; audit variants and token usage before replacing |
+| Storefront       | `components/storefront/*`            | Domain component layer; audit against generic UI primitives               |
 
 ## Existing primitive signals
 

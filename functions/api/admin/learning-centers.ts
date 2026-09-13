@@ -1,6 +1,95 @@
 import { getSupabaseUser, isAdminRole, json, supabaseConfig } from "../auth/_shared";
-type Env = Record<string, unknown>; type Row = Record<string, unknown>;
-function cookieValue(request: Request, name: string) { const part = (request.headers.get("Cookie") ?? "").split(";").map((x) => x.trim()).find((x) => x.startsWith(`${name}=`)); return part ? decodeURIComponent(part.slice(name.length + 1)) : null; }
-async function sb<T>(env: Env, token: string, path: string, init: RequestInit = {}) { const { url, key, configured } = supabaseConfig(env); if (!configured) throw new Error("Supabase is not configured"); const r = await fetch(`${url}/rest/v1/${path}`, { ...init, headers: { apikey: key, Authorization: `Bearer ${token}`, Accept: "application/json", "Content-Type": "application/json", ...(init.headers ?? {}) } }); const body = await r.json().catch(() => null); if (!r.ok) throw new Error(`Supabase REST ${r.status}`); return body as T; }
-async function auth(request: Request, env: Env) { const user = await getSupabaseUser(request, env); const role = user?.app_metadata?.role; const token = cookieValue(request, "sb_access_token"); if (!user || !isAdminRole(role) || !token) return { error: json({ success: false, error: "Unauthorized" }, 401) } as const; if (role !== "SUPER_ADMIN" && role !== "OPERATIONS_ADMIN" && role !== "CONTENT_ADMIN") return { error: json({ success: false, error: "Forbidden" }, 403) } as const; return { token } as const; }
-export async function onRequest({ request, env }: { request: Request; env: Env }) { const method = request.method.toUpperCase(); if (!["GET","POST","PUT"].includes(method)) return json({ success:false,error:"Method Not Allowed"},405,{Allow:"GET, POST, PUT"}); const a=await auth(request,env); if("error" in a)return a.error; try { const id=new URL(request.url).searchParams.get("id"); const select="id,name,slug,type,description,province,district,subdistrict,address,latitude,longitude,cover_image,status,created_at,updated_at"; if(method==="GET"){ const rows=await sb<Row[]>(env,a.token,`learning_centers?select=${select}&order=name.asc`); return json({success:true,data:rows}); } const body=await request.json() as Row; const row={ name:String(body.name??"").trim(), slug:String(body.slug??"").trim(), type:String(body.type??"LEARNING_CENTER"), description:body.description?String(body.description):null, province:body.province?String(body.province):null, district:body.district?String(body.district):null, subdistrict:body.subdistrict?String(body.subdistrict):null, address:body.address?String(body.address):null, latitude:body.latitude==null?null:Number(body.latitude), longitude:body.longitude==null?null:Number(body.longitude), cover_image:body.cover_image?String(body.cover_image):null, status:String(body.status??"active") }; if(!row.name||!row.slug)return json({success:false,error:"กรุณาระบุชื่อและ slug"},400); if(method==="POST"){const rows=await sb<Row[]>(env,a.token,"learning_centers",{method:"POST",headers:{Prefer:"return=representation"},body:JSON.stringify(row)});return json({success:true,data:rows[0]??null},201);} if(!id)return json({success:false,error:"ต้องระบุ id"},400); const rows=await sb<Row[]>(env,a.token,`learning_centers?id=eq.${encodeURIComponent(id)}`,{method:"PATCH",headers:{Prefer:"return=representation"},body:JSON.stringify(row)}); return json({success:true,data:rows[0]??null}); } catch(e){ console.error("/api/admin/learning-centers",e); return json({success:false,error:e instanceof Error?e.message:"ดำเนินการไม่สำเร็จ"},500); } }
+type Env = Record<string, unknown>;
+type Row = Record<string, unknown>;
+function cookieValue(request: Request, name: string) {
+  const part = (request.headers.get("Cookie") ?? "")
+    .split(";")
+    .map((x) => x.trim())
+    .find((x) => x.startsWith(`${name}=`));
+  return part ? decodeURIComponent(part.slice(name.length + 1)) : null;
+}
+async function sb<T>(env: Env, token: string, path: string, init: RequestInit = {}) {
+  const { url, key, configured } = supabaseConfig(env);
+  if (!configured) throw new Error("Supabase is not configured");
+  const r = await fetch(`${url}/rest/v1/${path}`, {
+    ...init,
+    headers: {
+      apikey: key,
+      Authorization: `Bearer ${token}`,
+      Accept: "application/json",
+      "Content-Type": "application/json",
+      ...(init.headers ?? {}),
+    },
+  });
+  const body = await r.json().catch(() => null);
+  if (!r.ok) throw new Error(`Supabase REST ${r.status}`);
+  return body as T;
+}
+async function auth(request: Request, env: Env) {
+  const user = await getSupabaseUser(request, env);
+  const role = user?.app_metadata?.role;
+  const token = cookieValue(request, "sb_access_token");
+  if (!user || !isAdminRole(role) || !token)
+    return { error: json({ success: false, error: "Unauthorized" }, 401) } as const;
+  if (role !== "SUPER_ADMIN" && role !== "OPERATIONS_ADMIN" && role !== "CONTENT_ADMIN")
+    return { error: json({ success: false, error: "Forbidden" }, 403) } as const;
+  return { token } as const;
+}
+export async function onRequest({ request, env }: { request: Request; env: Env }) {
+  const method = request.method.toUpperCase();
+  if (!["GET", "POST", "PUT"].includes(method))
+    return json({ success: false, error: "Method Not Allowed" }, 405, { Allow: "GET, POST, PUT" });
+  const a = await auth(request, env);
+  if ("error" in a) return a.error;
+  try {
+    const id = new URL(request.url).searchParams.get("id");
+    const select =
+      "id,name,slug,type,description,province,district,subdistrict,address,latitude,longitude,cover_image,status,created_at,updated_at";
+    if (method === "GET") {
+      const rows = await sb<Row[]>(
+        env,
+        a.token,
+        `learning_centers?select=${select}&order=name.asc`,
+      );
+      return json({ success: true, data: rows });
+    }
+    const body = (await request.json()) as Row;
+    const row = {
+      name: String(body.name ?? "").trim(),
+      slug: String(body.slug ?? "").trim(),
+      type: String(body.type ?? "LEARNING_CENTER"),
+      description: body.description ? String(body.description) : null,
+      province: body.province ? String(body.province) : null,
+      district: body.district ? String(body.district) : null,
+      subdistrict: body.subdistrict ? String(body.subdistrict) : null,
+      address: body.address ? String(body.address) : null,
+      latitude: body.latitude == null ? null : Number(body.latitude),
+      longitude: body.longitude == null ? null : Number(body.longitude),
+      cover_image: body.cover_image ? String(body.cover_image) : null,
+      status: String(body.status ?? "active"),
+    };
+    if (!row.name || !row.slug)
+      return json({ success: false, error: "กรุณาระบุชื่อและ slug" }, 400);
+    if (method === "POST") {
+      const rows = await sb<Row[]>(env, a.token, "learning_centers", {
+        method: "POST",
+        headers: { Prefer: "return=representation" },
+        body: JSON.stringify(row),
+      });
+      return json({ success: true, data: rows[0] ?? null }, 201);
+    }
+    if (!id) return json({ success: false, error: "ต้องระบุ id" }, 400);
+    const rows = await sb<Row[]>(env, a.token, `learning_centers?id=eq.${encodeURIComponent(id)}`, {
+      method: "PATCH",
+      headers: { Prefer: "return=representation" },
+      body: JSON.stringify(row),
+    });
+    return json({ success: true, data: rows[0] ?? null });
+  } catch (e) {
+    console.error("/api/admin/learning-centers", e);
+    return json(
+      { success: false, error: e instanceof Error ? e.message : "ดำเนินการไม่สำเร็จ" },
+      500,
+    );
+  }
+}

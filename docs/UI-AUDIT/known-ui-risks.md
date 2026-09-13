@@ -5,12 +5,15 @@ These are baseline findings, not yet implementation fixes.
 ## P0 — Structural consistency risk
 
 ### Mixed visual systems
+
 The repository contains multiple visual languages: the existing design-system document specifies a warm/light public identity, while `src/styles.css` currently defines a dark navy background and executive data-wall tokens. Several pages also use direct light/slate layouts. This needs reconciliation in Phase 1/2 before token changes are made.
 
 ### Page-local styling
+
 Search results show repeated direct color literals such as `#123B63`, `#1677A8`, `#D6A84F`, `#002D62`, `#2E7D32`, and many page-local Tailwind combinations. This is a consistency and maintenance risk.
 
 ### Missing shared shell
+
 `src/App.tsx` currently focuses on routing and does not show a single global `AppShell` wrapping the public pages. Page-level headers are therefore likely to diverge. This must be verified page-by-page in Phase 1.
 
 ## P1 — Component consistency

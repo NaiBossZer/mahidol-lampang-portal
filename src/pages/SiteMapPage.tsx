@@ -4,10 +4,15 @@ import { PublicAppShell } from "@/components/layout/PublicAppShell";
 export function SiteMapPage() {
   return (
     <PublicAppShell>
-      <section className="min-h-[calc(100dvh-12rem)] bg-slate-50 px-4 py-8 md:px-8" aria-labelledby="site-map-title">
+      <section
+        className="min-h-[calc(100dvh-12rem)] bg-slate-50 px-4 py-8 md:px-8"
+        aria-labelledby="site-map-title"
+      >
         <div className="mx-auto max-w-6xl">
           <header className="mb-6">
-            <p className="text-sm font-semibold text-amber-600">Mahidol Social Engagement Platform</p>
+            <p className="text-sm font-semibold text-amber-600">
+              Mahidol Social Engagement Platform
+            </p>
             <h1 id="site-map-title" className="mt-1 text-3xl font-black text-slate-900">
               แผนที่พื้นที่ปฏิบัติการ 3D
             </h1>

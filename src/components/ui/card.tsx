@@ -8,8 +8,10 @@ const cardVariants = cva("rounded-2xl border text-card-foreground", {
     variant: {
       default: "border-border bg-card shadow-sm",
       content: "border-[#EEE9DF] bg-white shadow-sm",
-      feature: "overflow-hidden border-[#EEE9DF] bg-white shadow-sm transition-shadow hover:shadow-xl",
-      interactive: "border-[#EEE9DF] bg-white shadow-sm transition duration-200 hover:-translate-y-0.5 hover:shadow-lg",
+      feature:
+        "overflow-hidden border-[#EEE9DF] bg-white shadow-sm transition-shadow hover:shadow-xl",
+      interactive:
+        "border-[#EEE9DF] bg-white shadow-sm transition duration-200 hover:-translate-y-0.5 hover:shadow-lg",
       admin: "border-slate-200 bg-white shadow-sm",
     },
   },
@@ -19,12 +21,13 @@ const cardVariants = cva("rounded-2xl border text-card-foreground", {
 });
 
 export interface CardProps
-  extends React.HTMLAttributes<HTMLDivElement>,
-    VariantProps<typeof cardVariants> {}
+  extends React.HTMLAttributes<HTMLDivElement>, VariantProps<typeof cardVariants> {}
 
-const Card = React.forwardRef<HTMLDivElement, CardProps>(({ className, variant, ...props }, ref) => (
-  <div ref={ref} className={cn(cardVariants({ variant }), className)} {...props} />
-));
+const Card = React.forwardRef<HTMLDivElement, CardProps>(
+  ({ className, variant, ...props }, ref) => (
+    <div ref={ref} className={cn(cardVariants({ variant }), className)} {...props} />
+  ),
+);
 Card.displayName = "Card";
 
 const CardHeader = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
@@ -36,7 +39,11 @@ CardHeader.displayName = "CardHeader";
 
 const CardTitle = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
   ({ className, ...props }, ref) => (
-    <div ref={ref} className={cn("font-semibold leading-none tracking-tight", className)} {...props} />
+    <div
+      ref={ref}
+      className={cn("font-semibold leading-none tracking-tight", className)}
+      {...props}
+    />
   ),
 );
 CardTitle.displayName = "CardTitle";

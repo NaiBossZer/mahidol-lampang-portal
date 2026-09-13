@@ -80,17 +80,11 @@ export async function onRequest({ request, env }: { request: Request; env: Env }
     }
 
     if (request.method !== "PUT") {
-      return json(
-        { success: false, error: "Method Not Allowed" },
-        405,
-        { Allow: "GET, PUT" },
-      );
+      return json({ success: false, error: "Method Not Allowed" }, 405, { Allow: "GET, PUT" });
     }
 
     const body = (await request.json()) as RelationBody;
-    const learningCenterIds = Array.isArray(body.learningCenterIds)
-      ? body.learningCenterIds
-      : [];
+    const learningCenterIds = Array.isArray(body.learningCenterIds) ? body.learningCenterIds : [];
     const organizations = Array.isArray(body.organizations) ? body.organizations : [];
 
     await call(
@@ -113,12 +107,9 @@ export async function onRequest({ request, env }: { request: Request; env: Env }
       });
     }
 
-    await call(
-      env,
-      token,
-      `activity_organizers?activity_id=eq.${encodeURIComponent(activityId)}`,
-      { method: "DELETE" },
-    );
+    await call(env, token, `activity_organizers?activity_id=eq.${encodeURIComponent(activityId)}`, {
+      method: "DELETE",
+    });
 
     if (organizations.length) {
       await call(env, token, "activity_organizers", {

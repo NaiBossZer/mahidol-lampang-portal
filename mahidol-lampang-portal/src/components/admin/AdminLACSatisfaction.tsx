@@ -13,10 +13,30 @@ const satisfactionData = [
 ];
 
 const recentFeedback = [
-  { name: "นักศึกษา A", score: 5, comment: "กิจกรรม Shellac Workshop ให้ประสบการณ์ตรงมาก ประทับใจมาก", date: "20 ก.ย." },
-  { name: "ผู้เข้าร่วม B", score: 4, comment: "ห้องปฏิบัติการดี แต่อยากให้มีอุปกรณ์เพิ่มเติม", date: "18 ก.ย." },
-  { name: "นักวิจัย C", score: 5, comment: "เครือข่ายชุมชนแข็งแกร่งมาก ได้ความรู้จากชาวบ้านจริงๆ", date: "15 ก.ย." },
-  { name: "นักศึกษา D", score: 3, comment: "ระบบลงทะเบียนออนไลน์ยังไม่ค่อยสะดวก ต้องปรับปรุง", date: "12 ก.ย." },
+  {
+    name: "นักศึกษา A",
+    score: 5,
+    comment: "กิจกรรม Shellac Workshop ให้ประสบการณ์ตรงมาก ประทับใจมาก",
+    date: "20 ก.ย.",
+  },
+  {
+    name: "ผู้เข้าร่วม B",
+    score: 4,
+    comment: "ห้องปฏิบัติการดี แต่อยากให้มีอุปกรณ์เพิ่มเติม",
+    date: "18 ก.ย.",
+  },
+  {
+    name: "นักวิจัย C",
+    score: 5,
+    comment: "เครือข่ายชุมชนแข็งแกร่งมาก ได้ความรู้จากชาวบ้านจริงๆ",
+    date: "15 ก.ย.",
+  },
+  {
+    name: "นักศึกษา D",
+    score: 3,
+    comment: "ระบบลงทะเบียนออนไลน์ยังไม่ค่อยสะดวก ต้องปรับปรุง",
+    date: "12 ก.ย.",
+  },
 ];
 
 const StarRating = ({ score }: { score: number }) => (
@@ -70,10 +90,18 @@ export default function AdminLACSatisfaction() {
             <Star size={16} className="text-[#D6A84F]" />
             <span className="text-[#667085] text-sm">คะแนนรวม</span>
           </div>
-          <div className="font-display font-bold text-4xl text-[#1F2933] mb-1">{overall.toFixed(1)}</div>
+          <div className="font-display font-bold text-4xl text-[#1F2933] mb-1">
+            {overall.toFixed(1)}
+          </div>
           <div className="flex gap-0.5 mb-1">
-            {[1,2,3,4,5].map((s) => (
-              <Star key={s} size={14} className={s <= Math.round(overall) ? "text-[#D6A84F] fill-[#D6A84F]" : "text-[#E2E6EA]"} />
+            {[1, 2, 3, 4, 5].map((s) => (
+              <Star
+                key={s}
+                size={14}
+                className={
+                  s <= Math.round(overall) ? "text-[#D6A84F] fill-[#D6A84F]" : "text-[#E2E6EA]"
+                }
+              />
             ))}
           </div>
           <div className="text-[#5F8D62] text-xs flex items-center gap-1">
@@ -106,7 +134,9 @@ export default function AdminLACSatisfaction() {
         {/* Category scores */}
         <div className="bg-white rounded-xl border border-[#E2E6EA] overflow-hidden">
           <div className="px-5 py-4 border-b border-[#E2E6EA]">
-            <h2 className="text-[#1F2933] font-semibold text-sm">คะแนนแยกตามหมวดหมู่ · {activeQuarter}</h2>
+            <h2 className="text-[#1F2933] font-semibold text-sm">
+              คะแนนแยกตามหมวดหมู่ · {activeQuarter}
+            </h2>
           </div>
           <div className="divide-y divide-[#F0F2F5]">
             {satisfactionData.map((d) => (
@@ -117,15 +147,19 @@ export default function AdminLACSatisfaction() {
                     <span className="text-[#9BA8B7] text-xs">{d.responses} ผู้ตอบ</span>
                     <span
                       className={`text-xs font-medium ${
-                        d.trend.startsWith("+") ? "text-[#5F8D62]" :
-                        d.trend.startsWith("-") ? "text-[#C66B4F]" :
-                        "text-[#9BA8B7]"
+                        d.trend.startsWith("+")
+                          ? "text-[#5F8D62]"
+                          : d.trend.startsWith("-")
+                            ? "text-[#C66B4F]"
+                            : "text-[#9BA8B7]"
                       }`}
                     >
                       {d.trend !== "0.0" ? d.trend : "–"}
                     </span>
                     <div className="flex items-center gap-1.5 min-w-[52px]">
-                      <span className="font-display font-bold text-sm text-[#1F2933]">{d.score}</span>
+                      <span className="font-display font-bold text-sm text-[#1F2933]">
+                        {d.score}
+                      </span>
                       <StarRating score={d.score} />
                     </div>
                   </div>
@@ -135,7 +169,8 @@ export default function AdminLACSatisfaction() {
                     className="h-full rounded-full transition-all"
                     style={{
                       width: `${(d.score / 5) * 100}%`,
-                      backgroundColor: d.score >= 4.5 ? "#5F8D62" : d.score >= 4.0 ? "#D6A84F" : "#C66B4F",
+                      backgroundColor:
+                        d.score >= 4.5 ? "#5F8D62" : d.score >= 4.0 ? "#D6A84F" : "#C66B4F",
                     }}
                   />
                 </div>

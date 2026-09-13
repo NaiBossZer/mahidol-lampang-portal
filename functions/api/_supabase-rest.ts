@@ -23,7 +23,7 @@ export async function supabaseRest<T>(
     const detail = await response.text().catch(() => "");
     throw new Error(`Supabase REST ${response.status}${detail ? `: ${detail.slice(0, 300)}` : ""}`);
   }
-  return await response.json() as T;
+  return (await response.json()) as T;
 }
 
 export function json(body: unknown, status = 200, extraHeaders: Record<string, string> = {}) {

@@ -30,15 +30,24 @@ export default function PublicPortal() {
 
   const renderPage = () => {
     switch (page) {
-      case "home": return <HomePage navigate={navigate} />;
-      case "activities": return <ActivitiesPage navigate={navigate} />;
-      case "activity-detail": return <ActivityDetailPage navigate={navigate} />;
-      case "shellac": return <ShellacPage navigate={navigate} />;
-      case "sitemap": return <SiteMapPage />;
-      case "storefront": return <StorefrontPage />;
-      case "smart-farm": return <SmartFarmPage />;
-      case "login": return <LoginPage navigate={navigate} />;
-      default: return <HomePage navigate={navigate} />;
+      case "home":
+        return <HomePage navigate={navigate} />;
+      case "activities":
+        return <ActivitiesPage navigate={navigate} />;
+      case "activity-detail":
+        return <ActivityDetailPage navigate={navigate} />;
+      case "shellac":
+        return <ShellacPage navigate={navigate} />;
+      case "sitemap":
+        return <SiteMapPage />;
+      case "storefront":
+        return <StorefrontPage />;
+      case "smart-farm":
+        return <SmartFarmPage />;
+      case "login":
+        return <LoginPage navigate={navigate} />;
+      default:
+        return <HomePage navigate={navigate} />;
     }
   };
 

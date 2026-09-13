@@ -1,6 +1,26 @@
 export type CmsHome = {
-  sections: Array<{ sectionKey: string; title: string | null; subtitle: string | null; description: string | null; image: string | null; sortOrder: number; isEnabled: boolean }>;
-  services: Array<{ id: string; title: string; slug: string; summary: string | null; description: string | null; icon: string | null; featuredImage: string | null; linkType: string; linkUrl: string | null; sortOrder: number; status: string }>;
+  sections: Array<{
+    sectionKey: string;
+    title: string | null;
+    subtitle: string | null;
+    description: string | null;
+    image: string | null;
+    sortOrder: number;
+    isEnabled: boolean;
+  }>;
+  services: Array<{
+    id: string;
+    title: string;
+    slug: string;
+    summary: string | null;
+    description: string | null;
+    icon: string | null;
+    featuredImage: string | null;
+    linkType: string;
+    linkUrl: string | null;
+    sortOrder: number;
+    status: string;
+  }>;
 };
 
 export async function getPublicHomeCms(): Promise<CmsHome | null> {

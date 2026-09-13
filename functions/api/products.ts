@@ -1,7 +1,8 @@
 import { getSupabaseRestConfig, json, methodNotAllowed, supabaseRest } from "./_supabase-rest";
 
 export async function onRequestGet({ env }: { env: Record<string, unknown> }) {
-  if (!getSupabaseRestConfig(env).configured) return json({ error: "Supabase is not configured" }, 503);
+  if (!getSupabaseRestConfig(env).configured)
+    return json({ error: "Supabase is not configured" }, 503);
   try {
     const rows = await supabaseRest<Record<string, unknown>[]>(env, "products", {
       select: "*",

@@ -127,7 +127,9 @@ export default async function handler(req: ApiRequest, res: ApiResponse) {
           const [updated] = await tx
             .update(products)
             .set({ stockQuantity: sql`${products.stockQuantity} - ${line.quantity}` })
-            .where(sql`${products.id} = ${line.productId} AND ${products.stockQuantity} >= ${line.quantity}`)
+            .where(
+              sql`${products.id} = ${line.productId} AND ${products.stockQuantity} >= ${line.quantity}`,
+            )
             .returning({ id: products.id });
           if (!updated) throw new Error("STOCK_CONFLICT");
           await tx.insert(orderItems).values({ orderId: order.id, ...line });
@@ -141,7 +143,8 @@ export default async function handler(req: ApiRequest, res: ApiResponse) {
     if (req.method === "PATCH" && id) {
       const b = (await readJson(req)) as Record<string, unknown>;
       const status = b["status"];
-      if (!statuses.includes(status as (typeof statuses)[number])) return json(res, 400, { error: "สถานะไม่ถูกต้อง" });
+      if (!statuses.includes(status as (typeof statuses)[number]))
+        return json(res, 400, { error: "สถานะไม่ถูกต้อง" });
       const db = getDb();
       const [row] = await db
         .update(orders)

@@ -34,7 +34,11 @@ export default async function handler(req: ApiRequest, res: ApiResponse) {
         .innerJoin(partners, eq(activityPartners.partnerId, partners.id))
         .where(eq(activityPartners.activityId, activity.id)),
       activity.centerId
-        ? db.select().from(learningCenters).where(eq(learningCenters.id, activity.centerId)).limit(1)
+        ? db
+            .select()
+            .from(learningCenters)
+            .where(eq(learningCenters.id, activity.centerId))
+            .limit(1)
         : Promise.resolve([]),
       activity.projectId
         ? db.select().from(socialProjects).where(eq(socialProjects.id, activity.projectId)).limit(1)

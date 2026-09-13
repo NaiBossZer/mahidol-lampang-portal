@@ -35,7 +35,10 @@ export default function AdminHeader({ page, onMenuClick }: Props) {
             className="pl-8 pr-4 py-2 rounded-lg border border-[#E2E6EA] bg-[#F8F9FA] text-sm text-[#1F2933] placeholder:text-[#9BA8B7] focus:outline-none focus:ring-2 focus:ring-[#1677A8] focus:border-transparent w-[200px]"
           />
         </div>
-        <button className="relative w-9 h-9 rounded-lg flex items-center justify-center text-[#667085] hover:bg-[#F0F2F5] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#1677A8]" aria-label="การแจ้งเตือน">
+        <button
+          className="relative w-9 h-9 rounded-lg flex items-center justify-center text-[#667085] hover:bg-[#F0F2F5] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#1677A8]"
+          aria-label="การแจ้งเตือน"
+        >
           <Bell size={18} />
           <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-[#C66B4F] rounded-full" />
         </button>

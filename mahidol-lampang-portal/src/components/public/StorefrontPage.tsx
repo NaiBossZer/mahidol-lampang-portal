@@ -12,7 +12,8 @@ const products = [
     rating: 4.8,
     reviews: 124,
     available: true,
-    image: "https://images.unsplash.com/photo-1647879826700-cfc5fd9d9a31?w=400&h=300&fit=crop&auto=format",
+    image:
+      "https://images.unsplash.com/photo-1647879826700-cfc5fd9d9a31?w=400&h=300&fit=crop&auto=format",
     category: "ครั่ง",
   },
   {
@@ -25,7 +26,8 @@ const products = [
     rating: 4.9,
     reviews: 89,
     available: true,
-    image: "https://images.unsplash.com/photo-1560559383-338dc7faf062?w=400&h=300&fit=crop&auto=format",
+    image:
+      "https://images.unsplash.com/photo-1560559383-338dc7faf062?w=400&h=300&fit=crop&auto=format",
     category: "เกษตร",
   },
   {
@@ -38,7 +40,8 @@ const products = [
     rating: 4.7,
     reviews: 56,
     available: true,
-    image: "https://images.unsplash.com/photo-1647879826700-cfc5fd9d9a31?w=400&h=300&fit=crop&auto=format",
+    image:
+      "https://images.unsplash.com/photo-1647879826700-cfc5fd9d9a31?w=400&h=300&fit=crop&auto=format",
     category: "เกษตร",
   },
   {
@@ -51,7 +54,8 @@ const products = [
     rating: 4.6,
     reviews: 43,
     available: false,
-    image: "https://images.unsplash.com/photo-1560559383-338dc7faf062?w=400&h=300&fit=crop&auto=format",
+    image:
+      "https://images.unsplash.com/photo-1560559383-338dc7faf062?w=400&h=300&fit=crop&auto=format",
     category: "เกษตร",
   },
 ];
@@ -73,9 +77,15 @@ export default function StorefrontPage() {
         <div className="max-w-[1280px] mx-auto px-8 max-md:px-4 py-10">
           <div className="flex items-start justify-between max-sm:flex-col max-sm:gap-4">
             <div>
-              <div className="text-[#C66B4F] text-xs font-semibold uppercase tracking-widest mb-2">ร้านค้าชุมชน</div>
-              <h1 className="text-[#123B63] font-bold text-4xl max-md:text-2xl mb-2">ผลิตภัณฑ์ชุมชนมหิดล ลำปาง</h1>
-              <p className="text-[#667085] text-base">ผลิตภัณฑ์อินทรีย์ได้มาตรฐาน จากเกษตรกรและชุมชนในเครือข่าย</p>
+              <div className="text-[#C66B4F] text-xs font-semibold uppercase tracking-widest mb-2">
+                ร้านค้าชุมชน
+              </div>
+              <h1 className="text-[#123B63] font-bold text-4xl max-md:text-2xl mb-2">
+                ผลิตภัณฑ์ชุมชนมหิดล ลำปาง
+              </h1>
+              <p className="text-[#667085] text-base">
+                ผลิตภัณฑ์อินทรีย์ได้มาตรฐาน จากเกษตรกรและชุมชนในเครือข่าย
+              </p>
             </div>
             <div className="relative">
               <button className="flex items-center gap-2 px-5 py-3 rounded-xl border border-[#EEE9DF] bg-white text-[#1F2933] font-medium text-sm hover:border-[#123B63]/30 transition-colors min-h-[44px]">
@@ -103,7 +113,11 @@ export default function StorefrontPage() {
             <div
               key={b.label}
               className="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium border"
-              style={{ borderColor: b.color + "40", color: b.color, backgroundColor: b.color + "10" }}
+              style={{
+                borderColor: b.color + "40",
+                color: b.color,
+                backgroundColor: b.color + "10",
+              }}
             >
               <Check size={14} />
               {b.label}
@@ -117,18 +131,18 @@ export default function StorefrontPage() {
             <div
               key={p.id}
               className={`bg-white rounded-2xl border overflow-hidden transition-all duration-200 ${
-                p.available ? "border-[#EEE9DF] hover:shadow-md hover:border-[#D6A84F]/30" : "border-[#EEE9DF] opacity-75"
+                p.available
+                  ? "border-[#EEE9DF] hover:shadow-md hover:border-[#D6A84F]/30"
+                  : "border-[#EEE9DF] opacity-75"
               }`}
             >
               <div className="aspect-[4/3] overflow-hidden bg-[#EEE9DF] relative">
-                <img
-                  src={p.image}
-                  alt={p.name}
-                  className="w-full h-full object-cover"
-                />
+                <img src={p.image} alt={p.name} className="w-full h-full object-cover" />
                 {!p.available && (
                   <div className="absolute inset-0 bg-white/60 flex items-center justify-center">
-                    <span className="bg-[#667085] text-white text-xs font-semibold px-3 py-1 rounded-full">สินค้าหมด</span>
+                    <span className="bg-[#667085] text-white text-xs font-semibold px-3 py-1 rounded-full">
+                      สินค้าหมด
+                    </span>
                   </div>
                 )}
                 <div className="absolute top-3 left-3">
@@ -139,7 +153,9 @@ export default function StorefrontPage() {
               </div>
 
               <div className="p-5">
-                <h3 className="text-[#1F2933] font-semibold text-sm leading-snug mb-1.5">{p.name}</h3>
+                <h3 className="text-[#1F2933] font-semibold text-sm leading-snug mb-1.5">
+                  {p.name}
+                </h3>
                 <p className="text-[#667085] text-xs leading-relaxed mb-3 line-clamp-2">{p.desc}</p>
 
                 <div className="flex items-center gap-1.5 mb-3">
@@ -154,7 +170,9 @@ export default function StorefrontPage() {
 
                 <div className="flex items-end justify-between">
                   <div>
-                    <div className="text-[#123B63] font-bold text-xl">฿{p.price.toLocaleString()}</div>
+                    <div className="text-[#123B63] font-bold text-xl">
+                      ฿{p.price.toLocaleString()}
+                    </div>
                     <div className="text-[#9BA8B7] text-xs">{p.unit}</div>
                   </div>
                   <button
@@ -164,14 +182,18 @@ export default function StorefrontPage() {
                       !p.available
                         ? "bg-[#EEE9DF] text-[#9BA8B7] cursor-not-allowed"
                         : addedId === p.id
-                        ? "bg-[#5F8D62] text-white"
-                        : "bg-[#123B63] text-white hover:bg-[#0e2d4f]"
+                          ? "bg-[#5F8D62] text-white"
+                          : "bg-[#123B63] text-white hover:bg-[#0e2d4f]"
                     }`}
                   >
                     {addedId === p.id ? (
-                      <><Check size={14} /> เพิ่มแล้ว</>
+                      <>
+                        <Check size={14} /> เพิ่มแล้ว
+                      </>
                     ) : (
-                      <><Plus size={14} /> เพิ่ม</>
+                      <>
+                        <Plus size={14} /> เพิ่ม
+                      </>
                     )}
                   </button>
                 </div>

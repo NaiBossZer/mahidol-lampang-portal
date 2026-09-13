@@ -92,20 +92,20 @@ Also not business domains:
 
 ## Ownership rules
 
-| Capability | Owner domain |
-|---|---|
-| Organizations | Portal Core / Master Data |
-| Occurrences | Programs & Activities |
-| Activity Photos | Programs & Activities |
-| Activity Relations | Programs & Activities |
-| Learning Centers | Learning & Content |
-| CMS / Partners | Learning & Content |
-| Survey + Question Builder + Responses | Engagement & Insights |
-| Analytics + Reports | Engagement & Insights |
-| Search + Notifications | Portal Core |
-| Audit + Lifecycle + RBAC | Portal Core |
-| AI Manager + Agents + Tools | AI Workspace |
-| Dashboard + AppNavbar | Presentation layer |
+| Capability                            | Owner domain              |
+| ------------------------------------- | ------------------------- |
+| Organizations                         | Portal Core / Master Data |
+| Occurrences                           | Programs & Activities     |
+| Activity Photos                       | Programs & Activities     |
+| Activity Relations                    | Programs & Activities     |
+| Learning Centers                      | Learning & Content        |
+| CMS / Partners                        | Learning & Content        |
+| Survey + Question Builder + Responses | Engagement & Insights     |
+| Analytics + Reports                   | Engagement & Insights     |
+| Search + Notifications                | Portal Core               |
+| Audit + Lifecycle + RBAC              | Portal Core               |
+| AI Manager + Agents + Tools           | AI Workspace              |
+| Dashboard + AppNavbar                 | Presentation layer        |
 
 ## Core data model
 

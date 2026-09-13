@@ -4,7 +4,15 @@ import { Button } from "@/components/ui/button";
 import { Minus, Plus, Trash2, ShoppingBag } from "lucide-react";
 
 export const CartDrawer = () => {
-  const { items, updateQuantity, removeItem, totalPrice, isCartOpen, setIsCartOpen, isRevalidating } = useCart();
+  const {
+    items,
+    updateQuantity,
+    removeItem,
+    totalPrice,
+    isCartOpen,
+    setIsCartOpen,
+    isRevalidating,
+  } = useCart();
 
   return (
     <Sheet open={isCartOpen} onOpenChange={setIsCartOpen}>

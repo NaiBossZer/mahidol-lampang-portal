@@ -17,9 +17,15 @@ export async function getAdminOrganizations(): Promise<AdminOrganization[]> {
 }
 
 export async function createAdminOrganization(input: AdminOrganizationInput) {
-  return apiRequest<AdminOrganization>("/api/admin/organizations", { method: "POST", body: JSON.stringify(input) });
+  return apiRequest<AdminOrganization>("/api/admin/organizations", {
+    method: "POST",
+    body: JSON.stringify(input),
+  });
 }
 
 export async function updateAdminOrganization(input: AdminOrganization) {
-  return apiRequest<AdminOrganization>(`/api/admin/organizations?id=${encodeURIComponent(input.id)}`, { method: "PUT", body: JSON.stringify(input) });
+  return apiRequest<AdminOrganization>(
+    `/api/admin/organizations?id=${encodeURIComponent(input.id)}`,
+    { method: "PUT", body: JSON.stringify(input) },
+  );
 }

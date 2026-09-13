@@ -33,21 +33,29 @@ export async function getAdminOccurrences(activityId?: string) {
 }
 
 export async function createAdminOccurrence(input: ActivityOccurrenceInput) {
-  const result = await apiRequest(`/api/admin/occurrences`, { method: "POST", body: JSON.stringify(input) });
+  const result = await apiRequest(`/api/admin/occurrences`, {
+    method: "POST",
+    body: JSON.stringify(input),
+  });
   invalidateApiCache("/api/admin/occurrences");
   invalidateApiCache("/api/admin/dashboard");
   return result;
 }
 
 export async function updateAdminOccurrence(id: string, input: Partial<ActivityOccurrenceInput>) {
-  const result = await apiRequest(`/api/admin/occurrences?id=${encodeURIComponent(id)}`, { method: "PUT", body: JSON.stringify(input) });
+  const result = await apiRequest(`/api/admin/occurrences?id=${encodeURIComponent(id)}`, {
+    method: "PUT",
+    body: JSON.stringify(input),
+  });
   invalidateApiCache("/api/admin/occurrences");
   invalidateApiCache("/api/admin/dashboard");
   return result;
 }
 
 export async function archiveAdminOccurrence(id: string) {
-  const result = await apiRequest(`/api/admin/occurrences?id=${encodeURIComponent(id)}`, { method: "DELETE" });
+  const result = await apiRequest(`/api/admin/occurrences?id=${encodeURIComponent(id)}`, {
+    method: "DELETE",
+  });
   invalidateApiCache("/api/admin/occurrences");
   invalidateApiCache("/api/admin/dashboard");
   return result;

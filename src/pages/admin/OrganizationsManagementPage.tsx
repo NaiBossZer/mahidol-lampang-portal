@@ -1,18 +1,280 @@
 import { useEffect, useMemo, useState } from "react";
 import { Building2, Pencil, Plus, RefreshCw, Search } from "lucide-react";
 import { toast } from "sonner";
-import { createAdminOrganization, getAdminOrganizations, updateAdminOrganization, type AdminOrganization } from "@/services/admin-organizations";
+import {
+  createAdminOrganization,
+  getAdminOrganizations,
+  updateAdminOrganization,
+  type AdminOrganization,
+} from "@/services/admin-organizations";
 
-type OrganizationForm = { name: string; organization_type: "internal" | "external"; parent_organization_id: string; status: "active" | "inactive"; display_order: number };
-const emptyForm: OrganizationForm = { name: "", organization_type: "external", parent_organization_id: "", status: "active", display_order: 0 };
+type OrganizationForm = {
+  name: string;
+  organization_type: "internal" | "external";
+  parent_organization_id: string;
+  status: "active" | "inactive";
+  display_order: number;
+};
+const emptyForm: OrganizationForm = {
+  name: "",
+  organization_type: "external",
+  parent_organization_id: "",
+  status: "active",
+  display_order: 0,
+};
 
 export function OrganizationsManagementPage() {
-  const [rows, setRows] = useState<AdminOrganization[]>([]); const [query, setQuery] = useState(""); const [editing, setEditing] = useState<AdminOrganization | null>(null); const [form, setForm] = useState<OrganizationForm>(emptyForm); const [open, setOpen] = useState(false); const [loading, setLoading] = useState(true); const [saving, setSaving] = useState(false);
-  async function load() { setLoading(true); try { setRows(await getAdminOrganizations()); } catch (e) { toast.error(e instanceof Error ? e.message : "โหลดองค์กรไม่สำเร็จ"); } finally { setLoading(false); } }
-  useEffect(() => { void load(); }, []);
-  const filtered = useMemo(() => { const q = query.trim().toLowerCase(); return rows.filter((x) => !q || x.name.toLowerCase().includes(q)); }, [rows, query]);
-  function add() { setEditing(null); setForm(emptyForm); setOpen(true); }
-  function edit(row: AdminOrganization) { setEditing(row); setForm({ name: row.name, organization_type: row.organization_type, parent_organization_id: row.parent_organization_id ?? "", status: row.status, display_order: row.display_order }); setOpen(true); }
-  async function save() { if (!form.name.trim()) { toast.error("กรุณาระบุชื่อองค์กร"); return; } setSaving(true); try { const payload = { ...form, parent_organization_id: form.parent_organization_id || null }; if (editing) await updateAdminOrganization({ ...payload, id: editing.id }); else await createAdminOrganization(payload); toast.success(editing ? "อัปเดตองค์กรแล้ว" : "สร้างองค์กรแล้ว"); setOpen(false); await load(); } catch (e) { toast.error(e instanceof Error ? e.message : "บันทึกองค์กรไม่สำเร็จ"); } finally { setSaving(false); } }
-  return <section className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8"><div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between"><div><p className="text-xs font-semibold uppercase tracking-[0.14em] text-emerald-700">Organizations</p><h1 className="mt-1 text-2xl font-bold tracking-tight text-brand-navy lg:text-3xl">จัดการองค์กร</h1><p className="mt-1 text-sm text-slate-600">โครงสร้างองค์กรสำหรับกิจกรรม ผู้จัด และการวิเคราะห์ผู้ตอบแบบสอบถาม</p></div><div className="flex gap-2"><button type="button" onClick={() => void load()} className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 text-sm font-semibold text-brand-navy"><RefreshCw className="h-4 w-4" />รีเฟรช</button><button type="button" onClick={add} className="inline-flex min-h-11 items-center gap-2 rounded-xl bg-brand-navy px-4 text-sm font-bold text-white"><Plus className="h-4 w-4" />เพิ่มองค์กร</button></div></div><div className="mt-6 rounded-2xl border border-slate-200 bg-white p-4"><label className="relative block max-w-xl"><Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" /><span className="sr-only">ค้นหาองค์กร</span><input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="ค้นหาชื่อองค์กร" className="dashboard-control w-full pl-10" /></label></div><div className="mt-4 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">{loading ? <div className="p-10 text-center text-sm text-slate-500">กำลังโหลดองค์กร...</div> : filtered.length === 0 ? <div className="p-10 text-center text-sm text-slate-500"><Building2 className="mx-auto mb-2 h-7 w-7 text-slate-300" />ยังไม่มีข้อมูลองค์กร</div> : <div className="overflow-x-auto"><table className="w-full min-w-[720px] text-sm"><thead className="bg-slate-50 text-xs font-semibold text-slate-500"><tr><th className="px-5 py-3 text-left">องค์กร</th><th className="px-4 py-3 text-left">ประเภท</th><th className="px-4 py-3 text-left">สถานะ</th><th className="px-4 py-3 text-center">ลำดับ</th><th className="px-5 py-3 text-right">จัดการ</th></tr></thead><tbody className="divide-y divide-slate-100">{filtered.map((row) => <tr key={row.id} className="hover:bg-slate-50/80"><td className="px-5 py-4 font-semibold text-slate-900">{row.name}</td><td className="px-4 py-4 text-slate-600">{row.organization_type === "internal" ? "ภายใน" : "ภายนอก"}</td><td className="px-4 py-4"><span className="rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-xs font-semibold text-slate-600">{row.status === "active" ? "ใช้งาน" : "ไม่ใช้งาน"}</span></td><td className="px-4 py-4 text-center text-slate-600">{row.display_order}</td><td className="px-5 py-4 text-right"><button type="button" onClick={() => edit(row)} className="inline-flex min-h-9 items-center gap-1.5 rounded-lg border border-slate-200 px-3 text-xs font-semibold text-brand-navy"><Pencil className="h-3.5 w-3.5" />แก้ไข</button></td></tr>)}</tbody></table></div>}</div>{open && <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/40 p-4"><div className="w-full max-w-xl rounded-2xl bg-white shadow-2xl"><div className="border-b border-slate-200 px-5 py-4"><h2 className="text-lg font-bold text-brand-navy">{editing ? "แก้ไของค์กร" : "เพิ่มองค์กร"}</h2></div><div className="grid gap-4 p-5"><label className="text-sm font-semibold text-slate-700">ชื่อองค์กร<input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} className="dashboard-control mt-1 w-full" /></label><label className="text-sm font-semibold text-slate-700">ประเภท<select value={form.organization_type} onChange={(e) => setForm({ ...form, organization_type: e.target.value as "internal" | "external" })} className="dashboard-control mt-1 w-full"><option value="internal">ภายใน</option><option value="external">ภายนอก</option></select></label><label className="text-sm font-semibold text-slate-700">องค์กรแม่<select value={form.parent_organization_id} onChange={(e) => setForm({ ...form, parent_organization_id: e.target.value })} className="dashboard-control mt-1 w-full"><option value="">ไม่มีองค์กรแม่</option>{rows.filter((x) => x.id !== editing?.id).map((x) => <option key={x.id} value={x.id}>{x.name}</option>)}</select></label><div className="grid gap-4 sm:grid-cols-2"><label className="text-sm font-semibold text-slate-700">สถานะ<select value={form.status} onChange={(e) => setForm({ ...form, status: e.target.value as "active" | "inactive" })} className="dashboard-control mt-1 w-full"><option value="active">ใช้งาน</option><option value="inactive">ไม่ใช้งาน</option></select></label><label className="text-sm font-semibold text-slate-700">ลำดับ<input type="number" value={form.display_order} onChange={(e) => setForm({ ...form, display_order: Number(e.target.value) || 0 })} className="dashboard-control mt-1 w-full" /></label></div></div><div className="flex justify-end gap-2 border-t border-slate-200 px-5 py-4"><button type="button" onClick={() => setOpen(false)} className="min-h-11 rounded-xl border border-slate-200 px-4 text-sm font-semibold">ยกเลิก</button><button type="button" disabled={saving} onClick={() => void save()} className="min-h-11 rounded-xl bg-brand-navy px-5 text-sm font-bold text-white disabled:opacity-60">{saving ? "กำลังบันทึก..." : "บันทึก"}</button></div></div></div>}</section>;
+  const [rows, setRows] = useState<AdminOrganization[]>([]);
+  const [query, setQuery] = useState("");
+  const [editing, setEditing] = useState<AdminOrganization | null>(null);
+  const [form, setForm] = useState<OrganizationForm>(emptyForm);
+  const [open, setOpen] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  async function load() {
+    setLoading(true);
+    try {
+      setRows(await getAdminOrganizations());
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "โหลดองค์กรไม่สำเร็จ");
+    } finally {
+      setLoading(false);
+    }
+  }
+  useEffect(() => {
+    void load();
+  }, []);
+  const filtered = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    return rows.filter((x) => !q || x.name.toLowerCase().includes(q));
+  }, [rows, query]);
+  function add() {
+    setEditing(null);
+    setForm(emptyForm);
+    setOpen(true);
+  }
+  function edit(row: AdminOrganization) {
+    setEditing(row);
+    setForm({
+      name: row.name,
+      organization_type: row.organization_type,
+      parent_organization_id: row.parent_organization_id ?? "",
+      status: row.status,
+      display_order: row.display_order,
+    });
+    setOpen(true);
+  }
+  async function save() {
+    if (!form.name.trim()) {
+      toast.error("กรุณาระบุชื่อองค์กร");
+      return;
+    }
+    setSaving(true);
+    try {
+      const payload = { ...form, parent_organization_id: form.parent_organization_id || null };
+      if (editing) await updateAdminOrganization({ ...payload, id: editing.id });
+      else await createAdminOrganization(payload);
+      toast.success(editing ? "อัปเดตองค์กรแล้ว" : "สร้างองค์กรแล้ว");
+      setOpen(false);
+      await load();
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "บันทึกองค์กรไม่สำเร็จ");
+    } finally {
+      setSaving(false);
+    }
+  }
+  return (
+    <section className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-emerald-700">
+            Organizations
+          </p>
+          <h1 className="mt-1 text-2xl font-bold tracking-tight text-brand-navy lg:text-3xl">
+            จัดการองค์กร
+          </h1>
+          <p className="mt-1 text-sm text-slate-600">
+            โครงสร้างองค์กรสำหรับกิจกรรม ผู้จัด และการวิเคราะห์ผู้ตอบแบบสอบถาม
+          </p>
+        </div>
+        <div className="flex gap-2">
+          <button
+            type="button"
+            onClick={() => void load()}
+            className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 text-sm font-semibold text-brand-navy"
+          >
+            <RefreshCw className="h-4 w-4" />
+            รีเฟรช
+          </button>
+          <button
+            type="button"
+            onClick={add}
+            className="inline-flex min-h-11 items-center gap-2 rounded-xl bg-brand-navy px-4 text-sm font-bold text-white"
+          >
+            <Plus className="h-4 w-4" />
+            เพิ่มองค์กร
+          </button>
+        </div>
+      </div>
+      <div className="mt-6 rounded-2xl border border-slate-200 bg-white p-4">
+        <label className="relative block max-w-xl">
+          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+          <span className="sr-only">ค้นหาองค์กร</span>
+          <input
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="ค้นหาชื่อองค์กร"
+            className="dashboard-control w-full pl-10"
+          />
+        </label>
+      </div>
+      <div className="mt-4 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+        {loading ? (
+          <div className="p-10 text-center text-sm text-slate-500">กำลังโหลดองค์กร...</div>
+        ) : filtered.length === 0 ? (
+          <div className="p-10 text-center text-sm text-slate-500">
+            <Building2 className="mx-auto mb-2 h-7 w-7 text-slate-300" />
+            ยังไม่มีข้อมูลองค์กร
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full min-w-[720px] text-sm">
+              <thead className="bg-slate-50 text-xs font-semibold text-slate-500">
+                <tr>
+                  <th className="px-5 py-3 text-left">องค์กร</th>
+                  <th className="px-4 py-3 text-left">ประเภท</th>
+                  <th className="px-4 py-3 text-left">สถานะ</th>
+                  <th className="px-4 py-3 text-center">ลำดับ</th>
+                  <th className="px-5 py-3 text-right">จัดการ</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100">
+                {filtered.map((row) => (
+                  <tr key={row.id} className="hover:bg-slate-50/80">
+                    <td className="px-5 py-4 font-semibold text-slate-900">{row.name}</td>
+                    <td className="px-4 py-4 text-slate-600">
+                      {row.organization_type === "internal" ? "ภายใน" : "ภายนอก"}
+                    </td>
+                    <td className="px-4 py-4">
+                      <span className="rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-xs font-semibold text-slate-600">
+                        {row.status === "active" ? "ใช้งาน" : "ไม่ใช้งาน"}
+                      </span>
+                    </td>
+                    <td className="px-4 py-4 text-center text-slate-600">{row.display_order}</td>
+                    <td className="px-5 py-4 text-right">
+                      <button
+                        type="button"
+                        onClick={() => edit(row)}
+                        className="inline-flex min-h-9 items-center gap-1.5 rounded-lg border border-slate-200 px-3 text-xs font-semibold text-brand-navy"
+                      >
+                        <Pencil className="h-3.5 w-3.5" />
+                        แก้ไข
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+      {open && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/40 p-4">
+          <div className="w-full max-w-xl rounded-2xl bg-white shadow-2xl">
+            <div className="border-b border-slate-200 px-5 py-4">
+              <h2 className="text-lg font-bold text-brand-navy">
+                {editing ? "แก้ไของค์กร" : "เพิ่มองค์กร"}
+              </h2>
+            </div>
+            <div className="grid gap-4 p-5">
+              <label className="text-sm font-semibold text-slate-700">
+                ชื่อองค์กร
+                <input
+                  value={form.name}
+                  onChange={(e) => setForm({ ...form, name: e.target.value })}
+                  className="dashboard-control mt-1 w-full"
+                />
+              </label>
+              <label className="text-sm font-semibold text-slate-700">
+                ประเภท
+                <select
+                  value={form.organization_type}
+                  onChange={(e) =>
+                    setForm({
+                      ...form,
+                      organization_type: e.target.value as "internal" | "external",
+                    })
+                  }
+                  className="dashboard-control mt-1 w-full"
+                >
+                  <option value="internal">ภายใน</option>
+                  <option value="external">ภายนอก</option>
+                </select>
+              </label>
+              <label className="text-sm font-semibold text-slate-700">
+                องค์กรแม่
+                <select
+                  value={form.parent_organization_id}
+                  onChange={(e) => setForm({ ...form, parent_organization_id: e.target.value })}
+                  className="dashboard-control mt-1 w-full"
+                >
+                  <option value="">ไม่มีองค์กรแม่</option>
+                  {rows
+                    .filter((x) => x.id !== editing?.id)
+                    .map((x) => (
+                      <option key={x.id} value={x.id}>
+                        {x.name}
+                      </option>
+                    ))}
+                </select>
+              </label>
+              <div className="grid gap-4 sm:grid-cols-2">
+                <label className="text-sm font-semibold text-slate-700">
+                  สถานะ
+                  <select
+                    value={form.status}
+                    onChange={(e) =>
+                      setForm({ ...form, status: e.target.value as "active" | "inactive" })
+                    }
+                    className="dashboard-control mt-1 w-full"
+                  >
+                    <option value="active">ใช้งาน</option>
+                    <option value="inactive">ไม่ใช้งาน</option>
+                  </select>
+                </label>
+                <label className="text-sm font-semibold text-slate-700">
+                  ลำดับ
+                  <input
+                    type="number"
+                    value={form.display_order}
+                    onChange={(e) =>
+                      setForm({ ...form, display_order: Number(e.target.value) || 0 })
+                    }
+                    className="dashboard-control mt-1 w-full"
+                  />
+                </label>
+              </div>
+            </div>
+            <div className="flex justify-end gap-2 border-t border-slate-200 px-5 py-4">
+              <button
+                type="button"
+                onClick={() => setOpen(false)}
+                className="min-h-11 rounded-xl border border-slate-200 px-4 text-sm font-semibold"
+              >
+                ยกเลิก
+              </button>
+              <button
+                type="button"
+                disabled={saving}
+                onClick={() => void save()}
+                className="min-h-11 rounded-xl bg-brand-navy px-5 text-sm font-bold text-white disabled:opacity-60"
+              >
+                {saving ? "กำลังบันทึก..." : "บันทึก"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </section>
+  );
 }

@@ -23,14 +23,20 @@ export default async function handler(req: ApiRequest, res: ApiResponse) {
     }
     const base64 = dataUrl.slice(dataUrl.indexOf(",") + 1);
     const buffer = Buffer.from(base64, "base64");
-    if (!buffer.length || buffer.length > MAX_BYTES) return json(res, 400, { error: "ไฟล์สลิปต้องมีขนาดไม่เกิน 2 MB" });
+    if (!buffer.length || buffer.length > MAX_BYTES)
+      return json(res, 400, { error: "ไฟล์สลิปต้องมีขนาดไม่เกิน 2 MB" });
 
     const { url, key, bucket } = config();
     const ext = contentType === "image/png" ? "png" : contentType === "image/webp" ? "webp" : "jpg";
     const path = `orders/${new Date().toISOString().slice(0, 10)}/${randomUUID()}.${ext}`;
     const upload = await fetch(`${url}/storage/v1/object/${encodeURIComponent(bucket)}/${path}`, {
       method: "POST",
-      headers: { Authorization: `Bearer ${key}`, apikey: key, "Content-Type": contentType, "x-upsert": "false" },
+      headers: {
+        Authorization: `Bearer ${key}`,
+        apikey: key,
+        "Content-Type": contentType,
+        "x-upsert": "false",
+      },
       body: buffer,
     });
     if (!upload.ok) {
@@ -40,6 +46,11 @@ export default async function handler(req: ApiRequest, res: ApiResponse) {
     return json(res, 201, { success: true, data: { path } });
   } catch (error) {
     console.error("/api/uploads/slip", error);
-    return json(res, 500, { error: error instanceof Error && error.message === "SUPABASE_STORAGE_CONFIG_MISSING" ? "ระบบยังไม่ได้ตั้งค่า Storage" : "ไม่สามารถอัปโหลดสลิปได้" });
+    return json(res, 500, {
+      error:
+        error instanceof Error && error.message === "SUPABASE_STORAGE_CONFIG_MISSING"
+          ? "ระบบยังไม่ได้ตั้งค่า Storage"
+          : "ไม่สามารถอัปโหลดสลิปได้",
+    });
   }
 }

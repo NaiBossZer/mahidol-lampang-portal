@@ -22,19 +22,29 @@ export default function GlobalFooter({ navigate }: Props) {
               </div>
             </div>
             <p className="text-white/60 text-sm leading-relaxed">
-              แหล่งเรียนรู้ ชุมชน และงานวิจัยเพื่อการพัฒนา<br />
+              แหล่งเรียนรู้ ชุมชน และงานวิจัยเพื่อการพัฒนา
+              <br />
               ภาคเหนือตอนบนอย่างยั่งยืน มหาวิทยาลัยมหิดล
             </p>
             <div className="mt-5 flex flex-col gap-2.5">
-              <a href="#" className="flex items-center gap-2 text-white/60 hover:text-white text-sm transition-colors">
+              <a
+                href="#"
+                className="flex items-center gap-2 text-white/60 hover:text-white text-sm transition-colors"
+              >
                 <MapPin size={14} className="flex-shrink-0 text-[#D6A84F]" />
                 ตำบลแม่กัวะ อำเภอสบปราบ ลำปาง 52170
               </a>
-              <a href="tel:+6654269500" className="flex items-center gap-2 text-white/60 hover:text-white text-sm transition-colors">
+              <a
+                href="tel:+6654269500"
+                className="flex items-center gap-2 text-white/60 hover:text-white text-sm transition-colors"
+              >
                 <Phone size={14} className="flex-shrink-0 text-[#D6A84F]" />
                 054-269-500
               </a>
-              <a href="mailto:info.lampang@mahidol.ac.th" className="flex items-center gap-2 text-white/60 hover:text-white text-sm transition-colors">
+              <a
+                href="mailto:info.lampang@mahidol.ac.th"
+                className="flex items-center gap-2 text-white/60 hover:text-white text-sm transition-colors"
+              >
                 <Mail size={14} className="flex-shrink-0 text-[#D6A84F]" />
                 info.lampang@mahidol.ac.th
               </a>
@@ -43,7 +53,9 @@ export default function GlobalFooter({ navigate }: Props) {
 
           {/* Nav links */}
           <div>
-            <h3 className="text-[#D6A84F] text-xs font-semibold uppercase tracking-wider mb-4">เกี่ยวกับเรา</h3>
+            <h3 className="text-[#D6A84F] text-xs font-semibold uppercase tracking-wider mb-4">
+              เกี่ยวกับเรา
+            </h3>
             <ul className="flex flex-col gap-2.5">
               {[
                 { label: "หน้าหลัก", page: "home" as PublicPage },
@@ -64,7 +76,9 @@ export default function GlobalFooter({ navigate }: Props) {
           </div>
 
           <div>
-            <h3 className="text-[#D6A84F] text-xs font-semibold uppercase tracking-wider mb-4">ศูนย์ฯ และระบบ</h3>
+            <h3 className="text-[#D6A84F] text-xs font-semibold uppercase tracking-wider mb-4">
+              ศูนย์ฯ และระบบ
+            </h3>
             <ul className="flex flex-col gap-2.5">
               {[
                 { label: "Shellac Learning Center", page: "shellac" as PublicPage },
@@ -93,9 +107,16 @@ export default function GlobalFooter({ navigate }: Props) {
           </div>
 
           <div>
-            <h3 className="text-[#D6A84F] text-xs font-semibold uppercase tracking-wider mb-4">ข้อมูลและนโยบาย</h3>
+            <h3 className="text-[#D6A84F] text-xs font-semibold uppercase tracking-wider mb-4">
+              ข้อมูลและนโยบาย
+            </h3>
             <ul className="flex flex-col gap-2.5">
-              {["นโยบายความเป็นส่วนตัว", "การเข้าถึงเว็บไซต์", "ข้อกำหนดการใช้งาน", "ติดต่อเรา"].map((l) => (
+              {[
+                "นโยบายความเป็นส่วนตัว",
+                "การเข้าถึงเว็บไซต์",
+                "ข้อกำหนดการใช้งาน",
+                "ติดต่อเรา",
+              ].map((l) => (
                 <li key={l}>
                   <a href="#" className="text-white/60 hover:text-white text-sm transition-colors">
                     {l}
@@ -110,9 +131,7 @@ export default function GlobalFooter({ navigate }: Props) {
           <p className="text-white/40 text-xs">
             © 2567 มหาวิทยาลัยมหิดล วิทยาเขตลำปาง สงวนลิขสิทธิ์
           </p>
-          <p className="text-white/30 text-xs">
-            Mahidol University Lampang Campus
-          </p>
+          <p className="text-white/30 text-xs">Mahidol University Lampang Campus</p>
         </div>
       </div>
     </footer>

@@ -1,4 +1,71 @@
 import { authorize, clean, idFromUrl, methodNotAllowed, nullable, rest } from "./_cms";
 import { json } from "../auth/_shared";
-type Env = Record<string, unknown>; type Row = Record<string, unknown>;
-export async function onRequest({ request, env }: { request: Request; env: Env }) { const permission = request.method === "GET" ? "footer.read" : "footer.update"; const auth = await authorize(request, env, permission); if ("error" in auth) return auth.error; try { if (request.method === "GET") { const rows = await rest(env, auth.token, "footer_settings?select=*&order=updated_at.desc&limit=1") as Row[]; return json({ success: true, data: rows[0] ?? null }); } if (!["POST", "PUT", "PATCH"].includes(request.method)) return methodNotAllowed(["GET", "POST", "PUT", "PATCH"]); const body = await request.json() as Record<string, unknown>; const row = { organization_name: nullable(body.organizationName, 255), address: nullable(body.address), phone: nullable(body.phone, 100), email: nullable(body.email, 255), facebook_url: nullable(body.facebookUrl), line_url: nullable(body.lineUrl), copyright_text: nullable(body.copyrightText, 500), privacy_url: nullable(body.privacyUrl), terms_url: nullable(body.termsUrl), updated_at: new Date().toISOString() }; const id = idFromUrl(request); if (id) { const rows = await rest(env, auth.token, `footer_settings?id=eq.${id}`, { method: "PATCH", headers: { Prefer: "return=representation" }, body: JSON.stringify(row) }) as Row[]; return json({ success: true, data: rows[0] ?? null }); } const existing = await rest(env, auth.token, "footer_settings?select=id&order=updated_at.desc&limit=1") as Row[]; if (existing[0]?.id) { const rows = await rest(env, auth.token, `footer_settings?id=eq.${existing[0].id}`, { method: "PATCH", headers: { Prefer: "return=representation" }, body: JSON.stringify(row) }) as Row[]; return json({ success: true, data: rows[0] ?? null }); } const rows = await rest(env, auth.token, "footer_settings", { method: "POST", headers: { Prefer: "return=representation" }, body: JSON.stringify(row) }) as Row[]; return json({ success: true, data: rows[0] ?? null }, 201); } catch (error) { console.error("/api/admin/footer", error); return json({ success: false, error: error instanceof Error ? error.message : "ไม่สามารถจัดการ Footer ได้" }, 500); } }
+type Env = Record<string, unknown>;
+type Row = Record<string, unknown>;
+export async function onRequest({ request, env }: { request: Request; env: Env }) {
+  const permission = request.method === "GET" ? "footer.read" : "footer.update";
+  const auth = await authorize(request, env, permission);
+  if ("error" in auth) return auth.error;
+  try {
+    if (request.method === "GET") {
+      const rows = (await rest(
+        env,
+        auth.token,
+        "footer_settings?select=*&order=updated_at.desc&limit=1",
+      )) as Row[];
+      return json({ success: true, data: rows[0] ?? null });
+    }
+    if (!["POST", "PUT", "PATCH"].includes(request.method))
+      return methodNotAllowed(["GET", "POST", "PUT", "PATCH"]);
+    const body = (await request.json()) as Record<string, unknown>;
+    const row = {
+      organization_name: nullable(body.organizationName, 255),
+      address: nullable(body.address),
+      phone: nullable(body.phone, 100),
+      email: nullable(body.email, 255),
+      facebook_url: nullable(body.facebookUrl),
+      line_url: nullable(body.lineUrl),
+      copyright_text: nullable(body.copyrightText, 500),
+      privacy_url: nullable(body.privacyUrl),
+      terms_url: nullable(body.termsUrl),
+      updated_at: new Date().toISOString(),
+    };
+    const id = idFromUrl(request);
+    if (id) {
+      const rows = (await rest(env, auth.token, `footer_settings?id=eq.${id}`, {
+        method: "PATCH",
+        headers: { Prefer: "return=representation" },
+        body: JSON.stringify(row),
+      })) as Row[];
+      return json({ success: true, data: rows[0] ?? null });
+    }
+    const existing = (await rest(
+      env,
+      auth.token,
+      "footer_settings?select=id&order=updated_at.desc&limit=1",
+    )) as Row[];
+    if (existing[0]?.id) {
+      const rows = (await rest(env, auth.token, `footer_settings?id=eq.${existing[0].id}`, {
+        method: "PATCH",
+        headers: { Prefer: "return=representation" },
+        body: JSON.stringify(row),
+      })) as Row[];
+      return json({ success: true, data: rows[0] ?? null });
+    }
+    const rows = (await rest(env, auth.token, "footer_settings", {
+      method: "POST",
+      headers: { Prefer: "return=representation" },
+      body: JSON.stringify(row),
+    })) as Row[];
+    return json({ success: true, data: rows[0] ?? null }, 201);
+  } catch (error) {
+    console.error("/api/admin/footer", error);
+    return json(
+      {
+        success: false,
+        error: error instanceof Error ? error.message : "ไม่สามารถจัดการ Footer ได้",
+      },
+      500,
+    );
+  }
+}

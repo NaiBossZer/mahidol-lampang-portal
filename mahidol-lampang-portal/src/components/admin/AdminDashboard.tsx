@@ -1,10 +1,49 @@
-import { Users, Activity, BookOpen, TrendingUp, TrendingDown, ArrowUpRight, MoreHorizontal, CheckCircle, Clock, AlertCircle } from "lucide-react";
+import {
+  Users,
+  Activity,
+  BookOpen,
+  TrendingUp,
+  TrendingDown,
+  ArrowUpRight,
+  MoreHorizontal,
+  CheckCircle,
+  Clock,
+  AlertCircle,
+} from "lucide-react";
 
 const metrics = [
-  { label: "ผู้ใช้งานทั้งหมด", value: "4,832", change: "+12.4%", up: true, icon: Users, color: "#1677A8" },
-  { label: "กิจกรรมเดือนนี้", value: "28", change: "+4 จากเดือนที่แล้ว", up: true, icon: Activity, color: "#5F8D62" },
-  { label: "การเรียนรู้ที่เสร็จสิ้น", value: "1,204", change: "-3.1%", up: false, icon: BookOpen, color: "#C66B4F" },
-  { label: "ความพึงพอใจ LAC", value: "88%", change: "+2.3% จากไตรมาสก่อน", up: true, icon: TrendingUp, color: "#D6A84F" },
+  {
+    label: "ผู้ใช้งานทั้งหมด",
+    value: "4,832",
+    change: "+12.4%",
+    up: true,
+    icon: Users,
+    color: "#1677A8",
+  },
+  {
+    label: "กิจกรรมเดือนนี้",
+    value: "28",
+    change: "+4 จากเดือนที่แล้ว",
+    up: true,
+    icon: Activity,
+    color: "#5F8D62",
+  },
+  {
+    label: "การเรียนรู้ที่เสร็จสิ้น",
+    value: "1,204",
+    change: "-3.1%",
+    up: false,
+    icon: BookOpen,
+    color: "#C66B4F",
+  },
+  {
+    label: "ความพึงพอใจ LAC",
+    value: "88%",
+    change: "+2.3% จากไตรมาสก่อน",
+    up: true,
+    icon: TrendingUp,
+    color: "#D6A84F",
+  },
 ];
 
 const recentActivities = [
@@ -49,7 +88,9 @@ export default function AdminDashboard() {
               </div>
               <div className="text-[#667085] text-xs mb-1">{m.label}</div>
               <div className="font-display font-bold text-2xl text-[#1F2933] mb-1">{m.value}</div>
-              <div className={`flex items-center gap-1 text-xs ${m.up ? "text-[#5F8D62]" : "text-[#C66B4F]"}`}>
+              <div
+                className={`flex items-center gap-1 text-xs ${m.up ? "text-[#5F8D62]" : "text-[#C66B4F]"}`}
+              >
                 {m.up ? <TrendingUp size={12} /> : <TrendingDown size={12} />}
                 {m.change}
               </div>
@@ -72,7 +113,10 @@ export default function AdminDashboard() {
               const s = statusMap[a.status as keyof typeof statusMap];
               const StatusIcon = s.icon;
               return (
-                <div key={a.title} className="px-5 py-3.5 flex items-center gap-4 hover:bg-[#F8F9FA] transition-colors">
+                <div
+                  key={a.title}
+                  className="px-5 py-3.5 flex items-center gap-4 hover:bg-[#F8F9FA] transition-colors"
+                >
                   <div className="flex-1 min-w-0">
                     <div className="text-[#1F2933] text-sm font-medium truncate">{a.title}</div>
                     <div className="text-[#9BA8B7] text-xs mt-0.5">{a.date}</div>
@@ -107,14 +151,20 @@ export default function AdminDashboard() {
                 <div
                   key={i}
                   className={`flex items-start gap-3 p-3 rounded-lg ${
-                    a.severity === "warning" ? "bg-[#C66B4F]/8 border border-[#C66B4F]/15" :
-                    a.severity === "info" ? "bg-[#1677A8]/8 border border-[#1677A8]/15" :
-                    "bg-[#5F8D62]/8 border border-[#5F8D62]/15"
+                    a.severity === "warning"
+                      ? "bg-[#C66B4F]/8 border border-[#C66B4F]/15"
+                      : a.severity === "info"
+                        ? "bg-[#1677A8]/8 border border-[#1677A8]/15"
+                        : "bg-[#5F8D62]/8 border border-[#5F8D62]/15"
                   }`}
                 >
-                  {a.severity === "warning" ? <AlertCircle size={14} className="text-[#C66B4F] mt-0.5 flex-shrink-0" /> :
-                   a.severity === "info" ? <AlertCircle size={14} className="text-[#1677A8] mt-0.5 flex-shrink-0" /> :
-                   <CheckCircle size={14} className="text-[#5F8D62] mt-0.5 flex-shrink-0" />}
+                  {a.severity === "warning" ? (
+                    <AlertCircle size={14} className="text-[#C66B4F] mt-0.5 flex-shrink-0" />
+                  ) : a.severity === "info" ? (
+                    <AlertCircle size={14} className="text-[#1677A8] mt-0.5 flex-shrink-0" />
+                  ) : (
+                    <CheckCircle size={14} className="text-[#5F8D62] mt-0.5 flex-shrink-0" />
+                  )}
                   <p className="text-[#1F2933] text-xs leading-relaxed">{a.msg}</p>
                 </div>
               ))}

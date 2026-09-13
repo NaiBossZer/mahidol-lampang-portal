@@ -9,6 +9,7 @@ Admin authentication happens at the Portal first. The Portal's existing protecte
 ## Responsibilities
 
 ### Portal Admin
+
 - authenticate administrator
 - create/edit/publish activity records
 - control satisfaction survey availability per activity
@@ -20,6 +21,7 @@ Admin authentication happens at the Portal first. The Portal's existing protecte
 - export survey responses as CSV
 
 ### Lac Learning Game (`mahidol-rac`)
+
 - public games: Bingo, Sobprab Lac Lab and learning experiences
 - public satisfaction survey submission
 - uses the canonical `activities.id` UUID from the shared Supabase database

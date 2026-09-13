@@ -35,19 +35,19 @@ The Portal may aggregate operational status for overview screens, but must not d
 
 ## 3. Canonical entities
 
-| Entity | Canonical model |
-|---|---|
-| Activities | `activities` |
-| Activity Photos | `activityPhotos` |
+| Entity            | Canonical model    |
+| ----------------- | ------------------ |
+| Activities        | `activities`       |
+| Activity Photos   | `activityPhotos`   |
 | Activity Outcomes | `activityOutcomes` |
 | Activity Partners | `activityPartners` |
-| Projects | `socialProjects` |
-| Learning Centers | `learningCenters` |
-| Partners | `partners` |
-| Services | `services` |
-| Home Sections | `home_sections` |
-| Navigation | `navigation_items` |
-| Footer | `footer_settings` |
+| Projects          | `socialProjects`   |
+| Learning Centers  | `learningCenters`  |
+| Partners          | `partners`         |
+| Services          | `services`         |
+| Home Sections     | `home_sections`    |
+| Navigation        | `navigation_items` |
+| Footer            | `footer_settings`  |
 
 Operational models such as products, orders, Facility/Safety, Smart Farm and Clean Energy remain outside CMS governance.
 
@@ -74,17 +74,17 @@ FACILITY_ADMIN    Facility & Safety
 
 Permission format is `resource.action`.
 
-| Domain | Primary role | Examples |
-|---|---|---|
-| Overview | All roles | `overview.read` |
-| CMS / Home | CONTENT_ADMIN | `cms.read`, `cms.update`, `cms.publish` |
-| Projects / Partners / Services | CONTENT_ADMIN | `projects.update`, `partners.update`, `services.publish` |
-| Navigation / Footer | CONTENT_ADMIN | `navigation.update`, `footer.update` |
-| Activities | OPERATIONS_ADMIN | `activities.create`, `activities.update`, `activities.publish` |
-| Learning Centers | OPERATIONS_ADMIN | `learning_centers.update`, `learning_centers.publish` |
-| Store | OPERATIONS_ADMIN | `store.read`, `store.manage` |
-| Facility & Safety | FACILITY_ADMIN | `facility.read`, `facility.manage` |
-| System / Governance | SUPER_ADMIN | `system.read`, `system.manage` |
+| Domain                         | Primary role     | Examples                                                       |
+| ------------------------------ | ---------------- | -------------------------------------------------------------- |
+| Overview                       | All roles        | `overview.read`                                                |
+| CMS / Home                     | CONTENT_ADMIN    | `cms.read`, `cms.update`, `cms.publish`                        |
+| Projects / Partners / Services | CONTENT_ADMIN    | `projects.update`, `partners.update`, `services.publish`       |
+| Navigation / Footer            | CONTENT_ADMIN    | `navigation.update`, `footer.update`                           |
+| Activities                     | OPERATIONS_ADMIN | `activities.create`, `activities.update`, `activities.publish` |
+| Learning Centers               | OPERATIONS_ADMIN | `learning_centers.update`, `learning_centers.publish`          |
+| Store                          | OPERATIONS_ADMIN | `store.read`, `store.manage`                                   |
+| Facility & Safety              | FACILITY_ADMIN   | `facility.read`, `facility.manage`                             |
+| System / Governance            | SUPER_ADMIN      | `system.read`, `system.manage`                                 |
 
 `SUPER_ADMIN` bypasses domain permission checks. Other roles receive only their domain permissions.
 

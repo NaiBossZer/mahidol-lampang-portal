@@ -18,16 +18,16 @@ Baseline: `9bd8289fb2e3ad63414651840a75a2956bda323d`
 
 ### Critical findings
 
-| ID | Severity | Finding | Impact |
-|---|---|---|---|
-| UI-01 | P0 | Global visual system ขัดกัน | ผู้ใช้รับรู้เว็บเหมือนหลายระบบที่ถูกรวมเข้าด้วยกัน |
-| UI-02 | P0 | ยังไม่มี Global Public App Shell ที่ชัดเจน | Header/navigation/footer/spacing ไม่คงที่ข้ามหน้า |
-| UI-03 | P0 | Design tokens มีอยู่ แต่ page code ยังใช้ hard-coded colors จำนวนมาก | เปลี่ยน theme/brand และรักษาความสม่ำเสมอยาก |
-| UI-04 | P1 | Shared component extraction ยังไม่เสร็จ | ปุ่ม/card/header/state ต่างกันตามหน้า |
-| UI-05 | P1 | Accessibility ถูกทำบางส่วน ไม่ได้เป็น contract ของทุก page | keyboard/form/status behavior ไม่รับประกันเท่ากัน |
-| UI-06 | P1 | Responsive behavior ยังต้องตรวจจริงทุก route | layout ที่เขียนด้วย utility หลายชุดมีความเสี่ยงที่ mobile จะไม่เท่ากัน |
-| UI-07 | P1 | Loading/error/empty states ไม่ได้ใช้ pattern เดียว | UX เมื่อ data/API ช้า/ล้มเหลวไม่สม่ำเสมอ |
-| UI-08 | P2 | JSX บางส่วนถูกเขียนอัดแน่นมาก | อ่าน/maintain/refactor ยาก และเพิ่มโอกาส UI regression |
+| ID    | Severity | Finding                                                              | Impact                                                                 |
+| ----- | -------- | -------------------------------------------------------------------- | ---------------------------------------------------------------------- |
+| UI-01 | P0       | Global visual system ขัดกัน                                          | ผู้ใช้รับรู้เว็บเหมือนหลายระบบที่ถูกรวมเข้าด้วยกัน                     |
+| UI-02 | P0       | ยังไม่มี Global Public App Shell ที่ชัดเจน                           | Header/navigation/footer/spacing ไม่คงที่ข้ามหน้า                      |
+| UI-03 | P0       | Design tokens มีอยู่ แต่ page code ยังใช้ hard-coded colors จำนวนมาก | เปลี่ยน theme/brand และรักษาความสม่ำเสมอยาก                            |
+| UI-04 | P1       | Shared component extraction ยังไม่เสร็จ                              | ปุ่ม/card/header/state ต่างกันตามหน้า                                  |
+| UI-05 | P1       | Accessibility ถูกทำบางส่วน ไม่ได้เป็น contract ของทุก page           | keyboard/form/status behavior ไม่รับประกันเท่ากัน                      |
+| UI-06 | P1       | Responsive behavior ยังต้องตรวจจริงทุก route                         | layout ที่เขียนด้วย utility หลายชุดมีความเสี่ยงที่ mobile จะไม่เท่ากัน |
+| UI-07 | P1       | Loading/error/empty states ไม่ได้ใช้ pattern เดียว                   | UX เมื่อ data/API ช้า/ล้มเหลวไม่สม่ำเสมอ                               |
+| UI-08 | P2       | JSX บางส่วนถูกเขียนอัดแน่นมาก                                        | อ่าน/maintain/refactor ยาก และเพิ่มโอกาส UI regression                 |
 
 ---
 
@@ -62,6 +62,7 @@ Protected:
 **UX issue:** route structure มีการแบ่ง domain ใน path แต่ visual navigation ยังไม่ได้ถูกทำให้สะท้อน information architecture เดียวกันทุกหน้า
 
 ### Recommendation
+
 กำหนด public IA เป็น 5 กลุ่มหลัก:
 
 1. **รู้จักศูนย์** — Home, Centers, Site Map
@@ -89,15 +90,18 @@ Admin แยกเป็น application shell ของตัวเอง ไม
 - Login ใช้ centered card layout แยกออกไป
 
 ### UX consequence
+
 - Brand/navigation position เปลี่ยนตาม route
 - ผู้ใช้ไม่มี persistent mental model ว่าอยู่ส่วนไหนของเว็บไซต์
 - การเพิ่มเมนูในอนาคตต้องแก้หลายไฟล์
 - mobile navigation มีความเสี่ยงไม่เหมือนกัน
 
 ### Target
+
 สร้าง:
 
 `PublicAppShell`
+
 - Header
 - primary navigation
 - mobile navigation
@@ -108,6 +112,7 @@ Admin แยกเป็น application shell ของตัวเอง ไม
 และ:
 
 `AdminAppShell`
+
 - admin header/sidebar
 - page title
 - content area
@@ -126,12 +131,14 @@ Admin แยกเป็น application shell ของตัวเอง ไม
 จึงเกิด visual-system conflict ระหว่าง:
 
 ### Intended system
+
 - warm light surface
 - local/community accent
 - navy/blue structural color
 - light content cards
 
 ### Current global CSS system
+
 - dark navy data-wall background
 - dark panels
 - gold data-wall accents
@@ -140,6 +147,7 @@ Admin แยกเป็น application shell ของตัวเอง ไม
 นี่เป็นสาเหตุหลักที่ทำให้หน้าเว็บดูเหมือนหลายผลิตภัณฑ์อยู่ในเว็บเดียวกัน
 
 ### Decision required in Phase 3
+
 ไม่ควรแก้ด้วยการ search/replace สีทั้ง repo เพราะ admin/data-wall pages อาจต้องมี density และ contrast คนละระดับกับ public pages
 
 ให้กำหนด 2 semantic themes:
@@ -175,6 +183,7 @@ Admin แยกเป็น application shell ของตัวเอง ไม
 - public social pages ใช้ `#123B63`, `#D6A84F`
 
 ### UX impact
+
 Hard-coded values ทำให้:
 
 - contrast tuning ยาก
@@ -201,9 +210,11 @@ Hard-coded values ทำให้:
 `styles.css` กำหนด IBM Plex Sans Thai และ Chakra Petch แต่ source บางหน้าใช้ `font-['Prompt']` โดยตรง และบางหน้าพึ่ง Tailwind/system defaults
 
 ### Finding: P1
+
 Typography จึงไม่ได้มี contract เดียวกันทั้งระบบ
 
 ### Recommendation
+
 กำหนด:
 
 - Body: IBM Plex Sans Thai / Noto Sans Thai / system-ui
@@ -227,6 +238,7 @@ Typography จึงไม่ได้มี contract เดียวกัน�
 `ActivitiesPage` มี `PageHeader` แล้ว แต่ page อื่นไม่ได้ใช้ abstraction เดียวกันทั้งหมด
 
 ### Finding: P1
+
 มี reusable pattern เริ่มต้นแล้ว แต่ยังไม่ถูกยกระดับเป็น global primitive
 
 ### Target components
@@ -253,9 +265,11 @@ Source ใช้ทั้ง Radix-style `Card` primitives และ raw `<div>`
 - Admin: raw bordered/shadow cards
 
 ### Finding: P1
+
 Card semantics, radius, shadow, padding และ hover behavior ไม่เป็นระบบเดียวกัน
 
 ### Target
+
 กำหนด Card variants:
 
 - default
@@ -274,16 +288,19 @@ Card semantics, radius, shadow, padding และ hover behavior ไม่เป
 มีทั้ง `<button>` raw, shared `Button`, RouterLink ที่ styled เป็น button และ anchor ที่ styled เป็น action
 
 ข้อดี:
+
 - หลายจุดมี `type="button"`
 - บาง interaction มี aria attributes
 - Radix/button primitives มีฐานพร้อมใช้
 
 ข้อเสีย:
+
 - visual states ไม่คงที่
 - action hierarchy ต่างกันตาม page
 - raw button บางหน้าไม่ผ่าน shared size/state contract
 
 ### Finding: P1
+
 สร้าง Button API กลาง:
 
 - primary
@@ -319,18 +336,23 @@ Card semantics, radius, shadow, padding และ hover behavior ไม่เป
 ## Gaps
 
 ### A11Y-01 — inconsistent semantic contract
+
 การมี aria ในบาง component ไม่ได้หมายความว่าทุก interactive component ผ่าน baseline
 
 ### A11Y-02 — icon-only controls ต้องตรวจทีละจุด
+
 โดยเฉพาะ cart, map, calendar และ admin controls
 
 ### A11Y-03 — status colors
+
 มีสถานะที่สื่อด้วยสี เช่น green/yellow/red ซึ่งต้องมี text/icon/label เสมอ
 
 ### A11Y-04 — forms
+
 Checkout/Survey/Login ต้องตรวจ label, error association, focus order และ keyboard submit อย่างเป็นระบบ
 
 ### A11Y-05 — dialogs/drawers
+
 CartDrawer/CheckoutModal ต้องตรวจ focus trap, escape, restore focus และ mobile viewport
 
 ---
@@ -342,11 +364,13 @@ Source มีการใช้ `alt` ที่ดีใน content images ห�
 พบทั้งภาพ local asset และ remote media/3D model architecture
 
 ### Findings
+
 - Card image ratios ยังไม่ได้บังคับผ่าน component เดียวทุก domain
 - บาง card ใช้ `h-48`, บาง card `h-52`, storefront ใช้ aspect ratio
 - image loading strategy ไม่ได้เป็น global policy
 
 ### Target
+
 `MediaCardImage` หรือ `ResponsiveMedia` กำหนด:
 
 - aspect ratio
@@ -370,6 +394,7 @@ Source มีการใช้ `alt` ที่ดีใน content images ห�
 - data pages ที่มี loading logic ของตัวเอง
 
 ### Finding: P1
+
 มี state coverage แต่ไม่มี shared UX language
 
 ### Target states
@@ -396,9 +421,11 @@ Source มีการใช้ `alt` ที่ดีใน content images ห�
 - production/calendar interactions
 
 ### Risk
+
 Form UX มี density และ styling ต่างกันมาก เพราะแต่ละ domain ใช้ markup/class ของตัวเอง
 
 ### Target
+
 ใช้ field primitives:
 
 - FormField
@@ -421,6 +448,7 @@ Form UX มี density และ styling ต่างกันมาก เพ�
 จาก UI source ยังพบ production-oriented components อยู่ใน repository แต่ถูกกำหนดให้เป็น future/Mark Work ไม่ควรทำให้ main storefront flow ผูกกับ IoT หรือ payment
 
 ### Current UX direction
+
 Storefront ควรเป็น:
 
 สินค้า → รายละเอียด → ตะกร้า → checkout placeholder/availability state
@@ -428,6 +456,7 @@ Storefront ควรเป็น:
 ไม่ควรทำให้ผู้ใช้ต้องเข้าใจ sensor/plot analytics เพื่อซื้อสินค้า
 
 ### Priority
+
 P1: visual simplification + product hierarchy
 P2: checkout/payment UX เมื่อ backend/payment พร้อม
 
@@ -440,6 +469,7 @@ Admin มีอีก visual language ซึ่งเหมาะกับ opera
 พบ dashboard/admin cards, charts, satisfaction data และ facility safety data
 
 ### Recommendation
+
 ไม่ควรบังคับ admin ให้ใช้ visual language เดียวกับ public content แบบ 1:1
 
 ให้ใช้ shared primitives แต่เปลี่ยน density:
@@ -496,9 +526,11 @@ Global reduced-motion support มีแล้ว
 - backdrop blur
 
 ### Finding: P2
+
 Motion ยังไม่ได้กำหนดเป็น motion tokens/patterns
 
 ### Recommendation
+
 ใช้ 3 ระดับ:
 
 - micro: 120–160ms
@@ -516,6 +548,7 @@ Public pages ใช้ภาษาไทยเป็นหลัก ซึ่ง
 พบ English labels เช่น `Mahidol Social Engagement Platform`, `SMART FARM` ซึ่งใช้ได้เมื่อเป็น supporting label
 
 ### Finding
+
 ควรควบคุม terminology ให้เป็น glossary กลาง เพื่อไม่ให้หน้าเดียวกันใช้คำต่างกันสำหรับสิ่งเดียวกัน
 
 ตัวอย่าง category labels ควรล็อกให้เป็นชุดเดียว เช่น:
@@ -534,6 +567,7 @@ Public pages ใช้ภาษาไทยเป็นหลัก ซึ่ง
 `RuntimeErrorBoundary` มี recovery action กลับหน้าหลักและ reload ซึ่งเป็น baseline ที่ดี
 
 ### Improvement
+
 แยก:
 
 - user-facing error message
@@ -554,42 +588,44 @@ Positive:
 - 3D asset ถูกย้ายออกจาก Pages bundle ก่อนหน้านี้
 
 ### UX risk
+
 Lazy route fallback เป็น text เดียว `กำลังโหลด...` ซึ่งอาจเกิด layout jump
 
 ### Target
+
 ใช้ route skeleton ที่มี structure ใกล้กับ target page และกำหนด minimum content region
 
 ---
 
 # 20. Component architecture scorecard
 
-| Layer | Current | Target |
-|---|---|---|
-| Route architecture | 🟢 | 🟢 |
-| Radix/UI primitives | 🟢 | 🟢 |
-| Semantic design tokens | 🟡 | 🟢 |
-| Public App Shell | 🔴 | 🟢 |
-| Admin App Shell | 🟡 | 🟢 |
-| Shared Header | 🟠 | 🟢 |
-| Shared Card | 🟠 | 🟢 |
-| Shared Button contract | 🟠 | 🟢 |
-| Form primitives | 🟠 | 🟢 |
-| State components | 🟠 | 🟢 |
-| Accessibility contract | 🟠 | 🟢 |
-| Responsive contract | 🟠 | 🟢 |
-| Visual QA | 🔴 | 🟢 |
+| Layer                  | Current | Target |
+| ---------------------- | ------- | ------ |
+| Route architecture     | 🟢      | 🟢     |
+| Radix/UI primitives    | 🟢      | 🟢     |
+| Semantic design tokens | 🟡      | 🟢     |
+| Public App Shell       | 🔴      | 🟢     |
+| Admin App Shell        | 🟡      | 🟢     |
+| Shared Header          | 🟠      | 🟢     |
+| Shared Card            | 🟠      | 🟢     |
+| Shared Button contract | 🟠      | 🟢     |
+| Form primitives        | 🟠      | 🟢     |
+| State components       | 🟠      | 🟢     |
+| Accessibility contract | 🟠      | 🟢     |
+| Responsive contract    | 🟠      | 🟢     |
+| Visual QA              | 🔴      | 🟢     |
 
 ---
 
 # 21. Page priority matrix
 
-| Wave | Pages | Priority | Main UX work |
-|---|---|---:|---|
-| A | Home, Shellac, Site Map, Login | P0 | identity, shell, first impression |
-| B | Activities, Activity Detail, Centers, Projects, Project Detail | P0 | content hierarchy, reusable cards/headers |
-| C | Storefront, Smart Farm, Clean Energy, RAC, Survey | P1 | task flows, system presentation, forms |
-| D | Dashboard, Admin, LAC Satisfaction, Facility Safety | P1 | admin shell, data density, filters/status |
-| E | Error, loading, dialogs, sheets, calendar, map | P1 | cross-cutting consistency |
+| Wave | Pages                                                          | Priority | Main UX work                              |
+| ---- | -------------------------------------------------------------- | -------: | ----------------------------------------- |
+| A    | Home, Shellac, Site Map, Login                                 |       P0 | identity, shell, first impression         |
+| B    | Activities, Activity Detail, Centers, Projects, Project Detail |       P0 | content hierarchy, reusable cards/headers |
+| C    | Storefront, Smart Farm, Clean Energy, RAC, Survey              |       P1 | task flows, system presentation, forms    |
+| D    | Dashboard, Admin, LAC Satisfaction, Facility Safety            |       P1 | admin shell, data density, filters/status |
+| E    | Error, loading, dialogs, sheets, calendar, map                 |       P1 | cross-cutting consistency                 |
 
 ---
 

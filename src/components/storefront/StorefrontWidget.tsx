@@ -41,7 +41,8 @@ export const StorefrontWidget = () => {
         product.name.toLowerCase().includes(normalizedQuery) ||
         product.plotId.toLowerCase().includes(normalizedQuery);
       const matchesStandard =
-        standard === "ทั้งหมด" || product.standards.includes(standard as Product["standards"][number]);
+        standard === "ทั้งหมด" ||
+        product.standards.includes(standard as Product["standards"][number]);
       return matchesQuery && matchesStandard;
     });
   }, [query, standard]);
@@ -50,10 +51,13 @@ export const StorefrontWidget = () => {
     <CartProvider>
       <div className="mx-auto w-full max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
         <div className="mb-8">
-          <p className="text-xs font-black uppercase tracking-[0.18em] text-[#C66B4F]">SOCIAL IMPACT MARKET</p>
+          <p className="text-xs font-black uppercase tracking-[0.18em] text-[#C66B4F]">
+            SOCIAL IMPACT MARKET
+          </p>
           <h2 className="mt-2 text-3xl font-bold text-[#002D62]">Mahidol Farm Fresh Market</h2>
           <p className="mt-2 max-w-3xl text-gray-600">
-            พื้นที่นำเสนอผลิตภัณฑ์และผลผลิตจากงานวิจัยเพื่อสังคม ระบบข้อมูลผลผลิตจากฐานข้อมูลกลางและการชำระเงินออนไลน์จะเปิดใช้งานในเฟสถัดไป
+            พื้นที่นำเสนอผลิตภัณฑ์และผลผลิตจากงานวิจัยเพื่อสังคม
+            ระบบข้อมูลผลผลิตจากฐานข้อมูลกลางและการชำระเงินออนไลน์จะเปิดใช้งานในเฟสถัดไป
           </p>
         </div>
 

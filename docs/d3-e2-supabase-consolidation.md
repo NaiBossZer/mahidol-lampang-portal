@@ -12,12 +12,14 @@ for Social Engagement and Smart Farm vegetable support.
 ## Database ownership
 
 Existing `facility-safety-app` domain remains authoritative for:
+
 - categories, items, buildings, vendors, budget, personnel
 - work_orders, inspections, user_preferences, system_meta
 - assets, fuel_vehicles, fuel_mower_inventory, fuel_trips
 - fuel_refuel_logs, fuel_plans, audit_logs, staff_profiles
 
 Portal domain is additive:
+
 - social_projects
 - learning_centers
 - activities

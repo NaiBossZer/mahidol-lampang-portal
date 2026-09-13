@@ -10,9 +10,16 @@ export default function ActivityDetailPage({ navigate }: Props) {
     <div className="max-w-[1280px] mx-auto px-8 max-md:px-4 py-10">
       {/* Breadcrumb */}
       <nav className="flex items-center gap-2 text-sm text-[#667085] mb-6" aria-label="Breadcrumb">
-        <button onClick={() => navigate("home")} className="hover:text-[#123B63] transition-colors">หน้าหลัก</button>
+        <button onClick={() => navigate("home")} className="hover:text-[#123B63] transition-colors">
+          หน้าหลัก
+        </button>
         <ChevronRight size={14} />
-        <button onClick={() => navigate("activities")} className="hover:text-[#123B63] transition-colors">กิจกรรม</button>
+        <button
+          onClick={() => navigate("activities")}
+          className="hover:text-[#123B63] transition-colors"
+        >
+          กิจกรรม
+        </button>
         <ChevronRight size={14} />
         <span className="text-[#1F2933] font-medium truncate">Workshop ภูมิปัญญาครั่ง</span>
       </nav>
@@ -22,17 +29,21 @@ export default function ActivityDetailPage({ navigate }: Props) {
         <article>
           {/* Category + meta */}
           <div className="flex flex-wrap items-center gap-3 mb-4">
-            <span className="bg-[#C66B4F] text-white text-xs font-semibold px-3 py-1 rounded-full">วัฒนธรรม</span>
+            <span className="bg-[#C66B4F] text-white text-xs font-semibold px-3 py-1 rounded-full">
+              วัฒนธรรม
+            </span>
             <span className="text-[#667085] text-sm">22 กันยายน 2567</span>
           </div>
 
           <h1 className="text-[#123B63] font-bold text-4xl max-md:text-2xl leading-snug mb-4">
-            Workshop ภูมิปัญญาครั่งและการใช้ประโยชน์<br className="max-sm:hidden" />
+            Workshop ภูมิปัญญาครั่งและการใช้ประโยชน์
+            <br className="max-sm:hidden" />
             กับ Shellac Learning Center
           </h1>
 
           <p className="text-[#667085] text-lg leading-relaxed mb-6">
-            กิจกรรมเปิดบ้าน Shellac Learning Center พร้อมเวิร์คช็อปเรียนรู้กระบวนการผลิตครั่งธรรมชาติ
+            กิจกรรมเปิดบ้าน Shellac Learning Center
+            พร้อมเวิร์คช็อปเรียนรู้กระบวนการผลิตครั่งธรรมชาติ
             และการนำไปใช้ประโยชน์ทั้งในเชิงอุตสาหกรรมและศิลปะร่วมสมัย
           </p>
 
@@ -48,14 +59,15 @@ export default function ActivityDetailPage({ navigate }: Props) {
           {/* Body */}
           <div className="prose max-w-none text-[#1F2933] leading-relaxed space-y-5">
             <p>
-              Shellac Learning Center มหิดล ลำปาง ขอเชิญชวนนักศึกษา นักวิจัย และผู้สนใจทุกท่านเข้าร่วม
-              กิจกรรม Workshop ภูมิปัญญาครั่งและการใช้ประโยชน์ ซึ่งจัดขึ้นเป็นส่วนหนึ่งของโครงการ
-              อนุรักษ์และพัฒนาภูมิปัญญาท้องถิ่นภาคเหนือ
+              Shellac Learning Center มหิดล ลำปาง ขอเชิญชวนนักศึกษา นักวิจัย
+              และผู้สนใจทุกท่านเข้าร่วม กิจกรรม Workshop ภูมิปัญญาครั่งและการใช้ประโยชน์
+              ซึ่งจัดขึ้นเป็นส่วนหนึ่งของโครงการ อนุรักษ์และพัฒนาภูมิปัญญาท้องถิ่นภาคเหนือ
             </p>
             <p>
-              ในกิจกรรมนี้ ผู้เข้าร่วมจะได้เรียนรู้กระบวนการเก็บเกี่ยวครั่งธรรมชาติจากต้นไม้ในท้องถิ่น
-              กระบวนการแปรรูป และการนำไปใช้ประโยชน์หลากหลายรูปแบบ ทั้งในอุตสาหกรรมอาหาร
-              เครื่องสำอาง และงานศิลปะร่วมสมัย
+              ในกิจกรรมนี้
+              ผู้เข้าร่วมจะได้เรียนรู้กระบวนการเก็บเกี่ยวครั่งธรรมชาติจากต้นไม้ในท้องถิ่น
+              กระบวนการแปรรูป และการนำไปใช้ประโยชน์หลากหลายรูปแบบ ทั้งในอุตสาหกรรมอาหาร เครื่องสำอาง
+              และงานศิลปะร่วมสมัย
             </p>
             <h2 className="text-[#123B63] font-bold text-xl mt-6 mb-3">กำหนดการ</h2>
             <div className="bg-[#F8F6F0] rounded-xl p-5 space-y-3 border border-[#EEE9DF]">
@@ -67,7 +79,9 @@ export default function ActivityDetailPage({ navigate }: Props) {
                 { time: "15:00 – 16:00", label: "นำเสนอผลงานและสรุป" },
               ].map((s) => (
                 <div key={s.time} className="flex items-start gap-4">
-                  <span className="font-display text-sm text-[#667085] min-w-[120px] font-medium">{s.time}</span>
+                  <span className="font-display text-sm text-[#667085] min-w-[120px] font-medium">
+                    {s.time}
+                  </span>
                   <span className="text-[#1F2933] text-sm">{s.label}</span>
                 </div>
               ))}
@@ -110,7 +124,9 @@ export default function ActivityDetailPage({ navigate }: Props) {
                 <MapPin size={16} className="text-[#C66B4F] mt-0.5 flex-shrink-0" />
                 <div>
                   <div className="text-[#1F2933] text-sm font-medium">สถานที่</div>
-                  <div className="text-[#667085] text-sm">Shellac Learning Center, อาคาร B มหิดล ลำปาง</div>
+                  <div className="text-[#667085] text-sm">
+                    Shellac Learning Center, อาคาร B มหิดล ลำปาง
+                  </div>
                 </div>
               </div>
               <div className="flex items-start gap-3">
@@ -141,7 +157,11 @@ export default function ActivityDetailPage({ navigate }: Props) {
             <div className="space-y-4">
               {[
                 { title: "ตลาดชุมชนออร์แกนิก ครั้งที่ 12", date: "12 ต.ค. 2567", tag: "ชุมชน" },
-                { title: "สัมมนาวิชาการ: นวัตกรรม AI ในการศึกษา", date: "5 ต.ค. 2567", tag: "การศึกษา" },
+                {
+                  title: "สัมมนาวิชาการ: นวัตกรรม AI ในการศึกษา",
+                  date: "5 ต.ค. 2567",
+                  tag: "การศึกษา",
+                },
               ].map((r) => (
                 <button
                   key={r.title}
@@ -151,7 +171,9 @@ export default function ActivityDetailPage({ navigate }: Props) {
                   <div className="text-[#1F2933] text-sm font-medium group-hover:text-[#123B63] transition-colors leading-snug mb-1">
                     {r.title}
                   </div>
-                  <div className="text-[#667085] text-xs">{r.date} · {r.tag}</div>
+                  <div className="text-[#667085] text-xs">
+                    {r.date} · {r.tag}
+                  </div>
                 </button>
               ))}
             </div>

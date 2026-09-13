@@ -6,16 +6,16 @@
 
 ## Brand tokens
 
-| Token | ค่า | บทบาท |
-|---|---|---|
-| `brand-navy` | `#123B63` | ชื่อหน่วยงาน, Header, Heading |
-| `brand-blue` | `#1677A8` | ปุ่มหลัก, Link, Focus |
+| Token              | ค่า       | บทบาท                            |
+| ------------------ | --------- | -------------------------------- |
+| `brand-navy`       | `#123B63` | ชื่อหน่วยงาน, Header, Heading    |
+| `brand-blue`       | `#1677A8` | ปุ่มหลัก, Link, Focus            |
 | `local-terracotta` | `#C66B4F` | Accent ที่สื่อถึงพื้นที่และชุมชน |
-| `northern-gold` | `#D6A84F` | Highlight, Badge, เส้นเน้น |
-| `leaf` | `#5F8D62` | สิ่งแวดล้อม, เกษตร, สถานะสำเร็จ |
-| `surface-warm` | `#F8F6F0` | พื้นหลังส่วนเนื้อหา |
-| `ink` | `#1F2933` | เนื้อหาหลัก |
-| `muted-ink` | `#667085` | คำอธิบายและ Metadata |
+| `northern-gold`    | `#D6A84F` | Highlight, Badge, เส้นเน้น       |
+| `leaf`             | `#5F8D62` | สิ่งแวดล้อม, เกษตร, สถานะสำเร็จ  |
+| `surface-warm`     | `#F8F6F0` | พื้นหลังส่วนเนื้อหา              |
+| `ink`              | `#1F2933` | เนื้อหาหลัก                      |
+| `muted-ink`        | `#667085` | คำอธิบายและ Metadata             |
 
 กติกา: พื้นหลังหลักใช้สีสว่าง, ห้ามใช้สีอย่างเดียวเพื่อสื่อสถานะ, และ Text/Background ต้องผ่าน WCAG AA
 

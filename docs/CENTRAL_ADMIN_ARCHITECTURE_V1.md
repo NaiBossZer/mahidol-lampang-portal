@@ -6,14 +6,14 @@
 
 ## 2. Systems reviewed
 
-| Domain | Repository / surface | Admin responsibility | Data owner |
-|---|---|---|---|
-| Portal / CMS | `mahidol-lampang-portal` | users, activities, content, central navigation | Portal DB |
-| Lac Learning | `mahidol-rac` | activity context, satisfaction analytics, export | shared activities + survey responses |
-| Facility & Safety | `Facility-Safety` | inspections, work orders, buildings, assets, safety audit | Facility DB domain |
-| Smart Farm | `mahidol-smart-farm` | IoT/farm operations | Smart Farm domain |
-| Clean Energy / EV | `mahidol-clean-energy` | energy/EV operations | Clean Energy domain |
-| Store / support | Portal storefront | products, orders, support workflows | Portal DB |
+| Domain            | Repository / surface     | Admin responsibility                                      | Data owner                           |
+| ----------------- | ------------------------ | --------------------------------------------------------- | ------------------------------------ |
+| Portal / CMS      | `mahidol-lampang-portal` | users, activities, content, central navigation            | Portal DB                            |
+| Lac Learning      | `mahidol-rac`            | activity context, satisfaction analytics, export          | shared activities + survey responses |
+| Facility & Safety | `Facility-Safety`        | inspections, work orders, buildings, assets, safety audit | Facility DB domain                   |
+| Smart Farm        | `mahidol-smart-farm`     | IoT/farm operations                                       | Smart Farm domain                    |
+| Clean Energy / EV | `mahidol-clean-energy`   | energy/EV operations                                      | Clean Energy domain                  |
+| Store / support   | Portal storefront        | products, orders, support workflows                       | Portal DB                            |
 
 ## 3. Target architecture
 
@@ -81,11 +81,13 @@ The new `system_registry` table is metadata only. It identifies participating sy
 ## 7. Security model
 
 ### Portal
+
 - HttpOnly, Secure, SameSite admin session.
 - Server-side authorization before sensitive API operations.
 - No service-role key in client bundles.
 
 ### Facility-Safety
+
 - Supabase Auth.
 - `staff_profiles.active` + role-based `app_role()` / `is_manager()`.
 - RLS on operational tables.
@@ -99,6 +101,7 @@ Every important mutation should have an actor and record identity. Audit history
 ## 8. Admin modules
 
 ### A. Executive Overview
+
 - system health
 - open work orders
 - overdue inspections
@@ -107,6 +110,7 @@ Every important mutation should have an actor and record identity. Audit history
 - recent audit activity
 
 ### B. Facility & Safety
+
 - buildings/locations
 - inspection schedule and results
 - corrective work orders
@@ -116,6 +120,7 @@ Every important mutation should have an actor and record identity. Audit history
 - notification queue
 
 ### C. Learning Center
+
 - activities
 - Lac Learning Game
 - surveys
@@ -123,15 +128,18 @@ Every important mutation should have an actor and record identity. Audit history
 - CSV export
 
 ### D. Smart Farm
+
 - system status
 - sensor/IoT health
 - farm operations link
 
 ### E. Energy / EV
+
 - clean energy status
 - EV booking/operations link
 
 ### F. CMS / Social Engagement
+
 - projects
 - activities
 - photos
@@ -139,6 +147,7 @@ Every important mutation should have an actor and record identity. Audit history
 - outcomes
 
 ### G. Governance
+
 - role matrix
 - audit logs
 - data export

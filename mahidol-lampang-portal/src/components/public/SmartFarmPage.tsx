@@ -1,11 +1,52 @@
 import { useState } from "react";
-import { Thermometer, Droplets, Wind, Sun, Cpu, Leaf, TrendingUp, AlertTriangle } from "lucide-react";
+import {
+  Thermometer,
+  Droplets,
+  Wind,
+  Sun,
+  Cpu,
+  Leaf,
+  TrendingUp,
+  AlertTriangle,
+} from "lucide-react";
 
 const sensorData = [
-  { icon: Thermometer, label: "อุณหภูมิ", value: "28.4", unit: "°C", status: "normal", color: "#C66B4F", trend: "+1.2" },
-  { icon: Droplets, label: "ความชื้น", value: "72", unit: "%", status: "normal", color: "#1677A8", trend: "-3.1" },
-  { icon: Sun, label: "แสงแดด", value: "6,840", unit: "lux", status: "high", color: "#D6A84F", trend: "+420" },
-  { icon: Wind, label: "ความเร็วลม", value: "12.3", unit: "km/h", status: "normal", color: "#5F8D62", trend: "+0.5" },
+  {
+    icon: Thermometer,
+    label: "อุณหภูมิ",
+    value: "28.4",
+    unit: "°C",
+    status: "normal",
+    color: "#C66B4F",
+    trend: "+1.2",
+  },
+  {
+    icon: Droplets,
+    label: "ความชื้น",
+    value: "72",
+    unit: "%",
+    status: "normal",
+    color: "#1677A8",
+    trend: "-3.1",
+  },
+  {
+    icon: Sun,
+    label: "แสงแดด",
+    value: "6,840",
+    unit: "lux",
+    status: "high",
+    color: "#D6A84F",
+    trend: "+420",
+  },
+  {
+    icon: Wind,
+    label: "ความเร็วลม",
+    value: "12.3",
+    unit: "km/h",
+    status: "normal",
+    color: "#5F8D62",
+    trend: "+0.5",
+  },
 ];
 
 const crops = [
@@ -15,7 +56,11 @@ const crops = [
 ];
 
 const alerts = [
-  { type: "warning", msg: "ความชื้นดินแปลง B ต่ำกว่าค่าที่กำหนด — เปิดระบบน้ำอัตโนมัติ", time: "09:15" },
+  {
+    type: "warning",
+    msg: "ความชื้นดินแปลง B ต่ำกว่าค่าที่กำหนด — เปิดระบบน้ำอัตโนมัติ",
+    time: "09:15",
+  },
   { type: "info", msg: "ระบบพยากรณ์ฝน: มีฝนเล็กน้อย 16:00 – 18:00 น.", time: "08:00" },
 ];
 
@@ -32,9 +77,15 @@ export default function SmartFarmPage() {
               <Leaf size={26} className="text-white" />
             </div>
             <div>
-              <div className="text-[#D6A84F] text-xs font-semibold uppercase tracking-widest mb-1">ระบบเกษตรอัจฉริยะ</div>
-              <h1 className="text-white font-bold text-4xl max-md:text-2xl">Smart Farm มหิดล ลำปาง</h1>
-              <p className="text-white/60 text-base mt-1">ข้อมูล IoT แบบ Real-time · อัปเดตล่าสุด 09:32 น.</p>
+              <div className="text-[#D6A84F] text-xs font-semibold uppercase tracking-widest mb-1">
+                ระบบเกษตรอัจฉริยะ
+              </div>
+              <h1 className="text-white font-bold text-4xl max-md:text-2xl">
+                Smart Farm มหิดล ลำปาง
+              </h1>
+              <p className="text-white/60 text-base mt-1">
+                ข้อมูล IoT แบบ Real-time · อัปเดตล่าสุด 09:32 น.
+              </p>
             </div>
           </div>
           {/* Tabs */}
@@ -51,7 +102,9 @@ export default function SmartFarmPage() {
               >
                 {t === "overview" ? "ภาพรวม" : t === "crops" ? "พืชผล" : "การแจ้งเตือน"}
                 {t === "alerts" && alerts.length > 0 && (
-                  <span className="ml-2 bg-[#C66B4F] text-white text-xs rounded-full px-1.5 py-0.5">{alerts.length}</span>
+                  <span className="ml-2 bg-[#C66B4F] text-white text-xs rounded-full px-1.5 py-0.5">
+                    {alerts.length}
+                  </span>
                 )}
               </button>
             ))}
@@ -60,7 +113,6 @@ export default function SmartFarmPage() {
       </div>
 
       <div className="max-w-[1280px] mx-auto px-8 max-md:px-4 py-10">
-
         {activeTab === "overview" && (
           <>
             {/* Sensor cards */}
@@ -76,21 +128,29 @@ export default function SmartFarmPage() {
                       >
                         <Icon size={20} style={{ color: s.color }} />
                       </div>
-                      <div className={`flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full ${
-                        s.status === "high" ? "bg-[#D6A84F]/15 text-[#D6A84F]" : "bg-[#5F8D62]/15 text-[#5F8D62]"
-                      }`}>
+                      <div
+                        className={`flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full ${
+                          s.status === "high"
+                            ? "bg-[#D6A84F]/15 text-[#D6A84F]"
+                            : "bg-[#5F8D62]/15 text-[#5F8D62]"
+                        }`}
+                      >
                         <div className="w-1.5 h-1.5 rounded-full bg-current" />
                         {s.status === "high" ? "สูง" : "ปกติ"}
                       </div>
                     </div>
                     <div className="text-[#667085] text-sm mb-1">{s.label}</div>
                     <div className="flex items-end gap-1.5">
-                      <span className="font-display font-bold text-3xl text-[#1F2933]">{s.value}</span>
+                      <span className="font-display font-bold text-3xl text-[#1F2933]">
+                        {s.value}
+                      </span>
                       <span className="text-[#667085] text-sm mb-1">{s.unit}</span>
                     </div>
-                    <div className={`flex items-center gap-1 text-xs mt-2 ${
-                      s.trend.startsWith("+") ? "text-[#C66B4F]" : "text-[#5F8D62]"
-                    }`}>
+                    <div
+                      className={`flex items-center gap-1 text-xs mt-2 ${
+                        s.trend.startsWith("+") ? "text-[#C66B4F]" : "text-[#5F8D62]"
+                      }`}
+                    >
                       <TrendingUp size={12} />
                       {s.trend} จากเมื่อวาน
                     </div>
@@ -117,12 +177,20 @@ export default function SmartFarmPage() {
                     <div className="flex items-center justify-between mb-1.5">
                       <span className="text-[#1F2933] text-sm font-medium">{z.zone}</span>
                       <div className="flex items-center gap-2">
-                        <span className="font-display text-sm font-bold text-[#1F2933]">{z.value}%</span>
-                        <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
-                          z.status === "ต่ำ" ? "bg-[#C66B4F]/15 text-[#C66B4F]" :
-                          z.status === "สูง" ? "bg-[#1677A8]/15 text-[#1677A8]" :
-                          "bg-[#5F8D62]/15 text-[#5F8D62]"
-                        }`}>{z.status}</span>
+                        <span className="font-display text-sm font-bold text-[#1F2933]">
+                          {z.value}%
+                        </span>
+                        <span
+                          className={`text-xs px-2 py-0.5 rounded-full font-medium ${
+                            z.status === "ต่ำ"
+                              ? "bg-[#C66B4F]/15 text-[#C66B4F]"
+                              : z.status === "สูง"
+                                ? "bg-[#1677A8]/15 text-[#1677A8]"
+                                : "bg-[#5F8D62]/15 text-[#5F8D62]"
+                          }`}
+                        >
+                          {z.status}
+                        </span>
                       </div>
                     </div>
                     <div className="h-2 bg-[#EEE9DF] rounded-full overflow-hidden">
@@ -130,7 +198,12 @@ export default function SmartFarmPage() {
                         className="h-full rounded-full transition-all duration-500"
                         style={{
                           width: `${z.value}%`,
-                          backgroundColor: z.status === "ต่ำ" ? "#C66B4F" : z.status === "สูง" ? "#1677A8" : "#5F8D62",
+                          backgroundColor:
+                            z.status === "ต่ำ"
+                              ? "#C66B4F"
+                              : z.status === "สูง"
+                                ? "#1677A8"
+                                : "#5F8D62",
                         }}
                       />
                     </div>
@@ -151,19 +224,26 @@ export default function SmartFarmPage() {
                   ].map((sys) => {
                     const Icon = sys.icon;
                     return (
-                      <div key={sys.name} className="flex items-center justify-between p-3 rounded-xl bg-[#F8F6F0]">
+                      <div
+                        key={sys.name}
+                        className="flex items-center justify-between p-3 rounded-xl bg-[#F8F6F0]"
+                      >
                         <div className="flex items-center gap-3">
                           <div className="w-8 h-8 rounded-lg bg-white flex items-center justify-center">
                             <Icon size={15} className="text-[#667085]" />
                           </div>
                           <span className="text-[#1F2933] text-sm">{sys.name}</span>
                         </div>
-                        <div className={`flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full ${
-                          sys.status === "active"
-                            ? "bg-[#5F8D62]/15 text-[#5F8D62]"
-                            : "bg-[#667085]/15 text-[#667085]"
-                        }`}>
-                          <div className={`w-1.5 h-1.5 rounded-full ${sys.status === "active" ? "bg-[#5F8D62]" : "bg-[#667085]"}`} />
+                        <div
+                          className={`flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full ${
+                            sys.status === "active"
+                              ? "bg-[#5F8D62]/15 text-[#5F8D62]"
+                              : "bg-[#667085]/15 text-[#667085]"
+                          }`}
+                        >
+                          <div
+                            className={`w-1.5 h-1.5 rounded-full ${sys.status === "active" ? "bg-[#5F8D62]" : "bg-[#667085]"}`}
+                          />
                           {sys.status === "active" ? "ทำงาน" : "สแตนด์บาย"}
                         </div>
                       </div>
@@ -192,7 +272,9 @@ export default function SmartFarmPage() {
                     <div className="text-[#667085] text-xs mb-1">สุขภาพพืช</div>
                     <div
                       className="font-display font-bold text-3xl"
-                      style={{ color: c.health >= 90 ? "#5F8D62" : c.health >= 80 ? "#D6A84F" : "#C66B4F" }}
+                      style={{
+                        color: c.health >= 90 ? "#5F8D62" : c.health >= 80 ? "#D6A84F" : "#C66B4F",
+                      }}
                     >
                       {c.health}%
                     </div>
@@ -203,7 +285,8 @@ export default function SmartFarmPage() {
                     className="h-full rounded-full transition-all"
                     style={{
                       width: `${c.health}%`,
-                      backgroundColor: c.health >= 90 ? "#5F8D62" : c.health >= 80 ? "#D6A84F" : "#C66B4F",
+                      backgroundColor:
+                        c.health >= 90 ? "#5F8D62" : c.health >= 80 ? "#D6A84F" : "#C66B4F",
                     }}
                   />
                 </div>

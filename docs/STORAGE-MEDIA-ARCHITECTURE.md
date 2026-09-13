@@ -8,15 +8,15 @@ The UI must show the bucket and allowed file types, upload through a Portal API,
 
 ## Current media matrix
 
-| Domain / field | UI | Storage bucket | Metadata table | Domain value |
-| --- | --- | --- | --- | --- |
-| Activity `featuredImage` | Activity form | `activity-media` | `activity_media` | `activities.featured_image` |
-| Activity post-event gallery | Activity form | `activity-media` | `activity_media` | `activity_media.public_url` |
-| CMS Services `featuredImage` | Content & CMS | `portal-media` | `portal_media_assets` | `services.featured_image` |
-| CMS Home Section `image` | Content & CMS | `portal-media` | `portal_media_assets` | `home_sections.image` |
-| CMS Project `coverImage` | Content & CMS | `portal-media` | `portal_media_assets` | `social_projects.cover_image` |
-| Learning Center `coverImage` | Content & CMS | `portal-media` | `portal_media_assets` | `learning_centers.cover_image` |
-| Partner `logo` | Content & CMS | `portal-media` | `portal_media_assets` | `partners.logo` |
+| Domain / field               | UI            | Storage bucket   | Metadata table        | Domain value                   |
+| ---------------------------- | ------------- | ---------------- | --------------------- | ------------------------------ |
+| Activity `featuredImage`     | Activity form | `activity-media` | `activity_media`      | `activities.featured_image`    |
+| Activity post-event gallery  | Activity form | `activity-media` | `activity_media`      | `activity_media.public_url`    |
+| CMS Services `featuredImage` | Content & CMS | `portal-media`   | `portal_media_assets` | `services.featured_image`      |
+| CMS Home Section `image`     | Content & CMS | `portal-media`   | `portal_media_assets` | `home_sections.image`          |
+| CMS Project `coverImage`     | Content & CMS | `portal-media`   | `portal_media_assets` | `social_projects.cover_image`  |
+| Learning Center `coverImage` | Content & CMS | `portal-media`   | `portal_media_assets` | `learning_centers.cover_image` |
+| Partner `logo`               | Content & CMS | `portal-media`   | `portal_media_assets` | `partners.logo`                |
 
 ## Buckets
 

@@ -2,12 +2,60 @@ import { useState } from "react";
 import { MapPin, Info, ZoomIn, ZoomOut, Layers, AlertCircle } from "lucide-react";
 
 const locations = [
-  { id: 1, name: "Shellac Learning Center", type: "learning", x: 32, y: 28, color: "#C66B4F", desc: "ศูนย์เรียนรู้ครั่งและภูมิปัญญาท้องถิ่น" },
-  { id: 2, name: "Smart Farm", type: "farm", x: 60, y: 45, color: "#5F8D62", desc: "ระบบเกษตรอัจฉริยะ IoT" },
-  { id: 3, name: "ระบบพลังงานสะอาด", type: "energy", x: 22, y: 58, color: "#1677A8", desc: "Solar cell และระบบพลังงานหมุนเวียน" },
-  { id: 4, name: "RAC ศูนย์วิจัย", type: "research", x: 72, y: 25, color: "#123B63", desc: "Research & Academic Center" },
-  { id: 5, name: "ลานกิจกรรมกลาง", type: "community", x: 48, y: 65, color: "#D6A84F", desc: "พื้นที่กิจกรรมและชุมชน" },
-  { id: 6, name: "อาคารบริหาร", type: "admin", x: 80, y: 55, color: "#667085", desc: "สำนักงานและบริการนักศึกษา" },
+  {
+    id: 1,
+    name: "Shellac Learning Center",
+    type: "learning",
+    x: 32,
+    y: 28,
+    color: "#C66B4F",
+    desc: "ศูนย์เรียนรู้ครั่งและภูมิปัญญาท้องถิ่น",
+  },
+  {
+    id: 2,
+    name: "Smart Farm",
+    type: "farm",
+    x: 60,
+    y: 45,
+    color: "#5F8D62",
+    desc: "ระบบเกษตรอัจฉริยะ IoT",
+  },
+  {
+    id: 3,
+    name: "ระบบพลังงานสะอาด",
+    type: "energy",
+    x: 22,
+    y: 58,
+    color: "#1677A8",
+    desc: "Solar cell และระบบพลังงานหมุนเวียน",
+  },
+  {
+    id: 4,
+    name: "RAC ศูนย์วิจัย",
+    type: "research",
+    x: 72,
+    y: 25,
+    color: "#123B63",
+    desc: "Research & Academic Center",
+  },
+  {
+    id: 5,
+    name: "ลานกิจกรรมกลาง",
+    type: "community",
+    x: 48,
+    y: 65,
+    color: "#D6A84F",
+    desc: "พื้นที่กิจกรรมและชุมชน",
+  },
+  {
+    id: 6,
+    name: "อาคารบริหาร",
+    type: "admin",
+    x: 80,
+    y: 55,
+    color: "#667085",
+    desc: "สำนักงานและบริการนักศึกษา",
+  },
 ];
 
 const legendItems = [
@@ -20,7 +68,7 @@ const legendItems = [
 ];
 
 export default function SiteMapPage() {
-  const [selectedLocation, setSelectedLocation] = useState<typeof locations[0] | null>(null);
+  const [selectedLocation, setSelectedLocation] = useState<(typeof locations)[0] | null>(null);
   const [zoom, setZoom] = useState(1);
 
   return (
@@ -28,9 +76,15 @@ export default function SiteMapPage() {
       {/* Page header */}
       <div className="bg-white border-b border-[#EEE9DF]">
         <div className="max-w-[1280px] mx-auto px-8 max-md:px-4 py-10">
-          <div className="text-[#C66B4F] text-xs font-semibold uppercase tracking-widest mb-2">แผนที่ศูนย์</div>
-          <h1 className="text-[#123B63] font-bold text-4xl max-md:text-2xl mb-2">แผนที่มหิดล ลำปาง</h1>
-          <p className="text-[#667085] text-base">สำรวจพื้นที่ ศูนย์ฯ และสิ่งอำนวยความสะดวกของมหาวิทยาลัย</p>
+          <div className="text-[#C66B4F] text-xs font-semibold uppercase tracking-widest mb-2">
+            แผนที่ศูนย์
+          </div>
+          <h1 className="text-[#123B63] font-bold text-4xl max-md:text-2xl mb-2">
+            แผนที่มหิดล ลำปาง
+          </h1>
+          <p className="text-[#667085] text-base">
+            สำรวจพื้นที่ ศูนย์ฯ และสิ่งอำนวยความสะดวกของมหาวิทยาลัย
+          </p>
         </div>
       </div>
 
@@ -63,17 +117,37 @@ export default function SiteMapPage() {
             </div>
 
             {/* Map canvas */}
-            <div className="relative rounded-2xl overflow-hidden border border-[#EEE9DF] bg-[#E8F4EC]" style={{ height: 480 }}>
+            <div
+              className="relative rounded-2xl overflow-hidden border border-[#EEE9DF] bg-[#E8F4EC]"
+              style={{ height: 480 }}
+            >
               {/* Terrain base */}
-              <div className="absolute inset-0" style={{ transform: `scale(${zoom})`, transformOrigin: "center", transition: "transform 0.3s" }}>
+              <div
+                className="absolute inset-0"
+                style={{
+                  transform: `scale(${zoom})`,
+                  transformOrigin: "center",
+                  transition: "transform 0.3s",
+                }}
+              >
                 {/* Paths */}
-                <svg className="absolute inset-0 w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
+                <svg
+                  className="absolute inset-0 w-full h-full"
+                  viewBox="0 0 100 100"
+                  preserveAspectRatio="none"
+                >
                   <rect x="0" y="0" width="100" height="100" fill="#C9E8C9" />
                   <rect x="10" y="10" width="80" height="80" rx="4" fill="#D4EDD4" opacity="0.5" />
                   {/* Roads */}
                   <path d="M 0,50 L 100,50" stroke="#E8E0D0" strokeWidth="3" fill="none" />
                   <path d="M 50,0 L 50,100" stroke="#E8E0D0" strokeWidth="3" fill="none" />
-                  <path d="M 20,20 L 80,80" stroke="#E8E0D0" strokeWidth="1.5" fill="none" strokeDasharray="3,3" />
+                  <path
+                    d="M 20,20 L 80,80"
+                    stroke="#E8E0D0"
+                    strokeWidth="1.5"
+                    fill="none"
+                    strokeDasharray="3,3"
+                  />
                   {/* Water feature */}
                   <ellipse cx="45" cy="50" rx="6" ry="4" fill="#8BBFDE" opacity="0.5" />
                   {/* Fields */}
@@ -87,12 +161,14 @@ export default function SiteMapPage() {
                     key={loc.id}
                     onClick={() => setSelectedLocation(loc === selectedLocation ? null : loc)}
                     className="absolute group focus:outline-none focus-visible:ring-2 focus-visible:ring-[#1677A8] rounded-full"
-                    style={{ left: `${loc.x}%`, top: `${loc.y}%`, transform: "translate(-50%, -100%)" }}
+                    style={{
+                      left: `${loc.x}%`,
+                      top: `${loc.y}%`,
+                      transform: "translate(-50%, -100%)",
+                    }}
                     aria-label={loc.name}
                   >
-                    <div
-                      className="relative flex flex-col items-center"
-                    >
+                    <div className="relative flex flex-col items-center">
                       <div
                         className={`w-9 h-9 rounded-full flex items-center justify-center shadow-md transition-transform group-hover:scale-110 ${selectedLocation?.id === loc.id ? "scale-125" : ""}`}
                         style={{ backgroundColor: loc.color }}
@@ -116,7 +192,10 @@ export default function SiteMapPage() {
                 <div className="space-y-1.5">
                   {legendItems.map((l) => (
                     <div key={l.label} className="flex items-center gap-2">
-                      <div className="w-3 h-3 rounded-full flex-shrink-0" style={{ backgroundColor: l.color }} />
+                      <div
+                        className="w-3 h-3 rounded-full flex-shrink-0"
+                        style={{ backgroundColor: l.color }}
+                      />
                       <span className="text-[#1F2933] text-xs">{l.label}</span>
                     </div>
                   ))}
@@ -143,7 +222,9 @@ export default function SiteMapPage() {
                   <MapPin size={11} />
                   {selectedLocation.name}
                 </div>
-                <p className="text-[#667085] text-sm leading-relaxed mb-4">{selectedLocation.desc}</p>
+                <p className="text-[#667085] text-sm leading-relaxed mb-4">
+                  {selectedLocation.desc}
+                </p>
                 <button className="w-full py-2.5 rounded-xl bg-[#123B63] text-white text-sm font-semibold hover:bg-[#0e2d4f] transition-colors min-h-[44px]">
                   ดูรายละเอียด
                 </button>
@@ -179,7 +260,9 @@ export default function SiteMapPage() {
                     </div>
                     <div>
                       <div className="text-[#1F2933] text-sm font-medium">{loc.name}</div>
-                      <div className="text-[#667085] text-xs truncate max-w-[180px]">{loc.desc}</div>
+                      <div className="text-[#667085] text-xs truncate max-w-[180px]">
+                        {loc.desc}
+                      </div>
                     </div>
                   </button>
                 ))}

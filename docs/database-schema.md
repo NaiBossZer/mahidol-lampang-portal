@@ -78,12 +78,12 @@ CREATE TABLE order_items (
 
 The order total and unit price are always recalculated from `products` inside a database transaction. Client totals are never trusted. Add indexes on `sensor_logs(plot_id, recorded_at DESC)`, `orders(created_at DESC)`, and `ev_bookings(start_at, end_at)` in the migration used by deployment. For multi-instance deployments, add a PostgreSQL exclusion constraint on active `ev_bookings` ranges or use a serializable transaction so concurrent requests cannot overbook the configured charger capacity.
 
-
 ## D3-B — Social Engagement domain
 
 The Social Engagement domain follows the official information architecture of **งานพันธกิจเพื่อสังคม คณะสิ่งแวดล้อมและทรัพยากรศาสตร์ มหาวิทยาลัยมหิดล**. Lampang is represented as an operational/learning center, not as the parent brand.
 
 New Drizzle schema entities:
+
 - `social_projects` — social-engagement projects.
 - `learning_centers` — social, learning, research, community, school, and partner sites.
 - `activities` — first-class activity evidence records with publication status and executive-reporting fields.

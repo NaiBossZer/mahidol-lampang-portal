@@ -11,9 +11,7 @@ interface Props {
 const navSections = [
   {
     title: "ภาพรวม",
-    items: [
-      { icon: LayoutDashboard, label: "Dashboard", page: "dashboard" as AdminPage },
-    ],
+    items: [{ icon: LayoutDashboard, label: "Dashboard", page: "dashboard" as AdminPage }],
   },
   {
     title: "การวิเคราะห์",
@@ -69,7 +67,10 @@ function SidebarContent({ currentPage, navigate, onClose }: Omit<Props, "open">)
                 return (
                   <button
                     key={item.label}
-                    onClick={() => { navigate(item.page); onClose(); }}
+                    onClick={() => {
+                      navigate(item.page);
+                      onClose();
+                    }}
                     className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors min-h-[44px] focus:outline-none focus-visible:ring-2 focus-visible:ring-white/30 ${
                       active
                         ? "bg-white/15 text-white font-semibold"

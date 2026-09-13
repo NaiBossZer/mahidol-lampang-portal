@@ -30,12 +30,12 @@ export default function LoginPage({ navigate }: Props) {
   return (
     <div className="min-h-screen bg-[#F8F6F0] flex">
       {/* Left decorative panel */}
-      <div
-        className="hidden lg:flex flex-col justify-between w-[480px] flex-shrink-0 bg-[#123B63] relative overflow-hidden"
-      >
+      <div className="hidden lg:flex flex-col justify-between w-[480px] flex-shrink-0 bg-[#123B63] relative overflow-hidden">
         <div
           className="absolute inset-0 bg-cover bg-center opacity-20"
-          style={{ backgroundImage: `url(https://images.unsplash.com/photo-1647607124632-f47bfa887125?w=600&h=900&fit=crop&auto=format)` }}
+          style={{
+            backgroundImage: `url(https://images.unsplash.com/photo-1647607124632-f47bfa887125?w=600&h=900&fit=crop&auto=format)`,
+          }}
         />
         <div className="relative p-10">
           <div className="flex items-center gap-3">
@@ -50,14 +50,17 @@ export default function LoginPage({ navigate }: Props) {
         </div>
         <div className="relative p-10">
           <blockquote className="text-white/90 text-2xl font-semibold leading-snug mb-4">
-            "ภูมิปัญญาท้องถิ่น<br />สู่อนาคตการเรียนรู้"
+            "ภูมิปัญญาท้องถิ่น
+            <br />
+            สู่อนาคตการเรียนรู้"
           </blockquote>
-          <p className="text-white/50 text-sm">
-            มหาวิทยาลัยมหิดล วิทยาเขตลำปาง
-          </p>
+          <p className="text-white/50 text-sm">มหาวิทยาลัยมหิดล วิทยาเขตลำปาง</p>
           <div className="mt-8 flex gap-2">
             {[...Array(3)].map((_, i) => (
-              <div key={i} className={`h-1 rounded-full ${i === 0 ? "w-8 bg-[#D6A84F]" : "w-3 bg-white/30"}`} />
+              <div
+                key={i}
+                className={`h-1 rounded-full ${i === 0 ? "w-8 bg-[#D6A84F]" : "w-3 bg-white/30"}`}
+              />
             ))}
           </div>
         </div>
@@ -100,7 +103,10 @@ export default function LoginPage({ navigate }: Props) {
                 อีเมล / รหัสนักศึกษา
               </label>
               <div className="relative">
-                <Mail size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#9BA8B7]" />
+                <Mail
+                  size={16}
+                  className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#9BA8B7]"
+                />
                 <input
                   id="email"
                   type="email"
@@ -115,13 +121,21 @@ export default function LoginPage({ navigate }: Props) {
 
             <div>
               <div className="flex items-center justify-between mb-1.5">
-                <label htmlFor="password" className="text-[#1F2933] text-sm font-medium">รหัสผ่าน</label>
-                <a href="#" className="text-[#1677A8] text-sm hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-[#1677A8] rounded">
+                <label htmlFor="password" className="text-[#1F2933] text-sm font-medium">
+                  รหัสผ่าน
+                </label>
+                <a
+                  href="#"
+                  className="text-[#1677A8] text-sm hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-[#1677A8] rounded"
+                >
                   ลืมรหัสผ่าน?
                 </a>
               </div>
               <div className="relative">
-                <Lock size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#9BA8B7]" />
+                <Lock
+                  size={16}
+                  className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#9BA8B7]"
+                />
                 <input
                   id="password"
                   type={showPassword ? "text" : "password"}
@@ -148,7 +162,10 @@ export default function LoginPage({ navigate }: Props) {
                 id="remember"
                 className="w-4 h-4 rounded border-[#EEE9DF] accent-[#123B63] cursor-pointer"
               />
-              <label htmlFor="remember" className="text-[#667085] text-sm cursor-pointer select-none">
+              <label
+                htmlFor="remember"
+                className="text-[#667085] text-sm cursor-pointer select-none"
+              >
                 จดจำฉันในระบบ
               </label>
             </div>
@@ -163,14 +180,19 @@ export default function LoginPage({ navigate }: Props) {
                   <span className="w-4 h-4 rounded-full border-2 border-white/30 border-t-white animate-spin" />
                   กำลังเข้าสู่ระบบ…
                 </span>
-              ) : "เข้าสู่ระบบ"}
+              ) : (
+                "เข้าสู่ระบบ"
+              )}
             </button>
           </form>
 
           <div className="mt-6 text-center">
             <p className="text-[#667085] text-sm">
               ยังไม่มีบัญชี?{" "}
-              <a href="#" className="text-[#1677A8] font-semibold hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-[#1677A8] rounded">
+              <a
+                href="#"
+                className="text-[#1677A8] font-semibold hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-[#1677A8] rounded"
+              >
                 สมัครสมาชิก
               </a>
             </p>
@@ -179,9 +201,13 @@ export default function LoginPage({ navigate }: Props) {
           <div className="mt-8 pt-6 border-t border-[#EEE9DF] text-center">
             <p className="text-[#9BA8B7] text-xs">
               การเข้าสู่ระบบถือว่าคุณยอมรับ{" "}
-              <a href="#" className="underline hover:text-[#667085]">นโยบายความเป็นส่วนตัว</a>
-              {" "}และ{" "}
-              <a href="#" className="underline hover:text-[#667085]">ข้อกำหนดการใช้งาน</a>
+              <a href="#" className="underline hover:text-[#667085]">
+                นโยบายความเป็นส่วนตัว
+              </a>{" "}
+              และ{" "}
+              <a href="#" className="underline hover:text-[#667085]">
+                ข้อกำหนดการใช้งาน
+              </a>
             </p>
           </div>
         </div>

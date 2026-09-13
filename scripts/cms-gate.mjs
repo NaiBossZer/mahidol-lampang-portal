@@ -2,15 +2,38 @@ import { existsSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
 const root = resolve(import.meta.dirname, "..");
 const checks = [];
-const check = (name, ok) => { checks.push({ name, ok }); console.log(`${ok ? "PASS" : "FAIL"} ${name}`); };
+const check = (name, ok) => {
+  checks.push({ name, ok });
+  console.log(`${ok ? "PASS" : "FAIL"} ${name}`);
+};
 const app = readFileSync(resolve(root, "src/App.tsx"), "utf8");
 check("admin CMS route", app.includes('path="/admin/cms"'));
 check("CMS page", existsSync(resolve(root, "src/pages/admin/CmsPage.tsx")));
 check("public CMS client", existsSync(resolve(root, "src/services/cmsApi.ts")));
 check("public CMS endpoint", existsSync(resolve(root, "api/cms/home.ts")));
-check("admin CMS boundary", existsSync(resolve(root, "api/admin/_cms.ts")) && readFileSync(resolve(root, "api/admin/_cms.ts"), "utf8").includes("isAdmin"));
+check(
+  "admin CMS boundary",
+  existsSync(resolve(root, "api/admin/_cms.ts")) &&
+    readFileSync(resolve(root, "api/admin/_cms.ts"), "utf8").includes("isAdmin"),
+);
 const migration = readFileSync(resolve(root, "drizzle/0002_canonical_cms.sql"), "utf8");
-for (const table of ["services", "home_sections", "navigation_items", "footer_settings"]) check(`RLS ${table}`, migration.includes(`ALTER TABLE \"public\".\"${table}\" ENABLE ROW LEVEL SECURITY`));
-check("published public filter", readFileSync(resolve(root, "api/cms/home.ts"), "utf8").includes('eq(services.status, "published")'));
-check("enabled home filter", readFileSync(resolve(root, "api/cms/home.ts"), "utf8").includes("eq(homeSections.isEnabled, true)"));
-const failed = checks.filter((x) => !x.ok); console.log(`CMS gate: ${checks.length - failed.length}/${checks.length} passed`); if (failed.length) process.exitCode = 1;
+for (const table of ["services", "home_sections", "navigation_items", "footer_settings"])
+  check(
+    `RLS ${table}`,
+    migration.includes(`ALTER TABLE \"public\".\"${table}\" ENABLE ROW LEVEL SECURITY`),
+  );
+check(
+  "published public filter",
+  readFileSync(resolve(root, "api/cms/home.ts"), "utf8").includes(
+    'eq(services.status, "published")',
+  ),
+);
+check(
+  "enabled home filter",
+  readFileSync(resolve(root, "api/cms/home.ts"), "utf8").includes(
+    "eq(homeSections.isEnabled, true)",
+  ),
+);
+const failed = checks.filter((x) => !x.ok);
+console.log(`CMS gate: ${checks.length - failed.length}/${checks.length} passed`);
+if (failed.length) process.exitCode = 1;

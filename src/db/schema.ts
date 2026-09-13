@@ -10,6 +10,7 @@ import {
   pgEnum,
   unique,
   index,
+  jsonb,
 } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
 
@@ -289,5 +290,141 @@ export const orderItemsRelations = relations(orderItems, ({ one }) => ({
   product: one(products, {
     fields: [orderItems.productId],
     references: [products.id],
+  }),
+}));
+
+// =====================================================
+// AI Governance Tables
+// =====================================================
+
+// AI Tools Registry
+export const aiTools = pgTable(
+  "ai_tools",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    toolKey: varchar("tool_key", { length: 100 }).notNull().unique(),
+    name: varchar("name", { length: 255 }).notNull(),
+    description: text("description"),
+    domain: varchar("domain", { length: 50 }).notNull(),
+    endpoint: varchar("endpoint", { length: 255 }).notNull(),
+    method: varchar("method", { length: 10 }).notNull().default("POST"),
+    riskLevel: varchar("risk_level", { length: 20 }).notNull().default("medium"),
+    permission: varchar("permission", { length: 100 }),
+    inputSchema: jsonb("input_schema").default("{}").notNull(),
+    outputSchema: jsonb("output_schema").default("{}").notNull(),
+    enabled: boolean("enabled").notNull().default(true),
+    executionMode: varchar("execution_mode", { length: 20 }).notNull().default("sync"),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at").defaultNow().notNull(),
+  },
+  (table) => ({
+    domainIdx: index("ai_tools_domain_idx").on(table.domain),
+    enabledIdx: index("ai_tools_enabled_idx").on(table.enabled),
+    riskLevelIdx: index("ai_tools_risk_level_idx").on(table.riskLevel),
+  }),
+);
+
+// AI Executions
+export const aiExecutions = pgTable(
+  "ai_executions",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    actorId: uuid("actor_id").notNull(),
+    toolId: uuid("tool_id"),
+    intent: text("intent").notNull(),
+    status: varchar("status", { length: 30 }).notNull().default("queued"),
+    riskLevel: varchar("risk_level", { length: 20 }).notNull().default("medium"),
+    input: jsonb("input").default("{}").notNull(),
+    output: jsonb("output"),
+    error: text("error"),
+    executionPlan: jsonb("execution_plan"),
+    steps: jsonb("steps").default("[]").notNull(),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    startedAt: timestamp("started_at"),
+    completedAt: timestamp("completed_at"),
+  },
+  (table) => ({
+    actorIdIdx: index("ai_executions_actor_id_idx").on(table.actorId),
+    toolIdIdx: index("ai_executions_tool_id_idx").on(table.toolId),
+    statusIdx: index("ai_executions_status_idx").on(table.status),
+    createdAtIdx: index("ai_executions_created_at_idx").on(table.createdAt),
+    statusCreatedIdx: index("ai_executions_status_created_idx").on(table.status, table.createdAt),
+  }),
+);
+
+// AI Approvals
+export const aiApprovals = pgTable(
+  "ai_approvals",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    executionId: uuid("execution_id").notNull(),
+    reviewerId: uuid("reviewer_id").notNull(),
+    decision: varchar("decision", { length: 20 }).notNull(),
+    reason: text("reason"),
+    decidedAt: timestamp("decided_at").defaultNow().notNull(),
+  },
+  (table) => ({
+    executionIdIdx: index("ai_approvals_execution_id_idx").on(table.executionId),
+    reviewerIdIdx: index("ai_approvals_reviewer_id_idx").on(table.reviewerId),
+    decidedAtIdx: index("ai_approvals_decided_at_idx").on(table.decidedAt),
+  }),
+);
+
+// Audit Logs
+export const auditLogs = pgTable(
+  "audit_logs",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    actorId: uuid("actor_id"),
+    action: varchar("action", { length: 50 }).notNull(),
+    tableName: varchar("table_name", { length: 100 }).notNull(),
+    recordId: text("record_id"),
+    oldData: jsonb("old_data"),
+    newData: jsonb("new_data"),
+    ipHint: varchar("ip_hint", { length: 50 }),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+  },
+  (table) => ({
+    actorIdIdx: index("audit_logs_actor_id_idx").on(table.actorId),
+    tableNameIdx: index("audit_logs_table_name_idx").on(table.tableName),
+    actionIdx: index("audit_logs_action_idx").on(table.action),
+    createdAtIdx: index("audit_logs_created_at_idx").on(table.createdAt),
+    tableCreatedIdx: index("audit_logs_table_created_idx").on(table.tableName, table.createdAt),
+  }),
+);
+
+// Admin Notifications
+export const adminNotifications = pgTable(
+  "admin_notifications",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    recipientUserId: uuid("recipient_user_id").notNull(),
+    kind: varchar("kind", { length: 50 }).notNull(),
+    title: varchar("title", { length: 255 }).notNull(),
+    body: text("body"),
+    link: text("link"),
+    isRead: boolean("is_read").notNull().default(false),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+  },
+  (table) => ({
+    recipientIdx: index("admin_notifications_recipient_idx").on(table.recipientUserId),
+    readIdx: index("admin_notifications_read_idx").on(table.isRead),
+    createdAtIdx: index("admin_notifications_created_at_idx").on(table.createdAt),
+  }),
+);
+
+// AI Relations
+export const aiExecutionsRelations = relations(aiExecutions, ({ one, many }) => ({
+  tool: one(aiTools, {
+    fields: [aiExecutions.toolId],
+    references: [aiTools.id],
+  }),
+  approvals: many(aiApprovals),
+}));
+
+export const aiApprovalsRelations = relations(aiApprovals, ({ one }) => ({
+  execution: one(aiExecutions, {
+    fields: [aiApprovals.executionId],
+    references: [aiExecutions.id],
   }),
 }));

@@ -1,5 +1,66 @@
 import { getSupabaseUser, isAdminRole, json, supabaseConfig } from "../auth/_shared";
-type Env=Record<string,unknown>; type Row=Record<string,unknown>;
-function cookieValue(r:Request,n:string){const p=(r.headers.get("Cookie")??"").split(";").map(x=>x.trim()).find(x=>x.startsWith(`${n}=`));return p?decodeURIComponent(p.slice(n.length+1)):null;}
-async function sb<T>(env:Env,token:string,path:string){const {url,key,configured}=supabaseConfig(env);if(!configured)throw new Error("Supabase is not configured");const r=await fetch(`${url}/rest/v1/${path}`,{headers:{apikey:key,Authorization:`Bearer ${token}`,Accept:"application/json"}});const b=await r.json().catch(()=>null);if(!r.ok)throw new Error(`Supabase REST ${r.status}`);return b as T;}
-export async function onRequest({request,env}:{request:Request;env:Env}){if(request.method!=="GET")return json({success:false,error:"Method Not Allowed"},405,{Allow:"GET"});const u=await getSupabaseUser(request,env);const role=u?.app_metadata?.role;const token=cookieValue(request,"sb_access_token");if(!u||!isAdminRole(role)||!token)return json({success:false,error:"Unauthorized"},401);try{const responses=await sb<Row[]>(env,token,"survey_responses?select=id,activity_id,occurrence_id,survey_id,submitted_at,age_group,affiliation,feedback,p2_location,p2_schedule,p2_readiness,p2_reception,p2_overall,p3_interest,p3_content,p3_clarity,p3_benefit,p3_application,p4_knowledge,p4_inspiration,p4_community_resource,p4_future_return&order=submitted_at.desc");const questions=await sb<Row[]>(env,token,"survey_questions?select=id,survey_id,section_key,question_text,question_type,scale_min,scale_max,active&order=order_index.asc");const scores=responses.flatMap(r=>Object.entries(r).filter(([k,v])=>/^p[234]_/.test(k)&&typeof v==="number").map(([field,value])=>({field,value:Number(value)})));const average=scores.length?scores.reduce((a,x)=>a+x.value,0)/scores.length:null;return json({success:true,data:{responses,questions,summary:{respondents:responses.length,answeredScores:scores.length,averageScore:average,satisfactionPercent:average==null?null:Number(((average/5)*100).toFixed(2))}}});}catch(e){console.error("/api/admin/survey-responses",e);return json({success:false,error:e instanceof Error?e.message:"ไม่สามารถโหลดผลแบบสอบถามได้"},500);}}
+type Env = Record<string, unknown>;
+type Row = Record<string, unknown>;
+function cookieValue(r: Request, n: string) {
+  const p = (r.headers.get("Cookie") ?? "")
+    .split(";")
+    .map((x) => x.trim())
+    .find((x) => x.startsWith(`${n}=`));
+  return p ? decodeURIComponent(p.slice(n.length + 1)) : null;
+}
+async function sb<T>(env: Env, token: string, path: string) {
+  const { url, key, configured } = supabaseConfig(env);
+  if (!configured) throw new Error("Supabase is not configured");
+  const r = await fetch(`${url}/rest/v1/${path}`, {
+    headers: { apikey: key, Authorization: `Bearer ${token}`, Accept: "application/json" },
+  });
+  const b = await r.json().catch(() => null);
+  if (!r.ok) throw new Error(`Supabase REST ${r.status}`);
+  return b as T;
+}
+export async function onRequest({ request, env }: { request: Request; env: Env }) {
+  if (request.method !== "GET")
+    return json({ success: false, error: "Method Not Allowed" }, 405, { Allow: "GET" });
+  const u = await getSupabaseUser(request, env);
+  const role = u?.app_metadata?.role;
+  const token = cookieValue(request, "sb_access_token");
+  if (!u || !isAdminRole(role) || !token)
+    return json({ success: false, error: "Unauthorized" }, 401);
+  try {
+    const responses = await sb<Row[]>(
+      env,
+      token,
+      "survey_responses?select=id,activity_id,occurrence_id,survey_id,submitted_at,age_group,affiliation,feedback,p2_location,p2_schedule,p2_readiness,p2_reception,p2_overall,p3_interest,p3_content,p3_clarity,p3_benefit,p3_application,p4_knowledge,p4_inspiration,p4_community_resource,p4_future_return&order=submitted_at.desc",
+    );
+    const questions = await sb<Row[]>(
+      env,
+      token,
+      "survey_questions?select=id,survey_id,section_key,question_text,question_type,scale_min,scale_max,active&order=order_index.asc",
+    );
+    const scores = responses.flatMap((r) =>
+      Object.entries(r)
+        .filter(([k, v]) => /^p[234]_/.test(k) && typeof v === "number")
+        .map(([field, value]) => ({ field, value: Number(value) })),
+    );
+    const average = scores.length ? scores.reduce((a, x) => a + x.value, 0) / scores.length : null;
+    return json({
+      success: true,
+      data: {
+        responses,
+        questions,
+        summary: {
+          respondents: responses.length,
+          answeredScores: scores.length,
+          averageScore: average,
+          satisfactionPercent: average == null ? null : Number(((average / 5) * 100).toFixed(2)),
+        },
+      },
+    });
+  } catch (e) {
+    console.error("/api/admin/survey-responses", e);
+    return json(
+      { success: false, error: e instanceof Error ? e.message : "ไม่สามารถโหลดผลแบบสอบถามได้" },
+      500,
+    );
+  }
+}

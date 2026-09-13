@@ -12,19 +12,13 @@ import { createEvBooking, type EvBookingInput } from "@/services/api";
 import type { Product } from "./mockData";
 
 const bookingSchema = z.object({
-  customerName: z
-    .string()
-    .trim()
-    .min(2, "กรุณาระบุชื่อผู้จอง")
-    .max(255),
+  customerName: z.string().trim().min(2, "กรุณาระบุชื่อผู้จอง").max(255),
   customerPhone: z
     .string()
     .trim()
     .regex(/^[0-9+ ()-]{8,20}$/, "รูปแบบเบอร์โทรศัพท์ไม่ถูกต้อง"),
   vehiclePlate: z.string().trim().min(2, "กรุณาระบุทะเบียนรถ").max(30),
-  startTime: z
-    .string()
-    .regex(/^([01]\d|2[0-3]):[0-5]\d$/, "เวลาไม่ถูกต้อง"),
+  startTime: z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/, "เวลาไม่ถูกต้อง"),
 });
 
 type ProductionEvCalendarProps = {
@@ -38,12 +32,8 @@ type BookingValues = {
   startTime: string;
 };
 
-export function ProductionEvCalendar({
-  products,
-}: ProductionEvCalendarProps) {
-  const [selectedDate, setSelectedDate] = useState<Date>(
-    startOfDay(new Date()),
-  );
+export function ProductionEvCalendar({ products }: ProductionEvCalendarProps) {
+  const [selectedDate, setSelectedDate] = useState<Date>(startOfDay(new Date()));
   const [bookingTab, setBookingTab] = useState<"harvest" | "ev">("harvest");
   const [values, setValues] = useState<BookingValues>({
     customerName: "",
@@ -56,10 +46,7 @@ export function ProductionEvCalendar({
   const selectedDateKey = format(selectedDate, "yyyy-MM-dd");
 
   const harvests = useMemo(
-    () =>
-      products.filter(
-        (product) => product.harvestDate?.slice(0, 10) === selectedDateKey,
-      ),
+    () => products.filter((product) => product.harvestDate?.slice(0, 10) === selectedDateKey),
     [products, selectedDateKey],
   );
 
@@ -104,9 +91,7 @@ export function ProductionEvCalendar({
         startTime: "09:00",
       });
     } catch (error) {
-      toast.error(
-        error instanceof Error ? error.message : "ไม่สามารถจอง EV ได้",
-      );
+      toast.error(error instanceof Error ? error.message : "ไม่สามารถจอง EV ได้");
     } finally {
       setSubmitting(false);
     }
@@ -122,10 +107,7 @@ export function ProductionEvCalendar({
           <p className="text-xs font-semibold uppercase tracking-wider text-[#2E7D32]">
             Production Calendar
           </p>
-          <h2
-            id="production-ev-calendar-title"
-            className="mt-1 text-xl font-bold text-[#002D62]"
-          >
+          <h2 id="production-ev-calendar-title" className="mt-1 text-xl font-bold text-[#002D62]">
             ปฏิทินผลผลิตและการจอง EV
           </h2>
           <p className="mt-1 text-sm text-slate-500">
@@ -140,9 +122,7 @@ export function ProductionEvCalendar({
             aria-selected={bookingTab === "harvest"}
             onClick={() => setBookingTab("harvest")}
             className={`rounded-md px-3 py-2 text-sm ${
-              bookingTab === "harvest"
-                ? "bg-[#2E7D32] text-white"
-                : "text-slate-600"
+              bookingTab === "harvest" ? "bg-[#2E7D32] text-white" : "text-slate-600"
             }`}
           >
             <Leaf className="mr-1 inline h-4 w-4" />
@@ -154,9 +134,7 @@ export function ProductionEvCalendar({
             aria-selected={bookingTab === "ev"}
             onClick={() => setBookingTab("ev")}
             className={`rounded-md px-3 py-2 text-sm ${
-              bookingTab === "ev"
-                ? "bg-[#002D62] text-white"
-                : "text-slate-600"
+              bookingTab === "ev" ? "bg-[#002D62] text-white" : "text-slate-600"
             }`}
           >
             <Zap className="mr-1 inline h-4 w-4" />
@@ -181,8 +159,7 @@ export function ProductionEvCalendar({
             <div className="flex items-center gap-2 text-[#2E7D32]">
               <CalendarDays className="h-5 w-5" />
               <h3 className="font-semibold">
-                เก็บเกี่ยววันที่{" "}
-                {format(selectedDate, "d MMMM yyyy", { locale: th })}
+                เก็บเกี่ยววันที่ {format(selectedDate, "d MMMM yyyy", { locale: th })}
               </h3>
             </div>
 
@@ -193,12 +170,9 @@ export function ProductionEvCalendar({
                     key={product.id}
                     className="rounded-lg border border-emerald-100 bg-white p-3"
                   >
-                    <p className="font-semibold text-[#002D62]">
-                      {product.name}
-                    </p>
+                    <p className="font-semibold text-[#002D62]">{product.name}</p>
                     <p className="mt-1 text-xs text-slate-500">
-                      แปลง {product.plotId || "-"} • คงเหลือ {product.stock}{" "}
-                      {product.unit}
+                      แปลง {product.plotId || "-"} • คงเหลือ {product.stock} {product.unit}
                     </p>
                     <button
                       type="button"
@@ -211,9 +185,7 @@ export function ProductionEvCalendar({
                 ))}
               </div>
             ) : (
-              <p className="mt-4 text-sm text-slate-500">
-                ยังไม่มีรายการเก็บเกี่ยวในวันนี้
-              </p>
+              <p className="mt-4 text-sm text-slate-500">ยังไม่มีรายการเก็บเกี่ยวในวันนี้</p>
             )}
           </div>
         ) : (
@@ -262,9 +234,7 @@ export function ProductionEvCalendar({
               disabled={submitting}
               className="bg-[#002D62] text-white hover:bg-[#002D62]/90"
             >
-              {submitting && (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              )}
+              {submitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               ส่งคำขอจอง EV
             </Button>
           </form>

@@ -1,7 +1,20 @@
-import { pgEnum, pgTable, text, timestamp, uuid, varchar, integer, boolean } from "drizzle-orm/pg-core";
+import {
+  pgEnum,
+  pgTable,
+  text,
+  timestamp,
+  uuid,
+  varchar,
+  integer,
+  boolean,
+} from "drizzle-orm/pg-core";
 
 export const cmsLinkTypeEnum = pgEnum("cms_link_type", ["INTERNAL", "EXTERNAL", "CONTACT"]);
-export const cmsContentStatusEnum = pgEnum("cms_content_status", ["draft", "published", "archived"]);
+export const cmsContentStatusEnum = pgEnum("cms_content_status", [
+  "draft",
+  "published",
+  "archived",
+]);
 
 export const services = pgTable("services", {
   id: uuid("id").defaultRandom().primaryKey(),

@@ -185,11 +185,12 @@ export function DashboardPage() {
     const occurrenceIds = new Set(filteredOccurrences.map((item) => item.id));
     return (data?.responses ?? [])
       .filter((item) =>
-        item.occurrence_id ? occurrenceIds.has(item.occurrence_id) : activityIds.has(item.activity_id),
+        item.occurrence_id
+          ? occurrenceIds.has(item.occurrence_id)
+          : activityIds.has(item.activity_id),
       )
       .filter(
-        (item) =>
-          organization === "ALL" || item.participant_organization_id === organization,
+        (item) => organization === "ALL" || item.participant_organization_id === organization,
       );
   }, [data, filteredOccurrences, activityIds, organization]);
 
@@ -202,7 +203,9 @@ export function DashboardPage() {
     () =>
       TOPICS.map((topic) => {
         const values = topic.fields.flatMap((field) =>
-          responses.map((item) => numericScore(item[field])).filter((value): value is number => value !== null),
+          responses
+            .map((item) => numericScore(item[field]))
+            .filter((value): value is number => value !== null),
         );
         const average = values.length
           ? values.reduce((total, value) => total + value, 0) / values.length
@@ -290,13 +293,18 @@ export function DashboardPage() {
             </p>
           </div>
           <div className="hidden items-center gap-2 text-xs text-[#43474f] sm:flex">
-            <span className="h-2 w-2 rounded-full bg-[#2e7d32]" />ข้อมูลพร้อมใช้งาน
+            <span className="h-2 w-2 rounded-full bg-[#2e7d32]" />
+            ข้อมูลพร้อมใช้งาน
           </div>
         </header>
 
         <section className="mb-4 flex flex-wrap items-center gap-2 border-y border-[#dce9ff] bg-white px-3 py-2">
           <Filter className="h-4 w-4 text-[#3f5f8f]" />
-          <select value={period} onChange={(event) => setPeriod(event.target.value as Period)} className="h-9 bg-[#eff4ff] px-3 text-xs font-semibold outline-none">
+          <select
+            value={period}
+            onChange={(event) => setPeriod(event.target.value as Period)}
+            className="h-9 bg-[#eff4ff] px-3 text-xs font-semibold outline-none"
+          >
             <option value="ALL">ทุกช่วงเวลา</option>
             <option value="YEAR">รายปี</option>
             <option value="QUARTER">รายไตรมาส</option>
@@ -304,53 +312,138 @@ export function DashboardPage() {
             <option value="CUSTOM">กำหนดช่วงวันที่</option>
           </select>
           {period === "YEAR" && (
-            <select value={year} onChange={(event) => setYear(event.target.value)} className="h-9 bg-[#eff4ff] px-3 text-xs">
+            <select
+              value={year}
+              onChange={(event) => setYear(event.target.value)}
+              className="h-9 bg-[#eff4ff] px-3 text-xs"
+            >
               <option value="ALL">ทุกปี</option>
-              {years.map((value) => <option key={value} value={value}>{value + 543}</option>)}
+              {years.map((value) => (
+                <option key={value} value={value}>
+                  {value + 543}
+                </option>
+              ))}
             </select>
           )}
           {period === "QUARTER" && (
-            <select value={quarter} onChange={(event) => setQuarter(event.target.value)} className="h-9 bg-[#eff4ff] px-3 text-xs">
+            <select
+              value={quarter}
+              onChange={(event) => setQuarter(event.target.value)}
+              className="h-9 bg-[#eff4ff] px-3 text-xs"
+            >
               <option value="">ทุกไตรมาส</option>
-              {years.flatMap((value) => [1, 2, 3, 4].map((quarterValue) => (
-                <option key={`${value}-${quarterValue}`} value={`${value}-Q${quarterValue}`}>
-                  ไตรมาส {quarterValue}/{value + 543}
-                </option>
-              )))}
+              {years.flatMap((value) =>
+                [1, 2, 3, 4].map((quarterValue) => (
+                  <option key={`${value}-${quarterValue}`} value={`${value}-Q${quarterValue}`}>
+                    ไตรมาส {quarterValue}/{value + 543}
+                  </option>
+                )),
+              )}
             </select>
           )}
-          {period === "MONTH" && <input type="month" value={month} onChange={(event) => setMonth(event.target.value)} className="h-9 bg-[#eff4ff] px-3 text-xs" />}
+          {period === "MONTH" && (
+            <input
+              type="month"
+              value={month}
+              onChange={(event) => setMonth(event.target.value)}
+              className="h-9 bg-[#eff4ff] px-3 text-xs"
+            />
+          )}
           {period === "CUSTOM" && (
             <>
-              <input type="date" value={from} onChange={(event) => setFrom(event.target.value)} className="h-9 bg-[#eff4ff] px-3 text-xs" />
-              <input type="date" value={to} onChange={(event) => setTo(event.target.value)} className="h-9 bg-[#eff4ff] px-3 text-xs" />
+              <input
+                type="date"
+                value={from}
+                onChange={(event) => setFrom(event.target.value)}
+                className="h-9 bg-[#eff4ff] px-3 text-xs"
+              />
+              <input
+                type="date"
+                value={to}
+                onChange={(event) => setTo(event.target.value)}
+                className="h-9 bg-[#eff4ff] px-3 text-xs"
+              />
             </>
           )}
-          <select value={center} onChange={(event) => setCenter(event.target.value)} className="h-9 bg-[#eff4ff] px-3 text-xs">
+          <select
+            value={center}
+            onChange={(event) => setCenter(event.target.value)}
+            className="h-9 bg-[#eff4ff] px-3 text-xs"
+          >
             <option value="ALL">ทุก Learning Center</option>
-            {data?.learningCenters.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}
+            {data?.learningCenters.map((item) => (
+              <option key={item.id} value={item.id}>
+                {item.name}
+              </option>
+            ))}
           </select>
-          <select value={organization} onChange={(event) => setOrganization(event.target.value)} className="h-9 bg-[#eff4ff] px-3 text-xs">
+          <select
+            value={organization}
+            onChange={(event) => setOrganization(event.target.value)}
+            className="h-9 bg-[#eff4ff] px-3 text-xs"
+          >
             <option value="ALL">ทุกหน่วยงาน</option>
-            {data?.organizations.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}
+            {data?.organizations.map((item) => (
+              <option key={item.id} value={item.id}>
+                {item.name}
+              </option>
+            ))}
           </select>
-          <select value={activity} onChange={(event) => setActivity(event.target.value)} className="h-9 bg-[#eff4ff] px-3 text-xs">
+          <select
+            value={activity}
+            onChange={(event) => setActivity(event.target.value)}
+            className="h-9 bg-[#eff4ff] px-3 text-xs"
+          >
             <option value="ALL">ทุกกิจกรรม</option>
-            {data?.activities.map((item) => <option key={item.id} value={item.id}>{item.title}</option>)}
+            {data?.activities.map((item) => (
+              <option key={item.id} value={item.id}>
+                {item.title}
+              </option>
+            ))}
           </select>
           <div className="relative ml-auto min-w-[190px]">
             <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-slate-400" />
-            <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="ค้นหากิจกรรม..." className="h-9 w-full bg-[#eff4ff] pl-9 pr-3 text-xs outline-none focus:ring-1 focus:ring-[#002d62]" />
+            <input
+              value={query}
+              onChange={(event) => setQuery(event.target.value)}
+              placeholder="ค้นหากิจกรรม..."
+              className="h-9 w-full bg-[#eff4ff] pl-9 pr-3 text-xs outline-none focus:ring-1 focus:ring-[#002d62]"
+            />
           </div>
-          <button type="button" onClick={reset} className="h-9 px-3 text-xs font-semibold text-[#002d62] hover:bg-[#eff4ff]">รีเซ็ต</button>
+          <button
+            type="button"
+            onClick={reset}
+            className="h-9 px-3 text-xs font-semibold text-[#002d62] hover:bg-[#eff4ff]"
+          >
+            รีเซ็ต
+          </button>
         </section>
 
         <section className="mb-4 grid grid-cols-2 gap-px bg-[#c4c6d1] lg:grid-cols-5">
-          <Metric icon={<Activity />} label="กิจกรรมที่จัดจริง" value={filteredOccurrences.length.toLocaleString()} />
-          <Metric icon={<BarChart3 />} label="กิจกรรมที่มีผลประเมิน" value={evaluatedActivities.toLocaleString()} />
-          <Metric icon={<Users />} label="ผู้ตอบแบบสอบถาม" value={responses.length.toLocaleString()} />
-          <Metric label="คะแนนเฉลี่ย" value={satisfaction.average === null ? "—" : satisfaction.average.toFixed(2)} suffix="/ 5" />
-          <Metric label="ความพึงพอใจ" value={satisfaction.percent === null ? "—" : `${satisfaction.percent.toFixed(2)}%`} />
+          <Metric
+            icon={<Activity />}
+            label="กิจกรรมที่จัดจริง"
+            value={filteredOccurrences.length.toLocaleString()}
+          />
+          <Metric
+            icon={<BarChart3 />}
+            label="กิจกรรมที่มีผลประเมิน"
+            value={evaluatedActivities.toLocaleString()}
+          />
+          <Metric
+            icon={<Users />}
+            label="ผู้ตอบแบบสอบถาม"
+            value={responses.length.toLocaleString()}
+          />
+          <Metric
+            label="คะแนนเฉลี่ย"
+            value={satisfaction.average === null ? "—" : satisfaction.average.toFixed(2)}
+            suffix="/ 5"
+          />
+          <Metric
+            label="ความพึงพอใจ"
+            value={satisfaction.percent === null ? "—" : `${satisfaction.percent.toFixed(2)}%`}
+          />
         </section>
 
         <section className="grid gap-4 lg:grid-cols-[1.1fr_0.9fr_1.25fr]">
@@ -360,10 +453,21 @@ export function DashboardPage() {
                 <div key={item.key}>
                   <div className="mb-1 flex items-baseline justify-between">
                     <span className="text-sm font-semibold text-[#0b1c30]">{item.label}</span>
-                    <span className="text-sm font-semibold text-[#002d62]">{item.average === null ? "—" : `${item.average.toFixed(2)} / 5`}</span>
+                    <span className="text-sm font-semibold text-[#002d62]">
+                      {item.average === null ? "—" : `${item.average.toFixed(2)} / 5`}
+                    </span>
                   </div>
-                  <div className="h-2 bg-[#dce9ff]"><div className="h-full bg-[#002d62]" style={{ width: `${item.percent ?? 0}%` }} /></div>
-                  <div className="mt-1 text-[10px] text-[#747781]">{item.percent === null ? "ไม่มีข้อมูล" : `${item.percent.toFixed(1)}% ของคะแนนเต็ม`}</div>
+                  <div className="h-2 bg-[#dce9ff]">
+                    <div
+                      className="h-full bg-[#002d62]"
+                      style={{ width: `${item.percent ?? 0}%` }}
+                    />
+                  </div>
+                  <div className="mt-1 text-[10px] text-[#747781]">
+                    {item.percent === null
+                      ? "ไม่มีข้อมูล"
+                      : `${item.percent.toFixed(1)}% ของคะแนนเต็ม`}
+                  </div>
                 </div>
               ))}
             </div>
@@ -372,7 +476,10 @@ export function DashboardPage() {
           <Panel title="ผู้ตอบแบบประเมิน" subtitle="ตามหน่วยงาน">
             <RespondentChart organizations={data?.organizations ?? []} responses={responses} />
             <div className="mt-4 border-t border-[#dce9ff] pt-3 text-xs text-[#43474f]">
-              Response rate <strong className="text-[#002d62]">{responseRate === null ? "—" : `${responseRate.toFixed(1)}%`}</strong>
+              Response rate{" "}
+              <strong className="text-[#002d62]">
+                {responseRate === null ? "—" : `${responseRate.toFixed(1)}%`}
+              </strong>
             </div>
           </Panel>
 
@@ -382,13 +489,21 @@ export function DashboardPage() {
                 {photos.map((item) => (
                   <figure key={item.id} className="overflow-hidden bg-[#eff4ff]">
                     <div className="aspect-[4/3] overflow-hidden">
-                      <img src={item.featured_image ?? ""} alt={item.title} className="h-full w-full object-cover transition-transform duration-300 hover:scale-[1.03]" />
+                      <img
+                        src={item.featured_image ?? ""}
+                        alt={item.title}
+                        className="h-full w-full object-cover transition-transform duration-300 hover:scale-[1.03]"
+                      />
                     </div>
-                    <figcaption className="truncate px-2 py-2 text-xs font-medium text-[#0b1c30]">{item.title}</figcaption>
+                    <figcaption className="truncate px-2 py-2 text-xs font-medium text-[#0b1c30]">
+                      {item.title}
+                    </figcaption>
                   </figure>
                 ))}
               </div>
-            ) : <Empty text="ยังไม่มีภาพถ่ายกิจกรรม" />}
+            ) : (
+              <Empty text="ยังไม่มีภาพถ่ายกิจกรรม" />
+            )}
           </Panel>
         </section>
 
@@ -397,16 +512,37 @@ export function DashboardPage() {
             {recent.length ? (
               <div className="divide-y divide-[#e5e9f0]">
                 {recent.map((item) => {
-                  const activityItem = data?.activities.find((candidate) => candidate.id === item.activity_id);
+                  const activityItem = data?.activities.find(
+                    (candidate) => candidate.id === item.activity_id,
+                  );
                   return (
-                    <div key={item.id} className="grid grid-cols-[1fr_auto] gap-4 py-3 first:pt-0 last:pb-0">
-                      <div className="min-w-0"><p className="truncate text-sm font-semibold text-[#0b1c30]">{activityItem?.title ?? "กิจกรรม"}</p><p className="mt-1 text-xs text-[#747781]">ครั้งที่ {item.occurrence_no} · {new Intl.DateTimeFormat("th-TH", { day: "2-digit", month: "short", year: "numeric" }).format(new Date(item.start_at))}</p></div>
-                      <span className="text-xs font-medium text-[#3f5f8f]">{item.location_detail || "ไม่ระบุสถานที่"}</span>
+                    <div
+                      key={item.id}
+                      className="grid grid-cols-[1fr_auto] gap-4 py-3 first:pt-0 last:pb-0"
+                    >
+                      <div className="min-w-0">
+                        <p className="truncate text-sm font-semibold text-[#0b1c30]">
+                          {activityItem?.title ?? "กิจกรรม"}
+                        </p>
+                        <p className="mt-1 text-xs text-[#747781]">
+                          ครั้งที่ {item.occurrence_no} ·{" "}
+                          {new Intl.DateTimeFormat("th-TH", {
+                            day: "2-digit",
+                            month: "short",
+                            year: "numeric",
+                          }).format(new Date(item.start_at))}
+                        </p>
+                      </div>
+                      <span className="text-xs font-medium text-[#3f5f8f]">
+                        {item.location_detail || "ไม่ระบุสถานที่"}
+                      </span>
                     </div>
                   );
                 })}
               </div>
-            ) : <Empty text="ยังไม่มีข้อมูลกิจกรรม" />}
+            ) : (
+              <Empty text="ยังไม่มีข้อมูลกิจกรรม" />
+            )}
           </Panel>
           <Panel title="สถานะการดำเนินงาน" subtitle="Operational snapshot">
             <div className="grid grid-cols-2 gap-2">
@@ -422,25 +558,101 @@ export function DashboardPage() {
   );
 }
 
-function Metric({ icon, label, value, suffix }: { icon?: ReactNode; label: string; value: string; suffix?: string }) {
-  return <div className="bg-white px-4 py-4"><div className="flex items-center gap-2 text-xs font-medium text-[#747781]">{icon ? <span className="text-[#002d62] [&>svg]:h-4 [&>svg]:w-4">{icon}</span> : null}{label}</div><div className="mt-2 text-2xl font-semibold tracking-tight text-[#00193c]">{value} <span className="text-xs font-medium text-[#747781]">{suffix}</span></div></div>;
+function Metric({
+  icon,
+  label,
+  value,
+  suffix,
+}: {
+  icon?: ReactNode;
+  label: string;
+  value: string;
+  suffix?: string;
+}) {
+  return (
+    <div className="bg-white px-4 py-4">
+      <div className="flex items-center gap-2 text-xs font-medium text-[#747781]">
+        {icon ? <span className="text-[#002d62] [&>svg]:h-4 [&>svg]:w-4">{icon}</span> : null}
+        {label}
+      </div>
+      <div className="mt-2 text-2xl font-semibold tracking-tight text-[#00193c]">
+        {value} <span className="text-xs font-medium text-[#747781]">{suffix}</span>
+      </div>
+    </div>
+  );
 }
 
-function Panel({ title, subtitle, children }: { title: string; subtitle: string; children: ReactNode }) {
-  return <section className="bg-white p-5 shadow-[0_1px_2px_rgba(15,23,42,0.04)]"><header className="mb-5 border-b border-[#e5e9f0] pb-3"><h2 className="text-sm font-semibold text-[#00193c]">{title}</h2><p className="mt-1 text-[10px] uppercase tracking-[0.12em] text-[#747781]">{subtitle}</p></header>{children}</section>;
+function Panel({
+  title,
+  subtitle,
+  children,
+}: {
+  title: string;
+  subtitle: string;
+  children: ReactNode;
+}) {
+  return (
+    <section className="bg-white p-5 shadow-[0_1px_2px_rgba(15,23,42,0.04)]">
+      <header className="mb-5 border-b border-[#e5e9f0] pb-3">
+        <h2 className="text-sm font-semibold text-[#00193c]">{title}</h2>
+        <p className="mt-1 text-[10px] uppercase tracking-[0.12em] text-[#747781]">{subtitle}</p>
+      </header>
+      {children}
+    </section>
+  );
 }
 
 function Empty({ text }: { text: string }) {
-  return <div className="flex min-h-32 items-center justify-center border border-dashed border-[#cfd8e6] text-xs text-[#747781]">{text}</div>;
+  return (
+    <div className="flex min-h-32 items-center justify-center border border-dashed border-[#cfd8e6] text-xs text-[#747781]">
+      {text}
+    </div>
+  );
 }
 
 function MiniStat({ label, value }: { label: string; value: number }) {
-  return <div className="border border-[#dce9ff] bg-[#f8f9ff] px-3 py-4"><p className="text-[10px] uppercase tracking-wide text-[#747781]">{label}</p><p className="mt-1 text-xl font-semibold text-[#002d62]">{value.toLocaleString()}</p></div>;
+  return (
+    <div className="border border-[#dce9ff] bg-[#f8f9ff] px-3 py-4">
+      <p className="text-[10px] uppercase tracking-wide text-[#747781]">{label}</p>
+      <p className="mt-1 text-xl font-semibold text-[#002d62]">{value.toLocaleString()}</p>
+    </div>
+  );
 }
 
-function RespondentChart({ organizations, responses }: { organizations: AdminDashboardData["organizations"]; responses: DashboardResponse[] }) {
-  const counts = organizations.map((organization) => ({ organization, count: responses.filter((response) => response.participant_organization_id === organization.id).length })).filter((item) => item.count > 0).sort((a, b) => b.count - a.count);
+function RespondentChart({
+  organizations,
+  responses,
+}: {
+  organizations: AdminDashboardData["organizations"];
+  responses: DashboardResponse[];
+}) {
+  const counts = organizations
+    .map((organization) => ({
+      organization,
+      count: responses.filter(
+        (response) => response.participant_organization_id === organization.id,
+      ).length,
+    }))
+    .filter((item) => item.count > 0)
+    .sort((a, b) => b.count - a.count);
   const max = Math.max(1, ...counts.map((item) => item.count));
   if (!counts.length) return <Empty text="ยังไม่มีข้อมูลผู้ตอบแบบประเมิน" />;
-  return <div className="space-y-3">{counts.slice(0, 6).map((item) => <div key={item.organization.id}><div className="mb-1 flex justify-between gap-2 text-xs"><span className="truncate font-medium text-[#0b1c30]">{item.organization.name}</span><span className="font-semibold text-[#002d62]">{item.count}</span></div><div className="h-2 bg-[#e7edf7]"><div className="h-full bg-[#002d62]" style={{ width: `${(item.count / max) * 100}%` }} /></div></div>)}</div>;
+  return (
+    <div className="space-y-3">
+      {counts.slice(0, 6).map((item) => (
+        <div key={item.organization.id}>
+          <div className="mb-1 flex justify-between gap-2 text-xs">
+            <span className="truncate font-medium text-[#0b1c30]">{item.organization.name}</span>
+            <span className="font-semibold text-[#002d62]">{item.count}</span>
+          </div>
+          <div className="h-2 bg-[#e7edf7]">
+            <div
+              className="h-full bg-[#002d62]"
+              style={{ width: `${(item.count / max) * 100}%` }}
+            />
+          </div>
+        </div>
+      ))}
+    </div>
+  );
 }

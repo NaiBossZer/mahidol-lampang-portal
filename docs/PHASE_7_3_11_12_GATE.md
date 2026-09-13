@@ -5,6 +5,7 @@
 The public boundary is now explicitly represented by `GET /api/cms/home` and the frontend client `src/services/cmsApi.ts`.
 
 Public responses are limited to:
+
 - enabled Home Sections
 - published Services
 
@@ -25,4 +26,5 @@ Required before merging Phase 7.3:
 9. verify Vercel build/deployment status
 
 ### Current evidence boundary
+
 Repository-side implementation is complete for the defined 7.3.11 public boundary. Live Supabase and Vercel verification are intentionally not marked complete without execution evidence.

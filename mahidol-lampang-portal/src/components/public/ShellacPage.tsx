@@ -6,16 +6,48 @@ interface Props {
 }
 
 const programs = [
-  { icon: BookOpen, color: "#C66B4F", title: "การเรียนรู้ครั่ง", desc: "ประวัติ กระบวนการผลิต และคุณสมบัติทางวิทยาศาสตร์ของครั่งลำปาง" },
-  { icon: Leaf, color: "#5F8D62", title: "เกษตรอินทรีย์ครั่ง", desc: "การเพาะเลี้ยงครั่งอินทรีย์บนพื้นฐานระบบนิเวศและภูมิปัญญาท้องถิ่น" },
-  { icon: Palette, color: "#D6A84F", title: "ศิลปะและนวัตกรรม", desc: "การนำครั่งไปใช้ในงานออกแบบ ศิลปะ และผลิตภัณฑ์ร่วมสมัย" },
-  { icon: Users, color: "#1677A8", title: "เครือข่ายชุมชน", desc: "เชื่อมโยงเกษตรกร นักวิจัย และผู้ประกอบการครั่งภาคเหนือ" },
+  {
+    icon: BookOpen,
+    color: "#C66B4F",
+    title: "การเรียนรู้ครั่ง",
+    desc: "ประวัติ กระบวนการผลิต และคุณสมบัติทางวิทยาศาสตร์ของครั่งลำปาง",
+  },
+  {
+    icon: Leaf,
+    color: "#5F8D62",
+    title: "เกษตรอินทรีย์ครั่ง",
+    desc: "การเพาะเลี้ยงครั่งอินทรีย์บนพื้นฐานระบบนิเวศและภูมิปัญญาท้องถิ่น",
+  },
+  {
+    icon: Palette,
+    color: "#D6A84F",
+    title: "ศิลปะและนวัตกรรม",
+    desc: "การนำครั่งไปใช้ในงานออกแบบ ศิลปะ และผลิตภัณฑ์ร่วมสมัย",
+  },
+  {
+    icon: Users,
+    color: "#1677A8",
+    title: "เครือข่ายชุมชน",
+    desc: "เชื่อมโยงเกษตรกร นักวิจัย และผู้ประกอบการครั่งภาคเหนือ",
+  },
 ];
 
 const timeline = [
-  { year: "2554", label: "ก่อตั้งศูนย์วิจัยครั่ง", desc: "เริ่มโครงการรวบรวมองค์ความรู้ภูมิปัญญาครั่งลำปาง" },
-  { year: "2558", label: "เปิด SLC อาคาร A", desc: "ศูนย์การเรียนรู้สาธารณะ เปิดให้ชุมชนเข้าถึงได้" },
-  { year: "2562", label: "ขยายโปรแกรม", desc: "เพิ่มหลักสูตรนวัตกรรมและเชื่อมโยงเครือข่ายนานาชาติ" },
+  {
+    year: "2554",
+    label: "ก่อตั้งศูนย์วิจัยครั่ง",
+    desc: "เริ่มโครงการรวบรวมองค์ความรู้ภูมิปัญญาครั่งลำปาง",
+  },
+  {
+    year: "2558",
+    label: "เปิด SLC อาคาร A",
+    desc: "ศูนย์การเรียนรู้สาธารณะ เปิดให้ชุมชนเข้าถึงได้",
+  },
+  {
+    year: "2562",
+    label: "ขยายโปรแกรม",
+    desc: "เพิ่มหลักสูตรนวัตกรรมและเชื่อมโยงเครือข่ายนานาชาติ",
+  },
   { year: "2567", label: "SLC 2.0", desc: "อาคาร B เปิดใหม่ พร้อมห้องทดลองและ Maker Space" },
 ];
 
@@ -26,12 +58,19 @@ export default function ShellacPage({ navigate }: Props) {
       <section className="relative overflow-hidden min-h-[420px] flex items-end">
         <div
           className="absolute inset-0 bg-cover bg-center"
-          style={{ backgroundImage: `url(https://images.unsplash.com/photo-1533656641950-4ca64c3de9d4?w=1440&h=600&fit=crop&auto=format)` }}
+          style={{
+            backgroundImage: `url(https://images.unsplash.com/photo-1533656641950-4ca64c3de9d4?w=1440&h=600&fit=crop&auto=format)`,
+          }}
         />
         <div className="absolute inset-0 bg-gradient-to-t from-[#1a0d06]/85 via-[#1a0d06]/50 to-[#1a0d06]/20" />
         <div className="relative max-w-[1280px] mx-auto px-8 max-md:px-4 pb-14 pt-20 w-full">
-          <nav className="flex items-center gap-2 text-sm text-white/60 mb-6" aria-label="Breadcrumb">
-            <button onClick={() => navigate("home")} className="hover:text-white transition-colors">หน้าหลัก</button>
+          <nav
+            className="flex items-center gap-2 text-sm text-white/60 mb-6"
+            aria-label="Breadcrumb"
+          >
+            <button onClick={() => navigate("home")} className="hover:text-white transition-colors">
+              หน้าหลัก
+            </button>
             <ChevronRight size={14} />
             <span className="text-white">Shellac Learning Center</span>
           </nav>
@@ -42,7 +81,8 @@ export default function ShellacPage({ navigate }: Props) {
             Shellac Learning Center
           </h1>
           <p className="text-white/75 text-xl max-md:text-base max-w-[560px] leading-relaxed">
-            ศูนย์เรียนรู้ครั่งและภูมิปัญญาท้องถิ่นลำปาง เชื่อมโยงวิทยาศาสตร์ วัฒนธรรม และนวัตกรรมสร้างสรรค์
+            ศูนย์เรียนรู้ครั่งและภูมิปัญญาท้องถิ่นลำปาง เชื่อมโยงวิทยาศาสตร์ วัฒนธรรม
+            และนวัตกรรมสร้างสรรค์
           </p>
         </div>
       </section>
@@ -67,14 +107,21 @@ export default function ShellacPage({ navigate }: Props) {
       {/* Programs */}
       <section className="max-w-[1280px] mx-auto px-8 max-md:px-4 py-16">
         <div className="text-center mb-10">
-          <div className="text-[#C66B4F] text-xs font-semibold uppercase tracking-widest mb-1">โปรแกรมเรียนรู้</div>
-          <h2 className="text-[#123B63] font-bold text-3xl max-md:text-2xl">เส้นทางการเรียนรู้ครั่ง</h2>
+          <div className="text-[#C66B4F] text-xs font-semibold uppercase tracking-widest mb-1">
+            โปรแกรมเรียนรู้
+          </div>
+          <h2 className="text-[#123B63] font-bold text-3xl max-md:text-2xl">
+            เส้นทางการเรียนรู้ครั่ง
+          </h2>
         </div>
         <div className="grid grid-cols-4 max-lg:grid-cols-2 max-sm:grid-cols-1 gap-5">
           {programs.map((p) => {
             const Icon = p.icon;
             return (
-              <div key={p.title} className="bg-white rounded-2xl p-6 border border-[#EEE9DF] hover:shadow-md transition-all group">
+              <div
+                key={p.title}
+                className="bg-white rounded-2xl p-6 border border-[#EEE9DF] hover:shadow-md transition-all group"
+              >
                 <div
                   className="w-12 h-12 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform"
                   style={{ backgroundColor: p.color + "18" }}
@@ -94,9 +141,13 @@ export default function ShellacPage({ navigate }: Props) {
         <div className="max-w-[1280px] mx-auto px-8 max-md:px-4">
           <div className="grid grid-cols-2 max-lg:grid-cols-1 gap-14 items-center">
             <div>
-              <div className="text-[#C66B4F] text-xs font-semibold uppercase tracking-widest mb-2">เรื่องราวของเรา</div>
+              <div className="text-[#C66B4F] text-xs font-semibold uppercase tracking-widest mb-2">
+                เรื่องราวของเรา
+              </div>
               <h2 className="text-[#123B63] font-bold text-3xl max-md:text-2xl mb-5">
-                จากภูมิปัญญาท้องถิ่น<br />สู่ศูนย์เรียนรู้ระดับชาติ
+                จากภูมิปัญญาท้องถิ่น
+                <br />
+                สู่ศูนย์เรียนรู้ระดับชาติ
               </h2>
               <p className="text-[#667085] text-base leading-relaxed mb-6">
                 Shellac Learning Center ก่อตั้งขึ้นด้วยแรงบันดาลใจจากภูมิปัญญาครั่งของชาวลำปาง
@@ -106,7 +157,9 @@ export default function ShellacPage({ navigate }: Props) {
                 {timeline.map((t) => (
                   <div key={t.year} className="flex gap-5 items-start">
                     <div className="flex-shrink-0 text-right">
-                      <span className="font-display font-bold text-[#C66B4F] text-lg">{t.year}</span>
+                      <span className="font-display font-bold text-[#C66B4F] text-lg">
+                        {t.year}
+                      </span>
                     </div>
                     <div className="flex-shrink-0 w-px bg-[#EEE9DF] self-stretch mt-1" />
                     <div>
@@ -131,8 +184,12 @@ export default function ShellacPage({ navigate }: Props) {
       {/* CTA */}
       <section className="max-w-[1280px] mx-auto px-8 max-md:px-4 py-16 text-center">
         <div className="bg-[#F8F6F0] rounded-3xl border border-[#EEE9DF] p-12 max-md:p-8">
-          <div className="text-[#C66B4F] text-xs font-semibold uppercase tracking-widest mb-3">เข้าร่วมกับเรา</div>
-          <h2 className="text-[#123B63] font-bold text-3xl max-md:text-2xl mb-4">พร้อมสำรวจ Shellac Learning Center?</h2>
+          <div className="text-[#C66B4F] text-xs font-semibold uppercase tracking-widest mb-3">
+            เข้าร่วมกับเรา
+          </div>
+          <h2 className="text-[#123B63] font-bold text-3xl max-md:text-2xl mb-4">
+            พร้อมสำรวจ Shellac Learning Center?
+          </h2>
           <p className="text-[#667085] text-base mb-8 max-w-[480px] mx-auto">
             ร่วมกิจกรรม Workshop นำเที่ยว หรือสมัครโปรแกรมวิจัยกับ SLC
           </p>

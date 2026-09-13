@@ -4,20 +4,20 @@ This document translates the Master Feature Map into production domain boundarie
 
 ## Domain ownership
 
-| Domain | Primary records | Primary responsibility |
-| --- | --- | --- |
-| Activity | activities | activity master data |
-| Occurrence | activity_occurrences | each real delivery of an activity |
-| Activity Media | activity media references | cover/post-event media inside Activity workspace |
-| Learning Center | learning_centers | learning-center identity and relationships |
-| Organization | organizations | participant/partner organization hierarchy |
-| Survey | occurrence_surveys, survey_questions | survey definition and publication window |
-| Response | survey_responses, survey_answers | submitted answers and historical responses |
-| Content | CMS records | public/admin managed content |
-| Partner | partner records | partner/network presentation |
-| Analytics | derived read models/queries | executive and operational insight |
-| Governance | admin/RBAC/audit/lifecycle | authorization, traceability and retention |
-| AI | intents/jobs/plans/actions | governed orchestration across domains |
+| Domain          | Primary records                      | Primary responsibility                           |
+| --------------- | ------------------------------------ | ------------------------------------------------ |
+| Activity        | activities                           | activity master data                             |
+| Occurrence      | activity_occurrences                 | each real delivery of an activity                |
+| Activity Media  | activity media references            | cover/post-event media inside Activity workspace |
+| Learning Center | learning_centers                     | learning-center identity and relationships       |
+| Organization    | organizations                        | participant/partner organization hierarchy       |
+| Survey          | occurrence_surveys, survey_questions | survey definition and publication window         |
+| Response        | survey_responses, survey_answers     | submitted answers and historical responses       |
+| Content         | CMS records                          | public/admin managed content                     |
+| Partner         | partner records                      | partner/network presentation                     |
+| Analytics       | derived read models/queries          | executive and operational insight                |
+| Governance      | admin/RBAC/audit/lifecycle           | authorization, traceability and retention        |
+| AI              | intents/jobs/plans/actions           | governed orchestration across domains            |
 
 ## Relationship rules
 
@@ -34,14 +34,17 @@ Response 1 ─── N Answer
 ## Lifecycle
 
 ### Activity
+
 `Draft → Scheduled → Ongoing → Completed → Archived → Retired`
 
 `Cancelled` is a terminal business state for an activity/occurrence where applicable. Cancelled records remain stored for audit/history and are hidden from normal operational views.
 
 ### Survey
+
 `Draft → Published → Closed → Archived`
 
 ### Content
+
 `Draft → Published → Archived → Retired`
 
 Hard delete is not the normal lifecycle for records with historical responses or audit dependencies.

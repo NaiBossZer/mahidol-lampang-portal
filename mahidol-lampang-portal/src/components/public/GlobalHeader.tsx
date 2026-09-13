@@ -56,14 +56,20 @@ export default function GlobalHeader({ currentPage, navigate }: Props) {
                   aria-haspopup="true"
                 >
                   {item.label}
-                  <ChevronDown size={14} className={`transition-transform ${dropdownOpen ? "rotate-180" : ""}`} />
+                  <ChevronDown
+                    size={14}
+                    className={`transition-transform ${dropdownOpen ? "rotate-180" : ""}`}
+                  />
                 </button>
                 {dropdownOpen && (
                   <div className="absolute top-full left-0 mt-1 bg-white border border-[#EEE9DF] rounded-xl shadow-lg py-1 min-w-[200px]">
                     {item.children.map((child) => (
                       <button
                         key={child.page}
-                        onClick={() => { navigate(child.page); setDropdownOpen(false); }}
+                        onClick={() => {
+                          navigate(child.page);
+                          setDropdownOpen(false);
+                        }}
                         className="w-full text-left px-4 py-2.5 text-sm text-[#1F2933] hover:bg-[#F8F6F0] hover:text-[#123B63] transition-colors"
                       >
                         {child.label}
@@ -84,7 +90,7 @@ export default function GlobalHeader({ currentPage, navigate }: Props) {
               >
                 {item.label}
               </button>
-            )
+            ),
           )}
         </nav>
 
@@ -111,16 +117,25 @@ export default function GlobalHeader({ currentPage, navigate }: Props) {
 
       {/* Mobile drawer */}
       {mobileOpen && (
-        <div className="md:hidden border-t border-[#EEE9DF] bg-white" role="navigation" aria-label="เมนูมือถือ">
+        <div
+          className="md:hidden border-t border-[#EEE9DF] bg-white"
+          role="navigation"
+          aria-label="เมนูมือถือ"
+        >
           <div className="max-w-[1280px] mx-auto px-4 py-3 flex flex-col gap-1">
             {navItems.map((item) =>
               item.children ? (
                 <div key={item.label}>
-                  <div className="px-3 py-2 text-sm font-semibold text-[#667085] uppercase tracking-wider">{item.label}</div>
+                  <div className="px-3 py-2 text-sm font-semibold text-[#667085] uppercase tracking-wider">
+                    {item.label}
+                  </div>
                   {item.children.map((child) => (
                     <button
                       key={child.page}
-                      onClick={() => { navigate(child.page); setMobileOpen(false); }}
+                      onClick={() => {
+                        navigate(child.page);
+                        setMobileOpen(false);
+                      }}
                       className="w-full text-left px-6 py-3 rounded-md text-sm text-[#1F2933] hover:bg-[#F8F6F0] min-h-[44px] transition-colors"
                     >
                       {child.label}
@@ -130,7 +145,10 @@ export default function GlobalHeader({ currentPage, navigate }: Props) {
               ) : (
                 <button
                   key={item.page}
-                  onClick={() => { navigate(item.page!); setMobileOpen(false); }}
+                  onClick={() => {
+                    navigate(item.page!);
+                    setMobileOpen(false);
+                  }}
                   className={`w-full text-left px-3 py-3 rounded-md text-sm font-medium min-h-[44px] transition-colors ${
                     currentPage === item.page
                       ? "text-[#123B63] bg-[#EEE9DF] font-semibold"
@@ -139,11 +157,14 @@ export default function GlobalHeader({ currentPage, navigate }: Props) {
                 >
                   {item.label}
                 </button>
-              )
+              ),
             )}
             <div className="pt-2 pb-1 border-t border-[#EEE9DF] mt-2">
               <button
-                onClick={() => { navigate("login"); setMobileOpen(false); }}
+                onClick={() => {
+                  navigate("login");
+                  setMobileOpen(false);
+                }}
                 className="w-full px-3 py-3 rounded-lg text-sm font-semibold text-[#123B63] border border-[#123B63]/30 hover:bg-[#123B63]/5 min-h-[44px] transition-colors"
               >
                 เข้าสู่ระบบ

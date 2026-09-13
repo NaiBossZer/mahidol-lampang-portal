@@ -539,12 +539,9 @@ Feedback | AI Insight | Recommendation
 
 Dashboard ต้องมีความเป็น
 
-Mahidol University
-+
-Modern Infographic
-+
-Executive Dashboard
-+
+Mahidol University +
+Modern Infographic +
+Executive Dashboard +
 Learning & Environmental Event
 
 และต้องสื่อถึง

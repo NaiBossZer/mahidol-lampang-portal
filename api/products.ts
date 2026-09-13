@@ -11,7 +11,14 @@ function validBody(body: unknown) {
   const unit = String(b["unit"] ?? "").trim();
   const price = Number(b["price"]);
   const stock = Number(b["stockQuantity"] ?? b["stock"] ?? 0);
-  if (!name || !unit || !Number.isFinite(price) || price < 0 || !Number.isInteger(stock) || stock < 0)
+  if (
+    !name ||
+    !unit ||
+    !Number.isFinite(price) ||
+    price < 0 ||
+    !Number.isInteger(stock) ||
+    stock < 0
+  )
     return null;
   return {
     name,
@@ -52,7 +59,10 @@ export default async function handler(req: ApiRequest, res: ApiResponse) {
       return json(res, 200, { success: true, data: row });
     }
     if (req.method === "DELETE" && id) {
-      const [row] = await db.delete(products).where(eq(products.id, id)).returning({ id: products.id });
+      const [row] = await db
+        .delete(products)
+        .where(eq(products.id, id))
+        .returning({ id: products.id });
       if (!row) return json(res, 404, { error: "ไม่พบสินค้า" });
       return json(res, 200, { success: true, data: row });
     }

@@ -1,1 +1,91 @@
-import {useEffect,useState} from "react";import {History,RefreshCw,ShieldCheck} from "lucide-react";import {AIAccessGuard} from "@/components/ai/AIAccessGuard";type Row={id:string;intent:string;status:string;risk_level:string;created_at:string;completed_at?:string|null;error?:string|null};export function AIHistoryPage(){const[data,setData]=useState<Row[]>([]),[loading,setLoading]=useState(true);async function load(){setLoading(true);try{const r=await fetch("/api/admin/ai-history",{credentials:"include",headers:{Accept:"application/json"}}),b=await r.json();if(!r.ok)throw new Error(b?.error||"โหลด history ไม่สำเร็จ");setData(b.data??[])}catch(e){console.error(e)}finally{setLoading(false)}}useEffect(()=>{void load()},[]);return <AIAccessGuard permission="ai.execution.read"><section className="min-h-[calc(100vh-4rem)] bg-slate-50 px-4 py-6 sm:px-6 lg:px-8"><div className="mx-auto max-w-5xl"><div className="flex items-center justify-between"><div className="flex items-center gap-3"><div className="grid h-10 w-10 place-items-center rounded-xl bg-white text-brand-navy shadow-sm"><History className="h-5 w-5"/></div><div><h1 className="text-2xl font-bold tracking-tight text-brand-navy">ประวัติการทำงานของ AI</h1><p className="mt-1 text-sm text-slate-600">Execution history จากข้อมูลจริง</p></div></div><button type="button" onClick={()=>void load()} className="inline-flex h-10 items-center gap-2 rounded-xl border bg-white px-3 text-sm font-semibold"><RefreshCw className="h-4 w-4"/>รีเฟรช</button></div>{loading?<div className="mt-6 rounded-2xl border bg-white p-10 text-center text-sm text-slate-500">กำลังโหลด...</div>:data.length===0?<div className="mt-6 rounded-2xl border border-dashed bg-white p-10 text-center shadow-sm"><ShieldCheck className="mx-auto h-7 w-7 text-emerald-600"/><p className="mt-3 text-sm font-bold text-slate-800">ยังไม่มี Execution history</p></div>:<div className="mt-6 space-y-3">{data.map(x=><div key={x.id} className="rounded-2xl border bg-white p-5 shadow-sm"><div className="flex items-center justify-between gap-4"><div><p className="font-bold text-brand-navy">{x.intent}</p><p className="mt-1 text-xs text-slate-500">{x.status} · risk {x.risk_level} · {new Date(x.created_at).toLocaleString("th-TH")}</p></div>{x.error&&<span className="text-xs text-red-600">{x.error}</span>}</div></div>)}</div>}</div></section></AIAccessGuard>}
+import { useEffect, useState } from "react";
+import { History, RefreshCw, ShieldCheck } from "lucide-react";
+import { AIAccessGuard } from "@/components/ai/AIAccessGuard";
+type Row = {
+  id: string;
+  intent: string;
+  status: string;
+  risk_level: string;
+  created_at: string;
+  completed_at?: string | null;
+  error?: string | null;
+};
+export function AIHistoryPage() {
+  const [data, setData] = useState<Row[]>([]),
+    [loading, setLoading] = useState(true);
+  async function load() {
+    setLoading(true);
+    try {
+      const r = await fetch("/api/admin/ai-history", {
+          credentials: "include",
+          headers: { Accept: "application/json" },
+        }),
+        b = await r.json();
+      if (!r.ok) throw new Error(b?.error || "โหลด history ไม่สำเร็จ");
+      setData(b.data ?? []);
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setLoading(false);
+    }
+  }
+  useEffect(() => {
+    void load();
+  }, []);
+  return (
+    <AIAccessGuard permission="ai.execution.read">
+      <section className="min-h-[calc(100vh-4rem)] bg-slate-50 px-4 py-6 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-5xl">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="grid h-10 w-10 place-items-center rounded-xl bg-white text-brand-navy shadow-sm">
+                <History className="h-5 w-5" />
+              </div>
+              <div>
+                <h1 className="text-2xl font-bold tracking-tight text-brand-navy">
+                  ประวัติการทำงานของ AI
+                </h1>
+                <p className="mt-1 text-sm text-slate-600">Execution history จากข้อมูลจริง</p>
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={() => void load()}
+              className="inline-flex h-10 items-center gap-2 rounded-xl border bg-white px-3 text-sm font-semibold"
+            >
+              <RefreshCw className="h-4 w-4" />
+              รีเฟรช
+            </button>
+          </div>
+          {loading ? (
+            <div className="mt-6 rounded-2xl border bg-white p-10 text-center text-sm text-slate-500">
+              กำลังโหลด...
+            </div>
+          ) : data.length === 0 ? (
+            <div className="mt-6 rounded-2xl border border-dashed bg-white p-10 text-center shadow-sm">
+              <ShieldCheck className="mx-auto h-7 w-7 text-emerald-600" />
+              <p className="mt-3 text-sm font-bold text-slate-800">ยังไม่มี Execution history</p>
+            </div>
+          ) : (
+            <div className="mt-6 space-y-3">
+              {data.map((x) => (
+                <div key={x.id} className="rounded-2xl border bg-white p-5 shadow-sm">
+                  <div className="flex items-center justify-between gap-4">
+                    <div>
+                      <p className="font-bold text-brand-navy">{x.intent}</p>
+                      <p className="mt-1 text-xs text-slate-500">
+                        {x.status} · risk {x.risk_level} ·{" "}
+                        {new Date(x.created_at).toLocaleString("th-TH")}
+                      </p>
+                    </div>
+                    {x.error && <span className="text-xs text-red-600">{x.error}</span>}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </section>
+    </AIAccessGuard>
+  );
+}

@@ -1,37 +1,98 @@
 import { desc, eq } from "drizzle-orm";
 import { getDb } from "../../src/db/index";
-import { activities, activityPhotos, activityOutcomes, learningCenters, socialProjects } from "../../src/db/schema";
+import {
+  activities,
+  activityPhotos,
+  activityOutcomes,
+  learningCenters,
+  socialProjects,
+} from "../../src/db/schema";
 import { json, methodNotAllowed, readJson, type ApiRequest, type ApiResponse } from "../_http";
 import { requirePermission } from "../_authorization";
 
 type ActivityStatus = "draft" | "published" | "archived";
 type ActivityBody = {
-  projectId: string | null; centerId: string | null; title: string; slug: string; summary: string | null; content: string | null;
-  activityDate: Date; location: string | null; participantCount: number | null; objective: string | null; process: string | null;
-  outcome: string | null; impact: string | null; featuredImage: string | null; status: ActivityStatus; publishedAt: Date | null; updatedAt: Date;
+  projectId: string | null;
+  centerId: string | null;
+  title: string;
+  slug: string;
+  summary: string | null;
+  content: string | null;
+  activityDate: Date;
+  location: string | null;
+  participantCount: number | null;
+  objective: string | null;
+  process: string | null;
+  outcome: string | null;
+  impact: string | null;
+  featuredImage: string | null;
+  status: ActivityStatus;
+  publishedAt: Date | null;
+  updatedAt: Date;
 };
 type ActivityInput = {
-  projectId?: unknown; centerId?: unknown; title?: unknown; slug?: unknown; summary?: unknown; content?: unknown; activityDate?: unknown;
-  location?: unknown; participantCount?: unknown; objective?: unknown; process?: unknown; outcome?: unknown; impact?: unknown;
-  featuredImage?: unknown; status?: unknown;
+  projectId?: unknown;
+  centerId?: unknown;
+  title?: unknown;
+  slug?: unknown;
+  summary?: unknown;
+  content?: unknown;
+  activityDate?: unknown;
+  location?: unknown;
+  participantCount?: unknown;
+  objective?: unknown;
+  process?: unknown;
+  outcome?: unknown;
+  impact?: unknown;
+  featuredImage?: unknown;
+  status?: unknown;
 };
 function bodyOf(value: unknown): ActivityBody | null {
   if (!value || typeof value !== "object") return null;
   const b = value as ActivityInput;
-  const title = String(b.title ?? "").trim(); const slug = String(b.slug ?? "").trim(); const date = new Date(String(b.activityDate ?? ""));
-  const status = String(b.status ?? "draft"); const participant = b.participantCount == null || b.participantCount === "" ? null : Number(b.participantCount);
-  if (!title || !slug || Number.isNaN(date.getTime()) || !["draft", "published", "archived"].includes(status) || (participant !== null && (!Number.isInteger(participant) || participant < 0))) return null;
+  const title = String(b.title ?? "").trim();
+  const slug = String(b.slug ?? "").trim();
+  const date = new Date(String(b.activityDate ?? ""));
+  const status = String(b.status ?? "draft");
+  const participant =
+    b.participantCount == null || b.participantCount === "" ? null : Number(b.participantCount);
+  if (
+    !title ||
+    !slug ||
+    Number.isNaN(date.getTime()) ||
+    !["draft", "published", "archived"].includes(status) ||
+    (participant !== null && (!Number.isInteger(participant) || participant < 0))
+  )
+    return null;
   return {
-    projectId: b.projectId ? String(b.projectId) : null, centerId: b.centerId ? String(b.centerId) : null, title, slug,
-    summary: b.summary ? String(b.summary) : null, content: b.content ? String(b.content) : null, activityDate: date,
-    location: b.location ? String(b.location) : null, participantCount: participant, objective: b.objective ? String(b.objective) : null,
-    process: b.process ? String(b.process) : null, outcome: b.outcome ? String(b.outcome) : null, impact: b.impact ? String(b.impact) : null,
-    featuredImage: b.featuredImage ? String(b.featuredImage) : null, status: status as ActivityStatus,
-    publishedAt: status === "published" ? new Date() : null, updatedAt: new Date(),
+    projectId: b.projectId ? String(b.projectId) : null,
+    centerId: b.centerId ? String(b.centerId) : null,
+    title,
+    slug,
+    summary: b.summary ? String(b.summary) : null,
+    content: b.content ? String(b.content) : null,
+    activityDate: date,
+    location: b.location ? String(b.location) : null,
+    participantCount: participant,
+    objective: b.objective ? String(b.objective) : null,
+    process: b.process ? String(b.process) : null,
+    outcome: b.outcome ? String(b.outcome) : null,
+    impact: b.impact ? String(b.impact) : null,
+    featuredImage: b.featuredImage ? String(b.featuredImage) : null,
+    status: status as ActivityStatus,
+    publishedAt: status === "published" ? new Date() : null,
+    updatedAt: new Date(),
   };
 }
 export default async function handler(req: ApiRequest, res: ApiResponse) {
-  const permission = req.method === "GET" ? "activities.read" : req.method === "POST" ? "activities.create" : req.method === "DELETE" ? "activities.archive" : "activities.update";
+  const permission =
+    req.method === "GET"
+      ? "activities.read"
+      : req.method === "POST"
+        ? "activities.create"
+        : req.method === "DELETE"
+          ? "activities.archive"
+          : "activities.update";
   if (!requirePermission(req, res, permission)) return;
   const id = new URL(req.url ?? "/", "http://localhost").searchParams.get("id");
   try {
@@ -41,18 +102,29 @@ export default async function handler(req: ApiRequest, res: ApiResponse) {
       return json(res, 200, { success: true, data: rows });
     }
     if (req.method === "POST") {
-      const d = bodyOf(await readJson(req)); if (!d) return json(res, 400, { error: "ข้อมูลกิจกรรมไม่ถูกต้อง" });
-      const [r] = await db.insert(activities).values(d).returning(); return json(res, 201, { success: true, data: r });
+      const d = bodyOf(await readJson(req));
+      if (!d) return json(res, 400, { error: "ข้อมูลกิจกรรมไม่ถูกต้อง" });
+      const [r] = await db.insert(activities).values(d).returning();
+      return json(res, 201, { success: true, data: r });
     }
     if ((req.method === "PUT" || req.method === "PATCH") && id) {
-      const d = bodyOf(await readJson(req)); if (!d) return json(res, 400, { error: "ข้อมูลกิจกรรมไม่ถูกต้อง" });
+      const d = bodyOf(await readJson(req));
+      if (!d) return json(res, 400, { error: "ข้อมูลกิจกรรมไม่ถูกต้อง" });
       const [r] = await db.update(activities).set(d).where(eq(activities.id, id)).returning();
-      if (!r) return json(res, 404, { error: "ไม่พบกิจกรรม" }); return json(res, 200, { success: true, data: r });
+      if (!r) return json(res, 404, { error: "ไม่พบกิจกรรม" });
+      return json(res, 200, { success: true, data: r });
     }
     if (req.method === "DELETE" && id) {
-      const [r] = await db.delete(activities).where(eq(activities.id, id)).returning({ id: activities.id });
-      if (!r) return json(res, 404, { error: "ไม่พบกิจกรรม" }); return json(res, 200, { success: true, data: r });
+      const [r] = await db
+        .delete(activities)
+        .where(eq(activities.id, id))
+        .returning({ id: activities.id });
+      if (!r) return json(res, 404, { error: "ไม่พบกิจกรรม" });
+      return json(res, 200, { success: true, data: r });
     }
     return methodNotAllowed(res, ["GET", "POST", "PUT", "PATCH", "DELETE"]);
-  } catch (e) { console.error(e); return json(res, 500, { error: "ไม่สามารถจัดการกิจกรรมได้" }); }
+  } catch (e) {
+    console.error(e);
+    return json(res, 500, { error: "ไม่สามารถจัดการกิจกรรมได้" });
+  }
 }

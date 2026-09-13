@@ -7,11 +7,21 @@ const partners = [
 
 export function HomePartners() {
   return (
-    <section aria-labelledby="partners-heading" className="relative overflow-hidden bg-white py-14 sm:py-16 lg:py-20">
+    <section
+      aria-labelledby="partners-heading"
+      className="relative overflow-hidden bg-white py-14 sm:py-16 lg:py-20"
+    >
       <div className="mx-auto max-w-[1280px] px-4 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-3xl text-center">
-          <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-[#1677A8]">PARTNERS &amp; NETWORK</p>
-          <h2 id="partners-heading" className="mt-2 text-2xl font-bold tracking-tight text-[#123B63] sm:text-3xl">เครือข่ายความร่วมมือของเรา</h2>
+          <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-[#1677A8]">
+            PARTNERS &amp; NETWORK
+          </p>
+          <h2
+            id="partners-heading"
+            className="mt-2 text-2xl font-bold tracking-tight text-[#123B63] sm:text-3xl"
+          >
+            เครือข่ายความร่วมมือของเรา
+          </h2>
           <p className="mx-auto mt-3 max-w-2xl text-sm leading-6 text-[#667085] sm:text-base">
             ร่วมมือกับหน่วยงาน องค์กร และภาคีเครือข่าย เพื่อขับเคลื่อนการเรียนรู้และการพัฒนาพื้นที่
           </p>

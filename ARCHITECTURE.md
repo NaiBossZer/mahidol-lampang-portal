@@ -166,13 +166,13 @@ Feature folders/files may remain under the existing `pages`, `components`, `serv
 
 ## 8. Canonical feature ownership
 
-| Domain | Canonical capabilities |
-|---|---|
-| Portal Core | Auth, RBAC, Admin Users, Organizations, Audit, Lifecycle, Search, Notifications, Settings |
-| Programs & Activities | Activities, Occurrences, Relations, Photos/Media |
-| Learning & Content | Learning Centers, CMS, Partners, Content Media |
-| Engagement & Insights | Surveys, Question Builder, Responses, Satisfaction, Analytics, Reports |
-| AI Workspace | AI Manager, Agents, Tools, Queue, Execution, Approval, History |
+| Domain                | Canonical capabilities                                                                    |
+| --------------------- | ----------------------------------------------------------------------------------------- |
+| Portal Core           | Auth, RBAC, Admin Users, Organizations, Audit, Lifecycle, Search, Notifications, Settings |
+| Programs & Activities | Activities, Occurrences, Relations, Photos/Media                                          |
+| Learning & Content    | Learning Centers, CMS, Partners, Content Media                                            |
+| Engagement & Insights | Surveys, Question Builder, Responses, Satisfaction, Analytics, Reports                    |
+| AI Workspace          | AI Manager, Agents, Tools, Queue, Execution, Approval, History                            |
 
 ## 9. Implementation and verification order
 

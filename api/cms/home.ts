@@ -8,8 +8,16 @@ export default async function handler(req: ApiRequest, res: ApiResponse) {
   try {
     const db = getDb();
     const [sections, serviceRows] = await Promise.all([
-      db.select().from(homeSections).where(eq(homeSections.isEnabled, true)).orderBy(asc(homeSections.sortOrder)),
-      db.select().from(services).where(eq(services.status, "published")).orderBy(asc(services.sortOrder)),
+      db
+        .select()
+        .from(homeSections)
+        .where(eq(homeSections.isEnabled, true))
+        .orderBy(asc(homeSections.sortOrder)),
+      db
+        .select()
+        .from(services)
+        .where(eq(services.status, "published"))
+        .orderBy(asc(services.sortOrder)),
     ]);
     return json(res, 200, { success: true, data: { sections, services: serviceRows } });
   } catch (error) {

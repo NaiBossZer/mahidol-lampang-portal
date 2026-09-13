@@ -10,7 +10,8 @@ const activities = [
     category: "เกษตรอินทรีย์",
     title: "เปิดรับสมัครนักเรียนฝึกงานฟาร์มอัจฉริยะ ประจำปี 2567",
     date: "15 กันยายน 2567",
-    image: "https://images.unsplash.com/photo-1560559383-338dc7faf062?w=600&h=400&fit=crop&auto=format",
+    image:
+      "https://images.unsplash.com/photo-1560559383-338dc7faf062?w=600&h=400&fit=crop&auto=format",
     tag: "เกษตร",
     tagColor: "#5F8D62",
   },
@@ -18,7 +19,8 @@ const activities = [
     category: "ชุมชนและวัฒนธรรม",
     title: "Workshop ภูมิปัญญาชาดและครั่ง กับ Shellac Learning Center",
     date: "22 กันยายน 2567",
-    image: "https://images.unsplash.com/photo-1647879826700-cfc5fd9d9a31?w=600&h=400&fit=crop&auto=format",
+    image:
+      "https://images.unsplash.com/photo-1647879826700-cfc5fd9d9a31?w=600&h=400&fit=crop&auto=format",
     tag: "วัฒนธรรม",
     tagColor: "#C66B4F",
   },
@@ -26,7 +28,8 @@ const activities = [
     category: "พลังงานสะอาด",
     title: "เปิดตัวระบบโซลาร์เซลล์ชุมชน ลดคาร์บอน 40% ภายใน 5 ปี",
     date: "30 กันยายน 2567",
-    image: "https://images.unsplash.com/photo-1711397651462-3b2a22f5cfc8?w=600&h=400&fit=crop&auto=format",
+    image:
+      "https://images.unsplash.com/photo-1711397651462-3b2a22f5cfc8?w=600&h=400&fit=crop&auto=format",
     tag: "พลังงาน",
     tagColor: "#1677A8",
   },
@@ -77,24 +80,32 @@ export default function HomePage({ navigate }: Props) {
       <section className="relative overflow-hidden">
         <div
           className="absolute inset-0 bg-cover bg-center"
-          style={{ backgroundImage: `url(https://images.unsplash.com/photo-1647607124632-f47bfa887125?w=1440&h=700&fit=crop&auto=format)` }}
+          style={{
+            backgroundImage: `url(https://images.unsplash.com/photo-1647607124632-f47bfa887125?w=1440&h=700&fit=crop&auto=format)`,
+          }}
           aria-hidden="true"
         />
-        <div className="absolute inset-0 bg-gradient-to-r from-[#123B63]/90 via-[#123B63]/70 to-[#123B63]/20" aria-hidden="true" />
+        <div
+          className="absolute inset-0 bg-gradient-to-r from-[#123B63]/90 via-[#123B63]/70 to-[#123B63]/20"
+          aria-hidden="true"
+        />
 
         <div className="relative max-w-[1280px] mx-auto px-8 max-md:px-4 py-24 max-md:py-16">
           <div className="max-w-[600px]">
             <div className="inline-flex items-center gap-2 bg-white/15 backdrop-blur-sm border border-white/20 rounded-full px-4 py-1.5 mb-6">
               <span className="w-2 h-2 rounded-full bg-[#D6A84F]" />
-              <span className="text-white/90 text-sm font-medium">มหิดล ลำปาง — ปีการศึกษา 2567</span>
+              <span className="text-white/90 text-sm font-medium">
+                มหิดล ลำปาง — ปีการศึกษา 2567
+              </span>
             </div>
             <h1 className="text-white font-bold text-5xl max-md:text-3xl leading-tight mb-5">
-              ภูมิปัญญาท้องถิ่น<br />
+              ภูมิปัญญาท้องถิ่น
+              <br />
               <span className="text-[#D6A84F]">สู่อนาคตการเรียนรู้</span>
             </h1>
             <p className="text-white/80 text-lg max-md:text-base leading-relaxed mb-8">
-              พอร์ทัลกลางของมหาวิทยาลัยมหิดล วิทยาเขตลำปาง เชื่อมโยงการเรียนรู้
-              งานวิจัย เกษตรกรรม และเทคโนโลยีเพื่อชุมชนภาคเหนือ
+              พอร์ทัลกลางของมหาวิทยาลัยมหิดล วิทยาเขตลำปาง เชื่อมโยงการเรียนรู้ งานวิจัย เกษตรกรรม
+              และเทคโนโลยีเพื่อชุมชนภาคเหนือ
             </p>
             <div className="flex flex-wrap gap-3">
               <button
@@ -129,8 +140,12 @@ export default function HomePage({ navigate }: Props) {
       {/* Pillars */}
       <section className="max-w-[1280px] mx-auto px-8 max-md:px-4 py-16">
         <div className="text-center mb-10">
-          <div className="inline-block text-[#C66B4F] text-xs font-semibold uppercase tracking-widest mb-2">พันธกิจหลัก</div>
-          <h2 className="text-[#123B63] font-bold text-3xl max-md:text-2xl">ขับเคลื่อนด้วยองค์ความรู้ รับใช้ชุมชน</h2>
+          <div className="inline-block text-[#C66B4F] text-xs font-semibold uppercase tracking-widest mb-2">
+            พันธกิจหลัก
+          </div>
+          <h2 className="text-[#123B63] font-bold text-3xl max-md:text-2xl">
+            ขับเคลื่อนด้วยองค์ความรู้ รับใช้ชุมชน
+          </h2>
         </div>
         <div className="grid grid-cols-4 max-lg:grid-cols-2 max-sm:grid-cols-1 gap-5">
           {pillars.map((p) => {
@@ -159,8 +174,12 @@ export default function HomePage({ navigate }: Props) {
         <div className="max-w-[1280px] mx-auto px-8 max-md:px-4">
           <div className="flex items-end justify-between mb-10 max-sm:flex-col max-sm:items-start max-sm:gap-4">
             <div>
-              <div className="text-[#C66B4F] text-xs font-semibold uppercase tracking-widest mb-1">กิจกรรมล่าสุด</div>
-              <h2 className="text-[#123B63] font-bold text-3xl max-md:text-2xl">ข่าวสารและกิจกรรม</h2>
+              <div className="text-[#C66B4F] text-xs font-semibold uppercase tracking-widest mb-1">
+                กิจกรรมล่าสุด
+              </div>
+              <h2 className="text-[#123B63] font-bold text-3xl max-md:text-2xl">
+                ข่าวสารและกิจกรรม
+              </h2>
             </div>
             <button
               onClick={() => navigate("activities")}
@@ -206,8 +225,12 @@ export default function HomePage({ navigate }: Props) {
       {/* Featured centers */}
       <section className="max-w-[1280px] mx-auto px-8 max-md:px-4 py-16">
         <div className="text-center mb-10">
-          <div className="text-[#C66B4F] text-xs font-semibold uppercase tracking-widest mb-1">ศูนย์แห่งการเรียนรู้</div>
-          <h2 className="text-[#123B63] font-bold text-3xl max-md:text-2xl">สำรวจศูนย์และระบบหลัก</h2>
+          <div className="text-[#C66B4F] text-xs font-semibold uppercase tracking-widest mb-1">
+            ศูนย์แห่งการเรียนรู้
+          </div>
+          <h2 className="text-[#123B63] font-bold text-3xl max-md:text-2xl">
+            สำรวจศูนย์และระบบหลัก
+          </h2>
         </div>
         <div className="grid grid-cols-2 max-sm:grid-cols-1 gap-6">
           {/* Shellac */}
@@ -222,7 +245,9 @@ export default function HomePage({ navigate }: Props) {
             />
             <div className="absolute inset-0 bg-gradient-to-t from-[#123B63]/90 via-[#123B63]/40 to-transparent" />
             <div className="absolute bottom-0 left-0 right-0 p-7">
-              <div className="inline-block bg-[#C66B4F] text-white text-xs font-semibold px-3 py-1 rounded-full mb-3">ศูนย์การเรียนรู้</div>
+              <div className="inline-block bg-[#C66B4F] text-white text-xs font-semibold px-3 py-1 rounded-full mb-3">
+                ศูนย์การเรียนรู้
+              </div>
               <h3 className="text-white font-bold text-xl mb-1.5">Shellac Learning Center</h3>
               <p className="text-white/70 text-sm">ศูนย์เรียนรู้ครั่งและภูมิปัญญาท้องถิ่นลำปาง</p>
               <div className="flex items-center gap-1.5 mt-3 text-[#D6A84F] text-sm font-semibold group-hover:gap-2.5 transition-all">
@@ -243,9 +268,13 @@ export default function HomePage({ navigate }: Props) {
             />
             <div className="absolute inset-0 bg-gradient-to-t from-[#0E3B2A]/90 via-[#0E3B2A]/40 to-transparent" />
             <div className="absolute bottom-0 left-0 right-0 p-7">
-              <div className="inline-block bg-[#5F8D62] text-white text-xs font-semibold px-3 py-1 rounded-full mb-3">ระบบฟาร์ม</div>
+              <div className="inline-block bg-[#5F8D62] text-white text-xs font-semibold px-3 py-1 rounded-full mb-3">
+                ระบบฟาร์ม
+              </div>
               <h3 className="text-white font-bold text-xl mb-1.5">ระบบ Smart Farm</h3>
-              <p className="text-white/70 text-sm">เกษตรอัจฉริยะด้วยเซ็นเซอร์ IoT และปัญญาประดิษฐ์</p>
+              <p className="text-white/70 text-sm">
+                เกษตรอัจฉริยะด้วยเซ็นเซอร์ IoT และปัญญาประดิษฐ์
+              </p>
               <div className="flex items-center gap-1.5 mt-3 text-[#D6A84F] text-sm font-semibold group-hover:gap-2.5 transition-all">
                 เข้าชม <ArrowRight size={14} />
               </div>
@@ -257,7 +286,9 @@ export default function HomePage({ navigate }: Props) {
       {/* CTA banner */}
       <section className="bg-[#123B63] py-14">
         <div className="max-w-[1280px] mx-auto px-8 max-md:px-4 text-center">
-          <h2 className="text-white font-bold text-3xl max-md:text-2xl mb-3">ร่วมเป็นส่วนหนึ่งของชุมชนมหิดลลำปาง</h2>
+          <h2 className="text-white font-bold text-3xl max-md:text-2xl mb-3">
+            ร่วมเป็นส่วนหนึ่งของชุมชนมหิดลลำปาง
+          </h2>
           <p className="text-white/70 text-base mb-8 max-w-[520px] mx-auto">
             สมัครร่วมกิจกรรม โครงการวิจัย และเชื่อมต่อกับเครือข่ายนักวิจัยและชุมชนภาคเหนือ
           </p>

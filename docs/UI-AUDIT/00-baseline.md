@@ -1,6 +1,7 @@
 # Phase 0 — UI/UX Baseline
 
 ## Scope
+
 Repository: `NaiBossZer/mahidol-lampang-portal`
 Branch: `main`
 Baseline commit: `bc4b5d31d17786cfbfb1772fb54302133e848a97`

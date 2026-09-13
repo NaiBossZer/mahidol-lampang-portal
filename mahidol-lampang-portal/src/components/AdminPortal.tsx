@@ -12,20 +12,26 @@ export default function AdminPortal() {
 
   const renderPage = () => {
     switch (page) {
-      case "dashboard": return <AdminDashboard />;
-      case "lac-satisfaction": return <AdminLACSatisfaction />;
-      default: return <AdminDashboard />;
+      case "dashboard":
+        return <AdminDashboard />;
+      case "lac-satisfaction":
+        return <AdminLACSatisfaction />;
+      default:
+        return <AdminDashboard />;
     }
   };
 
   return (
     <div className="min-h-screen bg-[#F0F2F5] flex">
-      <AdminSidebar currentPage={page} navigate={setPage} open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+      <AdminSidebar
+        currentPage={page}
+        navigate={setPage}
+        open={sidebarOpen}
+        onClose={() => setSidebarOpen(false)}
+      />
       <div className="flex-1 flex flex-col min-w-0">
         <AdminHeader page={page} onMenuClick={() => setSidebarOpen(true)} />
-        <main className="flex-1 p-6 max-md:p-4 overflow-auto">
-          {renderPage()}
-        </main>
+        <main className="flex-1 p-6 max-md:p-4 overflow-auto">{renderPage()}</main>
         <div className="border-t border-[#E2E6EA] bg-white px-6 py-3 flex items-center justify-between text-xs text-[#9BA8B7]">
           <span>Admin Console · มหิดล ลำปาง v2.4.1</span>
           <div className="flex items-center gap-1.5">
