@@ -1,9 +1,9 @@
 /**
  * AI Approval API
- * Cloudflare Function for managing AI approval workflow with execution trigger
+ * Handles governed approval decisions and triggers the shared execution endpoint.
  */
 
-import { getSupabaseUser, isAdminRole, json, supabaseConfig } from "../auth/_shared";
+import { getSupabaseUser, isAdminRole, json, permissionsForRole, supabaseConfig } from "../auth/_shared";
 
 type Env = Record<string, unknown>;
 
@@ -13,262 +13,105 @@ const cookie = (request: Request): string | null => {
   return found ? decodeURIComponent(found.slice(17)) : null;
 };
 
-// Permission mapping for role-based access control
-const ROLE_PERMISSIONS: Record<string, Set<string>> = {
-  SUPER_ADMIN: new Set(["*"]),
-  CONTENT_ADMIN: new Set([
-    "activities.update",
-    "survey.create",
-    "learning_centers.update",
-    "cms.update",
-  ]),
-  OPERATIONS_ADMIN: new Set(["activities.update", "survey.create", "learning_centers.update"]),
-  FACILITY_ADMIN: new Set(["facility.manage"]),
-};
-
-function hasPermission(role: string, permission: string): boolean {
-  return ROLE_PERMISSIONS[role]?.has("*") || ROLE_PERMISSIONS[role]?.has(permission);
-}
-
 async function callSupabase(env: Env, token: string, path: string, init: RequestInit = {}) {
-  const { url, key } = supabaseConfig(env);
+  const { url, key, configured } = supabaseConfig(env);
+  if (!configured) throw new Error("Supabase environment is not configured");
   const response = await fetch(`${url}/rest/v1/${path}`, {
     ...init,
-    headers: {
-      apikey: key,
-      Authorization: `Bearer ${token}`,
-      Accept: "application/json",
-      ...(init.headers || {}),
-    },
+    headers: { apikey: key, Authorization: `Bearer ${token}`, Accept: "application/json", ...(init.headers || {}) },
   });
-
   const body = await response.json().catch(() => null);
-  if (!response.ok) {
-    throw new Error(`Supabase REST ${response.status}`);
-  }
+  if (!response.ok) throw new Error(`Supabase REST ${response.status}`);
   return body;
 }
 
 export async function onRequest({ request, env }: { request: Request; env: Env }) {
   try {
-    // Authentication check
     const user = await getSupabaseUser(request, env);
-    const role = String(user?.app_metadata?.role ?? "");
+    const role = user?.app_metadata?.role;
     const token = cookie(request);
+    if (!user || !isAdminRole(role) || !token) return json({ success: false, error: "Unauthorized" }, 401);
 
-    if (!user || !isAdminRole(role) || !token) {
-      return json({ success: false, error: "Unauthorized" }, 401);
-    }
-
-    // GET: Fetch pending approvals
     if (request.method === "GET") {
       const executions = await callSupabase(
         env,
         token,
         "ai_executions?status=eq.awaiting_approval&select=id,tool_id,intent,status,risk_level,input,execution_plan,steps,created_at&order=created_at.desc&limit=100",
       );
-
-      // Fetch tool information for executions
-      if (executions && Array.isArray(executions) && executions.length > 0) {
-        const toolIds = executions
-          .map((exec: any) => exec.tool_id)
-          .filter((id: string | null) => id !== null)
-          .join(",");
-
-        if (toolIds) {
-          const tools = await callSupabase(
-            env,
-            token,
-            `ai_tools?id=in.(${toolIds})&select=id,tool_key,name,description,domain,risk_level,permission`,
-          );
-
-          const toolMap = new Map((tools || []).map((tool: any) => [tool.id, tool]));
-
-          executions.forEach((execution: any) => {
-            if (execution.tool_id && toolMap.has(execution.tool_id)) {
-              execution.tool = toolMap.get(execution.tool_id);
-            }
-          });
+      if (executions?.length) {
+        const toolIds = executions.map((exec: { tool_id?: string | null }) => exec.tool_id).filter((id): id is string => Boolean(id));
+        if (toolIds.length) {
+          const tools = await callSupabase(env, token, `ai_tools?id=in.(${toolIds.join(",")})&select=id,tool_key,name,description,domain,risk_level,permission`);
+          const toolMap = new Map((tools || []).map((tool: { id: string }) => [tool.id, tool]));
+          for (const execution of executions) execution.tool = execution.tool_id ? toolMap.get(execution.tool_id) : undefined;
         }
       }
-
       return json({ success: true, data: executions });
     }
 
-    // POST: Process approval decision
-    if (request.method === "POST") {
-      const body = (await request.json()) as {
-        executionId?: string;
-        decision?: "approved" | "rejected";
-        reason?: string;
-      };
+    if (request.method !== "POST") return json({ success: false, error: "Method Not Allowed" }, 405, { Allow: "GET, POST" });
 
-      if (!body.executionId || !body.decision) {
-        return json(
-          {
-            success: false,
-            error: "executionId and decision are required",
-          },
-          400,
-        );
-      }
+    const body = (await request.json()) as { executionId?: string; decision?: "approved" | "rejected"; reason?: string };
+    if (!body.executionId || !body.decision) return json({ success: false, error: "executionId and decision are required" }, 400);
 
-      // Fetch execution record
-      const execRows = await callSupabase(
-        env,
-        token,
-        `ai_executions?id=eq.${encodeURIComponent(body.executionId)}&select=id,tool_id,intent,status,risk_level,input,execution_plan,steps&limit=1`,
-      );
+    const execRows = await callSupabase(
+      env,
+      token,
+      `ai_executions?id=eq.${encodeURIComponent(body.executionId)}&select=id,tool_id,intent,status,risk_level,input,execution_plan,steps&limit=1`,
+    );
+    const execution = execRows?.[0];
+    if (!execution || execution.status !== "awaiting_approval") return json({ success: false, error: "Execution is not awaiting approval" }, 409);
 
-      const execution = execRows?.[0];
+    const tools = await callSupabase(env, token, `ai_tools?id=eq.${encodeURIComponent(execution.tool_id ?? "")}&enabled=eq.true&select=id,tool_key,name,description,domain,endpoint,method,risk_level,permission,enabled&limit=1`);
+    const tool = tools?.[0];
+    if (!tool) return json({ success: false, error: "Tool no longer available" }, 404);
 
-      if (!execution || execution.status !== "awaiting_approval") {
-        return json(
-          {
-            success: false,
-            error: "Execution is not awaiting approval",
-          },
-          409,
-        );
-      }
+    if (tool.permission && !permissionsForRole(role).some((permission) => permission === tool.permission)) {
+      return json({ success: false, error: "Forbidden: reviewer lacks tool permission" }, 403);
+    }
+    if (tool.risk_level === "critical" && role !== "SUPER_ADMIN") return json({ success: false, error: "Forbidden: critical AI actions require SUPER_ADMIN" }, 403);
 
-      // Fetch tool details
-      const tools = await callSupabase(
-        env,
-        token,
-        `ai_tools?id=eq.${execution.tool_id}&enabled=eq.true&limit=1`,
-      );
+    const existingApprovals = await callSupabase(env, token, `ai_approvals?execution_id=eq.${encodeURIComponent(execution.id)}&select=id,decision,reviewer_id,decided_at&order=decided_at.desc&limit=1`);
+    if (existingApprovals?.length) return json({ success: false, error: "Execution already has an approval decision" }, 409);
 
-      const tool = tools?.[0];
+    await callSupabase(env, token, "ai_approvals", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Prefer: "return=minimal" },
+      body: JSON.stringify({ execution_id: execution.id, reviewer_id: user.id, decision: body.decision, reason: body.reason?.trim() || null, decided_at: new Date().toISOString() }),
+    });
 
-      if (!tool) {
-        return json(
-          {
-            success: false,
-            error: "Tool no longer available",
-          },
-          404,
-        );
-      }
-
-      // Check reviewer permissions
-      if (tool.permission && !hasPermission(role, String(tool.permission))) {
-        return json(
-          {
-            success: false,
-            error: "Forbidden: reviewer lacks tool permission",
-          },
-          403,
-        );
-      }
-
-      // Create approval record
-      await callSupabase(env, token, "ai_approvals", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Prefer: "return=minimal",
-        },
-        body: JSON.stringify({
-          execution_id: execution.id,
-          reviewer_id: user.id,
-          decision: body.decision,
-          reason: body.reason || null,
-          decided_at: new Date().toISOString(),
-        }),
-      });
-
-      // Handle rejection
-      if (body.decision === "rejected") {
-        await callSupabase(env, token, `ai_executions?id=eq.${execution.id}`, {
-          method: "PATCH",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            status: "rejected",
-            completed_at: new Date().toISOString(),
-          }),
-        });
-
-        return json({
-          success: true,
-          status: "rejected",
-          message: "Execution rejected and marked as failed",
-        });
-      }
-
-      // Handle approval - trigger execution
-      // Update execution status to queued for execution
-      await callSupabase(env, token, `ai_executions?id=eq.${execution.id}`, {
+    if (body.decision === "rejected") {
+      await callSupabase(env, token, `ai_executions?id=eq.${encodeURIComponent(execution.id)}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          status: "queued",
-        }),
+        body: JSON.stringify({ status: "rejected", completed_at: new Date().toISOString() }),
       });
-
-      // Trigger execution by calling the execution API
-      try {
-        const executionUrl = new URL("/api/admin/ai-execution", request.url);
-        const executionResponse = await fetch(executionUrl.toString(), {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Cookie: request.headers.get("Cookie") || "",
-          },
-          body: JSON.stringify({
-            executionId: execution.id,
-          }),
-        });
-
-        const executionResult = await executionResponse.json();
-
-        if (executionResponse.ok) {
-          return json({
-            success: true,
-            status: "approved",
-            executionTriggered: true,
-            executionResult: executionResult.data,
-            message: "Execution approved and triggered",
-          });
-        } else {
-          // Execution trigger failed, but approval is still recorded
-          console.error("Execution trigger failed:", executionResult.error);
-          return json({
-            success: true,
-            status: "approved",
-            executionTriggered: false,
-            error: "Execution approved but automatic trigger failed",
-            message: "Execution approved. Please trigger manually.",
-          });
-        }
-      } catch (error) {
-        console.error("Execution trigger error:", error);
-        return json({
-          success: true,
-          status: "approved",
-          executionTriggered: false,
-          error: "Execution approved but automatic trigger failed",
-          message: "Execution approved. Please trigger manually.",
-        });
-      }
+      return json({ success: true, status: "rejected", executionTriggered: false, message: "Execution rejected" });
     }
 
+    // Keep the status at awaiting_approval. The execution endpoint verifies the approved record
+    // before changing it to running, so approval cannot silently bypass the gate.
+    const executionUrl = new URL("/api/admin/ai-execution", request.url);
+    const executionResponse = await fetch(executionUrl.toString(), {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Accept: "application/json", Cookie: request.headers.get("Cookie") ?? "" },
+      body: JSON.stringify({ executionId: execution.id }),
+    });
+    const executionResult = await executionResponse.json().catch(() => null);
+
     return json(
       {
-        success: false,
-        error: "Method Not Allowed",
+        success: executionResponse.ok,
+        status: executionResponse.ok ? "approved" : "failed",
+        executionTriggered: executionResponse.ok,
+        executionResult: executionResult?.data,
+        error: executionResponse.ok ? undefined : executionResult?.error ?? "Execution trigger failed",
+        message: executionResponse.ok ? "Execution approved and completed/started" : "Approval was recorded but execution failed",
       },
-      405,
-      { Allow: "GET, POST" },
+      executionResponse.ok ? 200 : 502,
     );
   } catch (error) {
-    console.error("/api/admin/ai-approval", error);
-    return json(
-      {
-        success: false,
-        error: error instanceof Error ? error.message : "AI approval processing failed",
-      },
-      500,
-    );
+    console.error("/api/admin/ai-approval", error instanceof Error ? error.message : "AI approval processing failed");
+    return json({ success: false, error: error instanceof Error ? error.message : "AI approval processing failed" }, 500);
   }
 }
