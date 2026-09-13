@@ -53,6 +53,10 @@ const ADMIN_PERMISSIONS = [
   "store.read",
   "store.manage",
   "survey.audit.read",
+  "ai.command.read",
+  "ai.queue.read",
+  "ai.execution.read",
+  "ai.approval.read",
 ] as const;
 
 type AdminPermission = (typeof ADMIN_PERMISSIONS)[number];
@@ -87,6 +91,10 @@ const ROLE_PERMISSIONS: Record<AdminRole, readonly AdminPermission[]> = {
     "footer.read",
     "footer.update",
     "survey.audit.read",
+    "ai.command.read",
+    "ai.queue.read",
+    "ai.execution.read",
+    "ai.approval.read",
   ],
   OPERATIONS_ADMIN: [
     "overview.read",
@@ -103,8 +111,19 @@ const ROLE_PERMISSIONS: Record<AdminRole, readonly AdminPermission[]> = {
     "store.read",
     "store.manage",
     "survey.audit.read",
+    "ai.command.read",
+    "ai.queue.read",
+    "ai.execution.read",
+    "ai.approval.read",
   ],
-  FACILITY_ADMIN: ["overview.read", "facility.read", "facility.manage", "survey.audit.read"],
+  FACILITY_ADMIN: [
+    "overview.read",
+    "facility.read",
+    "facility.manage",
+    "survey.audit.read",
+    "ai.command.read",
+    "ai.queue.read",
+  ],
 };
 
 export function isAdminRole(value: unknown): value is AdminRole {
