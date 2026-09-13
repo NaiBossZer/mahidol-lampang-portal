@@ -9,7 +9,7 @@ export function AdminPage() {
       navigate("/login?redirect=%2Fadmin", { replace: true });
   }, [navigate]);
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col font-['Prompt']">
+    <div className="min-h-screen bg-slate-50 flex flex-col">
       <div className="mx-auto w-full max-w-7xl px-4 pt-4 md:px-8 flex flex-wrap gap-3">
         <Link to="/admin/control-center" className="inline-flex items-center gap-2 rounded-xl bg-[#123B63] px-4 py-2.5 text-sm font-bold text-white shadow-sm hover:bg-[#0f3152]">
           🛡️ Central Admin Control Center
