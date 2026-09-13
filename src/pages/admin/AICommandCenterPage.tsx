@@ -1,28 +1,23 @@
 import { useState } from "react";
-import {
-  ArrowRight,
-  Bot,
-  CheckCircle2,
-  ListTodo,
-  Search,
-  ShieldCheck,
-  Sparkles,
-} from "lucide-react";
+import { ArrowRight, Bot, CheckCircle2, ListTodo, Search, ShieldCheck, Sparkles } from "lucide-react";
 import { AICommandBar } from "@/components/ai/AICommandBar";
 import { AIAccessGuard } from "@/components/ai/AIAccessGuard";
 import { Link } from "react-router-dom";
 import { toast } from "sonner";
-const quickActions = [
-  "สร้างกิจกรรมจากเอกสาร",
-  "ตรวจข้อมูลกิจกรรมที่ยังไม่ครบ",
-  "สรุปผลกิจกรรมล่าสุด",
-];
+
+const quickActions = ["สร้างกิจกรรมจากเอกสาร", "ตรวจข้อมูลกิจกรรมที่ยังไม่ครบ", "สรุปผลกิจกรรมล่าสุด"];
+
 function CommandCenterContent() {
   const [intent, setIntent] = useState(""),
-    [submitted, setSubmitted] = useState(false);
+    [submitted, setSubmitted] = useState(false),
+    [resultMessage, setResultMessage] = useState(""),
+    [executionId, setExecutionId] = useState("");
+
   async function submit(value: string) {
     setIntent(value);
     setSubmitted(false);
+    setResultMessage("");
+    setExecutionId("");
     try {
       const r = await fetch("/api/admin/ai-intent", {
           method: "POST",
@@ -32,12 +27,26 @@ function CommandCenterContent() {
         }),
         b = await r.json();
       if (!r.ok) throw new Error(b?.error || "ส่งคำสั่งไม่สำเร็จ");
+
+      const id = b?.data?.executionId ?? b?.data?.execution?.id ?? "";
+      setExecutionId(id);
       setSubmitted(true);
-      toast.success("รับ Intent เข้า AI Work Queue แล้ว");
+
+      if (b?.requiresApproval) {
+        setResultMessage("AI วิเคราะห์คำสั่งแล้ว และส่งเข้าสู่ Approval ก่อนดำเนินการ");
+        toast.success("ส่งคำสั่งเข้า Approval แล้ว");
+      } else if (b?.success) {
+        setResultMessage("AI วิเคราะห์และดำเนินการผ่าน Tool Registry สำเร็จแล้ว");
+        toast.success("AI ดำเนินการสำเร็จ");
+      } else {
+        setResultMessage("AI รับคำสั่งแล้ว แต่การดำเนินการไม่สำเร็จ");
+        toast.error(b?.error || "AI ดำเนินการไม่สำเร็จ");
+      }
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "ส่งคำสั่งไม่สำเร็จ");
     }
   }
+
   return (
     <section className="min-h-[calc(100vh-4rem)] bg-[#f8f9ff] px-4 py-5 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-[1280px]">
@@ -48,12 +57,9 @@ function CommandCenterContent() {
                 <Sparkles className="h-3.5 w-3.5" />
                 AUTONOMOUS AI
               </div>
-              <h1 className="mt-3 text-2xl font-bold tracking-tight sm:text-[32px]">
-                ศูนย์สั่งการอัจฉริยะ
-              </h1>
+              <h1 className="mt-3 text-2xl font-bold tracking-tight sm:text-[32px]">ศูนย์สั่งการอัจฉริยะ</h1>
               <p className="mt-2 text-sm leading-6 text-[#d7e2ff]">
-                ส่งเป้าหมายเข้า Work Queue ก่อน แล้วระบบจะวางแผนและใช้ Tool Registry
-                ตามสิทธิ์และความเสี่ยง
+                ส่งเป้าหมายเข้า AI แล้วระบบจะวิเคราะห์ Intent, ตรวจสิทธิ์, เลือก Tool และจัดการ Approval ตามระดับความเสี่ยง
               </p>
             </div>
             <div className="hidden rounded-xl border border-white/15 bg-white/5 px-4 py-3 text-right sm:block">
@@ -62,10 +68,7 @@ function CommandCenterContent() {
             </div>
           </div>
           <div className="mt-6 rounded-xl bg-[#00193c] p-2">
-            <AICommandBar
-              onSubmit={(v) => void submit(v)}
-              placeholder="บอก AI ว่าต้องการให้ทำอะไร…"
-            />
+            <AICommandBar onSubmit={(v) => void submit(v)} placeholder="บอก AI ว่าต้องการให้ทำอะไร…" />
           </div>
           <div className="mt-3 flex flex-wrap gap-2">
             {quickActions.map((a) => (
@@ -80,32 +83,23 @@ function CommandCenterContent() {
             ))}
           </div>
         </div>
+
         {intent && (
           <div className="mt-4 rounded-xl border bg-white p-4 shadow-sm">
-            <p className="text-[10px] font-bold uppercase tracking-[.12em] text-slate-400">
-              CURRENT INTENT
-            </p>
+            <p className="text-[10px] font-bold uppercase tracking-[.12em] text-slate-400">CURRENT INTENT</p>
             <p className="mt-1 text-sm font-semibold text-slate-900">{intent}</p>
-            <p className="mt-2 text-xs text-slate-500">
-              {submitted
-                ? "รับเข้า Work Queue แล้ว — ไม่ได้ข้าม Approval หรือ Portal API"
-                : "กำลังเตรียมส่ง..."}
-            </p>
+            <p className="mt-2 text-xs text-slate-500">{submitted ? resultMessage : "กำลังเตรียมส่ง..."}</p>
+            {executionId && (
+              <p className="mt-1 text-[10px] font-mono text-slate-400">Execution: {executionId}</p>
+            )}
           </div>
         )}
+
         <div className="mt-5 grid gap-3 md:grid-cols-3">
-          {[
-            ["/admin/ai/work-queue", ListTodo, "คิวงาน AI", "งานจริงที่กำลังทำหรือรอข้อมูล"],
-            ["/admin/ai/execution", Bot, "แผนและการทำงาน", "execution ผ่าน Tool Registry"],
-            ["/admin/ai/history", CheckCircle2, "ประวัติการทำงาน", "ตรวจสอบ execution จริง"],
-          ].map(([to, Icon, title, description]) => {
+          {[['/admin/ai/work-queue', ListTodo, 'คิวงาน AI', 'งานจริงที่กำลังทำหรือรอข้อมูล'], ['/admin/ai/execution', Bot, 'แผนและการทำงาน', 'execution ผ่าน Tool Registry'], ['/admin/ai/history', CheckCircle2, 'ประวัติการทำงาน', 'ตรวจสอบ execution จริง']].map(([to, Icon, title, description]) => {
             const I = Icon as typeof Bot;
             return (
-              <Link
-                key={String(to)}
-                to={String(to)}
-                className="group rounded-xl border bg-white p-4 shadow-sm transition hover:shadow-md"
-              >
+              <Link key={String(to)} to={String(to)} className="group rounded-xl border bg-white p-4 shadow-sm transition hover:shadow-md">
                 <div className="flex items-center justify-between">
                   <I className="h-5 w-5 text-[#002d62]" />
                   <ArrowRight className="h-4 w-4 text-slate-300 group-hover:text-[#002d62]" />
@@ -116,15 +110,14 @@ function CommandCenterContent() {
             );
           })}
         </div>
+
         <div className="mt-5 grid gap-3 lg:grid-cols-[1.35fr_.65fr]">
           <div className="rounded-xl border bg-white p-5 shadow-sm">
             <div className="flex items-center gap-3">
               <Search className="h-4 w-4 text-[#002d62]" />
               <div>
                 <h2 className="text-sm font-bold">AI Workspace</h2>
-                <p className="text-xs text-slate-500">
-                  Intent → Context → Permission → Plan → Approval → Tool → Verification
-                </p>
+                <p className="text-xs text-slate-500">Intent → Context → Permission → Plan → Approval → Tool → Verification</p>
               </div>
             </div>
           </div>
@@ -138,6 +131,7 @@ function CommandCenterContent() {
     </section>
   );
 }
+
 export function AICommandCenterPage() {
   return (
     <AIAccessGuard permission="ai.command.read">
