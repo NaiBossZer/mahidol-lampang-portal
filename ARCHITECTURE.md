@@ -1,65 +1,190 @@
-# Mahidol Social Engagement Platform — Code Architecture
+# Mahidol Lampang Central Portal — Five-Domain Architecture
 
-## 1. Target architecture
+## 1. Architectural goal
 
-The portal is a React/Vite SPA with a thin server API boundary. The codebase is organized by responsibility:
-
-```text
-src/
-├── App.tsx                 # route composition only
-├── pages/                  # route-level UI and page composition
-├── components/             # reusable UI and feature components
-├── services/               # browser data-access layer; no page-specific rendering
-├── config/                 # static application configuration and system registry
-├── data/                   # offline-safe fallback/domain seed data only
-├── types/                  # shared TypeScript domain types
-├── lib/                    # small framework-agnostic utilities
-├── db/                     # server-only Drizzle schema/connection; never imported by browser UI
-└── styles.css              # global design tokens/base styles
-
-api/
-├── _http.ts                # HTTP helpers
-├── _auth.ts                # server authentication boundary
-├── public endpoints        # read-only/public data APIs
-└── admin/                  # protected write/management endpoints
-```
-
-## 2. Dependency direction
+The Portal is the central application boundary for public content, Central Admin, operational workflows, analytics and governed AI. Features are grouped into five canonical domains to prevent one feature from becoming one independent system.
 
 ```text
-Pages → Components → Services → /api/*
-  │                         │
-  ├→ Config                  └→ server API → DB
-  └→ fallback Data
-
-Pages/components must not access PostgreSQL, Drizzle, or Supabase credentials directly.
+MAHIDOL LAMPANG PORTAL
+│
+├── 1. PORTAL CORE
+├── 2. PROGRAMS & ACTIVITIES
+├── 3. LEARNING & CONTENT
+├── 4. ENGAGEMENT & INSIGHTS
+└── 5. AI WORKSPACE
 ```
 
-`src/services` is the intentional adapter boundary. This allows the frontend to keep its API contract while the backend is migrated toward the central Facility Safety API/Supabase architecture.
+Presentation (Public Website, Admin UI, Dashboard and AppNavbar) is a cross-domain layer, not a sixth business domain. Infrastructure (Supabase, Cloudflare and CI/CD) is a platform layer, not a business domain.
 
-## 3. Static configuration
+## 2. Domain responsibilities
 
-External subsystem URLs and the core-system registry live in `src/config` as the single source of truth. Do not hard-code the same external URL inside individual pages.
+### Domain 1 — Portal Core
 
-## 4. Data rules
+Owns capabilities shared by every other domain:
 
-- API data is the source of truth for published activities and managed content.
-- `src/data` is limited to safe offline fallback content.
-- Do not create a second database or duplicate the Facility Safety schema.
-- Do not expose service-role keys or PostgreSQL credentials to the browser.
-- Learning Experience remains part of the relevant core system; it is not a standalone LMS.
+- Supabase Auth identity boundary
+- AdminGuard protected-route boundary
+- RBAC and permission enforcement
+- Admin Users
+- Organizations as master data, including hierarchy
+- Audit Trail
+- Data Lifecycle
+- Global Search
+- Notifications
+- System Settings
 
-## 5. Performance rules
+Organizations are a master-data entity, not a standalone application domain.
 
-- Lazy-load heavy route modules.
-- Keep the initial route lightweight.
-- Use request deduplication/cache for safe GET requests.
-- Invalidate cached resources after mutations.
-- Use image dimensions, lazy loading, and async decoding for below-the-fold media.
-- Avoid duplicated constants and duplicated API implementations.
+### Domain 2 — Programs & Activities
 
-## 6. Cleanup policy
+Owns the complete activity lifecycle:
 
-Remove code only when it is demonstrably unused, duplicated, obsolete, or a diagnostic that should not be exposed as an application endpoint. Preserve routes, public behavior, existing database tables/data, and the Solar Game integration.
+```text
+Activity
+ ├── Occurrences (1:N)
+ ├── Learning Center relations (N:M)
+ ├── Organizer / Organization relations (N:M)
+ ├── Media / Photos
+ ├── Activity lifecycle
+ └── Occurrence Survey linkage
+```
 
-The Building Safety game is intentionally excluded.
+Repeated delivery is represented by one Activity with multiple Occurrences. Media and relationship management remain inside this domain.
+
+### Domain 3 — Learning & Content
+
+Owns learning resources and public content:
+
+- Learning Centers
+- CMS / public content
+- Partners
+- Content media/resources
+
+Learning Centers and CMS remain distinct entities and APIs, but belong to the same business domain.
+
+### Domain 4 — Engagement & Insights
+
+Owns the feedback-to-insight lifecycle:
+
+```text
+Survey
+ ↓
+Question Builder
+ ↓
+Occurrence Response
+ ↓
+Answers
+ ↓
+Satisfaction / Analytics
+ ↓
+Reports
+```
+
+No response is treated as score zero. Cancelled/archived records are excluded from operational KPI calculations where specified, while historical records remain auditable.
+
+### Domain 5 — AI Workspace
+
+Owns governed AI orchestration:
+
+```text
+Intent → Context → Auth → AdminGuard → RBAC → Policy/Risk
+→ Plan → Approval → Tool Registry → Portal API
+→ Supabase/Storage → Verification → Result/Audit
+```
+
+AI is an application consumer of Portal capabilities. It is never a second database boundary and never executes SQL directly.
+
+## 3. Cross-domain presentation layer
+
+```text
+PRESENTATION
+├── Public Website
+├── PublicAppShell
+├── AdminAppShell
+├── AppNavbar
+└── Dashboard
+```
+
+Dashboard is a presentation surface over domain data. It does not own operational data. AppNavbar is a global UI system shared by public/admin experiences where applicable.
+
+## 4. Platform and infrastructure layer
+
+```text
+PLATFORM
+├── Supabase Auth
+├── PostgreSQL
+├── Supabase Storage
+├── RLS / database policies
+├── Cloudflare Pages / Functions
+└── CI Quality Gate
+```
+
+Browser dependency direction:
+
+```text
+Presentation → Domain UI → Services → Portal API → Supabase
+```
+
+AI dependency direction:
+
+```text
+AI Workspace → governed Tool Registry → Portal API → Supabase/Storage
+```
+
+No browser component may access PostgreSQL, Drizzle, service-role credentials or Supabase management credentials directly.
+
+## 5. Security boundaries
+
+- Supabase Auth is the central identity source.
+- `app_metadata.role` is the RBAC source of truth.
+- Roles remain exactly `SUPER_ADMIN`, `CONTENT_ADMIN`, `OPERATIONS_ADMIN`, `FACILITY_ADMIN`.
+- `AdminGuard` protects admin routes.
+- Server endpoints enforce authentication and permissions independently of UI visibility.
+- Service-role credentials never reach the browser.
+- AI never bypasses Auth, AdminGuard, RBAC, policy checks or Portal API.
+- AI medium/high-risk actions require approval.
+- Audit history is preserved for consequential operations.
+- `NaiBossZer/Facility-Safety` remains a separate system and is untouched.
+- `mahidol-rac` remains a read-only reference and is untouched.
+
+## 6. Lifecycle contract
+
+```text
+Draft → Scheduled → Ongoing → Completed
+                 └──────────→ Cancelled
+
+Active → Archived → Retired
+```
+
+Cancelled records are retained for audit/history and hidden from normal operational views. Archived/retired records remain available for history and governance according to policy.
+
+## 7. Repository organization rule
+
+The current physical repository structure is intentionally not mass-moved merely to rename folders. Domain ownership is established first through the machine-readable registry in `src/config/domains.ts` and `src/config/admin-features.ts`. This avoids destructive churn while establishing a stable boundary for incremental refactoring.
+
+Feature folders/files may remain under the existing `pages`, `components`, `services` and `functions/api/admin` layout while each feature has exactly one canonical domain owner.
+
+## 8. Canonical feature ownership
+
+| Domain | Canonical capabilities |
+|---|---|
+| Portal Core | Auth, RBAC, Admin Users, Organizations, Audit, Lifecycle, Search, Notifications, Settings |
+| Programs & Activities | Activities, Occurrences, Relations, Photos/Media |
+| Learning & Content | Learning Centers, CMS, Partners, Content Media |
+| Engagement & Insights | Surveys, Question Builder, Responses, Satisfaction, Analytics, Reports |
+| AI Workspace | AI Manager, Agents, Tools, Queue, Execution, Approval, History |
+
+## 9. Implementation and verification order
+
+1. Establish domain contract and registry.
+2. Keep central Auth/RBAC/API boundaries intact.
+3. Complete each domain as a vertical production slice against Supabase.
+4. Verify source and type contracts.
+5. Verify CI Build/Lint/Typecheck/Smoke.
+6. Verify Cloudflare preview runtime separately.
+7. Verify visual QA separately from CI/runtime QA.
+8. Verify integration, RLS, RBAC and audit behavior.
+9. Production readiness review.
+10. Merge to `main` only after explicit user approval.
+
+The five domains are a consolidation of product ownership, not permission to delete existing functionality. Existing features are preserved and assigned to their canonical domain.
