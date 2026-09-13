@@ -1,359 +1,85 @@
-import { Link as RouterLink, Route, Routes } from "react-router-dom";
+import { Link as RouterLink, Navigate, Route, Routes } from "react-router-dom";
 import { lazy, Suspense, type ReactNode } from "react";
 import { Toaster } from "sonner";
 import { RuntimeErrorBoundary } from "./components/RuntimeErrorBoundary";
 import { AdminGuard } from "./components/AdminGuard";
 import { AdminAppShell } from "./components/layout/AdminAppShell";
 import { HomePage } from "./pages/HomePage";
-const ActivitiesPage = lazy(() =>
-  import("./pages/social/ActivitiesPage").then((m) => ({ default: m.ActivitiesPage })),
-);
-const ActivityDetailPage = lazy(() =>
-  import("./pages/social/ActivityDetailPage").then((m) => ({ default: m.ActivityDetailPage })),
-);
-const CentersPage = lazy(() =>
-  import("./pages/social/CentersPage").then((m) => ({ default: m.CentersPage })),
-);
-const ProjectsPage = lazy(() =>
-  import("./pages/social/ProjectsPage").then((m) => ({ default: m.ProjectsPage })),
-);
-const ProjectDetailPage = lazy(() =>
-  import("./pages/social/ProjectsPage").then((m) => ({ default: m.ProjectDetailPage })),
-);
-const ShellacLearningCenterPage = lazy(() =>
-  import("./pages/social/ShellacLearningCenterPage").then((m) => ({
-    default: m.ShellacLearningCenterPage,
-  })),
-);
-const PublicSurveyPage = lazy(() =>
-  import("./pages/PublicSurveyPage").then((m) => ({ default: m.PublicSurveyPage })),
-);
-const SiteMapPage = lazy(() =>
-  import("./pages/SiteMapPage").then((m) => ({ default: m.SiteMapPage })),
-);
-const LoginPage = lazy(() =>
-  import("./pages/admin/LoginPage").then((m) => ({ default: m.LoginPage })),
-);
-const AdminPage = lazy(() =>
-  import("./pages/admin/AdminPage").then((m) => ({ default: m.AdminPage })),
-);
-const DashboardPage = lazy(() =>
-  import("./pages/admin/DashboardPage").then((m) => ({ default: m.DashboardPage })),
-);
-const ActivitiesManagementPage = lazy(() =>
-  import("./pages/admin/ActivitiesManagementPage").then((m) => ({
-    default: m.ActivitiesManagementPage,
-  })),
-);
-const ActivityOccurrencesPage = lazy(() =>
-  import("./pages/admin/ActivityOccurrencesPage").then((m) => ({
-    default: m.ActivityOccurrencesPage,
-  })),
-);
-const ActivityMediaPage = lazy(() =>
-  import("./pages/admin/ActivityMediaPage").then((m) => ({ default: m.ActivityMediaPage })),
-);
-const ActivityRelationsPage = lazy(() =>
-  import("./pages/admin/ActivityRelationsPage").then((m) => ({ default: m.ActivityRelationsPage })),
-);
-const SurveyManagementPage = lazy(() =>
-  import("./pages/admin/SurveyManagementPage").then((m) => ({ default: m.SurveyManagementPage })),
-);
-const SurveyAnalyticsPage = lazy(() =>
-  import("./pages/admin/SurveyAnalyticsPage").then((m) => ({ default: m.SurveyAnalyticsPage })),
-);
-const SurveyResponseDetailPage = lazy(() =>
-  import("./pages/admin/SurveyResponseDetailPage").then((m) => ({
-    default: m.SurveyResponseDetailPage,
-  })),
-);
-const LearningCentersManagementPage = lazy(() =>
-  import("./pages/admin/LearningCentersManagementPage").then((m) => ({
-    default: m.LearningCentersManagementPage,
-  })),
-);
-const OrganizationsManagementPage = lazy(() =>
-  import("./pages/admin/OrganizationsManagementPage").then((m) => ({
-    default: m.OrganizationsManagementPage,
-  })),
-);
-const AuditTrailPage = lazy(() =>
-  import("./pages/admin/AuditTrailPage").then((m) => ({ default: m.AuditTrailPage })),
-);
-const AnalyticsPage = lazy(() =>
-  import("./pages/admin/AnalyticsPage").then((m) => ({ default: m.AnalyticsPage })),
-);
-const GovernancePage = lazy(() =>
-  import("./pages/admin/GovernancePage").then((m) => ({ default: m.GovernancePage })),
-);
-const SystemSettingsPage = lazy(() =>
-  import("./pages/admin/SystemSettingsPage").then((m) => ({ default: m.SystemSettingsPage })),
-);
+const ActivitiesPage = lazy(() => import("./pages/social/ActivitiesPage").then((m) => ({ default: m.ActivitiesPage })));
+const ActivityDetailPage = lazy(() => import("./pages/social/ActivityDetailPage").then((m) => ({ default: m.ActivityDetailPage })));
+const CentersPage = lazy(() => import("./pages/social/CentersPage").then((m) => ({ default: m.CentersPage })));
+const ProjectsPage = lazy(() => import("./pages/social/ProjectsPage").then((m) => ({ default: m.ProjectsPage })));
+const ProjectDetailPage = lazy(() => import("./pages/social/ProjectsPage").then((m) => ({ default: m.ProjectDetailPage })));
+const ShellacLearningCenterPage = lazy(() => import("./pages/social/ShellacLearningCenterPage").then((m) => ({ default: m.ShellacLearningCenterPage })));
+const PublicSurveyPage = lazy(() => import("./pages/PublicSurveyPage").then((m) => ({ default: m.PublicSurveyPage })));
+const SiteMapPage = lazy(() => import("./pages/SiteMapPage").then((m) => ({ default: m.SiteMapPage })));
+const LoginPage = lazy(() => import("./pages/admin/LoginPage").then((m) => ({ default: m.LoginPage })));
+const AdminPage = lazy(() => import("./pages/admin/AdminPage").then((m) => ({ default: m.AdminPage })));
+const DashboardPage = lazy(() => import("./pages/admin/DashboardPage").then((m) => ({ default: m.DashboardPage })));
+const ActivitiesManagementPage = lazy(() => import("./pages/admin/ActivitiesManagementPage").then((m) => ({ default: m.ActivitiesManagementPage })));
+const ActivityOccurrencesPage = lazy(() => import("./pages/admin/ActivityOccurrencesPage").then((m) => ({ default: m.ActivityOccurrencesPage })));
+const ActivityMediaPage = lazy(() => import("./pages/admin/ActivityMediaPage").then((m) => ({ default: m.ActivityMediaPage })));
+const ActivityRelationsPage = lazy(() => import("./pages/admin/ActivityRelationsPage").then((m) => ({ default: m.ActivityRelationsPage })));
+const SurveyManagementPage = lazy(() => import("./pages/admin/SurveyManagementPage").then((m) => ({ default: m.SurveyManagementPage })));
+const SurveyAnalyticsPage = lazy(() => import("./pages/admin/SurveyAnalyticsPage").then((m) => ({ default: m.SurveyAnalyticsPage })));
+const SurveyResponseDetailPage = lazy(() => import("./pages/admin/SurveyResponseDetailPage").then((m) => ({ default: m.SurveyResponseDetailPage })));
+const LearningCentersManagementPage = lazy(() => import("./pages/admin/LearningCentersManagementPage").then((m) => ({ default: m.LearningCentersManagementPage })));
+const OrganizationsManagementPage = lazy(() => import("./pages/admin/OrganizationsManagementPage").then((m) => ({ default: m.OrganizationsManagementPage })));
+const AuditTrailPage = lazy(() => import("./pages/admin/AuditTrailPage").then((m) => ({ default: m.AuditTrailPage })));
+const AnalyticsPage = lazy(() => import("./pages/admin/AnalyticsPage").then((m) => ({ default: m.AnalyticsPage })));
+const GovernancePage = lazy(() => import("./pages/admin/GovernancePage").then((m) => ({ default: m.GovernancePage })));
+const SystemSettingsPage = lazy(() => import("./pages/admin/SystemSettingsPage").then((m) => ({ default: m.SystemSettingsPage })));
 const CmsPage = lazy(() => import("./pages/admin/CmsPage").then((m) => ({ default: m.CmsPage })));
-const FacilitySafetyAdminPage = lazy(() =>
-  import("./pages/admin/FacilitySafetyAdminPage").then((m) => ({
-    default: m.FacilitySafetyAdminPage,
-  })),
-);
-const AICommandCenterPage = lazy(() =>
-  import("./pages/admin/AICommandCenterPage").then((m) => ({ default: m.AICommandCenterPage })),
-);
-const AIWorkQueuePage = lazy(() =>
-  import("./pages/admin/AIWorkQueuePage").then((m) => ({ default: m.AIWorkQueuePage })),
-);
-const AIExecutionPage = lazy(() =>
-  import("./pages/admin/AIExecutionPage").then((m) => ({ default: m.AIExecutionPage })),
-);
-const AIHistoryPage = lazy(() =>
-  import("./pages/admin/AIHistoryPage").then((m) => ({ default: m.AIHistoryPage })),
-);
-const AIApprovalPage = lazy(() =>
-  import("./pages/admin/AIApprovalPage").then((m) => ({ default: m.AIApprovalPage })),
-);
-const StorefrontPage = lazy(() =>
-  import("./pages/store/StorefrontPage").then((m) => ({ default: m.StorefrontPage })),
-);
-const SmartFarmPage = lazy(() =>
-  import("./pages/systems/SmartFarmPage").then((m) => ({ default: m.SmartFarmPage })),
-);
-const CleanEnergyPage = lazy(() =>
-  import("./pages/systems/CleanEnergyPage").then((m) => ({ default: m.CleanEnergyPage })),
-);
+const FacilitySafetyAdminPage = lazy(() => import("./pages/admin/FacilitySafetyAdminPage").then((m) => ({ default: m.FacilitySafetyAdminPage })));
+const AIWorkspacePage = lazy(() => import("./pages/admin/AIWorkspacePage").then((m) => ({ default: m.AIWorkspacePage })));
+const StorefrontPage = lazy(() => import("./pages/store/StorefrontPage").then((m) => ({ default: m.StorefrontPage })));
+const SmartFarmPage = lazy(() => import("./pages/systems/SmartFarmPage").then((m) => ({ default: m.SmartFarmPage })));
+const CleanEnergyPage = lazy(() => import("./pages/systems/CleanEnergyPage").then((m) => ({ default: m.CleanEnergyPage })));
 const RACPage = lazy(() => import("./pages/systems/RACPage").then((m) => ({ default: m.RACPage })));
 function NotFoundComponent() {
-  return (
-    <div className="flex min-h-screen items-center justify-center bg-surface-warm px-4">
-      <div className="max-w-md text-center">
-        <h1 className="text-7xl font-black text-brand-navy">404</h1>
-        <h2 className="mt-4 text-xl font-bold text-brand-navy">ไม่พบหน้าที่ต้องการ</h2>
-        <RouterLink
-          to="/"
-          className="mt-6 inline-flex min-h-11 items-center rounded-xl bg-brand-navy px-4 py-2 text-sm font-bold text-white"
-        >
-          กลับหน้าหลัก
-        </RouterLink>
-      </div>
-    </div>
-  );
+  return <div className="flex min-h-screen items-center justify-center bg-surface-warm px-4"><div className="max-w-md text-center"><h1 className="text-7xl font-black text-brand-navy">404</h1><h2 className="mt-4 text-xl font-bold text-brand-navy">ไม่พบหน้าที่ต้องการ</h2><RouterLink to="/" className="mt-6 inline-flex min-h-11 items-center rounded-xl bg-brand-navy px-4 py-2 text-sm font-bold text-white">กลับหน้าหลัก</RouterLink></div></div>;
 }
-function ProtectedRoute({ children }: { children: ReactNode }) {
-  return (
-    <AdminGuard>
-      <AdminAppShell>{children}</AdminAppShell>
-    </AdminGuard>
-  );
-}
-function RouteFallback() {
-  return (
-    <div
-      className="flex min-h-[40vh] items-center justify-center text-sm font-bold text-muted-ink"
-      role="status"
-      aria-live="polite"
-    >
-      กำลังโหลด...
-    </div>
-  );
-}
+function ProtectedRoute({ children }: { children: ReactNode }) { return <AdminGuard><AdminAppShell>{children}</AdminAppShell></AdminGuard>; }
+function RouteFallback() { return <div className="flex min-h-[40vh] items-center justify-center text-sm font-bold text-muted-ink" role="status" aria-live="polite">กำลังโหลด...</div>; }
 export default function App() {
-  return (
-    <RuntimeErrorBoundary>
-      <Suspense fallback={<RouteFallback />}>
-        <Routes>
-          <Route path="/" element={<HomePage />} />
-          <Route path="/activities" element={<ActivitiesPage />} />
-          <Route path="/activities/:slug" element={<ActivityDetailPage />} />
-          <Route path="/centers" element={<CentersPage />} />
-          <Route path="/projects" element={<ProjectsPage />} />
-          <Route path="/projects/:slug" element={<ProjectDetailPage />} />
-          <Route path="/shellac" element={<ShellacLearningCenterPage />} />
-          <Route path="/login" element={<LoginPage />} />
-          <Route
-            path="/dashboard"
-            element={
-              <ProtectedRoute>
-                <DashboardPage />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/admin"
-            element={
-              <ProtectedRoute>
-                <AdminPage />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/admin/activities"
-            element={
-              <ProtectedRoute>
-                <ActivitiesManagementPage />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/admin/activities/occurrences"
-            element={
-              <ProtectedRoute>
-                <ActivityOccurrencesPage />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/admin/activities/photos"
-            element={
-              <ProtectedRoute>
-                <ActivityMediaPage />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/admin/activities/relations"
-            element={
-              <ProtectedRoute>
-                <ActivityRelationsPage />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/admin/surveys"
-            element={
-              <ProtectedRoute>
-                <SurveyManagementPage />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/admin/surveys/analytics"
-            element={
-              <ProtectedRoute>
-                <SurveyAnalyticsPage />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/admin/surveys/response"
-            element={
-              <ProtectedRoute>
-                <SurveyResponseDetailPage />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/admin/learning-centers"
-            element={
-              <ProtectedRoute>
-                <LearningCentersManagementPage />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/admin/organizations"
-            element={
-              <ProtectedRoute>
-                <OrganizationsManagementPage />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/admin/audit-trail"
-            element={
-              <ProtectedRoute>
-                <AuditTrailPage />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/admin/analytics"
-            element={
-              <ProtectedRoute>
-                <AnalyticsPage />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/admin/governance"
-            element={
-              <ProtectedRoute>
-                <GovernancePage />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/admin/settings"
-            element={
-              <ProtectedRoute>
-                <SystemSettingsPage />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/admin/cms"
-            element={
-              <ProtectedRoute>
-                <CmsPage />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/admin/facility-safety"
-            element={
-              <ProtectedRoute>
-                <FacilitySafetyAdminPage />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/admin/ai"
-            element={
-              <ProtectedRoute>
-                <AICommandCenterPage />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/admin/ai/work-queue"
-            element={
-              <ProtectedRoute>
-                <AIWorkQueuePage />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/admin/ai/execution"
-            element={
-              <ProtectedRoute>
-                <AIExecutionPage />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/admin/ai/approval"
-            element={
-              <ProtectedRoute>
-                <AIApprovalPage />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/admin/ai/history"
-            element={
-              <ProtectedRoute>
-                <AIHistoryPage />
-              </ProtectedRoute>
-            }
-          />
-          <Route path="/storefront" element={<StorefrontPage />} />
-          <Route path="/support-vegetables" element={<StorefrontPage />} />
-          <Route path="/smart-farm" element={<SmartFarmPage />} />
-          <Route path="/clean-energy" element={<CleanEnergyPage />} />
-          <Route path="/rac" element={<RACPage />} />
-          <Route path="/survey" element={<PublicSurveyPage />} />
-          <Route path="/site-map" element={<SiteMapPage />} />
-          <Route path="*" element={<NotFoundComponent />} />
-        </Routes>
-      </Suspense>
-      <Toaster position="top-right" richColors closeButton />
-    </RuntimeErrorBoundary>
-  );
+  return <RuntimeErrorBoundary><Suspense fallback={<RouteFallback />}><Routes>
+    <Route path="/" element={<HomePage />} />
+    <Route path="/activities" element={<ActivitiesPage />} />
+    <Route path="/activities/:slug" element={<ActivityDetailPage />} />
+    <Route path="/centers" element={<CentersPage />} />
+    <Route path="/projects" element={<ProjectsPage />} />
+    <Route path="/projects/:slug" element={<ProjectDetailPage />} />
+    <Route path="/shellac" element={<ShellacLearningCenterPage />} />
+    <Route path="/login" element={<LoginPage />} />
+    <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
+    <Route path="/admin" element={<ProtectedRoute><AdminPage /></ProtectedRoute>} />
+    <Route path="/admin/activities" element={<ProtectedRoute><ActivitiesManagementPage /></ProtectedRoute>} />
+    <Route path="/admin/activities/occurrences" element={<ProtectedRoute><ActivityOccurrencesPage /></ProtectedRoute>} />
+    <Route path="/admin/activities/photos" element={<ProtectedRoute><ActivityMediaPage /></ProtectedRoute>} />
+    <Route path="/admin/activities/relations" element={<ProtectedRoute><ActivityRelationsPage /></ProtectedRoute>} />
+    <Route path="/admin/surveys" element={<ProtectedRoute><SurveyManagementPage /></ProtectedRoute>} />
+    <Route path="/admin/surveys/analytics" element={<ProtectedRoute><SurveyAnalyticsPage /></ProtectedRoute>} />
+    <Route path="/admin/surveys/response" element={<ProtectedRoute><SurveyResponseDetailPage /></ProtectedRoute>} />
+    <Route path="/admin/learning-centers" element={<ProtectedRoute><LearningCentersManagementPage /></ProtectedRoute>} />
+    <Route path="/admin/organizations" element={<ProtectedRoute><OrganizationsManagementPage /></ProtectedRoute>} />
+    <Route path="/admin/audit-trail" element={<ProtectedRoute><AuditTrailPage /></ProtectedRoute>} />
+    <Route path="/admin/analytics" element={<ProtectedRoute><AnalyticsPage /></ProtectedRoute>} />
+    <Route path="/admin/governance" element={<ProtectedRoute><GovernancePage /></ProtectedRoute>} />
+    <Route path="/admin/settings" element={<ProtectedRoute><SystemSettingsPage /></ProtectedRoute>} />
+    <Route path="/admin/cms" element={<ProtectedRoute><CmsPage /></ProtectedRoute>} />
+    <Route path="/admin/facility-safety" element={<ProtectedRoute><FacilitySafetyAdminPage /></ProtectedRoute>} />
+    <Route path="/admin/ai" element={<ProtectedRoute><AIWorkspacePage /></ProtectedRoute>} />
+    <Route path="/admin/ai/work-queue" element={<ProtectedRoute><Navigate replace to="/admin/ai?tab=queue" /></ProtectedRoute>} />
+    <Route path="/admin/ai/execution" element={<ProtectedRoute><Navigate replace to="/admin/ai?tab=execution" /></ProtectedRoute>} />
+    <Route path="/admin/ai/approval" element={<ProtectedRoute><Navigate replace to="/admin/ai?tab=approval" /></ProtectedRoute>} />
+    <Route path="/admin/ai/history" element={<ProtectedRoute><Navigate replace to="/admin/ai?tab=history" /></ProtectedRoute>} />
+    <Route path="/storefront" element={<StorefrontPage />} />
+    <Route path="/support-vegetables" element={<StorefrontPage />} />
+    <Route path="/smart-farm" element={<SmartFarmPage />} />
+    <Route path="/clean-energy" element={<CleanEnergyPage />} />
+    <Route path="/rac" element={<RACPage />} />
+    <Route path="/survey" element={<PublicSurveyPage />} />
+    <Route path="/site-map" element={<SiteMapPage />} />
+    <Route path="*" element={<NotFoundComponent />} />
+  </Routes></Suspense><Toaster position="top-right" richColors closeButton /></RuntimeErrorBoundary>;
 }
