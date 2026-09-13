@@ -1,6 +1,6 @@
 /**
  * AI Intent Processing API
- * Server-side pipeline: natural language -> OpenAI -> governed tool -> execution/approval.
+ * Server-side pipeline: natural language -> Gemini -> governed tool -> execution/approval.
  */
 
 import { getSupabaseUser, isAdminRole, json, permissionsForRole, supabaseConfig } from "../auth/_shared";
@@ -151,30 +151,68 @@ async function executeTool(
   }
 }
 
-async function parseIntentWithOpenAI(userIntent: string, tools: Tool[], apiKey: string, model: string, maxTokens: number, temperature: number): Promise<ParsedIntent> {
+async function parseIntentWithGemini(
+  userIntent: string,
+  tools: Tool[],
+  apiKey: string,
+  model: string,
+  maxTokens: number,
+  temperature: number,
+): Promise<ParsedIntent> {
   const toolsList = tools.map((tool) => `${tool.tool_key} | ${tool.domain} | ${tool.name} | ${tool.description ?? ""}`).join("\n");
   const systemPrompt = `You are the intent router for Mahidol Lampang Portal.\nChoose exactly one tool from the supplied registry. Never invent a tool.\nReturn JSON only:\n{"domain":"...","action":"...","tool":"exact tool_key","parameters":{},"confidence":0.0,"reasoning":"brief"}\n\nAvailable governed tools:\n${toolsList}\n\nRules:\n- The tool must exactly match one available tool_key.\n- Extract only parameters needed by that tool.\n- Never invent IDs, dates, or values that the user did not provide.\n- If the request is ambiguous or no tool is appropriate, return tool="unknown" and confidence=0.\n- Do not decide permissions or risk; the server does that from the registry.`;
 
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 15_000);
   try {
-    const response = await fetch("https://api.openai.com/v1/chat/completions", {
-      method: "POST",
-      signal: controller.signal,
-      headers: { "Content-Type": "application/json", Authorization: `Bearer ${apiKey}` },
-      body: JSON.stringify({
-        model,
-        messages: [{ role: "system", content: systemPrompt }, { role: "user", content: userIntent }],
-        temperature,
-        max_tokens: maxTokens,
-        response_format: { type: "json_object" },
-      }),
-    });
-    if (!response.ok) throw new Error(`OpenAI API error ${response.status}`);
-    const data = (await response.json()) as { choices?: Array<{ message?: { content?: string } }> };
-    const content = data.choices?.[0]?.message?.content;
-    if (!content) throw new Error("OpenAI returned no intent payload");
-    return safeJson(JSON.parse(content)) as ParsedIntent;
+    const response = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`,
+      {
+        method: "POST",
+        signal: controller.signal,
+        headers: {
+          "Content-Type": "application/json",
+          "x-goog-api-key": apiKey,
+        },
+        body: JSON.stringify({
+          systemInstruction: { parts: [{ text: systemPrompt }] },
+          contents: [{ role: "user", parts: [{ text: userIntent }] }],
+          generationConfig: {
+            temperature,
+            maxOutputTokens: maxTokens,
+            responseMimeType: "application/json",
+            responseJsonSchema: {
+              type: "object",
+              properties: {
+                domain: { type: "string" },
+                action: { type: "string" },
+                tool: { type: "string" },
+                parameters: { type: "object", additionalProperties: true },
+                confidence: { type: "number", minimum: 0, maximum: 1 },
+                reasoning: { type: "string" },
+              },
+              required: ["tool", "parameters", "confidence"],
+              additionalProperties: false,
+            },
+          },
+        }),
+      },
+    );
+    const payload = (await response.json().catch(() => null)) as Record<string, unknown> | null;
+    if (!response.ok) {
+      const apiError = safeJson(payload?.error);
+      const message = typeof apiError.message === "string" ? apiError.message : `Gemini API error ${response.status}`;
+      throw new Error(message);
+    }
+
+    const candidates = Array.isArray(payload?.candidates) ? payload.candidates : [];
+    const firstCandidate = safeJson(candidates[0]);
+    const content = safeJson(firstCandidate.content);
+    const parts = Array.isArray(content.parts) ? content.parts : [];
+    const textPart = parts.find((part) => typeof safeJson(part).text === "string");
+    const text = textPart ? String(safeJson(textPart).text) : "";
+    if (!text) throw new Error("Gemini returned no intent payload");
+    return safeJson(JSON.parse(text)) as ParsedIntent;
   } finally {
     clearTimeout(timeout);
   }
@@ -192,20 +230,20 @@ export async function onRequest({ request, env }: { request: Request; env: Env }
     const intent = body.intent?.trim();
     if (!intent) return json({ success: false, error: "Intent is required" }, 400);
 
-    const apiKey = String(env.OPENAI_API_KEY ?? "").trim();
-    if (!apiKey) return json({ success: false, error: "OpenAI API key not configured" }, 503);
+    const apiKey = String(env.GEMINI_API_KEY ?? "").trim();
+    if (!apiKey) return json({ success: false, error: "Gemini API key not configured" }, 503);
     if (!supabaseConfig(env).configured) return json({ success: false, error: "Supabase environment is not configured" }, 503);
 
     const tools = (await callSupabase(env, token, "ai_tools?enabled=eq.true&select=id,tool_key,name,description,domain,endpoint,method,risk_level,permission,input_schema,enabled,execution_mode&order=domain.asc,tool_key.asc")) as Tool[];
     if (!Array.isArray(tools) || tools.length === 0) return json({ success: false, error: "No enabled AI tools available" }, 503);
 
-    const parsed = await parseIntentWithOpenAI(
+    const parsed = await parseIntentWithGemini(
       intent,
       tools,
       apiKey,
-      String(env.OPENAI_MODEL ?? "gpt-4o-mini"),
-      Math.round(parseNumber(env.OPENAI_MAX_TOKENS, 500, 100, 2000)),
-      parseNumber(env.OPENAI_TEMPERATURE, 0.3, 0, 1),
+      String(env.GEMINI_MODEL ?? "gemini-3.8-flash"),
+      Math.round(parseNumber(env.GEMINI_MAX_OUTPUT_TOKENS ?? env.OPENAI_MAX_TOKENS, 500, 100, 2000)),
+      parseNumber(env.GEMINI_TEMPERATURE ?? env.OPENAI_TEMPERATURE, 0.3, 0, 1),
     );
     const parameters = safeJson(parsed.parameters);
     const matchedTool = tools.find((tool) => tool.tool_key === parsed.tool);
@@ -235,11 +273,11 @@ export async function onRequest({ request, env }: { request: Request; env: Env }
         headers: { "Content-Type": "application/json", Prefer: "return=minimal" },
         body: JSON.stringify({ recipient_user_id: user.id, kind: "ai_approval", title: "AI ต้องการการอนุมัติ", body: `${matchedTool.name} · risk ${matchedTool.risk_level}`, link: `/admin/ai/approval?executionId=${execution.id}` }),
       });
-      return json({ success: true, openAIUsed: true, requiresApproval: true, data: { execution, intent: parsed, matchedTool, executionPlan, riskLevel: matchedTool.risk_level } }, 202);
+      return json({ success: true, geminiUsed: true, requiresApproval: true, data: { execution, intent: parsed, matchedTool, executionPlan, riskLevel: matchedTool.risk_level } }, 202);
     }
 
     const result = await executeTool(request, env, token, execution.id, matchedTool, parameters);
-    return json({ success: result.status === "completed", openAIUsed: true, requiresApproval: false, data: { executionId: execution.id, intent: parsed, matchedTool, executionPlan, result: result.result }, error: result.error }, result.status === "completed" ? 200 : 502);
+    return json({ success: result.status === "completed", geminiUsed: true, requiresApproval: false, data: { executionId: execution.id, intent: parsed, matchedTool, executionPlan, result: result.result }, error: result.error }, result.status === "completed" ? 200 : 502);
   } catch (error) {
     console.error("/api/admin/ai-process", error instanceof Error ? error.message : "AI processing failed");
     return json({ success: false, error: error instanceof Error ? error.message : "AI intent processing failed" }, 500);
