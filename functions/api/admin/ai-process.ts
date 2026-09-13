@@ -3,7 +3,7 @@
  * Server-side pipeline: natural language -> Gemini -> governed tool -> execution/approval.
  */
 
-import { getSupabaseUser, isAdminRole, json, permissionsForRole, supabaseConfig } from "../auth/_shared";
+import { getCookie, getSupabaseUser, isAdminRole, json, permissionsForRole, supabaseConfig } from "../auth/_shared";
 
 type Env = Record<string, unknown>;
 type RiskLevel = "low" | "medium" | "high" | "critical";
@@ -29,12 +29,6 @@ type ParsedIntent = {
   parameters?: Record<string, unknown>;
   confidence?: number;
   reasoning?: string;
-};
-
-const cookie = (request: Request): string | null => {
-  const cookies = (request.headers.get("Cookie") ?? "").split(";").map((v) => v.trim());
-  const found = cookies.find((v) => v.startsWith("sb_access_token="));
-  return found ? decodeURIComponent(found.slice(17)) : null;
 };
 
 async function callSupabase(env: Env, token: string, path: string, init: RequestInit = {}) {
@@ -170,10 +164,7 @@ async function parseIntentWithGemini(
       {
         method: "POST",
         signal: controller.signal,
-        headers: {
-          "Content-Type": "application/json",
-          "x-goog-api-key": apiKey,
-        },
+        headers: { "Content-Type": "application/json", "x-goog-api-key": apiKey },
         body: JSON.stringify({
           systemInstruction: { parts: [{ text: systemPrompt }] },
           contents: [{ role: "user", parts: [{ text: userIntent }] }],
@@ -222,7 +213,7 @@ export async function onRequest({ request, env }: { request: Request; env: Env }
     if (request.method !== "POST") return json({ success: false, error: "Method Not Allowed" }, 405, { Allow: "POST" });
     const user = await getSupabaseUser(request, env);
     const role = user?.app_metadata?.role;
-    const token = cookie(request);
+    const token = getCookie(request, "sb_access_token");
     if (!user || !isAdminRole(role) || !token) return json({ success: false, error: "Unauthorized" }, 401);
 
     const body = (await request.json()) as { intent?: string; context?: Record<string, unknown> };
