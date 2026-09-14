@@ -13,6 +13,7 @@ import {
   jsonb,
 } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
+import * as permissionsSchema from "./schema-permissions";
 
 // Enums
 export const orderStatusEnum = pgEnum("order_status", [
@@ -428,3 +429,6 @@ export const aiApprovalsRelations = relations(aiApprovals, ({ one }) => ({
     references: [aiExecutions.id],
   }),
 }));
+
+// Export permissions schema
+export * from "./schema-permissions";

@@ -2,6 +2,16 @@ import crypto from "node:crypto";
 import type { ApiRequest, ApiResponse } from "./_http";
 import { json } from "./_http";
 import { hasAdminPermission, isAdminRole, type AdminRole } from "../src/auth/permissions";
+import { createDefaultAuthorization, type AdminIdentity } from "../src/auth/authorization";
+
+/**
+ * Legacy compatibility layer for authorization.
+ * These functions maintain the existing API while internally using the new authorization module.
+ * Gradually migrate API handlers to use the new module directly.
+ */
+
+// Initialize authorization module for internal use
+const auth = createDefaultAuthorization();
 
 function accessToken(req: ApiRequest): string | null {
   const match = (req.headers.cookie ?? "").match(/(?:^|;\s*)sb_access_token=([^;]+)/);
@@ -15,8 +25,6 @@ function decodePart(value: string): Record<string, unknown> | null {
     return null;
   }
 }
-
-export type AdminIdentity = { id: string; email: string | null; role: AdminRole };
 
 export function adminIdentity(req: ApiRequest): AdminIdentity | null {
   const raw = accessToken(req);
@@ -54,6 +62,16 @@ export function adminIdentity(req: ApiRequest): AdminIdentity | null {
     : null;
 }
 
+/**
+ * Legacy wrapper using new authorization module.
+ * @deprecated Use auth.validateToken() directly for new code
+ */
+export async function adminIdentityAsync(req: ApiRequest): Promise<AdminIdentity | null> {
+  const raw = accessToken(req);
+  if (!raw) return null;
+  return auth.validateToken(raw);
+}
+
 export function requireAdmin(req: ApiRequest, res: ApiResponse): AdminIdentity | null {
   const identity = adminIdentity(req);
   if (!identity) {
@@ -75,4 +93,38 @@ export function requirePermission(
     return null;
   }
   return identity;
+}
+
+/**
+ * Legacy wrapper using new authorization module.
+ * @deprecated Use auth.requireAuthorization() directly for new code
+ */
+export async function requirePermissionAsync(
+  req: ApiRequest,
+  res: ApiResponse,
+  permission: string,
+): Promise<AdminIdentity | null> {
+  const raw = accessToken(req);
+  if (!raw) {
+    json(res, 401, { error: "Unauthorized" });
+    return null;
+  }
+
+  try {
+    const identity = await auth.validateToken(raw);
+    if (!identity) {
+      json(res, 401, { error: "Unauthorized" });
+      return null;
+    }
+
+    if (!auth.checkPermission(identity, permission)) {
+      json(res, 403, { error: "Forbidden" });
+      return null;
+    }
+
+    return identity;
+  } catch {
+    json(res, 401, { error: "Unauthorized" });
+    return null;
+  }
 }
