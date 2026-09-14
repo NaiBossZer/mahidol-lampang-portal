@@ -23,6 +23,7 @@ const ActivityRelationsPage = lazy(() => import("./pages/admin/ActivityRelations
 const SurveyManagementPage = lazy(() => import("./pages/admin/SurveyManagementPage").then((m) => ({ default: m.SurveyManagementPage })));
 const SurveyAnalyticsPage = lazy(() => import("./pages/admin/SurveyAnalyticsPage").then((m) => ({ default: m.SurveyAnalyticsPage })));
 const SurveyResponseDetailPage = lazy(() => import("./pages/admin/SurveyResponseDetailPage").then((m) => ({ default: m.SurveyResponseDetailPage })));
+const UnifiedSurveyWorkflowPage = lazy(() => import("./pages/admin/UnifiedSurveyWorkflowPage").then((m) => ({ default: m.UnifiedSurveyWorkflowPage })));
 const LearningCentersManagementPage = lazy(() => import("./pages/admin/LearningCentersManagementPage").then((m) => ({ default: m.LearningCentersManagementPage })));
 const OrganizationsManagementPage = lazy(() => import("./pages/admin/OrganizationsManagementPage").then((m) => ({ default: m.OrganizationsManagementPage })));
 const AuditTrailPage = lazy(() => import("./pages/admin/AuditTrailPage").then((m) => ({ default: m.AuditTrailPage })));
@@ -57,6 +58,7 @@ export default function App() {
     <Route path="/admin/activities/occurrences" element={<ProtectedRoute><ActivityOccurrencesPage /></ProtectedRoute>} />
     <Route path="/admin/activities/photos" element={<ProtectedRoute><ActivityMediaPage /></ProtectedRoute>} />
     <Route path="/admin/activities/relations" element={<ProtectedRoute><ActivityRelationsPage /></ProtectedRoute>} />
+    <Route path="/admin/survey-workflow" element={<ProtectedRoute><UnifiedSurveyWorkflowPage /></ProtectedRoute>} />
     <Route path="/admin/surveys" element={<ProtectedRoute><SurveyManagementPage /></ProtectedRoute>} />
     <Route path="/admin/surveys/analytics" element={<ProtectedRoute><SurveyAnalyticsPage /></ProtectedRoute>} />
     <Route path="/admin/surveys/response" element={<ProtectedRoute><SurveyResponseDetailPage /></ProtectedRoute>} />
