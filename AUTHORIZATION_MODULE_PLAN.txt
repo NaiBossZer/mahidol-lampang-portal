@@ -1,0 +1,204 @@
+Authorization Module Deepening Implementation Plan
+================================================
+
+## Design Decisions Summary
+
+### Module Structure
+- Location: src/auth/authorization/
+- Sub-modules: TokenValidation, RoleExtraction, PermissionChecking, SessionManagement
+- Main interface: createAuthorization(tokenValidator, permissionChecker)
+- Pattern: Functional composition with dependency injection
+
+### Key Interfaces
+- TokenValidator: validate(token: string): Promise<Identity | null>
+- PermissionChecker: checkPermission(identity: Identity, permission: string): boolean
+- Identity: { id: string; email: string | null; role: AdminRole }
+
+### Integration Strategy
+- Legacy compatibility: Wrappers in existing files (api/_authorization.ts, api/_auth.ts)
+- Migration: Incremental - one API handler at a time
+- Error handling: Custom errors (UnauthorizedError, ForbiddenError)
+
+### Testing
+- Unit tests: src/auth/__tests__/unit/ for each sub-module
+- Integration tests: src/auth/__tests__/integration/
+- Mock adapters: Factory functions in test helpers
+
+### Documentation
+- JSDoc comments on functions/interfaces
+- Separate AUTH_MODULE.md documentation
+
+## Implementation Steps
+
+### 1. Create Module Structure
+```bash
+mkdir -p src/auth/authorization
+mkdir -p src/auth/__tests__/unit
+mkdir -p src/auth/__tests__/integration
+```
+
+### 2. Core Types and Errors
+File: src/auth/authorization/types.ts
+- AdminRole type (from existing permissions.ts)
+- AdminIdentity type
+- Identity interface (expanded from AdminIdentity)
+- Custom error classes: UnauthorizedError, ForbiddenError
+
+### 3. TokenValidation Sub-module
+File: src/auth/authorization/token-validation.ts
+- TokenValidator interface
+- validate(token: string): Promise<Identity | null>
+- Token validation logic extracted from api/_authorization.ts
+
+### 4. RoleExtraction Sub-module
+File: src/auth/authorization/role-extraction.ts
+- Role extraction logic from JWT payload
+- AdminRole validation functions
+- isAdminRole type guard
+
+### 5. PermissionChecking Sub-module
+File: src/auth/authorization/permission-checking.ts
+- PermissionChecker interface
+- checkPermission(identity: Identity, permission: string): boolean
+- Role-permission mapping logic (from existing permissions.ts)
+
+### 6. Main Authorization Module
+File: src/auth/authorization/index.ts
+- createAuthorization(tokenValidator, permissionChecker) function
+- Composed object with all sub-module functions
+- Default factory: createDefaultAuthorization()
+
+### 7. Supabase Implementation
+File: src/auth/authorization/supabase-token-validator.ts
+- SupabaseTokenValidator implementation
+- JWT decoding and validation logic
+- Integration with existing SUPABASE_JWT_SECRET
+
+### 8. Legacy Wrappers
+File: api/_authorization.ts (modify existing)
+- Wrapper functions calling new module
+- Maintain existing function signatures
+
+File: api/_auth.ts (modify existing)
+- Session management wrappers
+- Maintain existing function signatures
+
+### 9. Unit Tests
+File: src/auth/__tests__/unit/token-validation.test.ts
+- Test TokenValidator interface
+- Mock token validation scenarios
+
+File: src/auth/__tests__/unit/permission-checking.test.ts
+- Test PermissionChecker interface
+- Test role-permission mappings
+
+File: src/auth/__tests__/unit/role-extraction.test.ts
+- Test role extraction logic
+- Test type guards
+
+### 10. Integration Tests
+File: src/auth/__tests__/integration/authorization.test.ts
+- Test full authorization flow
+- Test with HTTP request/response cycle
+
+### 11. Test Helpers
+File: src/auth/__tests__/helpers/mock-factories.ts
+- createMockTokenValidator() factory
+- createMockPermissionChecker() factory
+- Helper functions for test data
+
+### 12. Documentation
+File: AUTH_MODULE.md
+- Module overview and design rationale
+- Interface documentation
+- Usage examples
+- Migration guide
+
+File: src/auth/authorization/README.md
+- Quick start guide
+- API reference
+
+### 13. Architecture Update
+File: ARCHITECTURE.md (update existing)
+- Add Authorization Module to Portal Core domain
+- Document new module boundaries
+- Update dependency diagrams
+
+## Migration Plan
+
+### Phase 1: Module Creation
+1. Create all module files without touching existing code
+2. Implement unit tests and ensure they pass
+3. Create documentation
+
+### Phase 2: Legacy Wrappers
+1. Implement wrappers in api/_authorization.ts
+2. Implement wrappers in api/_auth.ts
+3. Ensure existing tests still pass
+
+### Phase 3: Incremental Migration
+1. Choose one API handler (e.g., admin overview)
+2. Migrate to use new module directly
+3. Test thoroughly
+4. Repeat for other handlers
+
+### Phase 4: Cleanup
+1. Remove legacy wrappers
+2. Update documentation
+3. Final testing
+
+## File Structure
+
+```
+src/auth/
+├── authorization/
+│   ├── index.ts                 # Main module exports
+│   ├── types.ts                 # Core types and errors
+│   ├── token-validation.ts      # TokenValidation sub-module
+│   ├── role-extraction.ts       # RoleExtraction sub-module
+│   ├── permission-checking.ts  # PermissionChecking sub-module
+│   ├── supabase-token-validator.ts  # Supabase implementation
+│   └── README.md               # Module documentation
+├── __tests__/
+│   ├── unit/
+│   │   ├── token-validation.test.ts
+│   │   ├── permission-checking.test.ts
+│   │   └── role-extraction.test.ts
+│   ├── integration/
+│   │   └── authorization.test.ts
+│   └── helpers/
+│       └── mock-factories.ts
+├── permissions.ts               # Existing (unchanged initially)
+└── _authorization.ts            # Existing (will have wrappers)
+
+api/
+├── _authorization.ts            # Existing (will have wrappers)
+└── _auth.ts                     # Existing (will have wrappers)
+
+AUTH_MODULE.md                   # New documentation
+ARCHITECTURE.md                  # Updated documentation
+```
+
+## Key Benefits
+
+1. **Locality**: All authorization logic centralized in one module
+2. **Leverage**: Reusable authorization logic across different contexts
+3. **Testability**: Seams allow comprehensive testing without HTTP coupling
+4. **Maintainability**: Clear module boundaries and interfaces
+5. **Flexibility**: Easy to swap implementations for different auth providers
+
+## Risk Mitigation
+
+1. **Backward Compatibility**: Wrappers ensure existing code continues to work
+2. **Incremental Migration**: Migrate one handler at a time to reduce risk
+3. **Comprehensive Testing**: Unit and integration tests ensure correctness
+4. **Documentation**: Clear guides for migration and usage
+
+## Success Criteria
+
+1. All existing tests pass after module creation
+2. Unit tests cover all sub-modules
+3. Integration tests cover full authorization flow
+4. At least one API handler successfully migrated
+5. Documentation is complete and accurate
+6. Performance is not degraded
