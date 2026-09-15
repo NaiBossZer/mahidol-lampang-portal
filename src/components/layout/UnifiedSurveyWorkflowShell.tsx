@@ -13,12 +13,13 @@ export type UnifiedSurveyWorkflowStep = (typeof UNIFIED_SURVEY_WORKFLOW_STEPS)[n
 
 type UnifiedSurveyWorkflowShellProps = {
   activeStep: UnifiedSurveyWorkflowStep;
+  onStepClick?: (step: UnifiedSurveyWorkflowStep) => void;
   children: ReactNode;
   context?: ReactNode;
   assistant?: ReactNode;
 };
 
-export function UnifiedSurveyWorkflowShell({ activeStep, children, context, assistant }: UnifiedSurveyWorkflowShellProps) {
+export function UnifiedSurveyWorkflowShell({ activeStep, onStepClick, children, context, assistant }: UnifiedSurveyWorkflowShellProps) {
   const activeIndex = UNIFIED_SURVEY_WORKFLOW_STEPS.findIndex((step) => step.id === activeStep);
 
   return (
@@ -35,10 +36,10 @@ export function UnifiedSurveyWorkflowShell({ activeStep, children, context, assi
               const current = index === activeIndex;
               return (
                 <li key={step.id} className="flex items-center gap-2">
-                  <span className={`grid h-7 w-7 place-items-center rounded-full text-xs font-bold ${completed || current ? "bg-brand-navy text-white" : "bg-slate-100 text-slate-500"}`}>
-                    {completed ? "✓" : index + 1}
-                  </span>
-                  <span className={current ? "text-xs font-bold text-brand-navy" : "text-xs text-slate-500"}>{step.label}</span>
+                  <button type="button" disabled={!onStepClick} onClick={() => onStepClick?.(step.id)} className={`flex items-center gap-2 rounded-lg px-1 py-1 ${onStepClick ? "cursor-pointer hover:bg-slate-50" : "cursor-default"}`} aria-current={current ? "step" : undefined}>
+                    <span className={`grid h-7 w-7 place-items-center rounded-full text-xs font-bold ${completed || current ? "bg-brand-navy text-white" : "bg-slate-100 text-slate-500"}`}>{completed ? "✓" : index + 1}</span>
+                    <span className={current ? "text-xs font-bold text-brand-navy" : "text-xs text-slate-500"}>{step.label}</span>
+                  </button>
                   {index < UNIFIED_SURVEY_WORKFLOW_STEPS.length - 1 && <span className="text-slate-300">→</span>}
                 </li>
               );
@@ -46,17 +47,10 @@ export function UnifiedSurveyWorkflowShell({ activeStep, children, context, assi
           </ol>
         </nav>
       </header>
-
       <main className="mx-auto grid max-w-[1600px] grid-cols-1 gap-4 p-4 lg:grid-cols-[260px_minmax(0,1fr)_300px] lg:p-5">
-        <aside className="hidden rounded-2xl border border-slate-200 bg-white p-4 lg:block">
-          <h2 className="mb-3 text-sm font-bold">Active Context</h2>
-          {context ?? <p className="text-xs text-slate-500">ยังไม่มีบริบทที่เลือก</p>}
-        </aside>
+        <aside className="hidden rounded-2xl border border-slate-200 bg-white p-4 lg:block"><h2 className="mb-3 text-sm font-bold">Active Context</h2>{context ?? <p className="text-xs text-slate-500">ยังไม่มีบริบทที่เลือก</p>}</aside>
         <section className="min-w-0 rounded-2xl border border-slate-200 bg-white p-4 lg:p-5">{children}</section>
-        <aside className="rounded-2xl border border-slate-200 bg-white p-4">
-          <h2 className="mb-3 text-sm font-bold">AI Assistant</h2>
-          {assistant ?? <p className="text-xs text-slate-500">คำแนะนำจาก AI จะแสดงตามขั้นตอนปัจจุบัน</p>}
-        </aside>
+        <aside className="rounded-2xl border border-slate-200 bg-white p-4"><h2 className="mb-3 text-sm font-bold">AI Assistant</h2>{assistant ?? <p className="text-xs text-slate-500">คำแนะนำจาก AI จะแสดงตามขั้นตอนปัจจุบัน</p>}</aside>
       </main>
     </div>
   );
