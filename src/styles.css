@@ -127,14 +127,12 @@
     overflow: visible;
   }
 
-  /* Stitch baseline: compact 16px content inset, 10px section rhythm, natural page scroll. */
   .admin-dashboard-shell #admin-main .dashboard-screen > main {
     max-width: 90rem;
     padding: 1rem;
   }
   .admin-dashboard-shell #admin-main .dashboard-screen > main > * + * { margin-top: 0.625rem; }
 
-  /* Header hierarchy from the reference: compact, crisp, executive-first. */
   .admin-dashboard-shell #admin-main .dashboard-screen > main > header {
     gap: 0.5rem;
     padding-bottom: 0.5rem;
@@ -146,7 +144,6 @@
   .admin-dashboard-shell #admin-main .dashboard-screen > main > header p { font-size: 0.6875rem; }
   .admin-dashboard-shell #admin-main .dashboard-screen > main > header > div:last-child { font-size: 0.6875rem; }
 
-  /* Filter + hero cards keep the same rounded white treatment as Stitch. */
   .admin-dashboard-shell #admin-main .dashboard-screen > main > section:first-of-type,
   .admin-dashboard-shell #admin-main .dashboard-screen > main > section:nth-of-type(2) {
     padding: 0.75rem;
@@ -160,7 +157,6 @@
     font-size: 0.75rem;
   }
 
-  /* KPI strip: narrow gutters and stronger numbers, matching the dense executive view. */
   .admin-dashboard-shell #admin-main .dashboard-screen > main > section:nth-of-type(3) {
     gap: 0.625rem;
   }
@@ -175,7 +171,6 @@
     font-size: 1.5rem;
   }
 
-  /* Analytics cards: compact section headers, restrained internal padding, no clipping. */
   .admin-dashboard-shell #admin-main .dashboard-screen > main > section:nth-of-type(4) {
     gap: 0.625rem;
   }
@@ -190,13 +185,36 @@
     padding: 0.75rem;
   }
 
-  /* Keep the photo strip compact and fully visible while allowing the page to grow vertically. */
   .admin-dashboard-shell #admin-main .dashboard-screen > main > section:nth-of-type(5) {
     gap: 0.625rem;
   }
   .admin-dashboard-shell #admin-main .dashboard-screen > main > section:nth-of-type(5) > section > div:last-child {
     padding: 0.75rem;
   }
+
+  /* Dashboard reference order: Left = 4 cards, Middle = 2 cards, Right = 3 cards. */
+  .admin-dashboard-shell #admin-main .dashboard-screen > main > section:nth-of-type(4) {
+    display: grid;
+    grid-template-columns: minmax(0, 1.05fr) minmax(0, 1.45fr) minmax(260px, 0.8fr);
+    grid-template-areas:
+      "overall score distribution"
+      "respondents score highlights"
+      "photos score comments"
+      "recent group comments";
+    align-items: start;
+  }
+  .admin-dashboard-shell #admin-main .dashboard-screen > main > section:nth-of-type(4) > div {
+    display: contents;
+  }
+  .admin-dashboard-shell #admin-main .dashboard-screen > main > section:nth-of-type(4) > div:nth-child(1) > section:nth-child(1) { grid-area: overall; }
+  .admin-dashboard-shell #admin-main .dashboard-screen > main > section:nth-of-type(4) > div:nth-child(1) > section:nth-child(2) { grid-area: respondents; }
+  .admin-dashboard-shell #admin-main .dashboard-screen > main > section:nth-of-type(4) > div:nth-child(1) > section:nth-child(3) { grid-area: photos; }
+  .admin-dashboard-shell #admin-main .dashboard-screen > main > section:nth-of-type(4) > div:nth-child(2) > section:nth-child(1) { grid-area: score; }
+  .admin-dashboard-shell #admin-main .dashboard-screen > main > section:nth-of-type(4) > div:nth-child(2) > section:nth-child(2) { grid-area: group; }
+  .admin-dashboard-shell #admin-main .dashboard-screen > main > section:nth-of-type(4) > div:nth-child(2) > section:nth-child(3) { grid-area: recent; }
+  .admin-dashboard-shell #admin-main .dashboard-screen > main > section:nth-of-type(4) > div:nth-child(3) > section:nth-child(1) { grid-area: distribution; }
+  .admin-dashboard-shell #admin-main .dashboard-screen > main > section:nth-of-type(4) > div:nth-child(3) > section:nth-child(2) { grid-area: highlights; }
+  .admin-dashboard-shell #admin-main .dashboard-screen > main > section:nth-of-type(4) > div:nth-child(3) > section:nth-child(3) { grid-area: comments; }
 }
 @media (max-width: 1023px) {
   .dashboard-screen { min-height: calc(100vh - 4rem); }
