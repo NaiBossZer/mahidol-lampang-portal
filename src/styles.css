@@ -1,19 +1,19 @@
-@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Prompt:wght@400;500;600;700;800&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Sarabun:wght@400;500;600;700&display=swap");
 @import "tailwindcss";
 @import "tw-animate-css";
 @source "../src";
 @custom-variant dark (&:is(.dark *));
 @theme inline {
-  --font-sans: "Prompt", system-ui, sans-serif;
-  --font-numeric: "Inter", "Prompt", system-ui, sans-serif;
-  --font-display: "Prompt", system-ui, sans-serif;
+  --font-sans: "Sarabun", system-ui, sans-serif;
+  --font-numeric: "Inter", "Sarabun", system-ui, sans-serif;
+  --font-display: "Sarabun", system-ui, sans-serif;
   --font-mono: "IBM Plex Mono", ui-monospace, monospace;
-  --color-brand-navy: #123b63;
-  --color-brand-blue: #1677a8;
+  --color-brand-navy: #0c2340;
+  --color-brand-blue: #163a66;
   --color-local-terracotta: #c66b4f;
   --color-northern-gold: #d6a84f;
   --color-leaf: #5f8d62;
-  --color-surface-warm: #f8f6f0;
+  --color-surface-warm: #f4f6fb;
   --color-ink: #1f2933;
   --color-muted-ink: #667085;
   --color-background: var(--background);
@@ -25,28 +25,23 @@
   --color-ring: var(--ring);
 }
 :root {
-  --brand-navy: #123b63;
-  --brand-blue: #1677a8;
-  --surface-warm: #f8f6f0;
+  --brand-navy: #0c2340;
+  --brand-blue: #163a66;
+  --surface-warm: #f4f6fb;
   --ink: #1f2933;
-  --content-max: 80rem;
+  --content-max: 90rem;
   --radius: 0.75rem;
-  --background: #f8f6f0;
+  --background: #f4f6fb;
   --foreground: #1f2933;
   --card: #fff;
   --card-foreground: #1f2933;
-  --border: #e2e6ea;
-  --input: #d8dee5;
-  --ring: #1677a8;
+  --border: #e2e8f0;
+  --input: #dbe3ec;
+  --ring: #163a66;
 }
 @layer base {
-  * {
-    border-color: var(--color-border);
-  }
-  html {
-    scroll-behavior: smooth;
-    scroll-padding-top: 5rem;
-  }
+  * { border-color: var(--color-border); }
+  html { scroll-behavior: smooth; scroll-padding-top: 5rem; }
   body {
     margin: 0;
     min-width: 320px;
@@ -57,53 +52,23 @@
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
   }
-  img,
-  svg,
-  video,
-  canvas {
-    max-width: 100%;
-  }
-  img {
-    height: auto;
-  }
-  button,
-  a,
-  input,
-  select,
-  textarea {
-    -webkit-tap-highlight-color: transparent;
-  }
-  button,
-  input,
-  select,
-  textarea {
-    font: inherit;
-  }
-  :focus-visible {
-    outline: 3px solid var(--ring);
-    outline-offset: 3px;
-  }
+  img, svg, video, canvas { max-width: 100%; }
+  img { height: auto; }
+  button, a, input, select, textarea { -webkit-tap-highlight-color: transparent; }
+  button, input, select, textarea { font: inherit; }
+  :focus-visible { outline: 3px solid var(--ring); outline-offset: 3px; }
 }
 @layer utilities {
-  .container-content {
-    width: min(100% - 2rem, var(--content-max));
-    margin-inline: auto;
-  }
-  .text-balance {
-    text-wrap: balance;
-  }
-  .font-numeric {
-    font-family: var(--font-numeric);
-  }
+  .container-content { width: min(100% - 2rem, var(--content-max)); margin-inline: auto; }
+  .text-balance { text-wrap: balance; }
+  .font-numeric { font-family: var(--font-numeric); }
 }
 @layer components {
-  .admin-dashboard-shell #admin-main > div {
-    background: #f8fafc;
-  }
+  .admin-dashboard-shell #admin-main > div { background: #f4f6fb; }
   .admin-dashboard-shell #admin-main main > section,
   .admin-dashboard-shell #admin-main main > div > section {
     border-color: #e2e8f0;
-    border-radius: 1rem;
+    border-radius: 0.75rem;
     box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
   }
   .admin-dashboard-shell #admin-main main select,
@@ -114,42 +79,24 @@
     background: #fff;
     border-color: #dbe3ec;
     color: #334155;
-    transition:
-      border-color 160ms ease,
-      box-shadow 160ms ease;
+    transition: border-color 160ms ease, box-shadow 160ms ease;
   }
   .admin-dashboard-shell #admin-main main select:hover,
-  .admin-dashboard-shell #admin-main main input:hover {
-    border-color: #b8c7d8;
-  }
+  .admin-dashboard-shell #admin-main main input:hover { border-color: #b8c7d8; }
   .admin-dashboard-shell #admin-main main select:focus,
   .admin-dashboard-shell #admin-main main input:focus {
-    border-color: #1677a8;
-    box-shadow: 0 0 0 3px rgba(22, 119, 168, 0.12);
+    border-color: #163a66;
+    box-shadow: 0 0 0 3px rgba(22, 58, 102, 0.12);
     outline: none;
   }
   .admin-dashboard-shell #admin-main main button {
-    transition:
-      transform 160ms ease,
-      box-shadow 160ms ease,
-      background-color 160ms ease,
-      border-color 160ms ease;
+    transition: transform 160ms ease, box-shadow 160ms ease, background-color 160ms ease, border-color 160ms ease;
   }
-  .admin-dashboard-shell #admin-main main button:hover:not(:disabled) {
-    transform: translateY(-1px);
-  }
-  .admin-dashboard-shell #admin-main main button:active:not(:disabled) {
-    transform: translateY(0);
-  }
-  .admin-dashboard-shell #admin-main main th {
-    background: #f8fafc;
-    color: #475569;
-    font-weight: 600;
-  }
+  .admin-dashboard-shell #admin-main main button:hover:not(:disabled) { transform: translateY(-1px); }
+  .admin-dashboard-shell #admin-main main button:active:not(:disabled) { transform: translateY(0); }
+  .admin-dashboard-shell #admin-main main th { background: #f8fafc; color: #475569; font-weight: 600; }
   .admin-dashboard-shell #admin-main main td,
-  .admin-dashboard-shell #admin-main main th {
-    border-color: #e2e8f0;
-  }
+  .admin-dashboard-shell #admin-main main th { border-color: #e2e8f0; }
   .dashboard-control {
     min-height: 2.25rem;
     width: auto;
@@ -159,18 +106,12 @@
     padding: 0.4rem 0.7rem;
     font-size: 0.75rem;
   }
-  .dashboard-kpi {
-    min-height: 5.25rem;
-  }
-  .dashboard-screen {
-    min-height: calc(100vh - 4rem);
-  }
-  .dashboard-filter {
-    position: relative;
-  }
+  .dashboard-kpi { min-height: 5.25rem; }
+  .dashboard-screen { min-height: calc(100vh - 4rem); }
+  .dashboard-filter { position: relative; }
 }
 @media (min-width: 1024px) {
-  /* Keep the admin shell and dashboard content naturally sized so the page can scroll vertically. */
+  /* Executive dashboard: compact Stitch spacing, while retaining natural document scrolling. */
   .admin-dashboard-shell #admin-main {
     min-height: calc(100vh - 4rem);
     height: auto;
@@ -186,37 +127,27 @@
     height: auto;
     overflow: visible;
   }
-  .admin-dashboard-shell #admin-main .dashboard-screen > main > .dashboard-filter {
-    flex: none;
+  .admin-dashboard-shell #admin-main .dashboard-screen > main > .dashboard-filter { flex: none; }
+  .admin-dashboard-shell #admin-main .dashboard-screen > main > section { min-height: 0; }
+  .admin-dashboard-shell #admin-main .dashboard-screen .dashboard-panel { min-height: 0; }
+
+  /* Match the Stitch baseline: light slate canvas, 16px content inset and compact 10px section rhythm. */
+  .admin-dashboard-shell #admin-main main {
+    max-width: 90rem;
+    padding: 1rem;
   }
-  .admin-dashboard-shell #admin-main .dashboard-screen > main > section {
-    min-height: 0;
-  }
-  .admin-dashboard-shell #admin-main .dashboard-screen .dashboard-panel {
-    min-height: 0;
-  }
+  .admin-dashboard-shell #admin-main main > * + * { margin-top: 0.625rem; }
 }
 @media (max-width: 1023px) {
-  .dashboard-screen {
-    min-height: calc(100vh - 4rem);
-  }
-  .dashboard-control {
-    flex: 1 1 10rem;
-  }
+  .dashboard-screen { min-height: calc(100vh - 4rem); }
+  .dashboard-control { flex: 1 1 10rem; }
 }
 @media (max-width: 639px) {
-  .container-content {
-    width: min(100% - 2rem, var(--content-max));
-  }
-  .dashboard-control {
-    min-width: 0;
-    width: 100%;
-  }
+  .container-content { width: min(100% - 2rem, var(--content-max)); }
+  .dashboard-control { min-width: 0; width: 100%; }
 }
 @media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
+  *, *::before, *::after {
     scroll-behavior: auto !important;
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
@@ -224,24 +155,13 @@
   }
 }
 @media (prefers-contrast: more) {
-  :focus-visible {
-    outline-width: 4px;
-  }
-  .border {
-    border-width: 2px;
-  }
+  :focus-visible { outline-width: 4px; }
+  .border { border-width: 2px; }
 }
 @media (forced-colors: active) {
-  *:not(button):not(a) {
-    forced-color-adjust: auto;
-  }
-  :focus-visible {
-    outline: 2px solid CanvasText;
-  }
-  a,
-  button {
-    forced-color-adjust: none;
-  }
+  *:not(button):not(a) { forced-color-adjust: auto; }
+  :focus-visible { outline: 2px solid CanvasText; }
+  a, button { forced-color-adjust: none; }
 }
 @utility panel {
   position: relative;
