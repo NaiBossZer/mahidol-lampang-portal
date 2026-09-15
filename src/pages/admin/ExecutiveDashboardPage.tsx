@@ -1,55 +1,20 @@
 import { useEffect, useMemo, useState, type ReactNode } from "react";
-import {
-  Activity,
-  Calendar,
-  CheckCircle2,
-  Filter,
-  MapPin,
-  RefreshCw,
-  RotateCcw,
-  Users,
-} from "lucide-react";
-import {
-  getAdminDashboardData,
-  type AdminDashboardData,
-  type DashboardResponse,
-} from "@/services/api";
+import { Activity, Calendar, CheckCircle2, Filter, MapPin, RefreshCw, RotateCcw, Users } from "lucide-react";
+import { getAdminDashboardData, type AdminDashboardData } from "@/services/api";
 
 type Period = "ALL" | "YEAR" | "QUARTER" | "MONTH" | "CUSTOM";
 type RespondentDimension = "age_group" | "affiliation" | "organization";
 
 const SCORE_FIELDS = [
-  "p2_location",
-  "p2_schedule",
-  "p2_readiness",
-  "p2_reception",
-  "p2_overall",
-  "p3_interest",
-  "p3_content",
-  "p3_clarity",
-  "p3_benefit",
-  "p3_application",
-  "p4_knowledge",
-  "p4_inspiration",
-  "p4_community_resource",
-  "p4_future_return",
+  "p2_location", "p2_schedule", "p2_readiness", "p2_reception", "p2_overall",
+  "p3_interest", "p3_content", "p3_clarity", "p3_benefit", "p3_application",
+  "p4_knowledge", "p4_inspiration", "p4_community_resource", "p4_future_return",
 ] as const;
 
 const QUESTION_LABELS = [
-  "สถานที่",
-  "กำหนดการ",
-  "ความพร้อม",
-  "การต้อนรับ",
-  "ภาพรวมกิจกรรม",
-  "ความน่าสนใจ",
-  "เนื้อหา",
-  "ความชัดเจน",
-  "ประโยชน์",
-  "การนำไปใช้",
-  "ความรู้ที่ได้รับ",
-  "แรงบันดาลใจ",
-  "ทรัพยากรชุมชน",
-  "การกลับมาใช้บริการ",
+  "สถานที่", "กำหนดการ", "ความพร้อม", "การต้อนรับ", "ภาพรวมกิจกรรม",
+  "ความน่าสนใจ", "เนื้อหา", "ความชัดเจน", "ประโยชน์", "การนำไปใช้",
+  "ความรู้ที่ได้รับ", "แรงบันดาลใจ", "ทรัพยากรชุมชน", "การกลับมาใช้บริการ",
 ];
 
 function score(value: unknown) {
@@ -61,23 +26,13 @@ function average(values: number[]) {
   return values.length ? values.reduce((sum, value) => sum + value, 0) / values.length : null;
 }
 
-function dateMatches(
-  value: string,
-  period: Period,
-  year: string,
-  month: string,
-  quarter: string,
-  from: string,
-  to: string,
-) {
+function dateMatches(value: string, period: Period, year: string, month: string, quarter: string, from: string, to: string) {
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return false;
   if (period === "ALL") return true;
   if (period === "YEAR") return year === "ALL" || date.getFullYear().toString() === year;
   if (period === "MONTH") return !month || value.slice(0, 7) === month;
-  if (period === "QUARTER") {
-    return !quarter || `${date.getFullYear()}-Q${Math.floor(date.getMonth() / 3) + 1}` === quarter;
-  }
+  if (period === "QUARTER") return !quarter || `${date.getFullYear()}-Q${Math.floor(date.getMonth() / 3) + 1}` === quarter;
   const day = value.slice(0, 10);
   return (!from || day >= from) && (!to || day <= to);
 }
@@ -85,14 +40,13 @@ function dateMatches(
 function formatDate(value?: string | null) {
   if (!value) return "-";
   const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return "-";
-  return new Intl.DateTimeFormat("th-TH", { day: "numeric", month: "short", year: "numeric" }).format(date);
+  return Number.isNaN(date.getTime()) ? "-" : new Intl.DateTimeFormat("th-TH", { day: "numeric", month: "short", year: "numeric" }).format(date);
 }
 
 function Card({ title, right, children, className = "" }: { title: string; right?: ReactNode; children: ReactNode; className?: string }) {
   return (
     <section className={`min-h-0 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm ${className}`}>
-      <div className="flex h-11 shrink-0 items-center justify-between border-b border-slate-100 px-4">
+      <div className="flex h-12 shrink-0 items-center justify-between border-b border-slate-100 px-5">
         <h2 className="text-sm font-extrabold text-slate-800">{title}</h2>
         {right}
       </div>
@@ -103,40 +57,39 @@ function Card({ title, right, children, className = "" }: { title: string; right
 
 function Kpi({ icon, label, value, suffix, tone = "blue", note }: { icon: ReactNode; label: string; value: string; suffix?: string; tone?: "blue" | "green" | "amber" | "navy"; note?: string }) {
   const tones = {
-    blue: "bg-blue-50 text-blue-700",
-    green: "bg-emerald-50 text-emerald-700",
-    amber: "bg-amber-50 text-amber-700",
-    navy: "bg-slate-100 text-brand-navy",
+    blue: "bg-blue-50 text-blue-700", green: "bg-emerald-50 text-emerald-700",
+    amber: "bg-amber-50 text-amber-700", navy: "bg-slate-100 text-brand-navy",
   };
   return (
-    <div className="min-w-0 rounded-2xl border border-slate-200 bg-white px-4 py-3 shadow-sm">
+    <div className="min-w-0 rounded-2xl border border-slate-200 bg-white px-5 py-4 shadow-sm">
       <div className="flex items-center gap-3">
-        <div className={`grid h-9 w-9 shrink-0 place-items-center rounded-xl ${tones[tone]}`}>{icon}</div>
+        <div className={`grid h-10 w-10 shrink-0 place-items-center rounded-xl ${tones[tone]}`}>{icon}</div>
         <div className="min-w-0">
           <p className="truncate text-[11px] font-bold text-slate-500">{label}</p>
-          <div className="flex items-baseline gap-1">
-            <span className="text-2xl font-black leading-none text-slate-900">{value}</span>
+          <div className="mt-0.5 flex items-baseline gap-1.5">
+            <span className="text-[27px] font-black leading-none text-slate-900">{value}</span>
             {suffix && <span className="text-xs font-bold text-slate-500">{suffix}</span>}
           </div>
         </div>
       </div>
-      {note && <p className="mt-2 truncate text-[10px] font-semibold text-slate-400">{note}</p>}
+      {note && <p className="mt-3 truncate text-[10px] font-semibold text-slate-400">{note}</p>}
     </div>
   );
 }
 
 function BarList({ items, compact = false }: { items: { label: string; value: number | null }[]; compact?: boolean }) {
+  const visible = items.slice(0, compact ? 6 : 5);
   return (
-    <div className={`space-y-${compact ? "2" : "2.5"}`}>
-      {items.slice(0, compact ? 5 : 7).map((item) => {
+    <div className={compact ? "space-y-3" : "space-y-4"}>
+      {visible.map((item) => {
         const value = item.value ?? 0;
         return (
           <div key={item.label}>
-            <div className="mb-1 flex items-center justify-between gap-3 text-[11px]">
+            <div className="mb-1.5 flex items-center justify-between gap-3 text-[11px]">
               <span className="min-w-0 truncate font-semibold text-slate-600">{item.label}</span>
               <span className="shrink-0 font-black text-slate-800">{value ? value.toFixed(2) : "-"}</span>
             </div>
-            <div className="h-1.5 overflow-hidden rounded-full bg-slate-100">
+            <div className="h-2 overflow-hidden rounded-full bg-slate-100">
               <div className="h-full rounded-full bg-brand-blue" style={{ width: `${Math.max(0, Math.min(100, (value / 5) * 100))}%` }} />
             </div>
           </div>
@@ -152,7 +105,6 @@ export function ExecutiveDashboardPage() {
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState("");
   const params = useMemo(() => new URLSearchParams(window.location.search), []);
-
   const [activity, setActivity] = useState(params.get("activity") || "ALL");
   const [period, setPeriod] = useState<Period>("ALL");
   const [year, setYear] = useState("ALL");
@@ -165,53 +117,25 @@ export function ExecutiveDashboardPage() {
   const [respondentDimension, setRespondentDimension] = useState<RespondentDimension>("age_group");
 
   const load = async (silent = false) => {
-    if (silent) setRefreshing(true);
-    else setLoading(true);
+    if (silent) setRefreshing(true); else setLoading(true);
     setError("");
-    try {
-      setData(await getAdminDashboardData());
-    } catch (e) {
-      setError(e instanceof Error ? e.message : "ไม่สามารถโหลด Dashboard ได้");
-    } finally {
-      setLoading(false);
-      setRefreshing(false);
-    }
+    try { setData(await getAdminDashboardData()); }
+    catch (e) { setError(e instanceof Error ? e.message : "ไม่สามารถโหลด Dashboard ได้"); }
+    finally { setLoading(false); setRefreshing(false); }
   };
 
   useEffect(() => { void load(); }, []);
 
-  const years = useMemo(
-    () => [...new Set((data?.occurrences ?? []).map((item) => new Date(item.start_at).getFullYear()))].filter(Number.isFinite).sort((a, b) => b - a),
-    [data],
-  );
-
-  const baseOccurrences = useMemo(
-    () => (data?.occurrences ?? []).filter((item) => item.status !== "cancelled" && item.status !== "archived" && dateMatches(item.start_at, period, year, month, quarter, from, to)),
-    [data, period, year, month, quarter, from, to],
-  );
-
-  const centerActivityIds = useMemo(
-    () => new Set((data?.activityLearningCenters ?? []).filter((item) => center === "ALL" || item.learning_center_id === center).map((item) => item.activity_id)),
-    [data, center],
-  );
-
-  const activities = useMemo(
-    () => (data?.activities ?? [])
-      .filter((item) => baseOccurrences.some((occurrence) => occurrence.activity_id === item.id))
-      .filter((item) => center === "ALL" || centerActivityIds.has(item.id))
-      .filter((item) => activity === "ALL" || item.id === activity),
-    [data, baseOccurrences, center, centerActivityIds, activity],
-  );
-
+  const years = useMemo(() => [...new Set((data?.occurrences ?? []).map((item) => new Date(item.start_at).getFullYear()))].filter(Number.isFinite).sort((a, b) => b - a), [data]);
+  const baseOccurrences = useMemo(() => (data?.occurrences ?? []).filter((item) => item.status !== "cancelled" && item.status !== "archived" && dateMatches(item.start_at, period, year, month, quarter, from, to)), [data, period, year, month, quarter, from, to]);
+  const centerActivityIds = useMemo(() => new Set((data?.activityLearningCenters ?? []).filter((item) => center === "ALL" || item.learning_center_id === center).map((item) => item.activity_id)), [data, center]);
+  const activities = useMemo(() => (data?.activities ?? []).filter((item) => baseOccurrences.some((o) => o.activity_id === item.id)).filter((item) => center === "ALL" || centerActivityIds.has(item.id)).filter((item) => activity === "ALL" || item.id === activity), [data, baseOccurrences, center, centerActivityIds, activity]);
   const activityIds = useMemo(() => new Set(activities.map((item) => item.id)), [activities]);
   const occurrences = useMemo(() => baseOccurrences.filter((item) => activityIds.has(item.activity_id)), [baseOccurrences, activityIds]);
   const selectedActivity = useMemo(() => data?.activities.find((item) => item.id === activity), [data, activity]);
-
   const responses = useMemo(() => {
     const occurrenceIds = new Set(occurrences.map((item) => item.id));
-    return (data?.responses ?? [])
-      .filter((response) => response.occurrence_id ? occurrenceIds.has(response.occurrence_id) : activityIds.has(response.activity_id))
-      .filter((response) => organization === "ALL" || response.participant_organization_id === organization);
+    return (data?.responses ?? []).filter((response) => response.occurrence_id ? occurrenceIds.has(response.occurrence_id) : activityIds.has(response.activity_id)).filter((response) => organization === "ALL" || response.participant_organization_id === organization);
   }, [data, occurrences, activityIds, organization]);
 
   const participants = useMemo(() => occurrences.reduce((sum, item) => sum + Number(item.participant_count || 0), 0), [occurrences]);
@@ -219,26 +143,17 @@ export function ExecutiveDashboardPage() {
   const rawRate = participants > 0 ? (responseCount / participants) * 100 : null;
   const responseRate = rawRate === null ? null : Math.min(rawRate, 100);
   const hasDataMismatch = rawRate !== null && rawRate > 100;
-
   const allScores = responses.flatMap((response) => SCORE_FIELDS.map((field) => score(response[field])).filter((value): value is number => value !== null));
   const overallAverage = average(allScores);
-
-  const questionScores = SCORE_FIELDS.map((field, index) => {
-    const values = responses.map((response) => score(response[field])).filter((value): value is number => value !== null);
-    return { field, index, avg: average(values) };
-  }).filter((item) => item.avg !== null) as { field: string; index: number; avg: number }[];
-
+  const questionScores = SCORE_FIELDS.map((field, index) => ({ field, index, avg: average(responses.map((response) => score(response[field])).filter((value): value is number => value !== null)) })).filter((item) => item.avg !== null) as { field: string; index: number; avg: number }[];
   const highestScore = questionScores.length ? [...questionScores].sort((a, b) => b.avg - a.avg)[0] : null;
   const lowestScore = questionScores.length ? [...questionScores].sort((a, b) => a.avg - b.avg)[0] : null;
 
-  const respondentOptions = useMemo(() => {
-    const options: { key: RespondentDimension; label: string; available: boolean }[] = [
-      { key: "age_group", label: "ช่วงอายุ", available: responses.some((response) => Boolean(response.age_group)) },
-      { key: "affiliation", label: "ประเภทผู้ตอบ", available: responses.some((response) => Boolean(response.affiliation)) },
-      { key: "organization", label: "หน่วยงาน", available: responses.some((response) => Boolean(response.participant_organization_id)) && (data?.organizations.length ?? 0) > 0 },
-    ];
-    return options.filter((option) => option.available);
-  }, [responses, data]);
+  const respondentOptions = useMemo(() => [
+    { key: "age_group" as const, label: "ช่วงอายุ", available: responses.some((r) => Boolean(r.age_group)) },
+    { key: "affiliation" as const, label: "ประเภทผู้ตอบ", available: responses.some((r) => Boolean(r.affiliation)) },
+    { key: "organization" as const, label: "หน่วยงาน", available: responses.some((r) => Boolean(r.participant_organization_id)) && (data?.organizations.length ?? 0) > 0 },
+  ].filter((option) => option.available), [responses, data]);
 
   useEffect(() => {
     if (respondentOptions.length && !respondentOptions.some((option) => option.key === respondentDimension)) setRespondentDimension(respondentOptions[0].key);
@@ -247,11 +162,8 @@ export function ExecutiveDashboardPage() {
   const respondentDistribution = useMemo(() => {
     const counts = new Map<string, number>();
     for (const response of responses) {
-      let rawValue: string | null | undefined;
-      if (respondentDimension === "age_group") rawValue = response.age_group;
-      else if (respondentDimension === "affiliation") rawValue = response.affiliation;
-      else rawValue = data?.organizations.find((item) => item.id === response.participant_organization_id)?.name;
-      const value = rawValue?.trim();
+      const raw = respondentDimension === "age_group" ? response.age_group : respondentDimension === "affiliation" ? response.affiliation : data?.organizations.find((item) => item.id === response.participant_organization_id)?.name;
+      const value = raw?.trim();
       if (value) counts.set(value, (counts.get(value) ?? 0) + 1);
     }
     const items = [...counts.entries()].sort((a, b) => b[1] - a[1]);
@@ -261,12 +173,7 @@ export function ExecutiveDashboardPage() {
     const total = visible.reduce((sum, [, count]) => sum + count, 0);
     const colors = ["#123F82", "#2F80ED", "#16A085", "#F59E0B", "#8B5CF6", "#94A3B8"];
     let cursor = 0;
-    const segments = visible.map(([label, count], index) => {
-      const start = cursor;
-      const percent = total ? (count / total) * 100 : 0;
-      cursor += percent;
-      return { label, count, percent, color: colors[index % colors.length], start, end: cursor };
-    });
+    const segments = visible.map(([label, count], index) => { const start = cursor; const percent = total ? (count / total) * 100 : 0; cursor += percent; return { label, count, percent, color: colors[index % colors.length], start, end: cursor }; });
     return { segments, total };
   }, [responses, respondentDimension, data]);
 
@@ -274,34 +181,20 @@ export function ExecutiveDashboardPage() {
     { label: "การจัดงานและสถานที่", fields: SCORE_FIELDS.slice(0, 5) },
     { label: "เนื้อหาและการเรียนรู้", fields: SCORE_FIELDS.slice(5, 10) },
     { label: "ผลลัพธ์และการต่อยอด", fields: SCORE_FIELDS.slice(10) },
-  ].map((topic) => {
-    const values = topic.fields.flatMap((field) => responses.map((response) => score(response[field])).filter((value): value is number => value !== null));
-    return { label: topic.label, value: average(values) };
-  });
+  ].map((topic) => ({ label: topic.label, value: average(topic.fields.flatMap((field) => responses.map((response) => score(response[field])).filter((value): value is number => value !== null))) }));
 
   const comments = responses.map((response) => response.feedback?.trim()).filter((value): value is string => Boolean(value)).slice(0, 3);
-
   const photos = useMemo(() => {
     if (activity !== "ALL") {
       const media = (data?.activityMedia ?? []).filter((item) => item.activity_id === activity).sort((a, b) => a.display_order - b.display_order);
       const featured = selectedActivity?.featured_image;
-      return [
-        ...(featured ? [{ id: `${activity}-featured`, title: selectedActivity?.title || "กิจกรรม", image: featured }] : []),
-        ...media.map((item) => ({ id: item.id, title: item.caption || selectedActivity?.title || "กิจกรรม", image: item.public_url })),
-      ].slice(0, 3);
+      return [...(featured ? [{ id: `${activity}-featured`, title: selectedActivity?.title || "กิจกรรม", image: featured }] : []), ...media.map((item) => ({ id: item.id, title: item.caption || selectedActivity?.title || "กิจกรรม", image: item.public_url }))].slice(0, 3);
     }
     return (data?.activities ?? []).filter((item) => item.featured_image).slice(0, 3).map((item) => ({ id: item.id, title: item.title, image: item.featured_image as string }));
   }, [activity, data, selectedActivity]);
 
-  const reset = () => {
-    setActivity("ALL"); setPeriod("ALL"); setYear("ALL"); setMonth(""); setQuarter(""); setFrom(""); setTo(""); setCenter("ALL"); setOrganization("ALL");
-  };
-
-  useEffect(() => {
-    const url = new URL(window.location.href);
-    if (activity === "ALL") url.searchParams.delete("activity"); else url.searchParams.set("activity", activity);
-    window.history.replaceState({}, "", url);
-  }, [activity]);
+  const reset = () => { setActivity("ALL"); setPeriod("ALL"); setYear("ALL"); setMonth(""); setQuarter(""); setFrom(""); setTo(""); setCenter("ALL"); setOrganization("ALL"); };
+  useEffect(() => { const url = new URL(window.location.href); if (activity === "ALL") url.searchParams.delete("activity"); else url.searchParams.set("activity", activity); window.history.replaceState({}, "", url); }, [activity]);
 
   if (loading) return <div className="grid h-[calc(100vh-4rem)] place-items-center text-sm font-semibold text-slate-500">กำลังโหลดผลการดำเนินงาน...</div>;
   if (error) return <div className="grid h-[calc(100vh-4rem)] place-items-center px-6"><div className="rounded-2xl border border-rose-200 bg-rose-50 p-8 text-center"><Activity className="mx-auto h-8 w-8 text-rose-600" /><h1 className="mt-3 font-bold text-rose-900">ไม่สามารถโหลด Dashboard ได้</h1><p className="mt-2 text-sm text-rose-700">{error}</p><button onClick={() => void load()} className="mt-5 rounded-xl bg-brand-navy px-5 py-2 text-sm font-bold text-white">ลองใหม่อีกครั้ง</button></div></div>;
@@ -311,91 +204,51 @@ export function ExecutiveDashboardPage() {
 
   return (
     <div className="h-[calc(100vh-4rem)] min-h-0 overflow-hidden bg-slate-50 text-slate-900">
-      <main className="mx-auto flex h-full max-w-[1440px] min-h-0 flex-col gap-3 px-4 py-3 sm:px-5 xl:px-6">
+      <main className="mx-auto flex h-full max-w-[1440px] min-h-0 flex-col gap-4 px-5 py-4 xl:px-6">
         <header className="flex shrink-0 items-center justify-between gap-4">
-          <div className="min-w-0">
-            <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.16em] text-brand-blue"><span>Mahidol Lampang Portal</span><span className="text-slate-300">/</span><span>Executive Dashboard</span></div>
-            <h1 className="mt-1 truncate text-xl font-black tracking-tight text-brand-navy">รายงานผลสัมฤทธิ์รายกิจกรรม</h1>
-          </div>
+          <div className="min-w-0"><div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.16em] text-brand-blue"><span>Mahidol Lampang Portal</span><span className="text-slate-300">/</span><span>Executive Dashboard</span></div><h1 className="mt-1 truncate text-xl font-black tracking-tight text-brand-navy">รายงานผลสัมฤทธิ์รายกิจกรรม</h1></div>
           <button onClick={() => void load(true)} disabled={refreshing} className="flex h-9 shrink-0 items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 text-xs font-bold text-slate-600 shadow-sm hover:bg-slate-50 disabled:opacity-50"><RefreshCw className={`h-3.5 w-3.5 ${refreshing ? "animate-spin" : ""}`} /> รีเฟรช</button>
         </header>
 
-        <section className="shrink-0 rounded-2xl border border-slate-200 bg-white p-2 shadow-sm">
-          <div className="flex items-center gap-2 overflow-hidden">
-            <div className="flex h-8 shrink-0 items-center gap-1.5 rounded-lg bg-slate-50 px-2.5 text-[10px] font-extrabold text-slate-500"><Filter className="h-3.5 w-3.5" /> ตัวกรอง</div>
-            <select value={period} onChange={(e) => setPeriod(e.target.value as Period)} className="h-8 min-w-[105px] rounded-lg border border-slate-200 bg-white px-2 text-[11px] font-semibold outline-none"><option value="ALL">ทุกช่วงเวลา</option><option value="YEAR">รายปี</option><option value="QUARTER">รายไตรมาส</option><option value="MONTH">รายเดือน</option><option value="CUSTOM">กำหนดเอง</option></select>
-            {period === "YEAR" && <select value={year} onChange={(e) => setYear(e.target.value)} className="h-8 min-w-[85px] rounded-lg border border-slate-200 px-2 text-[11px] font-semibold"><option value="ALL">ทุกปี</option>{years.map((item) => <option key={item} value={item}>{item + 543}</option>)}</select>}
-            {period === "MONTH" && <input type="month" value={month} onChange={(e) => setMonth(e.target.value)} className="h-8 rounded-lg border border-slate-200 px-2 text-[11px] font-semibold" />}
-            {period === "QUARTER" && <select value={quarter} onChange={(e) => setQuarter(e.target.value)} className="h-8 min-w-[110px] rounded-lg border border-slate-200 px-2 text-[11px] font-semibold"><option value="">ทุกไตรมาส</option>{years.flatMap((item) => [1,2,3,4].map((q) => <option key={`${item}-Q${q}`} value={`${item}-Q${q}`}>{item + 543} / Q{q}</option>))}</select>}
-            {period === "CUSTOM" && <><input type="date" value={from} onChange={(e) => setFrom(e.target.value)} className="h-8 rounded-lg border border-slate-200 px-2 text-[11px]" /><span className="text-[10px] text-slate-400">ถึง</span><input type="date" value={to} onChange={(e) => setTo(e.target.value)} className="h-8 rounded-lg border border-slate-200 px-2 text-[11px]" /></>}
-            <select value={center} onChange={(e) => setCenter(e.target.value)} className="h-8 min-w-[125px] rounded-lg border border-slate-200 bg-white px-2 text-[11px] font-semibold"><option value="ALL">ทุกศูนย์การเรียนรู้</option>{(data?.learningCenters ?? []).map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}</select>
-            <select value={activity} onChange={(e) => setActivity(e.target.value)} className="h-8 min-w-[190px] flex-1 rounded-lg border border-slate-200 bg-white px-2 text-[11px] font-semibold"><option value="ALL">ทุกกิจกรรม</option>{(data?.activities ?? []).filter((item) => baseOccurrences.some((occurrence) => occurrence.activity_id === item.id)).map((item) => <option key={item.id} value={item.id}>{item.title}</option>)}</select>
-            <select value={organization} onChange={(e) => setOrganization(e.target.value)} className="h-8 min-w-[130px] rounded-lg border border-slate-200 bg-white px-2 text-[11px] font-semibold"><option value="ALL">ทุกหน่วยงาน</option>{(data?.organizations ?? []).map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}</select>
-            <button onClick={reset} className="flex h-8 shrink-0 items-center gap-1 rounded-lg px-2 text-[10px] font-bold text-slate-500 hover:bg-slate-50"><RotateCcw className="h-3 w-3" /> ล้าง</button>
-          </div>
+        <section className="shrink-0 rounded-2xl border border-slate-200 bg-white p-2.5 shadow-sm"><div className="flex items-center gap-2 overflow-hidden">
+          <div className="flex h-8 shrink-0 items-center gap-1.5 rounded-lg bg-slate-50 px-2.5 text-[10px] font-extrabold text-slate-500"><Filter className="h-3.5 w-3.5" /> ตัวกรอง</div>
+          <select value={period} onChange={(e) => setPeriod(e.target.value as Period)} className="h-8 min-w-[105px] rounded-lg border border-slate-200 bg-white px-2 text-[11px] font-semibold"><option value="ALL">ทุกช่วงเวลา</option><option value="YEAR">รายปี</option><option value="QUARTER">รายไตรมาส</option><option value="MONTH">รายเดือน</option><option value="CUSTOM">กำหนดเอง</option></select>
+          {period === "YEAR" && <select value={year} onChange={(e) => setYear(e.target.value)} className="h-8 min-w-[85px] rounded-lg border border-slate-200 px-2 text-[11px] font-semibold"><option value="ALL">ทุกปี</option>{years.map((item) => <option key={item} value={item}>{item + 543}</option>)}</select>}
+          {period === "MONTH" && <input type="month" value={month} onChange={(e) => setMonth(e.target.value)} className="h-8 rounded-lg border border-slate-200 px-2 text-[11px]" />}
+          {period === "QUARTER" && <select value={quarter} onChange={(e) => setQuarter(e.target.value)} className="h-8 min-w-[110px] rounded-lg border border-slate-200 px-2 text-[11px] font-semibold"><option value="">ทุกไตรมาส</option>{years.flatMap((item) => [1,2,3,4].map((q) => <option key={`${item}-Q${q}`} value={`${item}-Q${q}`}>{item + 543} / Q{q}</option>))}</select>}
+          {period === "CUSTOM" && <><input type="date" value={from} onChange={(e) => setFrom(e.target.value)} className="h-8 rounded-lg border border-slate-200 px-2 text-[11px]" /><span className="text-[10px] text-slate-400">ถึง</span><input type="date" value={to} onChange={(e) => setTo(e.target.value)} className="h-8 rounded-lg border border-slate-200 px-2 text-[11px]" /></>}
+          <select value={center} onChange={(e) => setCenter(e.target.value)} className="h-8 min-w-[125px] rounded-lg border border-slate-200 bg-white px-2 text-[11px] font-semibold"><option value="ALL">ทุกศูนย์การเรียนรู้</option>{(data?.learningCenters ?? []).map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}</select>
+          <select value={activity} onChange={(e) => setActivity(e.target.value)} className="h-8 min-w-[190px] flex-1 rounded-lg border border-slate-200 bg-white px-2 text-[11px] font-semibold"><option value="ALL">ทุกกิจกรรม</option>{(data?.activities ?? []).filter((item) => baseOccurrences.some((o) => o.activity_id === item.id)).map((item) => <option key={item.id} value={item.id}>{item.title}</option>)}</select>
+          <select value={organization} onChange={(e) => setOrganization(e.target.value)} className="h-8 min-w-[130px] rounded-lg border border-slate-200 bg-white px-2 text-[11px] font-semibold"><option value="ALL">ทุกหน่วยงาน</option>{(data?.organizations ?? []).map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}</select>
+          <button onClick={reset} className="flex h-8 shrink-0 items-center gap-1 rounded-lg px-2 text-[10px] font-bold text-slate-500 hover:bg-slate-50"><RotateCcw className="h-3 w-3" /> ล้าง</button>
+        </div></section>
+
+        <section className="grid shrink-0 grid-cols-[minmax(0,1fr)_auto] items-center gap-4 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+          <div className="flex min-w-0 items-center gap-4">{activityImage ? <img src={activityImage} alt="" className="h-16 w-24 shrink-0 rounded-xl object-cover" /> : <div className="grid h-16 w-24 shrink-0 place-items-center rounded-xl bg-slate-100 text-slate-400"><Activity className="h-5 w-5" /></div>}<div className="min-w-0"><p className="text-[10px] font-bold text-brand-blue">กิจกรรมที่กำลังแสดง</p><h2 className="truncate text-[15px] font-black text-slate-900">{activityTitle}</h2><div className="mt-1.5 flex flex-wrap items-center gap-x-4 gap-y-1 text-[10px] font-semibold text-slate-500"><span className="flex items-center gap-1"><Calendar className="h-3 w-3" /> {selectedActivity ? formatDate(selectedActivity.activity_date) : `${activities.length} กิจกรรม`}</span><span className="flex items-center gap-1"><MapPin className="h-3 w-3" /> {selectedActivity ? "กิจกรรมที่เลือก" : "ทุกพื้นที่"}</span></div></div></div>
+          <div className="border-l border-slate-100 pl-5 text-right"><p className="text-[10px] font-bold text-slate-400">แบบสอบถามตอบกลับ</p><p className="mt-1 text-xl font-black text-brand-navy">{responseCount.toLocaleString("th-TH")} <span className="text-[10px] font-bold text-slate-400">รายการ</span></p></div>
         </section>
 
-        <section className="grid shrink-0 grid-cols-[minmax(0,1fr)_auto] items-center gap-3 rounded-2xl border border-slate-200 bg-white p-3 shadow-sm">
-          <div className="flex min-w-0 items-center gap-3">
-            {activityImage ? <img src={activityImage} alt="" className="h-14 w-20 shrink-0 rounded-xl object-cover" /> : <div className="grid h-14 w-20 shrink-0 place-items-center rounded-xl bg-slate-100 text-slate-400"><Activity className="h-5 w-5" /></div>}
-            <div className="min-w-0"><p className="text-[10px] font-bold text-brand-blue">กิจกรรมที่กำลังแสดง</p><h2 className="truncate text-sm font-black text-slate-900">{activityTitle}</h2><div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-[10px] font-semibold text-slate-500"><span className="flex items-center gap-1"><Calendar className="h-3 w-3" /> {selectedActivity ? formatDate(selectedActivity.activity_date) : `${activities.length} กิจกรรม`}</span><span className="flex items-center gap-1"><MapPin className="h-3 w-3" /> {selectedActivity ? "กิจกรรมที่เลือก" : "ทุกพื้นที่"}</span></div></div>
-          </div>
-          <div className="text-right"><p className="text-[10px] font-bold text-slate-400">แบบสอบถามตอบกลับ</p><p className="text-lg font-black text-brand-navy">{responseCount.toLocaleString("th-TH")} <span className="text-[10px] font-bold text-slate-400">รายการ</span></p></div>
-        </section>
-
-        <section className="grid shrink-0 grid-cols-4 gap-3">
+        <section className="grid shrink-0 grid-cols-4 gap-4">
           <Kpi icon={<Activity className="h-4 w-4" />} label="ความพึงพอใจเฉลี่ย" value={overallAverage ? overallAverage.toFixed(2) : "-"} suffix="/ 5" tone="blue" note="คะแนนเฉลี่ยจากทุกข้อที่มีข้อมูล" />
-          <Kpi icon={<CheckCircle2 className="h-4 w-4" />} label="อัตราการตอบแบบสอบถาม" value={responseRate === null ? "-" : responseRate.toFixed(1)} suffix="%" tone="green" note={hasDataMismatch ? "จำนวนคำตอบมากกว่าจำนวนผู้เข้าร่วม — แสดงสูงสุด 100%" : "คำนวณจากคำตอบเทียบผู้เข้าร่วม"} />
+          <Kpi icon={<CheckCircle2 className="h-4 w-4" />} label="อัตราการตอบแบบสอบถาม" value={responseRate === null ? "-" : responseRate.toFixed(1)} suffix="%" tone="green" note={hasDataMismatch ? "คำตอบมากกว่าผู้เข้าร่วม — แสดงสูงสุด 100%" : "คำนวณจากคำตอบเทียบผู้เข้าร่วม"} />
           <Kpi icon={<Users className="h-4 w-4" />} label="ผู้เข้าร่วมกิจกรรม" value={participants.toLocaleString("th-TH")} suffix="คน" tone="navy" note={`${activities.length.toLocaleString("th-TH")} กิจกรรมในขอบเขตปัจจุบัน`} />
           <Kpi icon={<Activity className="h-4 w-4" />} label="คะแนนสูงสุด – ต่ำสุด" value={highestScore ? highestScore.avg.toFixed(2) : "-"} suffix={lowestScore ? `– ${lowestScore.avg.toFixed(2)}` : ""} tone="amber" note="เปรียบเทียบคะแนนรายข้อ" />
         </section>
 
-        <section className="grid min-h-0 flex-1 grid-cols-12 gap-3">
-          <Card title="ข้อมูลทั่วไปของผู้ตอบแบบสอบถาม" right={respondentOptions.length > 0 ? <select value={respondentDimension} onChange={(e) => setRespondentDimension(e.target.value as RespondentDimension)} className="h-7 rounded-lg border border-slate-200 bg-white px-2 text-[10px] font-bold"><option value="age_group">ช่วงอายุ</option><option value="affiliation">ประเภทผู้ตอบ</option><option value="organization">หน่วยงาน</option></select> : null} className="col-span-4">
-            <div className="flex h-[calc(100%-2.75rem)] items-center gap-4 px-4 py-3">
-              <div className="relative grid h-32 w-32 shrink-0 place-items-center rounded-full" style={{ background: respondentDistribution.segments.length ? `conic-gradient(${respondentDistribution.segments.map((item) => `${item.color} ${item.start}% ${item.end}%`).join(", ")})` : "#e2e8f0" }}>
-                <div className="grid h-20 w-20 place-items-center rounded-full bg-white text-center shadow-inner"><span className="text-xl font-black text-brand-navy">{respondentDistribution.total}</span><span className="text-[9px] font-bold text-slate-400">ผู้ตอบ</span></div>
-              </div>
-              <div className="min-w-0 flex-1 space-y-2">
-                {respondentDistribution.segments.length ? respondentDistribution.segments.map((item) => <div key={item.label} className="flex items-center gap-2 text-[10px]"><span className="h-2 w-2 shrink-0 rounded-full" style={{ background: item.color }} /><span className="min-w-0 flex-1 truncate font-semibold text-slate-600">{item.label}</span><span className="font-black text-slate-800">{item.percent.toFixed(0)}%</span></div>) : <p className="text-xs text-slate-400">ยังไม่มีข้อมูลทั่วไปของผู้ตอบ</p>}
-              </div>
-            </div>
+        <section className="grid min-h-0 flex-1 grid-cols-12 grid-rows-2 gap-4">
+          <Card title="ข้อมูลทั่วไปของผู้ตอบแบบสอบถาม" right={respondentOptions.length > 0 ? <select value={respondentDimension} onChange={(e) => setRespondentDimension(e.target.value as RespondentDimension)} className="h-8 rounded-lg border border-slate-200 bg-white px-2 text-[10px] font-bold"><option value="age_group">ช่วงอายุ</option><option value="affiliation">ประเภทผู้ตอบ</option><option value="organization">หน่วยงาน</option></select> : null} className="col-span-5 row-span-1">
+            <div className="flex h-[calc(100%-3rem)] items-center gap-6 px-5 py-4"><div className="relative grid h-36 w-36 shrink-0 place-items-center rounded-full" style={{ background: respondentDistribution.segments.length ? `conic-gradient(${respondentDistribution.segments.map((item) => `${item.color} ${item.start}% ${item.end}%`).join(", ")})` : "#e2e8f0" }}><div className="grid h-24 w-24 place-items-center rounded-full bg-white text-center shadow-inner"><span className="text-2xl font-black text-brand-navy">{respondentDistribution.total}</span><span className="text-[9px] font-bold text-slate-400">ผู้ตอบ</span></div></div><div className="min-w-0 flex-1 space-y-3">{respondentDistribution.segments.length ? respondentDistribution.segments.map((item) => <div key={item.label} className="flex items-center gap-2 text-[11px]"><span className="h-2.5 w-2.5 shrink-0 rounded-full" style={{ background: item.color }} /><span className="min-w-0 flex-1 truncate font-semibold text-slate-600">{item.label}</span><span className="font-black text-slate-800">{item.percent.toFixed(0)}%</span></div>) : <p className="text-xs text-slate-400">ยังไม่มีข้อมูลทั่วไปของผู้ตอบ</p>}</div></div>
           </Card>
 
-          <Card title="คะแนนรายข้อ" right={<span className="text-[10px] font-bold text-slate-400">เต็ม 5 คะแนน</span>} className="col-span-4">
-            <div className="h-[calc(100%-2.75rem)] overflow-hidden px-4 py-3"><BarList items={questionScores.map((item) => ({ label: QUESTION_LABELS[item.index] || `ข้อ ${item.index + 1}`, value: item.avg }))} compact /></div>
-          </Card>
+          <Card title="คะแนนรายข้อ" right={<span className="text-[10px] font-bold text-slate-400">เต็ม 5 คะแนน</span>} className="col-span-4 row-span-1"><div className="h-[calc(100%-3rem)] overflow-hidden px-5 py-4"><BarList items={questionScores.map((item) => ({ label: QUESTION_LABELS[item.index] || `ข้อ ${item.index + 1}`, value: item.avg }))} compact /></div></Card>
+          <Card title="ภาพรวมประเด็นผลสัมฤทธิ์" right={<span className="text-[10px] font-bold text-slate-400">ค่าเฉลี่ย</span>} className="col-span-3 row-span-1"><div className="h-[calc(100%-3rem)] px-5 py-4"><BarList items={topicScores} /></div></Card>
 
-          <Card title="ภาพรวมประเด็นผลสัมฤทธิ์" right={<span className="text-[10px] font-bold text-slate-400">ค่าเฉลี่ย</span>} className="col-span-4">
-            <div className="h-[calc(100%-2.75rem)] px-4 py-3"><BarList items={topicScores} /></div>
-          </Card>
-
-          <Card title="ความคิดเห็น / ข้อเสนอแนะ" right={<span className="text-[10px] font-bold text-slate-400">ตัวอย่างล่าสุด</span>} className="col-span-5">
-            <div className="h-[calc(100%-2.75rem)] space-y-2 overflow-hidden px-4 py-3">
-              {comments.length ? comments.map((comment, index) => <div key={`${comment}-${index}`} className="rounded-xl bg-slate-50 px-3 py-2 text-[10px] leading-5 text-slate-600">“{comment}”</div>) : <div className="grid h-full place-items-center text-xs text-slate-400">ยังไม่มีความคิดเห็น</div>}
-            </div>
-          </Card>
-
-          <Card title="ภาพกิจกรรม" right={<span className="text-[10px] font-bold text-slate-400">สูงสุด 3 ภาพ</span>} className="col-span-4">
-            <div className="grid h-[calc(100%-2.75rem)] grid-cols-3 gap-2 px-4 py-3">
-              {photos.length ? photos.map((photo) => <div key={photo.id} className="relative min-h-0 overflow-hidden rounded-xl bg-slate-100"><img src={photo.image} alt={photo.title} className="h-full w-full object-cover" /><div className="absolute inset-x-0 bottom-0 truncate bg-black/45 px-2 py-1.5 text-[9px] font-bold text-white">{photo.title}</div></div>) : <div className="col-span-3 grid place-items-center text-xs text-slate-400">ยังไม่มีภาพกิจกรรม</div>}
-            </div>
-          </Card>
-
-          <Card title="สรุปผลการดำเนินงาน" right={<span className="text-[10px] font-bold text-slate-400">ขอบเขตปัจจุบัน</span>} className="col-span-3">
-            <div className="grid h-[calc(100%-2.75rem)] grid-cols-2 gap-2 p-3">
-              <div className="rounded-xl bg-blue-50 p-3"><p className="text-[9px] font-bold text-blue-600">กิจกรรม</p><p className="mt-1 text-xl font-black text-brand-navy">{activities.length}</p></div>
-              <div className="rounded-xl bg-emerald-50 p-3"><p className="text-[9px] font-bold text-emerald-600">คำตอบ</p><p className="mt-1 text-xl font-black text-emerald-700">{responseCount}</p></div>
-              <div className="rounded-xl bg-amber-50 p-3"><p className="text-[9px] font-bold text-amber-600">เฉลี่ย</p><p className="mt-1 text-xl font-black text-amber-700">{overallAverage ? overallAverage.toFixed(2) : "-"}</p></div>
-              <div className="rounded-xl bg-slate-100 p-3"><p className="text-[9px] font-bold text-slate-500">อัตราตอบ</p><p className="mt-1 text-xl font-black text-brand-navy">{responseRate === null ? "-" : `${responseRate.toFixed(0)}%`}</p></div>
-            </div>
-          </Card>
+          <Card title="ความคิดเห็น / ข้อเสนอแนะ" right={<span className="text-[10px] font-bold text-slate-400">ตัวอย่างล่าสุด</span>} className="col-span-5 row-span-1"><div className="h-[calc(100%-3rem)] space-y-3 overflow-hidden px-5 py-4">{comments.length ? comments.map((comment, index) => <div key={`${comment}-${index}`} className="rounded-xl bg-slate-50 px-4 py-3 text-[11px] leading-5 text-slate-600">“{comment}”</div>) : <div className="grid h-full place-items-center text-xs text-slate-400">ยังไม่มีความคิดเห็น</div>}</div></Card>
+          <Card title="ภาพกิจกรรม" right={<span className="text-[10px] font-bold text-slate-400">สูงสุด 3 ภาพ</span>} className="col-span-4 row-span-1"><div className="grid h-[calc(100%-3rem)] grid-cols-3 gap-3 px-5 py-4">{photos.length ? photos.map((photo) => <div key={photo.id} className="relative min-h-0 overflow-hidden rounded-xl bg-slate-100"><img src={photo.image} alt={photo.title} className="h-full w-full object-cover" /><div className="absolute inset-x-0 bottom-0 truncate bg-black/45 px-2 py-1.5 text-[9px] font-bold text-white">{photo.title}</div></div>) : <div className="col-span-3 grid place-items-center text-xs text-slate-400">ยังไม่มีภาพกิจกรรม</div>}</div></Card>
+          <Card title="สรุปผลการดำเนินงาน" right={<span className="text-[10px] font-bold text-slate-400">ขอบเขตปัจจุบัน</span>} className="col-span-3 row-span-1"><div className="grid h-[calc(100%-3rem)] grid-cols-2 gap-3 p-4"><div className="rounded-xl bg-blue-50 p-4"><p className="text-[9px] font-bold text-blue-600">กิจกรรม</p><p className="mt-1 text-2xl font-black text-brand-navy">{activities.length}</p></div><div className="rounded-xl bg-emerald-50 p-4"><p className="text-[9px] font-bold text-emerald-600">คำตอบ</p><p className="mt-1 text-2xl font-black text-emerald-700">{responseCount}</p></div><div className="rounded-xl bg-amber-50 p-4"><p className="text-[9px] font-bold text-amber-600">เฉลี่ย</p><p className="mt-1 text-2xl font-black text-amber-700">{overallAverage ? overallAverage.toFixed(2) : "-"}</p></div><div className="rounded-xl bg-slate-100 p-4"><p className="text-[9px] font-bold text-slate-500">อัตราตอบ</p><p className="mt-1 text-2xl font-black text-brand-navy">{responseRate === null ? "-" : `${responseRate.toFixed(0)}%`}</p></div></div></Card>
         </section>
 
-        <footer className="flex shrink-0 items-center justify-between px-1 text-[9px] font-semibold text-slate-400">
-          <span>Dashboard แสดงข้อมูลตามตัวกรองปัจจุบัน • ไม่มี AI ในหน้านี้</span>
-          <span>{new Date().toLocaleDateString("th-TH", { day: "numeric", month: "short", year: "numeric" })}</span>
-        </footer>
+        <footer className="flex shrink-0 items-center justify-between px-1 text-[9px] font-semibold text-slate-400"><span>Dashboard แสดงข้อมูลตามตัวกรองปัจจุบัน • ไม่มี AI ในหน้านี้</span><span>{new Date().toLocaleDateString("th-TH", { day: "numeric", month: "short", year: "numeric" })}</span></footer>
       </main>
     </div>
   );
