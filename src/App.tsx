@@ -4,6 +4,7 @@ import { Toaster } from "sonner";
 import { RuntimeErrorBoundary } from "./components/RuntimeErrorBoundary";
 import { AdminGuard } from "./components/AdminGuard";
 import { AdminAppShell } from "./components/layout/AdminAppShell";
+import { ExecutiveReportOverride } from "./components/admin/ExecutiveReportOverride";
 import { HomePage } from "./pages/HomePage";
 const ActivitiesPage = lazy(() => import("./pages/social/ActivitiesPage").then((m) => ({ default: m.ActivitiesPage })));
 const ActivityDetailPage = lazy(() => import("./pages/social/ActivityDetailPage").then((m) => ({ default: m.ActivityDetailPage })));
@@ -38,7 +39,7 @@ const SmartFarmPage = lazy(() => import("./pages/systems/SmartFarmPage").then((m
 const CleanEnergyPage = lazy(() => import("./pages/systems/CleanEnergyPage").then((m) => ({ default: m.CleanEnergyPage })));
 const RACPage = lazy(() => import("./pages/systems/RACPage").then((m) => ({ default: m.RACPage })));
 function NotFoundComponent() { return <div className="flex min-h-screen items-center justify-center bg-surface-warm px-4"><div className="max-w-md text-center"><h1 className="text-7xl font-black text-brand-navy">404</h1><h2 className="mt-4 text-xl font-bold text-brand-navy">ไม่พบหน้าที่ต้องการ</h2><RouterLink to="/" className="mt-6 inline-flex min-h-11 items-center rounded-xl bg-brand-navy px-4 py-2 text-sm font-bold text-white">กลับหน้าหลัก</RouterLink></div></div>; }
-function ProtectedRoute({ children }: { children: ReactNode }) { return <AdminGuard><AdminAppShell>{children}</AdminAppShell></AdminGuard>; }
+function ProtectedRoute({ children }: { children: ReactNode }) { return <AdminGuard><AdminAppShell>{children}<ExecutiveReportOverride /></AdminAppShell></AdminGuard>; }
 function RouteFallback() { return <div className="flex min-h-[40vh] items-center justify-center text-sm font-bold text-muted-ink" role="status" aria-live="polite">กำลังโหลด...</div>; }
 export default function App() { return <RuntimeErrorBoundary><Suspense fallback={<RouteFallback />}><Routes>
 <Route path="/" element={<HomePage />} /><Route path="/activities" element={<ActivitiesPage />} /><Route path="/activities/:slug" element={<ActivityDetailPage />} /><Route path="/centers" element={<CentersPage />} /><Route path="/projects" element={<ProjectsPage />} /><Route path="/projects/:slug" element={<ProjectDetailPage />} /><Route path="/shellac" element={<ShellacLearningCenterPage />} /><Route path="/login" element={<LoginPage />} />
