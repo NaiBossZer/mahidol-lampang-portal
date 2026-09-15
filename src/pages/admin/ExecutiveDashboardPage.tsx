@@ -45,9 +45,9 @@ function formatDate(value?: string | null) {
 
 function Card({ title, right, children, className = "" }: { title: string; right?: ReactNode; children: ReactNode; className?: string }) {
   return (
-    <section className={`min-h-0 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm ${className}`}>
-      <div className="flex h-12 shrink-0 items-center justify-between border-b border-slate-100 px-5">
-        <h2 className="text-sm font-extrabold text-slate-800">{title}</h2>
+    <section className={`min-h-0 rounded-2xl border border-slate-200 bg-white shadow-sm ${className}`}>
+      <div className="flex h-10 shrink-0 items-center justify-between border-b border-slate-100 px-4">
+        <h2 className="text-[13px] font-extrabold text-slate-800">{title}</h2>
         {right}
       </div>
       {children}
@@ -61,18 +61,18 @@ function Kpi({ icon, label, value, suffix, tone = "blue", note }: { icon: ReactN
     amber: "bg-amber-50 text-amber-700", navy: "bg-slate-100 text-brand-navy",
   };
   return (
-    <div className="min-w-0 rounded-2xl border border-slate-200 bg-white px-5 py-4 shadow-sm">
-      <div className="flex items-center gap-3">
-        <div className={`grid h-10 w-10 shrink-0 place-items-center rounded-xl ${tones[tone]}`}>{icon}</div>
+    <div className="min-w-0 rounded-2xl border border-slate-200 bg-white px-4 py-3 shadow-sm">
+      <div className="flex items-center gap-2.5">
+        <div className={`grid h-9 w-9 shrink-0 place-items-center rounded-xl ${tones[tone]}`}>{icon}</div>
         <div className="min-w-0">
-          <p className="truncate text-[11px] font-bold text-slate-500">{label}</p>
-          <div className="mt-0.5 flex items-baseline gap-1.5">
-            <span className="text-[27px] font-black leading-none text-slate-900">{value}</span>
-            {suffix && <span className="text-xs font-bold text-slate-500">{suffix}</span>}
+          <p className="truncate text-[10px] font-bold text-slate-500">{label}</p>
+          <div className="mt-0.5 flex items-baseline gap-1">
+            <span className="text-[24px] font-black leading-none text-slate-900">{value}</span>
+            {suffix && <span className="text-[10px] font-bold text-slate-500">{suffix}</span>}
           </div>
         </div>
       </div>
-      {note && <p className="mt-3 truncate text-[10px] font-semibold text-slate-400">{note}</p>}
+      {note && <p className="mt-2 truncate text-[9px] font-semibold text-slate-400">{note}</p>}
     </div>
   );
 }
@@ -80,16 +80,16 @@ function Kpi({ icon, label, value, suffix, tone = "blue", note }: { icon: ReactN
 function BarList({ items, compact = false }: { items: { label: string; value: number | null }[]; compact?: boolean }) {
   const visible = items.slice(0, compact ? 6 : 5);
   return (
-    <div className={compact ? "space-y-3" : "space-y-4"}>
+    <div className={compact ? "space-y-2.5" : "space-y-3.5"}>
       {visible.map((item) => {
         const value = item.value ?? 0;
         return (
           <div key={item.label}>
-            <div className="mb-1.5 flex items-center justify-between gap-3 text-[11px]">
+            <div className="mb-1 flex items-center justify-between gap-2 text-[10px]">
               <span className="min-w-0 truncate font-semibold text-slate-600">{item.label}</span>
               <span className="shrink-0 font-black text-slate-800">{value ? value.toFixed(2) : "-"}</span>
             </div>
-            <div className="h-2 overflow-hidden rounded-full bg-slate-100">
+            <div className="h-1.5 rounded-full bg-slate-100">
               <div className="h-full rounded-full bg-brand-blue" style={{ width: `${Math.max(0, Math.min(100, (value / 5) * 100))}%` }} />
             </div>
           </div>
@@ -140,9 +140,7 @@ export function ExecutiveDashboardPage() {
 
   const participants = useMemo(() => occurrences.reduce((sum, item) => sum + Number(item.participant_count || 0), 0), [occurrences]);
   const responseCount = responses.length;
-  const rawRate = participants > 0 ? (responseCount / participants) * 100 : null;
-  const responseRate = rawRate === null ? null : Math.min(rawRate, 100);
-  const hasDataMismatch = rawRate !== null && rawRate > 100;
+  const responseRate = participants > 0 ? Math.min((responseCount / participants) * 100, 100) : null;
   const allScores = responses.flatMap((response) => SCORE_FIELDS.map((field) => score(response[field])).filter((value): value is number => value !== null));
   const overallAverage = average(allScores);
   const questionScores = SCORE_FIELDS.map((field, index) => ({ field, index, avg: average(responses.map((response) => score(response[field])).filter((value): value is number => value !== null)) })).filter((item) => item.avg !== null) as { field: string; index: number; avg: number }[];
@@ -196,59 +194,59 @@ export function ExecutiveDashboardPage() {
   const reset = () => { setActivity("ALL"); setPeriod("ALL"); setYear("ALL"); setMonth(""); setQuarter(""); setFrom(""); setTo(""); setCenter("ALL"); setOrganization("ALL"); };
   useEffect(() => { const url = new URL(window.location.href); if (activity === "ALL") url.searchParams.delete("activity"); else url.searchParams.set("activity", activity); window.history.replaceState({}, "", url); }, [activity]);
 
-  if (loading) return <div className="grid h-[calc(100vh-4rem)] place-items-center text-sm font-semibold text-slate-500">กำลังโหลดผลการดำเนินงาน...</div>;
-  if (error) return <div className="grid h-[calc(100vh-4rem)] place-items-center px-6"><div className="rounded-2xl border border-rose-200 bg-rose-50 p-8 text-center"><Activity className="mx-auto h-8 w-8 text-rose-600" /><h1 className="mt-3 font-bold text-rose-900">ไม่สามารถโหลด Dashboard ได้</h1><p className="mt-2 text-sm text-rose-700">{error}</p><button onClick={() => void load()} className="mt-5 rounded-xl bg-brand-navy px-5 py-2 text-sm font-bold text-white">ลองใหม่อีกครั้ง</button></div></div>;
+  if (loading) return <div className="grid min-h-[calc(100dvh-4rem)] place-items-center text-sm font-semibold text-slate-500">กำลังโหลดผลการดำเนินงาน...</div>;
+  if (error) return <div className="grid min-h-[calc(100dvh-4rem)] place-items-center px-6"><div className="rounded-2xl border border-rose-200 bg-rose-50 p-8 text-center"><Activity className="mx-auto h-8 w-8 text-rose-600" /><h1 className="mt-3 font-bold text-rose-900">ไม่สามารถโหลด Dashboard ได้</h1><p className="mt-2 text-sm text-rose-700">{error}</p><button onClick={() => void load()} className="mt-5 rounded-xl bg-brand-navy px-5 py-2 text-sm font-bold text-white">ลองใหม่อีกครั้ง</button></div></div>;
 
   const activityTitle = selectedActivity?.title || "ภาพรวมผลการดำเนินงาน";
   const activityImage = selectedActivity?.featured_image || photos[0]?.image;
 
   return (
-    <div className="h-[calc(100vh-4rem)] min-h-0 overflow-hidden bg-slate-50 text-slate-900">
-      <main className="mx-auto flex h-full max-w-[1440px] min-h-0 flex-col gap-4 px-5 py-4 xl:px-6">
-        <header className="flex shrink-0 items-center justify-between gap-4">
-          <div className="min-w-0"><div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.16em] text-brand-blue"><span>Mahidol Lampang Portal</span><span className="text-slate-300">/</span><span>Executive Dashboard</span></div><h1 className="mt-1 truncate text-xl font-black tracking-tight text-brand-navy">รายงานผลสัมฤทธิ์รายกิจกรรม</h1></div>
-          <button onClick={() => void load(true)} disabled={refreshing} className="flex h-9 shrink-0 items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 text-xs font-bold text-slate-600 shadow-sm hover:bg-slate-50 disabled:opacity-50"><RefreshCw className={`h-3.5 w-3.5 ${refreshing ? "animate-spin" : ""}`} /> รีเฟรช</button>
+    <div className="min-h-[calc(100dvh-4rem)] bg-slate-50 text-slate-900">
+      <main className="mx-auto grid h-[calc(100dvh-4rem)] max-w-[1440px] grid-rows-[auto_auto_auto_auto_minmax(0,1fr)_auto] gap-3 px-5 py-3 xl:px-6">
+        <header className="flex min-h-0 items-center justify-between gap-4">
+          <div className="min-w-0"><div className="flex items-center gap-2 text-[9px] font-black uppercase tracking-[0.16em] text-brand-blue"><span>Mahidol Lampang Portal</span><span className="text-slate-300">/</span><span>Executive Dashboard</span></div><h1 className="mt-0.5 truncate text-lg font-black tracking-tight text-brand-navy">รายงานผลสัมฤทธิ์รายกิจกรรม</h1></div>
+          <button onClick={() => void load(true)} disabled={refreshing} className="flex h-8 shrink-0 items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 text-[10px] font-bold text-slate-600 shadow-sm hover:bg-slate-50 disabled:opacity-50"><RefreshCw className={`h-3.5 w-3.5 ${refreshing ? "animate-spin" : ""}`} /> รีเฟรช</button>
         </header>
 
-        <section className="shrink-0 rounded-2xl border border-slate-200 bg-white p-2.5 shadow-sm"><div className="flex items-center gap-2 overflow-hidden">
-          <div className="flex h-8 shrink-0 items-center gap-1.5 rounded-lg bg-slate-50 px-2.5 text-[10px] font-extrabold text-slate-500"><Filter className="h-3.5 w-3.5" /> ตัวกรอง</div>
-          <select value={period} onChange={(e) => setPeriod(e.target.value as Period)} className="h-8 min-w-[105px] rounded-lg border border-slate-200 bg-white px-2 text-[11px] font-semibold"><option value="ALL">ทุกช่วงเวลา</option><option value="YEAR">รายปี</option><option value="QUARTER">รายไตรมาส</option><option value="MONTH">รายเดือน</option><option value="CUSTOM">กำหนดเอง</option></select>
-          {period === "YEAR" && <select value={year} onChange={(e) => setYear(e.target.value)} className="h-8 min-w-[85px] rounded-lg border border-slate-200 px-2 text-[11px] font-semibold"><option value="ALL">ทุกปี</option>{years.map((item) => <option key={item} value={item}>{item + 543}</option>)}</select>}
-          {period === "MONTH" && <input type="month" value={month} onChange={(e) => setMonth(e.target.value)} className="h-8 rounded-lg border border-slate-200 px-2 text-[11px]" />}
-          {period === "QUARTER" && <select value={quarter} onChange={(e) => setQuarter(e.target.value)} className="h-8 min-w-[110px] rounded-lg border border-slate-200 px-2 text-[11px] font-semibold"><option value="">ทุกไตรมาส</option>{years.flatMap((item) => [1,2,3,4].map((q) => <option key={`${item}-Q${q}`} value={`${item}-Q${q}`}>{item + 543} / Q{q}</option>))}</select>}
-          {period === "CUSTOM" && <><input type="date" value={from} onChange={(e) => setFrom(e.target.value)} className="h-8 rounded-lg border border-slate-200 px-2 text-[11px]" /><span className="text-[10px] text-slate-400">ถึง</span><input type="date" value={to} onChange={(e) => setTo(e.target.value)} className="h-8 rounded-lg border border-slate-200 px-2 text-[11px]" /></>}
-          <select value={center} onChange={(e) => setCenter(e.target.value)} className="h-8 min-w-[125px] rounded-lg border border-slate-200 bg-white px-2 text-[11px] font-semibold"><option value="ALL">ทุกศูนย์การเรียนรู้</option>{(data?.learningCenters ?? []).map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}</select>
-          <select value={activity} onChange={(e) => setActivity(e.target.value)} className="h-8 min-w-[190px] flex-1 rounded-lg border border-slate-200 bg-white px-2 text-[11px] font-semibold"><option value="ALL">ทุกกิจกรรม</option>{(data?.activities ?? []).filter((item) => baseOccurrences.some((o) => o.activity_id === item.id)).map((item) => <option key={item.id} value={item.id}>{item.title}</option>)}</select>
-          <select value={organization} onChange={(e) => setOrganization(e.target.value)} className="h-8 min-w-[130px] rounded-lg border border-slate-200 bg-white px-2 text-[11px] font-semibold"><option value="ALL">ทุกหน่วยงาน</option>{(data?.organizations ?? []).map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}</select>
-          <button onClick={reset} className="flex h-8 shrink-0 items-center gap-1 rounded-lg px-2 text-[10px] font-bold text-slate-500 hover:bg-slate-50"><RotateCcw className="h-3 w-3" /> ล้าง</button>
+        <section className="rounded-2xl border border-slate-200 bg-white p-2 shadow-sm"><div className="flex items-center gap-2">
+          <div className="flex h-7 shrink-0 items-center gap-1.5 rounded-lg bg-slate-50 px-2 text-[9px] font-extrabold text-slate-500"><Filter className="h-3 w-3" /> ตัวกรอง</div>
+          <select value={period} onChange={(e) => setPeriod(e.target.value as Period)} className="h-7 min-w-[100px] rounded-lg border border-slate-200 bg-white px-2 text-[10px] font-semibold"><option value="ALL">ทุกช่วงเวลา</option><option value="YEAR">รายปี</option><option value="QUARTER">รายไตรมาส</option><option value="MONTH">รายเดือน</option><option value="CUSTOM">กำหนดเอง</option></select>
+          {period === "YEAR" && <select value={year} onChange={(e) => setYear(e.target.value)} className="h-7 min-w-[82px] rounded-lg border border-slate-200 px-2 text-[10px] font-semibold"><option value="ALL">ทุกปี</option>{years.map((item) => <option key={item} value={item}>{item + 543}</option>)}</select>}
+          {period === "MONTH" && <input type="month" value={month} onChange={(e) => setMonth(e.target.value)} className="h-7 rounded-lg border border-slate-200 px-2 text-[10px]" />}
+          {period === "QUARTER" && <select value={quarter} onChange={(e) => setQuarter(e.target.value)} className="h-7 min-w-[108px] rounded-lg border border-slate-200 px-2 text-[10px] font-semibold"><option value="">ทุกไตรมาส</option>{years.flatMap((item) => [1,2,3,4].map((q) => <option key={`${item}-Q${q}`} value={`${item}-Q${q}`}>{item + 543} / Q{q}</option>))}</select>}
+          {period === "CUSTOM" && <><input type="date" value={from} onChange={(e) => setFrom(e.target.value)} className="h-7 rounded-lg border border-slate-200 px-2 text-[10px]" /><span className="text-[9px] text-slate-400">ถึง</span><input type="date" value={to} onChange={(e) => setTo(e.target.value)} className="h-7 rounded-lg border border-slate-200 px-2 text-[10px]" /></>}
+          <select value={center} onChange={(e) => setCenter(e.target.value)} className="h-7 min-w-[120px] rounded-lg border border-slate-200 bg-white px-2 text-[10px] font-semibold"><option value="ALL">ทุกศูนย์การเรียนรู้</option>{(data?.learningCenters ?? []).map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}</select>
+          <select value={activity} onChange={(e) => setActivity(e.target.value)} className="h-7 min-w-[180px] flex-1 rounded-lg border border-slate-200 bg-white px-2 text-[10px] font-semibold"><option value="ALL">ทุกกิจกรรม</option>{(data?.activities ?? []).filter((item) => baseOccurrences.some((o) => o.activity_id === item.id)).map((item) => <option key={item.id} value={item.id}>{item.title}</option>)}</select>
+          <select value={organization} onChange={(e) => setOrganization(e.target.value)} className="h-7 min-w-[125px] rounded-lg border border-slate-200 bg-white px-2 text-[10px] font-semibold"><option value="ALL">ทุกหน่วยงาน</option>{(data?.organizations ?? []).map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}</select>
+          <button onClick={reset} className="flex h-7 shrink-0 items-center gap-1 rounded-lg px-2 text-[9px] font-bold text-slate-500 hover:bg-slate-50"><RotateCcw className="h-3 w-3" /> ล้าง</button>
         </div></section>
 
-        <section className="grid shrink-0 grid-cols-[minmax(0,1fr)_auto] items-center gap-4 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
-          <div className="flex min-w-0 items-center gap-4">{activityImage ? <img src={activityImage} alt="" className="h-16 w-24 shrink-0 rounded-xl object-cover" /> : <div className="grid h-16 w-24 shrink-0 place-items-center rounded-xl bg-slate-100 text-slate-400"><Activity className="h-5 w-5" /></div>}<div className="min-w-0"><p className="text-[10px] font-bold text-brand-blue">กิจกรรมที่กำลังแสดง</p><h2 className="truncate text-[15px] font-black text-slate-900">{activityTitle}</h2><div className="mt-1.5 flex flex-wrap items-center gap-x-4 gap-y-1 text-[10px] font-semibold text-slate-500"><span className="flex items-center gap-1"><Calendar className="h-3 w-3" /> {selectedActivity ? formatDate(selectedActivity.activity_date) : `${activities.length} กิจกรรม`}</span><span className="flex items-center gap-1"><MapPin className="h-3 w-3" /> {selectedActivity ? "กิจกรรมที่เลือก" : "ทุกพื้นที่"}</span></div></div></div>
-          <div className="border-l border-slate-100 pl-5 text-right"><p className="text-[10px] font-bold text-slate-400">แบบสอบถามตอบกลับ</p><p className="mt-1 text-xl font-black text-brand-navy">{responseCount.toLocaleString("th-TH")} <span className="text-[10px] font-bold text-slate-400">รายการ</span></p></div>
+        <section className="grid min-h-0 grid-cols-[minmax(0,1fr)_auto] items-center gap-3 rounded-2xl border border-slate-200 bg-white px-3 py-2.5 shadow-sm">
+          <div className="flex min-w-0 items-center gap-3">{activityImage ? <img src={activityImage} alt="" className="h-14 w-20 shrink-0 rounded-xl object-cover" /> : <div className="grid h-14 w-20 shrink-0 place-items-center rounded-xl bg-slate-100 text-slate-400"><Activity className="h-5 w-5" /></div>}<div className="min-w-0"><p className="text-[9px] font-bold text-brand-blue">กิจกรรมที่กำลังแสดง</p><h2 className="truncate text-[13px] font-black text-slate-900">{activityTitle}</h2><div className="mt-1 flex items-center gap-3 text-[9px] font-semibold text-slate-500"><span className="flex items-center gap-1"><Calendar className="h-3 w-3" /> {selectedActivity ? formatDate(selectedActivity.activity_date) : `${activities.length} กิจกรรม`}</span><span className="flex items-center gap-1"><MapPin className="h-3 w-3" /> {selectedActivity ? "กิจกรรมที่เลือก" : "ทุกพื้นที่"}</span></div></div></div>
+          <div className="border-l border-slate-100 pl-4 text-right"><p className="text-[9px] font-bold text-slate-400">แบบสอบถามตอบกลับ</p><p className="mt-0.5 text-lg font-black text-brand-navy">{responseCount.toLocaleString("th-TH")} <span className="text-[9px] font-bold text-slate-400">รายการ</span></p></div>
         </section>
 
-        <section className="grid shrink-0 grid-cols-4 gap-4">
+        <section className="grid min-h-0 grid-cols-4 gap-3">
           <Kpi icon={<Activity className="h-4 w-4" />} label="ความพึงพอใจเฉลี่ย" value={overallAverage ? overallAverage.toFixed(2) : "-"} suffix="/ 5" tone="blue" note="คะแนนเฉลี่ยจากทุกข้อที่มีข้อมูล" />
-          <Kpi icon={<CheckCircle2 className="h-4 w-4" />} label="อัตราการตอบแบบสอบถาม" value={responseRate === null ? "-" : responseRate.toFixed(1)} suffix="%" tone="green" note={hasDataMismatch ? "คำตอบมากกว่าผู้เข้าร่วม — แสดงสูงสุด 100%" : "คำนวณจากคำตอบเทียบผู้เข้าร่วม"} />
+          <Kpi icon={<CheckCircle2 className="h-4 w-4" />} label="อัตราการตอบแบบสอบถาม" value={responseRate === null ? "-" : responseRate.toFixed(1)} suffix="%" tone="green" note="คำนวณจากคำตอบเทียบผู้เข้าร่วม" />
           <Kpi icon={<Users className="h-4 w-4" />} label="ผู้เข้าร่วมกิจกรรม" value={participants.toLocaleString("th-TH")} suffix="คน" tone="navy" note={`${activities.length.toLocaleString("th-TH")} กิจกรรมในขอบเขตปัจจุบัน`} />
           <Kpi icon={<Activity className="h-4 w-4" />} label="คะแนนสูงสุด – ต่ำสุด" value={highestScore ? highestScore.avg.toFixed(2) : "-"} suffix={lowestScore ? `– ${lowestScore.avg.toFixed(2)}` : ""} tone="amber" note="เปรียบเทียบคะแนนรายข้อ" />
         </section>
 
-        <section className="grid min-h-0 flex-1 grid-cols-12 grid-rows-2 gap-4">
-          <Card title="ข้อมูลทั่วไปของผู้ตอบแบบสอบถาม" right={respondentOptions.length > 0 ? <select value={respondentDimension} onChange={(e) => setRespondentDimension(e.target.value as RespondentDimension)} className="h-8 rounded-lg border border-slate-200 bg-white px-2 text-[10px] font-bold"><option value="age_group">ช่วงอายุ</option><option value="affiliation">ประเภทผู้ตอบ</option><option value="organization">หน่วยงาน</option></select> : null} className="col-span-5 row-span-1">
-            <div className="flex h-[calc(100%-3rem)] items-center gap-6 px-5 py-4"><div className="relative grid h-36 w-36 shrink-0 place-items-center rounded-full" style={{ background: respondentDistribution.segments.length ? `conic-gradient(${respondentDistribution.segments.map((item) => `${item.color} ${item.start}% ${item.end}%`).join(", ")})` : "#e2e8f0" }}><div className="grid h-24 w-24 place-items-center rounded-full bg-white text-center shadow-inner"><span className="text-2xl font-black text-brand-navy">{respondentDistribution.total}</span><span className="text-[9px] font-bold text-slate-400">ผู้ตอบ</span></div></div><div className="min-w-0 flex-1 space-y-3">{respondentDistribution.segments.length ? respondentDistribution.segments.map((item) => <div key={item.label} className="flex items-center gap-2 text-[11px]"><span className="h-2.5 w-2.5 shrink-0 rounded-full" style={{ background: item.color }} /><span className="min-w-0 flex-1 truncate font-semibold text-slate-600">{item.label}</span><span className="font-black text-slate-800">{item.percent.toFixed(0)}%</span></div>) : <p className="text-xs text-slate-400">ยังไม่มีข้อมูลทั่วไปของผู้ตอบ</p>}</div></div>
+        <section className="grid min-h-0 grid-cols-12 grid-rows-2 gap-3">
+          <Card title="ข้อมูลทั่วไปของผู้ตอบแบบสอบถาม" right={respondentOptions.length > 0 ? <select value={respondentDimension} onChange={(e) => setRespondentDimension(e.target.value as RespondentDimension)} className="h-7 rounded-lg border border-slate-200 bg-white px-2 text-[9px] font-bold"><option value="age_group">ช่วงอายุ</option><option value="affiliation">ประเภทผู้ตอบ</option><option value="organization">หน่วยงาน</option></select> : null} className="col-span-5 row-span-1">
+            <div className="flex min-h-0 h-[calc(100%-2.5rem)] items-center gap-4 px-4 py-3"><div className="relative grid h-28 w-28 shrink-0 place-items-center rounded-full" style={{ background: respondentDistribution.segments.length ? `conic-gradient(${respondentDistribution.segments.map((item) => `${item.color} ${item.start}% ${item.end}%`).join(", ")})` : "#e2e8f0" }}><div className="grid h-[76px] w-[76px] place-items-center rounded-full bg-white text-center shadow-inner"><span className="text-xl font-black text-brand-navy">{respondentDistribution.total}</span><span className="text-[8px] font-bold text-slate-400">ผู้ตอบ</span></div></div><div className="min-w-0 flex-1 space-y-2">{respondentDistribution.segments.length ? respondentDistribution.segments.map((item) => <div key={item.label} className="flex items-center gap-2 text-[10px]"><span className="h-2 w-2 shrink-0 rounded-full" style={{ background: item.color }} /><span className="min-w-0 flex-1 truncate font-semibold text-slate-600">{item.label}</span><span className="font-black text-slate-800">{item.percent.toFixed(0)}%</span></div>) : <p className="text-[10px] text-slate-400">ยังไม่มีข้อมูลทั่วไปของผู้ตอบ</p>}</div></div>
           </Card>
 
-          <Card title="คะแนนรายข้อ" right={<span className="text-[10px] font-bold text-slate-400">เต็ม 5 คะแนน</span>} className="col-span-4 row-span-1"><div className="h-[calc(100%-3rem)] overflow-hidden px-5 py-4"><BarList items={questionScores.map((item) => ({ label: QUESTION_LABELS[item.index] || `ข้อ ${item.index + 1}`, value: item.avg }))} compact /></div></Card>
-          <Card title="ภาพรวมประเด็นผลสัมฤทธิ์" right={<span className="text-[10px] font-bold text-slate-400">ค่าเฉลี่ย</span>} className="col-span-3 row-span-1"><div className="h-[calc(100%-3rem)] px-5 py-4"><BarList items={topicScores} /></div></Card>
+          <Card title="คะแนนรายข้อ" right={<span className="text-[9px] font-bold text-slate-400">เต็ม 5 คะแนน</span>} className="col-span-4 row-span-1"><div className="h-[calc(100%-2.5rem)] px-4 py-3"><BarList items={questionScores.map((item) => ({ label: QUESTION_LABELS[item.index] || `ข้อ ${item.index + 1}`, value: item.avg }))} compact /></div></Card>
+          <Card title="ภาพรวมประเด็นผลสัมฤทธิ์" right={<span className="text-[9px] font-bold text-slate-400">ค่าเฉลี่ย</span>} className="col-span-3 row-span-1"><div className="h-[calc(100%-2.5rem)] px-4 py-3"><BarList items={topicScores} /></div></Card>
 
-          <Card title="ความคิดเห็น / ข้อเสนอแนะ" right={<span className="text-[10px] font-bold text-slate-400">ตัวอย่างล่าสุด</span>} className="col-span-5 row-span-1"><div className="h-[calc(100%-3rem)] space-y-3 overflow-hidden px-5 py-4">{comments.length ? comments.map((comment, index) => <div key={`${comment}-${index}`} className="rounded-xl bg-slate-50 px-4 py-3 text-[11px] leading-5 text-slate-600">“{comment}”</div>) : <div className="grid h-full place-items-center text-xs text-slate-400">ยังไม่มีความคิดเห็น</div>}</div></Card>
-          <Card title="ภาพกิจกรรม" right={<span className="text-[10px] font-bold text-slate-400">สูงสุด 3 ภาพ</span>} className="col-span-4 row-span-1"><div className="grid h-[calc(100%-3rem)] grid-cols-3 gap-3 px-5 py-4">{photos.length ? photos.map((photo) => <div key={photo.id} className="relative min-h-0 overflow-hidden rounded-xl bg-slate-100"><img src={photo.image} alt={photo.title} className="h-full w-full object-cover" /><div className="absolute inset-x-0 bottom-0 truncate bg-black/45 px-2 py-1.5 text-[9px] font-bold text-white">{photo.title}</div></div>) : <div className="col-span-3 grid place-items-center text-xs text-slate-400">ยังไม่มีภาพกิจกรรม</div>}</div></Card>
-          <Card title="สรุปผลการดำเนินงาน" right={<span className="text-[10px] font-bold text-slate-400">ขอบเขตปัจจุบัน</span>} className="col-span-3 row-span-1"><div className="grid h-[calc(100%-3rem)] grid-cols-2 gap-3 p-4"><div className="rounded-xl bg-blue-50 p-4"><p className="text-[9px] font-bold text-blue-600">กิจกรรม</p><p className="mt-1 text-2xl font-black text-brand-navy">{activities.length}</p></div><div className="rounded-xl bg-emerald-50 p-4"><p className="text-[9px] font-bold text-emerald-600">คำตอบ</p><p className="mt-1 text-2xl font-black text-emerald-700">{responseCount}</p></div><div className="rounded-xl bg-amber-50 p-4"><p className="text-[9px] font-bold text-amber-600">เฉลี่ย</p><p className="mt-1 text-2xl font-black text-amber-700">{overallAverage ? overallAverage.toFixed(2) : "-"}</p></div><div className="rounded-xl bg-slate-100 p-4"><p className="text-[9px] font-bold text-slate-500">อัตราตอบ</p><p className="mt-1 text-2xl font-black text-brand-navy">{responseRate === null ? "-" : `${responseRate.toFixed(0)}%`}</p></div></div></Card>
+          <Card title="ความคิดเห็น / ข้อเสนอแนะ" right={<span className="text-[9px] font-bold text-slate-400">ตัวอย่างล่าสุด</span>} className="col-span-5 row-span-1"><div className="grid h-[calc(100%-2.5rem)] grid-rows-3 gap-2 px-4 py-3">{comments.length ? comments.map((comment, index) => <div key={`${comment}-${index}`} className="min-h-0 rounded-xl bg-slate-50 px-3 py-2 text-[10px] leading-4 text-slate-600 line-clamp-2">“{comment}”</div>) : <div className="row-span-3 grid place-items-center text-[10px] text-slate-400">ยังไม่มีความคิดเห็น</div>}</div></Card>
+          <Card title="ภาพกิจกรรม" right={<span className="text-[9px] font-bold text-slate-400">สูงสุด 3 ภาพ</span>} className="col-span-4 row-span-1"><div className="grid h-[calc(100%-2.5rem)] grid-cols-3 gap-2 px-4 py-3">{photos.length ? photos.map((photo) => <div key={photo.id} className="relative min-h-0 rounded-xl bg-slate-100"><img src={photo.image} alt={photo.title} className="h-full w-full rounded-xl object-cover" /><div className="absolute inset-x-0 bottom-0 truncate rounded-b-xl bg-black/45 px-2 py-1 text-[8px] font-bold text-white">{photo.title}</div></div>) : <div className="col-span-3 grid place-items-center text-[10px] text-slate-400">ยังไม่มีภาพกิจกรรม</div>}</div></Card>
+          <Card title="สรุปผลการดำเนินงาน" right={<span className="text-[9px] font-bold text-slate-400">ขอบเขตปัจจุบัน</span>} className="col-span-3 row-span-1"><div className="grid h-[calc(100%-2.5rem)] grid-cols-2 gap-2 p-3"><div className="rounded-xl bg-blue-50 p-3"><p className="text-[8px] font-bold text-blue-600">กิจกรรม</p><p className="mt-0.5 text-xl font-black text-brand-navy">{activities.length}</p></div><div className="rounded-xl bg-emerald-50 p-3"><p className="text-[8px] font-bold text-emerald-600">คำตอบ</p><p className="mt-0.5 text-xl font-black text-emerald-700">{responseCount}</p></div><div className="rounded-xl bg-amber-50 p-3"><p className="text-[8px] font-bold text-amber-600">เฉลี่ย</p><p className="mt-0.5 text-xl font-black text-amber-700">{overallAverage ? overallAverage.toFixed(2) : "-"}</p></div><div className="rounded-xl bg-slate-100 p-3"><p className="text-[8px] font-bold text-slate-500">อัตราตอบ</p><p className="mt-0.5 text-xl font-black text-brand-navy">{responseRate === null ? "-" : `${responseRate.toFixed(0)}%`}</p></div></div></Card>
         </section>
 
-        <footer className="flex shrink-0 items-center justify-between px-1 text-[9px] font-semibold text-slate-400"><span>Dashboard แสดงข้อมูลตามตัวกรองปัจจุบัน • ไม่มี AI ในหน้านี้</span><span>{new Date().toLocaleDateString("th-TH", { day: "numeric", month: "short", year: "numeric" })}</span></footer>
+        <footer className="flex min-h-0 items-center justify-between px-1 text-[8px] font-semibold text-slate-400"><span>Dashboard แสดงข้อมูลตามตัวกรองปัจจุบัน • ไม่มี AI ในหน้านี้</span><span>{new Date().toLocaleDateString("th-TH", { day: "numeric", month: "short", year: "numeric" })}</span></footer>
       </main>
     </div>
   );
