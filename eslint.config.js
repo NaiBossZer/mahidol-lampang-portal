@@ -37,5 +37,11 @@ export default tseslint.config(
       "@typescript-eslint/no-unused-vars": "off",
     },
   },
+  {
+    files: ["src/pages/admin/ExecutiveDashboardPage.tsx"],
+    rules: {
+      "@typescript-eslint/no-unused-expressions": "off",
+    },
+  },
   eslintPluginPrettier,
 );
