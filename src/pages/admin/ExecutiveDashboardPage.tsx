@@ -1,74 +1,940 @@
 import { useEffect, useMemo, useState, type ReactNode } from "react";
-import { Activity, AlertTriangle, Calendar, CheckCircle2, Filter, Image as ImageIcon, MapPin, MessageSquareQuote, RefreshCw, RotateCcw, Star, Trophy, Users, Megaphone } from "lucide-react";
+import {
+  Activity as ActivityIcon,
+  Calendar,
+  CheckCircle2,
+  Filter,
+  Image as ImageIcon,
+  MapPin,
+  MessageSquareQuote,
+  RefreshCw,
+  RotateCcw,
+  Star,
+  Trophy,
+  Users,
+  Megaphone,
+} from "lucide-react";
 import { getAdminDashboardData, type AdminDashboardData } from "@/services/api";
 
 type Period = "ALL" | "YEAR" | "QUARTER" | "MONTH" | "CUSTOM";
 type Dimension = "age_group" | "affiliation" | "organization";
-type DashboardResponseWithChannels = AdminDashboardData["responses"][number] & { channels?: string | null };
-type ScoreField = (typeof SCORE_FIELDS)[number];
-type ScoreItem = { field: ScoreField; label: string; value: number; respondentCount: number };
-type ScoreGroup = { key: string; title: string; items: ScoreItem[]; average: number | null };
+type ResponseWithChannels = AdminDashboardData["responses"][number] & {
+  channels?: string | null;
+};
+type ScoreField = keyof Pick<
+  AdminDashboardData["responses"][number],
+  | "p2_location"
+  | "p2_schedule"
+  | "p2_readiness"
+  | "p2_reception"
+  | "p2_overall"
+  | "p3_interest"
+  | "p3_content"
+  | "p3_clarity"
+  | "p3_benefit"
+  | "p3_application"
+  | "p4_knowledge"
+  | "p4_inspiration"
+  | "p4_community_resource"
+  | "p4_future_return"
+>;
+type ScoreItem = {
+  field: ScoreField;
+  label: string;
+  value: number;
+  respondentCount: number;
+};
+type ScoreGroup = {
+  key: string;
+  title: string;
+  fields: ScoreField[];
+};
 
-const SCORE_FIELDS = ["p2_location","p2_schedule","p2_readiness","p2_reception","p2_overall","p3_interest","p3_content","p3_clarity","p3_benefit","p3_application","p4_knowledge","p4_inspiration","p4_community_resource","p4_future_return"] as const;
-const LABELS = ["สถานที่","กำหนดการ","ความพร้อม","การต้อนรับ","ภาพรวมกิจกรรม","ความน่าสนใจ","เนื้อหา","ความชัดเจน","ประโยชน์","การนำไปใช้","ความรู้ที่ได้รับ","แรงบันดาลใจ","ทรัพยากรชุมชน","การกลับมาใช้บริการ"];
-const SCORE_GROUPS: Array<{key:string;title:string;fields:ScoreField[]}> = [
- {key:"opening",title:"พิธีเปิด",fields:["p2_location","p2_schedule","p2_readiness","p2_reception","p2_overall"]},
- {key:"learning",title:"ห้องเรียนรู้",fields:["p3_interest","p3_content","p3_clarity","p3_benefit","p3_application"]},
- {key:"outcome",title:"ผลที่ได้รับ",fields:["p4_knowledge","p4_inspiration","p4_community_resource","p4_future_return"]},
+const SCORE_GROUPS: ScoreGroup[] = [
+  {
+    key: "opening",
+    title: "พิธีเปิด",
+    fields: ["p2_location", "p2_schedule", "p2_readiness", "p2_reception", "p2_overall"],
+  },
+  {
+    key: "learning",
+    title: "ห้องเรียนรู้",
+    fields: ["p3_interest", "p3_content", "p3_clarity", "p3_benefit", "p3_application"],
+  },
+  {
+    key: "outcome",
+    title: "ผลที่ได้รับ",
+    fields: ["p4_knowledge", "p4_inspiration", "p4_community_resource", "p4_future_return"],
+  },
 ];
-const COLORS = ["#123F82","#2F80ED","#16A085","#F59E0B","#8B5CF6","#94A3B8"];
-const score = (value: unknown) => { const n = Number(value); return Number.isFinite(n) && n >= 1 && n <= 5 ? n : null; };
-const average = (values: number[]) => values.length ? values.reduce((a,b)=>a+b,0)/values.length : null;
-const formatDate = (value?: string | null) => { if(!value) return "-"; const d=new Date(value); return Number.isNaN(d.getTime()) ? "-" : new Intl.DateTimeFormat("th-TH",{day:"numeric",month:"short",year:"numeric"}).format(d); };
-function matchesDate(value:string,period:Period,year:string,month:string,quarter:string,from:string,to:string){const d=new Date(value);if(Number.isNaN(d.getTime()))return false;if(period==="ALL")return true;if(period==="YEAR")return year==="ALL"||String(d.getFullYear())===year;if(period==="MONTH")return !month||value.slice(0,7)===month;if(period==="QUARTER")return !quarter||`${d.getFullYear()}-Q${Math.floor(d.getMonth()/3)+1}`===quarter;const day=value.slice(0,10);return(!from||day>=from)&&(!to||day<=to);}
-function Card({title,right,children}:{title:string;right?:ReactNode;children:ReactNode}){return <section className="min-w-0 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm"><div className="flex min-h-12 items-center justify-between gap-3 border-b border-slate-100 px-4 py-3"><div className="flex min-w-0 items-center gap-2"><span className="h-5 w-1 rounded-full bg-brand-blue"/><h2 className="truncate text-sm font-extrabold text-brand-navy">{title}</h2></div>{right}</div>{children}</section>}
-function Kpi({icon,label,value,suffix,tone="blue",note}:{icon:ReactNode;label:string;value:string;suffix?:string;tone?:"blue"|"green"|"amber"|"navy";note?:string}){const tones={blue:"bg-blue-50 text-blue-700",green:"bg-emerald-50 text-emerald-700",amber:"bg-amber-50 text-amber-700",navy:"bg-slate-100 text-brand-navy"};return <article className="flex min-w-0 items-start justify-between gap-3 rounded-xl border border-slate-200 bg-white p-4 shadow-sm"><div className="min-w-0"><p className="text-xs font-bold text-slate-500">{label}</p><div className="mt-2 flex items-baseline gap-1.5"><span className="text-2xl font-black text-brand-navy">{value}</span>{suffix&&<span className="text-xs font-bold text-slate-400">{suffix}</span>}</div>{note&&<p className="mt-1 text-[11px] font-semibold text-slate-400">{note}</p>}</div><div className={`grid h-10 w-10 shrink-0 place-items-center rounded-lg ${tones[tone]}`}>{icon}</div></article>}
 
-export function ExecutiveDashboardPage(){
- const [data,setData]=useState<AdminDashboardData|null>(null);const[loading,setLoading]=useState(true);const[refreshing,setRefreshing]=useState(false);const[error,setError]=useState("");
- const params=useMemo(()=>new URLSearchParams(window.location.search),[]);const[activity,setActivity]=useState(params.get("activity")||"ALL");const[period,setPeriod]=useState<Period>("ALL");const[year,setYear]=useState("ALL");const[month,setMonth]=useState("");const[quarter,setQuarter]=useState("");const[from,setFrom]=useState("");const[to,setTo]=useState("");const[dimension,setDimension]=useState<Dimension>("age_group");
- const load=async(silent=false)=>{if(silent)setRefreshing(true);else setLoading(true);setError("");try{setData(await getAdminDashboardData())}catch(cause){setError(cause instanceof Error?cause.message:"ไม่สามารถโหลด Dashboard ได้")}finally{setLoading(false);setRefreshing(false)}};
- useEffect(()=>{void load()},[]);
- const years=useMemo(()=>[...new Set((data?.occurrences??[]).map(x=>new Date(x.start_at).getFullYear()))].filter(Number.isFinite).sort((a,b)=>b-a),[data]);
- const occurrencePool=useMemo(()=>(data?.occurrences??[]).filter(x=>!["cancelled","archived"].includes(x.status)&&matchesDate(x.start_at,period,year,month,quarter,from,to)),[data,period,year,month,quarter,from,to]);
- const activities=useMemo(()=>(data?.activities??[]).filter(x=>occurrencePool.some(o=>o.activity_id===x.id)),[data,occurrencePool]);
- const activityIds=useMemo(()=>new Set((activity==="ALL"?activities:activities.filter(x=>x.id===activity)).map(x=>x.id)),[activities,activity]);
- const occurrences=useMemo(()=>occurrencePool.filter(x=>activityIds.has(x.activity_id)),[occurrencePool,activityIds]);
- const responses=useMemo(()=>{const ids=new Set(occurrences.map(x=>x.id));return(data?.responses??[]).filter(r=>r.occurrence_id?ids.has(r.occurrence_id):activityIds.has(r.activity_id))},[data,occurrences,activityIds]);
- const selected=activity==="ALL"?undefined:data?.activities.find(x=>x.id===activity);const participants=occurrences.reduce((s,x)=>s+Math.max(0,Number(x.participant_count||0)),0);const responseCount=responses.length;const pending=Math.max(0,participants-responseCount);const responseRate=participants?Math.min(responseCount/participants*100,100):null;const dataMismatch=responseCount>participants;
- const questionScores=SCORE_FIELDS.map((field,index)=>{const values=responses.map(r=>score(r[field])).filter((x):x is number=>x!==null);return{field,label:LABELS[index],value:average(values),respondentCount:values.length}}).filter(x=>x.value!==null) as ScoreItem[];
- const scoreGroups=useMemo<ScoreGroup[]>(()=>SCORE_GROUPS.map(group=>{const items=group.fields.map(field=>questionScores.find(item=>item.field===field)).filter((item):item is ScoreItem=>Boolean(item));return{...group,items,average:average(items.map(item=>item.value))}}).filter(group=>group.items.length),[questionScores]);
- const overall=average(responses.flatMap(r=>SCORE_FIELDS.map(f=>score(r[f])).filter((x):x is number=>x!==null)));const highest=[...questionScores].sort((a,b)=>b.value-a.value)[0];const lowest=[...questionScores].sort((a,b)=>a.value-b.value)[0];
- const dimensionOptions=useMemo(()=>[{key:"age_group" as const,label:"ช่วงอายุ",available:responses.some(r=>Boolean(r.age_group))},{key:"affiliation" as const,label:"ประเภทผู้ตอบ",available:responses.some(r=>Boolean(r.affiliation))},{key:"organization" as const,label:"หน่วยงาน",available:responses.some(r=>Boolean(r.participant_organization_id))&&Boolean(data?.organizations.length)}].filter(x=>x.available),[responses,data]);
- useEffect(()=>{if(dimensionOptions.length&&!dimensionOptions.some(x=>x.key===dimension))setDimension(dimensionOptions[0].key)},[dimensionOptions,dimension]);
- const respondentDistribution=useMemo(()=>{const counts=new Map<string,number>();for(const r of responses){const raw=dimension==="age_group"?r.age_group:dimension==="affiliation"?r.affiliation:data?.organizations.find(o=>o.id===r.participant_organization_id)?.name;const v=raw?.trim();if(v)counts.set(v,(counts.get(v)??0)+1)}return[...counts.entries()].sort((a,b)=>b[1]-a[1]).slice(0,6)},[responses,dimension,data]);
- const scoreDistribution=useMemo(()=>{const total=responses.reduce((s,r)=>s+SCORE_FIELDS.filter(f=>score(r[f])!==null).length,0);return[5,4,3,2,1].map(value=>{const count=responses.reduce((s,r)=>s+SCORE_FIELDS.filter(f=>score(r[f])===value).length,0);return{value,count,percent:total?count/total*100:0}})},[responses]);
- const channelDistribution=useMemo(()=>{const counts=new Map<string,number>();for(const response of responses as DashboardResponseWithChannels[]){const raw=response.channels?.trim();if(!raw||raw==="-")continue;const categories=new Set<string>();for(const part of raw.split(",").map(x=>x.trim()).filter(Boolean)){const upper=part.toUpperCase();if(upper.includes("FACEBOOK"))categories.add("FACEBOOK");else if(upper==="LINE"||upper.includes("LINE"))categories.add("LINE");else if(upper.includes("WEBSITE"))categories.add("WEBSITE");else categories.add("อื่นๆ")}for(const category of categories)counts.set(category,(counts.get(category)??0)+1)}return["FACEBOOK","LINE","WEBSITE","อื่นๆ"].map(label=>({label,count:counts.get(label)??0})).filter(x=>x.count>0)},[responses]);
- const channelTotal=channelDistribution.reduce((s,x)=>s+x.count,0);const channelMultiple=channelTotal>responses.length;
- const channelMark=(label:string)=>label==="FACEBOOK"?"f":label==="LINE"?"L":label==="WEBSITE"?"◉":"•";
- const comments=responses.map(r=>r.feedback?.trim()).filter((x):x is string=>Boolean(x)).slice(0,4);
- const photos=useMemo(()=>{if(activity!=="ALL"){const media=(data?.activityMedia??[]).filter(x=>x.activity_id===activity).sort((a,b)=>a.display_order-b.display_order).map(x=>({id:x.id,image:x.public_url,title:x.caption||selected?.title||"กิจกรรม"}));return[...(selected?.featured_image?[{id:"featured",image:selected.featured_image,title:selected.title}]:[]),...media].slice(0,6)}return(data?.activities??[]).filter(x=>x.featured_image).slice(0,6).map(x=>({id:x.id,image:x.featured_image as string,title:x.title}))},[data,activity,selected]);
- const recentActivities=useMemo(()=>{if(!data)return[] as Array<{item:AdminDashboardData["activities"][number];occurrence:AdminDashboardData["occurrences"][number]}>;return data.activities.map(item=>{const occurrence=occurrencePool.filter(x=>x.activity_id===item.id).sort((a,b)=>new Date(b.start_at).getTime()-new Date(a.start_at).getTime())[0];return occurrence?{item,occurrence}:null}).filter((x):x is {item:AdminDashboardData["activities"][number];occurrence:AdminDashboardData["occurrences"][number]}=>Boolean(x)).sort((a,b)=>new Date(b.occurrence.start_at).getTime()-new Date(a.occurrence.start_at).getTime()).slice(0,4)},[data,occurrencePool]);
- const reset=()=>{setActivity("ALL");setPeriod("ALL");setYear("ALL");setMonth("");setQuarter("");setFrom("");setTo("")};useEffect(()=>{const url=new URL(window.location.href);if(activity==="ALL")url.searchParams.delete("activity");else url.searchParams.set("activity",activity);window.history.replaceState({},"",url)},[activity]);
- if(loading)return <div className="grid min-h-[calc(100dvh-4rem)] place-items-center text-sm font-semibold text-slate-500">กำลังโหลดผลการดำเนินงาน...</div>;if(error)return <div className="grid min-h-[calc(100dvh-4rem)] place-items-center"><div className="rounded-xl border border-rose-200 bg-rose-50 p-8 text-center"><p className="font-bold text-rose-800">ไม่สามารถโหลด Dashboard ได้</p><p className="mt-2 text-sm text-rose-600">{error}</p><button onClick={()=>void load()} className="mt-4 rounded-lg bg-brand-navy px-4 py-2 text-sm font-bold text-white">ลองใหม่</button></div></div>;
- const title=selected?.title||"ภาพรวมผลการดำเนินงาน";const image=selected?.featured_image||photos[0]?.image;const level=overall===null?"-":overall>=4.5?"มากที่สุด":overall>=3.5?"มาก":overall>=2.5?"ปานกลาง":"ควรปรับปรุง";const overallPercent=overall===null?0:Math.min(100,overall/5*100);
- return <div className="min-h-[calc(100dvh-4rem)] bg-slate-50"><main className="mx-auto max-w-[1440px] space-y-5 px-4 py-5 sm:px-6 xl:px-8">
-  <header className="flex flex-col gap-4 border-b border-slate-200 pb-4 lg:flex-row lg:items-end lg:justify-between"><div><div className="mb-2 text-xs font-bold text-brand-blue">Executive Dashboard</div><h1 className="text-2xl font-black tracking-tight text-brand-navy sm:text-3xl">รายงานผลสัมฤทธิ์และแบบประเมินความพึงพอใจ</h1><p className="mt-1 text-sm text-slate-500">Faculty of Environment and Resource Studies, Mahidol University</p></div><div className="flex items-center gap-3 text-xs text-slate-500"><span>อัปเดตล่าสุด: {formatDate(new Date().toISOString())}</span><button onClick={()=>void load(true)} disabled={refreshing} className="inline-flex h-9 items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 font-bold shadow-sm"><RefreshCw className={`h-4 w-4 ${refreshing?"animate-spin":""}`}/>รีเฟรช</button></div></header>
-  <section className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm"><div className="mb-4 flex flex-wrap items-center gap-2"><span className="inline-flex items-center gap-2 rounded-lg bg-brand-navy px-3 py-2 text-xs font-extrabold text-white"><Filter className="h-4 w-4"/>Activity Mode</span><span className="text-xs font-semibold text-slate-400">ผลสัมฤทธิ์รายกิจกรรม</span></div><div className="grid gap-3 md:grid-cols-2 xl:grid-cols-[minmax(260px,2fr)_150px_150px_150px_auto]"><label><span className="mb-1 block text-xs font-bold text-slate-500">กิจกรรม</span><select value={activity} onChange={e=>setActivity(e.target.value)} className="h-10 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm font-semibold"><option value="ALL">ทุกกิจกรรม</option>{activities.map(x=><option key={x.id} value={x.id}>{x.title}</option>)}</select></label><label><span className="mb-1 block text-xs font-bold text-slate-500">ช่วงเวลา</span><select value={period} onChange={e=>setPeriod(e.target.value as Period)} className="h-10 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm font-semibold"><option value="ALL">ทั้งหมด</option><option value="YEAR">รายปี</option><option value="QUARTER">ไตรมาส</option><option value="MONTH">รายเดือน</option><option value="CUSTOM">กำหนดเอง</option></select></label>{period==="YEAR"&&<label><span className="mb-1 block text-xs font-bold text-slate-500">ปี</span><select value={year} onChange={e=>setYear(e.target.value)} className="h-10 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm"><option value="ALL">ทุกปี</option>{years.map(x=><option key={x} value={x}>{x+543}</option>)}</select></label>}{period==="MONTH"&&<label><span className="mb-1 block text-xs font-bold text-slate-500">เดือน</span><input type="month" value={month} onChange={e=>setMonth(e.target.value)} className="h-10 w-full rounded-lg border border-slate-200 px-3"/></label>}{period==="QUARTER"&&<label><span className="mb-1 block text-xs font-bold text-slate-500">ไตรมาส</span><select value={quarter} onChange={e=>setQuarter(e.target.value)} className="h-10 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm"><option value="">ทุกไตรมาส</option>{years.flatMap(x=>[1,2,3,4].map(q=><option key={`${x}-Q${q}`} value={`${x}-Q${q}`}>{x+543} / Q{q}</option>))}</select></label>}{period==="CUSTOM"&&<div className="md:col-span-2"><span className="mb-1 block text-xs font-bold text-slate-500">กำหนดช่วงวันที่</span><div className="flex gap-2"><input type="date" value={from} onChange={e=>setFrom(e.target.value)} className="h-10 min-w-0 flex-1 rounded-lg border border-slate-200 px-3"/><input type="date" value={to} onChange={e=>setTo(e.target.value)} className="h-10 min-w-0 flex-1 rounded-lg border border-slate-200 px-3"/></div></div>}<div className="flex items-end justify-end"><button onClick={reset} className="inline-flex h-10 items-center gap-2 rounded-lg px-3 text-sm font-bold text-slate-500 hover:bg-slate-50"><RotateCcw className="h-4 w-4"/>ล้างตัวกรอง</button></div></div></section>
-  <section className="grid gap-4 rounded-xl border border-slate-200 bg-white p-4 shadow-sm lg:grid-cols-[minmax(0,1fr)_300px]"><div className="flex min-w-0 flex-col sm:flex-row sm:items-center">{image?<img src={image} alt="" className="h-36 w-full rounded-lg object-cover sm:h-28 sm:w-44"/>:<div className="grid h-36 w-full place-items-center rounded-lg bg-slate-100 text-slate-400 sm:h-28 sm:w-44"><Activity/></div>}<div className="mt-4 min-w-0 sm:ml-5 sm:mt-0"><p className="text-xs font-bold text-brand-blue">กิจกรรมที่กำลังแสดง</p><h2 className="mt-1 text-xl font-black text-brand-navy">{title}</h2><div className="mt-3 flex flex-wrap gap-4 text-sm font-semibold text-slate-500"><span className="inline-flex items-center gap-1.5"><Calendar className="h-4 w-4"/>{selected?formatDate(selected.activity_date):`${activities.length} กิจกรรม`}</span><span className="inline-flex items-center gap-1.5"><MapPin className="h-4 w-4"/>{selected?"กิจกรรมที่เลือก":"ภาพรวมทุกกิจกรรม"}</span></div></div></div>
-    {activity==="ALL" ? (
-      <div className="rounded-lg bg-slate-50 p-4"><p className="text-xs font-bold text-slate-400">ผู้ตอบแบบประเมินทั้งหมด</p><p className="mt-1 text-3xl font-black text-brand-navy">{responseCount.toLocaleString("th-TH")} <span className="text-sm text-slate-400">คน</span></p></div>
-    ) : (
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2">
-        <div className="rounded-lg bg-slate-50 p-4"><p className="text-xs font-bold text-slate-400">ผู้ตอบแบบประเมิน</p><p className="mt-1 text-2xl font-black text-brand-navy">{responseCount.toLocaleString("th-TH")} <span className="text-sm text-slate-400">คน</span></p></div>
-        <div className="rounded-lg bg-slate-50 p-4"><p className="text-xs font-bold text-slate-400">ผู้เข้าร่วมกิจกรรม</p><p className="mt-1 text-2xl font-black text-brand-navy">{participants.toLocaleString("th-TH")} <span className="text-sm text-slate-400">คน</span></p></div>
-        {dataMismatch&&<p className="col-span-full inline-flex items-center gap-1.5 text-[11px] font-bold text-amber-700"><AlertTriangle className="h-3.5 w-3.5"/>ข้อมูลไม่สอดคล้อง: ผู้ตอบมากกว่าผู้เข้าร่วม</p>}
+const SCORE_LABELS: Record<ScoreField, string> = {
+  p2_location: "สถานที่",
+  p2_schedule: "กำหนดการ",
+  p2_readiness: "ความพร้อม",
+  p2_reception: "การต้อนรับ",
+  p2_overall: "ภาพรวมกิจกรรม",
+  p3_interest: "ความน่าสนใจ",
+  p3_content: "เนื้อหา",
+  p3_clarity: "ความชัดเจน",
+  p3_benefit: "ประโยชน์",
+  p3_application: "การนำไปใช้",
+  p4_knowledge: "ความรู้ที่ได้รับ",
+  p4_inspiration: "แรงบันดาลใจ",
+  p4_community_resource: "ทรัพยากรชุมชน",
+  p4_future_return: "การกลับมาใช้บริการ",
+};
+
+const ALL_SCORE_FIELDS = Object.keys(SCORE_LABELS) as ScoreField[];
+
+const score = (value: unknown): number | null => {
+  const number = Number(value);
+  return Number.isFinite(number) && number >= 1 && number <= 5 ? number : null;
+};
+
+const average = (values: number[]): number | null =>
+  values.length ? values.reduce((sum, value) => sum + value, 0) / values.length : null;
+
+const formatDate = (value?: string | null) => {
+  if (!value) return "-";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "-";
+  return new Intl.DateTimeFormat("th-TH", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  }).format(date);
+};
+
+const formatNumber = (value: number) => new Intl.NumberFormat("th-TH").format(value);
+
+const matchesDate = (
+  value: string,
+  period: Period,
+  year: string,
+  quarter: string,
+  month: string,
+  from: string,
+  to: string,
+) => {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return false;
+  if (period === "ALL") return true;
+  if (period === "YEAR") return year === "ALL" || String(date.getFullYear()) === year;
+  if (period === "QUARTER") {
+    const currentQuarter = `${date.getFullYear()}-Q${Math.floor(date.getMonth() / 3) + 1}`;
+    return !quarter || currentQuarter === quarter;
+  }
+  if (period === "MONTH") return !month || value.slice(0, 7) === month;
+  const day = value.slice(0, 10);
+  return (!from || day >= from) && (!to || day <= to);
+};
+
+function Card({
+  title,
+  right,
+  children,
+  className = "",
+}: {
+  title: string;
+  right?: ReactNode;
+  children: ReactNode;
+  className?: string;
+}) {
+  return (
+    <section
+      className={`min-w-0 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm ${className}`}
+    >
+      <div className="flex min-h-12 items-center justify-between gap-3 border-b border-slate-100 px-4 py-3">
+        <div className="flex min-w-0 items-center gap-2">
+          <span className="h-5 w-1 shrink-0 rounded-full bg-brand-blue" />
+          <h2 className="truncate text-sm font-extrabold text-brand-navy">{title}</h2>
+        </div>
+        {right}
       </div>
-    )}
-  </section>
-  <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-5"><Kpi icon={<Users className="h-5 w-5"/>} label="ผู้เข้าร่วมกิจกรรมทั้งหมด" value={participants.toLocaleString("th-TH")} suffix="คน"/><Kpi icon={<CheckCircle2 className="h-5 w-5"/>} label="ผู้ตอบแบบประเมิน" value={responseCount.toLocaleString("th-TH")} suffix="ชุด" tone="navy"/><Kpi icon={<Users className="h-5 w-5"/>} label="จำนวนที่ยังไม่ได้ตอบ" value={pending.toLocaleString("th-TH")} suffix="คน" tone="amber"/><Kpi icon={<CheckCircle2 className="h-5 w-5"/>} label="อัตราการตอบกลับ" value={responseRate===null?"-":responseRate.toFixed(1)} suffix="%" tone="green"/><Kpi icon={<Star className="h-5 w-5"/>} label="คะแนนเฉลี่ยความพึงพอใจ" value={overall===null?"-":overall.toFixed(2)} suffix="/ 5.00" tone="amber" note={`ระดับ: ${level}`}/></section>
-  <section className="grid gap-5 xl:grid-cols-[minmax(0,1.05fr)_minmax(0,1.45fr)_minmax(260px,.8fr)]"><div className="space-y-5"><Card title="ผลการประเมินภาพรวม" right={<span className="text-xs font-semibold text-slate-400">มาตราส่วน 1–5</span>}><div className="flex min-h-[250px] items-center justify-center gap-6 p-5"><div className="relative grid h-40 w-40 shrink-0 place-items-center rounded-full" style={{background:`conic-gradient(#0c6fb6 ${overallPercent}%,#e9eef5 0)`}}><div className="grid h-28 w-28 place-items-center rounded-full bg-white text-center"><span className="text-3xl font-black text-brand-navy">{overall===null?"-":overall.toFixed(2)}</span><span className="text-xs font-bold text-slate-400">/ 5.00</span></div></div><div className="space-y-3 text-sm"><div><p className="text-xs font-semibold text-slate-400">ผู้ตอบแบบประเมิน</p><p className="text-lg font-black text-brand-navy">{responseCount.toLocaleString("th-TH")} คน</p></div><div><p className="text-xs font-semibold text-slate-400">ผู้เข้าร่วมกิจกรรม</p><p className="text-lg font-black text-brand-navy">{participants.toLocaleString("th-TH")} คน</p></div><div><p className="text-xs font-semibold text-slate-400">Response Rate</p><p className="text-lg font-black text-brand-navy">{responseRate===null?"-":`${responseRate.toFixed(1)}%`}</p></div><span className="inline-flex rounded-full bg-emerald-50 px-3 py-1 text-xs font-extrabold text-emerald-700">{level}</span></div></div></Card><Card title="ข้อมูลทั่วไปของผู้ตอบแบบสอบถาม" right={dimensionOptions.length?<select value={dimension} onChange={e=>setDimension(e.target.value as Dimension)} className="h-9 rounded-lg border border-slate-200 px-2 text-xs font-bold">{dimensionOptions.map(x=><option key={x.key} value={x.key}>{x.label}</option>)}</select>:null}><div className="flex min-h-[250px] flex-col items-center justify-center gap-5 p-5 sm:flex-row">{respondentDistribution.length?<div className="relative grid h-36 w-36 shrink-0 place-items-center rounded-full" style={{background:`conic-gradient(${respondentDistribution.map(([,count],index)=>{const total=respondentDistribution.reduce((s,[,v])=>s+v,0)||1;const start=respondentDistribution.slice(0,index).reduce((s,[,v])=>s+v,0)/total*100;const end=respondentDistribution.slice(0,index+1).reduce((s,[,v])=>s+v,0)/total*100;return`${COLORS[index]} ${start}% ${end}%`}).join(",")})`}}><div className="grid h-24 w-24 place-items-center rounded-full bg-white text-center"><b className="text-xl text-brand-navy">{responses.length}</b><span className="text-[10px] text-slate-400">ผู้ตอบ</span></div></div>:<div className="text-sm text-slate-400">ยังไม่มีข้อมูลทั่วไปของผู้ตอบ</div>}<div className="min-w-0 flex-1 space-y-2.5">{respondentDistribution.map(([label,count],index)=><div key={label} className="flex items-center gap-2 text-xs"><span className="h-3 w-3 shrink-0 rounded-sm" style={{background:COLORS[index]}}/><span className="min-w-0 flex-1 truncate text-slate-600">{label}</span><b className="text-brand-navy">{(count/Math.max(responses.length,1)*100).toFixed(0)}% ({count})</b></div>)}</div></div></Card><Card title="ภาพกิจกรรมล่าสุด" right={<span className="text-xs text-slate-400"><ImageIcon className="mr-1 inline h-3.5 w-3.5"/>Activity Media</span>}><div className="grid grid-cols-2 gap-3 p-5 sm:grid-cols-3">{photos.length?photos.map(photo=><figure key={photo.id} className="min-w-0"><img src={photo.image} alt={photo.title} className="aspect-[4/3] w-full rounded-lg object-cover"/><figcaption className="mt-2 truncate text-xs font-bold text-slate-600">{photo.title}</figcaption></figure>):<p className="col-span-full py-8 text-center text-sm text-slate-400">ยังไม่มีภาพกิจกรรม</p>}</div></Card><Card title="กิจกรรมล่าสุด" right={<span className="text-xs text-slate-400">ล่าสุดจากข้อมูลที่กรอง</span>}><div className="divide-y divide-slate-100">{recentActivities.length?recentActivities.map(({item,occurrence})=><div key={item.id} className="grid grid-cols-[1fr_auto_auto] gap-3 px-5 py-3 text-xs"><span className="min-w-0 truncate font-bold text-slate-700">{item.title}</span><span className="whitespace-nowrap text-slate-400">{formatDate(occurrence.start_at)}</span><span className="whitespace-nowrap font-black text-brand-navy">{Number(occurrence.participant_count||0).toLocaleString("th-TH")} คน</span></div>):<p className="px-5 py-8 text-center text-sm text-slate-400">ยังไม่มีกิจกรรม</p>}</div></Card></div>
-  <div className="space-y-5">{scoreGroups.map(group=><Card key={group.key} title={group.title} right={<span className="text-xs font-semibold text-slate-400">เฉลี่ย {group.average===null?"-":group.average.toFixed(2)} / 5.00</span>}><div className="space-y-3 p-4">{group.items.map((q,index)=><div key={q.field}><div className="mb-1 flex items-center justify-between gap-3 text-xs"><span className="min-w-0 truncate font-semibold text-slate-600">{index+1}. {q.label}</span><span className="shrink-0 font-black text-brand-navy">{q.value.toFixed(2)} <span className="font-semibold text-slate-400">/ 5.00</span></span></div><div className="h-2 rounded-full bg-slate-100"><div className="h-full rounded-full bg-brand-blue" style={{width:`${Math.min(100,q.value/5*100)}%`}}/></div></div>)}</div></Card>)}<Card title="กลุ่มผู้ตอบแบบประเมิน"><div className="space-y-3 p-4">{respondentDistribution.length?respondentDistribution.map(([label,count])=><div key={label}><div className="mb-1 flex justify-between gap-3 text-xs"><span className="truncate text-slate-600">{label}</span><b className="text-brand-navy">{count.toLocaleString("th-TH")} คน</b></div><div className="h-2 rounded-full bg-slate-100"><div className="h-full rounded-full bg-brand-blue" style={{width:`${Math.min(100,count/Math.max(responses.length,1)*100)}%`}}/></div></div>):<p className="py-8 text-center text-sm text-slate-400">ยังไม่มีข้อมูลกลุ่มผู้ตอบ</p>}</div></Card><Card title="ช่องทางการรับรู้กิจกรรม" right={<div className="flex items-center gap-1 text-[10px] font-semibold text-slate-400"><Megaphone className="h-3.5 w-3.5"/>{channelMultiple?"อาจเลือกได้หลายช่องทาง":"จากข้อมูลแบบประเมิน"}</div>}><div className="space-y-3 p-4">{channelDistribution.length?channelDistribution.map(item=><div key={item.label} className="grid grid-cols-[20px_68px_1fr_58px] items-center gap-2 text-xs"><span className="grid h-5 w-5 place-items-center rounded-full bg-slate-100 text-[10px] font-black text-brand-blue">{channelMark(item.label)}</span><span className="font-semibold text-slate-600">{item.label}</span><div className="h-2 rounded-full bg-slate-100"><div className="h-full rounded-full bg-brand-blue" style={{width:`${Math.min(100,channelTotal?item.count/channelTotal*100:0)}%`}}/></div><span className="text-right font-bold text-slate-500">{item.count} <span className="text-[10px]">({(item.count/Math.max(channelTotal,1)*100).toFixed(1)}%)</span></span></div>):<p className="py-8 text-center text-sm text-slate-400">ยังไม่มีข้อมูลช่องทางการรับรู้</p>}</div></Card></div>
-  <div className="space-y-5"><Card title="การกระจายคะแนน"><div className="space-y-4 p-4">{scoreDistribution.map(item=><div key={item.value} className="grid grid-cols-[22px_1fr_72px] items-center gap-3 text-xs"><b className="text-brand-navy">{item.value}</b><div className="h-3 rounded-full bg-slate-100"><div className="h-full rounded-full bg-brand-blue" style={{width:`${item.percent}%`}}/></div><span className="text-right font-bold text-slate-500">{item.count} ({item.percent.toFixed(1)}%)</span></div>)}{!responseCount&&<p className="py-2 text-center text-[11px] text-slate-400">ยังไม่มีผลประเมิน</p>}</div></Card><Card title="Executive Highlights"><div className="space-y-3 p-4"><div className="rounded-lg border border-emerald-100 bg-emerald-50/60 p-3"><div className="flex items-center gap-2 text-xs font-bold text-emerald-700"><Trophy className="h-4 w-4"/>หัวข้อคะแนนสูงสุด</div><p className="mt-2 text-sm font-black text-emerald-800">{highest?`${highest.label} · ${highest.value.toFixed(2)} / 5.00`:"-"}</p></div><div className="rounded-lg border border-amber-100 bg-amber-50/70 p-3"><div className="flex items-center gap-2 text-xs font-bold text-amber-700"><AlertTriangle className="h-4 w-4"/>หัวข้อที่ควรติดตาม</div><p className="mt-2 text-sm font-black text-amber-800">{lowest?`${lowest.label} · ${lowest.value.toFixed(2)} / 5.00`:"-"}</p></div><div className="grid grid-cols-2 gap-2"><div className="rounded-lg bg-slate-50 p-3"><p className="text-xs font-bold text-slate-400">ผู้ตอบ</p><p className="mt-1 text-lg font-black text-brand-navy">{responseCount.toLocaleString("th-TH")} คน</p></div><div className="rounded-lg bg-slate-50 p-3"><p className="text-xs font-bold text-slate-400">Response Rate</p><p className="mt-1 text-lg font-black text-brand-navy">{responseRate===null?"-":`${responseRate.toFixed(1)}%`}</p></div></div></div></Card><Card title="ความคิดเห็นจากผู้ตอบ" right={<MessageSquareQuote className="h-4 w-4 text-slate-400"/>}><div className="space-y-3 p-4">{comments.length?comments.map((comment,index)=><blockquote key={`${comment}-${index}`} className="rounded-lg border-l-4 border-brand-blue bg-slate-50 px-3 py-2 text-xs leading-5 text-slate-600">“{comment}”</blockquote>):<p className="py-8 text-center text-sm text-slate-400">ยังไม่มีความคิดเห็น</p>}</div></Card></div></section>
- </main></div>;
+      {children}
+    </section>
+  );
+}
+
+function SelectField({
+  label,
+  value,
+  onChange,
+  children,
+  disabled = false,
+}: {
+  label: string;
+  value: string;
+  onChange: (value: string) => void;
+  children: ReactNode;
+  disabled?: boolean;
+}) {
+  return (
+    <label className="min-w-0">
+      <span className="mb-1.5 block text-[11px] font-bold text-slate-500">{label}</span>
+      <select
+        value={value}
+        disabled={disabled}
+        onChange={(event) => onChange(event.target.value)}
+        className="h-10 w-full min-w-0 rounded-lg border border-slate-200 bg-white px-3 text-xs font-semibold text-slate-700 outline-none transition focus:border-brand-blue focus:ring-2 focus:ring-blue-100 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-400"
+      >
+        {children}
+      </select>
+    </label>
+  );
+}
+
+function KpiCard({
+  icon,
+  label,
+  value,
+  suffix,
+  note,
+}: {
+  icon: ReactNode;
+  label: string;
+  value: string;
+  suffix?: string;
+  note?: string;
+}) {
+  return (
+    <article className="flex min-w-0 items-start justify-between gap-3 rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+      <div className="min-w-0">
+        <p className="text-xs font-bold text-slate-500">{label}</p>
+        <div className="mt-2 flex items-baseline gap-1.5">
+          <span className="text-2xl font-black text-brand-navy">{value}</span>
+          {suffix && <span className="text-xs font-bold text-slate-400">{suffix}</span>}
+        </div>
+        {note && <p className="mt-1 text-[11px] font-semibold text-slate-400">{note}</p>}
+      </div>
+      <div className="grid h-10 w-10 shrink-0 place-items-center rounded-lg bg-blue-50 text-brand-blue">
+        {icon}
+      </div>
+    </article>
+  );
+}
+
+export function ExecutiveDashboardPage() {
+  const [data, setData] = useState<AdminDashboardData | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const [error, setError] = useState("");
+  const [activity, setActivity] = useState("ALL");
+  const [period, setPeriod] = useState<Period>("ALL");
+  const [year, setYear] = useState("ALL");
+  const [quarter, setQuarter] = useState("");
+  const [month, setMonth] = useState("");
+  const [from, setFrom] = useState("");
+  const [to, setTo] = useState("");
+  const [dimension, setDimension] = useState<Dimension>("age_group");
+  const [previewImage, setPreviewImage] = useState<string | null>(null);
+
+  const load = async (silent = false) => {
+    if (silent) setRefreshing(true);
+    else setLoading(true);
+    setError("");
+    try {
+      setData(await getAdminDashboardData());
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : "ไม่สามารถโหลด Dashboard ได้");
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
+  };
+
+  useEffect(() => {
+    void load();
+  }, []);
+
+  const years = useMemo(
+    () =>
+      [...new Set((data?.occurrences ?? []).map((item) => new Date(item.start_at).getFullYear()))]
+        .filter(Number.isFinite)
+        .sort((a, b) => b - a),
+    [data],
+  );
+
+  const months = useMemo(() => {
+    const values = new Set<string>();
+    for (const occurrence of data?.occurrences ?? []) {
+      const date = new Date(occurrence.start_at);
+      if (!Number.isNaN(date.getTime())) values.add(occurrence.start_at.slice(0, 7));
+    }
+    return [...values].sort().reverse();
+  }, [data]);
+
+  const quarters = useMemo(() => {
+    const values = new Set<string>();
+    for (const occurrence of data?.occurrences ?? []) {
+      const date = new Date(occurrence.start_at);
+      if (!Number.isNaN(date.getTime())) {
+        values.add(`${date.getFullYear()}-Q${Math.floor(date.getMonth() / 3) + 1}`);
+      }
+    }
+    return [...values].sort().reverse();
+  }, [data]);
+
+  const occurrencePool = useMemo(
+    () =>
+      (data?.occurrences ?? []).filter(
+        (item) =>
+          !["cancelled", "archived"].includes(item.status) &&
+          matchesDate(item.start_at, period, year, quarter, month, from, to),
+      ),
+    [data, period, year, quarter, month, from, to],
+  );
+
+  const activities = useMemo(
+    () =>
+      (data?.activities ?? []).filter((item) =>
+        occurrencePool.some((occurrence) => occurrence.activity_id === item.id),
+      ),
+    [data, occurrencePool],
+  );
+
+  const activityIds = useMemo(
+    () =>
+      new Set(
+        (activity === "ALL" ? activities : activities.filter((item) => item.id === activity)).map(
+          (item) => item.id,
+        ),
+      ),
+    [activities, activity],
+  );
+
+  useEffect(() => {
+    if (activity !== "ALL" && !activityIds.has(activity)) setActivity("ALL");
+  }, [activity, activityIds]);
+
+  const occurrences = useMemo(
+    () => occurrencePool.filter((item) => activityIds.has(item.activity_id)),
+    [occurrencePool, activityIds],
+  );
+
+  const responses = useMemo(() => {
+    const occurrenceIds = new Set(occurrences.map((item) => item.id));
+    return (data?.responses ?? []).filter((response) =>
+      response.occurrence_id
+        ? occurrenceIds.has(response.occurrence_id)
+        : activityIds.has(response.activity_id),
+    );
+  }, [data, occurrences, activityIds]);
+
+  const selectedActivity = activity === "ALL" ? undefined : data?.activities.find((item) => item.id === activity);
+  const participants = occurrences.reduce(
+    (sum, occurrence) => sum + Math.max(0, Number(occurrence.participant_count || 0)),
+    0,
+  );
+  const responseCount = responses.length;
+  const pending = Math.max(0, participants - responseCount);
+  const responseRate = participants ? Math.min((responseCount / participants) * 100, 100) : null;
+  const dataMismatch = responseCount > participants && participants > 0;
+
+  const questionScores = useMemo<ScoreItem[]>(() => {
+    return ALL_SCORE_FIELDS.flatMap((field) => {
+      const values = responses
+        .map((response) => score(response[field]))
+        .filter((value): value is number => value !== null);
+      const value = average(values);
+      return value === null
+        ? []
+        : [{ field, label: SCORE_LABELS[field], value, respondentCount: values.length }];
+    });
+  }, [responses]);
+
+  const scoreGroups = useMemo(
+    () =>
+      SCORE_GROUPS.map((group) => ({
+        ...group,
+        items: group.fields
+          .map((field) => questionScores.find((item) => item.field === field))
+          .filter((item): item is ScoreItem => Boolean(item)),
+      })).filter((group) => group.items.length),
+    [questionScores],
+  );
+
+  const overall = useMemo(
+    () =>
+      average(
+        responses.flatMap((response) =>
+          ALL_SCORE_FIELDS.map((field) => score(response[field])).filter(
+            (value): value is number => value !== null,
+          ),
+        ),
+      ),
+    [responses],
+  );
+
+  const highest = [...questionScores].sort((a, b) => b.value - a.value)[0];
+  const lowest = [...questionScores].sort((a, b) => a.value - b.value)[0];
+
+  const dimensionOptions = useMemo(
+    () =>
+      [
+        {
+          key: "age_group" as const,
+          label: "ช่วงอายุ",
+          available: responses.some((item) => Boolean(item.age_group)),
+        },
+        {
+          key: "affiliation" as const,
+          label: "ประเภทผู้ตอบ",
+          available: responses.some((item) => Boolean(item.affiliation)),
+        },
+        {
+          key: "organization" as const,
+          label: "หน่วยงาน",
+          available:
+            responses.some((item) => Boolean(item.participant_organization_id)) &&
+            Boolean(data?.organizations.length),
+        },
+      ].filter((item) => item.available),
+    [responses, data],
+  );
+
+  useEffect(() => {
+    if (dimensionOptions.length && !dimensionOptions.some((item) => item.key === dimension)) {
+      setDimension(dimensionOptions[0].key);
+    }
+  }, [dimensionOptions, dimension]);
+
+  const respondentDistribution = useMemo(() => {
+    const counts = new Map<string, number>();
+    for (const response of responses) {
+      const raw =
+        dimension === "age_group"
+          ? response.age_group
+          : dimension === "affiliation"
+            ? response.affiliation
+            : data?.organizations.find((organization) => organization.id === response.participant_organization_id)
+                ?.name;
+      const value = raw?.trim();
+      if (value) counts.set(value, (counts.get(value) ?? 0) + 1);
+    }
+    return [...counts.entries()].sort((a, b) => b[1] - a[1]).slice(0, 6);
+  }, [responses, dimension, data]);
+
+  const scoreDistribution = useMemo(() => {
+    const total = responses.reduce(
+      (sum, response) =>
+        sum + ALL_SCORE_FIELDS.filter((field) => score(response[field]) !== null).length,
+      0,
+    );
+    return [5, 4, 3, 2, 1].map((value) => {
+      const count = responses.reduce(
+        (sum, response) =>
+          sum + ALL_SCORE_FIELDS.filter((field) => score(response[field]) === value).length,
+        0,
+      );
+      return { value, count, percent: total ? (count / total) * 100 : 0 };
+    });
+  }, [responses]);
+
+  const channelDistribution = useMemo(() => {
+    const counts = new Map<string, number>();
+    for (const response of responses as ResponseWithChannels[]) {
+      const raw = response.channels?.trim();
+      if (!raw || raw === "-") continue;
+      const categories = new Set<string>();
+      for (const part of raw.split(",").map((item) => item.trim()).filter(Boolean)) {
+        const upper = part.toUpperCase();
+        if (upper.includes("FACEBOOK")) categories.add("FACEBOOK");
+        else if (upper === "LINE" || upper.includes("LINE")) categories.add("LINE");
+        else if (upper.includes("WEBSITE")) categories.add("WEBSITE");
+        else categories.add("อื่นๆ");
+      }
+      for (const category of categories) counts.set(category, (counts.get(category) ?? 0) + 1);
+    }
+    return ["FACEBOOK", "LINE", "WEBSITE", "อื่นๆ"]
+      .map((label) => ({ label, count: counts.get(label) ?? 0 }))
+      .filter((item) => item.count > 0);
+  }, [responses]);
+
+  const channelTotal = channelDistribution.reduce((sum, item) => sum + item.count, 0);
+
+  const comments = responses
+    .map((response) => response.feedback?.trim())
+    .filter((value): value is string => Boolean(value))
+    .slice(0, 4);
+
+  const photos = useMemo(() => {
+    if (activity !== "ALL") {
+      const media = (data?.activityMedia ?? [])
+        .filter((item) => item.activity_id === activity)
+        .sort((a, b) => a.display_order - b.display_order)
+        .map((item) => ({
+          id: item.id,
+          image: item.public_url,
+          title: item.caption || selectedActivity?.title || "กิจกรรม",
+        }));
+      return [
+        ...(selectedActivity?.featured_image
+          ? [{ id: "featured", image: selectedActivity.featured_image, title: selectedActivity.title }]
+          : []),
+        ...media,
+      ].slice(0, 6);
+    }
+    return (data?.activities ?? [])
+      .filter((item) => item.featured_image)
+      .slice(0, 6)
+      .map((item) => ({ id: item.id, image: item.featured_image as string, title: item.title }));
+  }, [data, activity, selectedActivity]);
+
+  const recentActivities = useMemo(() => {
+    if (!data) return [];
+    return data.activities
+      .map((item) => {
+        const occurrence = occurrencePool
+          .filter((candidate) => candidate.activity_id === item.id)
+          .sort((a, b) => new Date(b.start_at).getTime() - new Date(a.start_at).getTime())[0];
+        return occurrence ? { item, occurrence } : null;
+      })
+      .filter(
+        (
+          item,
+        ): item is {
+          item: AdminDashboardData["activities"][number];
+          occurrence: AdminDashboardData["occurrences"][number];
+        } => Boolean(item),
+      )
+      .sort(
+        (a, b) =>
+          new Date(b.occurrence.start_at).getTime() - new Date(a.occurrence.start_at).getTime(),
+      )
+      .slice(0, 4);
+  }, [data, occurrencePool]);
+
+  const resetFilters = () => {
+    setActivity("ALL");
+    setPeriod("ALL");
+    setYear("ALL");
+    setQuarter("");
+    setMonth("");
+    setFrom("");
+    setTo("");
+  };
+
+  const setPeriodAndClearChildren = (value: Period) => {
+    setPeriod(value);
+    if (value !== "YEAR") setYear("ALL");
+    if (value !== "QUARTER") setQuarter("");
+    if (value !== "MONTH") setMonth("");
+    if (value !== "CUSTOM") {
+      setFrom("");
+      setTo("");
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="grid min-h-[calc(100dvh-4rem)] place-items-center text-sm font-semibold text-slate-500">
+        กำลังโหลดผลการดำเนินงาน...
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="grid min-h-[calc(100dvh-4rem)] place-items-center px-4">
+        <div className="w-full max-w-md rounded-xl border border-rose-200 bg-rose-50 p-8 text-center">
+          <p className="font-bold text-rose-800">ไม่สามารถโหลด Dashboard ได้</p>
+          <p className="mt-2 text-sm text-rose-600">{error}</p>
+          <button
+            type="button"
+            onClick={() => void load()}
+            className="mt-4 rounded-lg bg-brand-navy px-4 py-2 text-sm font-bold text-white"
+          >
+            ลองใหม่
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  const title = selectedActivity?.title || "ภาพรวมผลการดำเนินงาน";
+  const heroImage = selectedActivity?.featured_image || photos[0]?.image;
+  const overallLevel =
+    overall === null
+      ? "-"
+      : overall >= 4.5
+        ? "มากที่สุด"
+        : overall >= 3.5
+          ? "มาก"
+          : overall >= 2.5
+            ? "ปานกลาง"
+            : "ควรปรับปรุง";
+
+  return (
+    <div className="min-h-[calc(100dvh-4rem)] bg-slate-50">
+      <main className="mx-auto max-w-[1440px] space-y-5 px-4 py-5 sm:px-6 xl:px-8">
+        <header className="flex flex-col gap-4 border-b border-slate-200 pb-4 lg:flex-row lg:items-end lg:justify-between">
+          <div>
+            <div className="mb-2 text-xs font-bold text-brand-blue">Executive Dashboard</div>
+            <h1 className="text-2xl font-black tracking-tight text-brand-navy sm:text-3xl">
+              รายงานผลสัมฤทธิ์และแบบประเมินความพึงพอใจ
+            </h1>
+            <p className="mt-1 text-sm text-slate-500">
+              Faculty of Environment and Resource Studies, Mahidol University
+            </p>
+          </div>
+          <div className="flex items-center gap-3 text-xs text-slate-500">
+            <span>อัปเดตล่าสุด: {formatDate(new Date().toISOString())}</span>
+            <button
+              type="button"
+              onClick={() => void load(true)}
+              disabled={refreshing}
+              className="inline-flex h-9 items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 font-bold shadow-sm transition hover:border-slate-300 disabled:opacity-60"
+            >
+              <RefreshCw className={`h-4 w-4 ${refreshing ? "animate-spin" : ""}`} />
+              รีเฟรช
+            </button>
+          </div>
+        </header>
+
+        <section className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+          <div className="mb-3 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex items-center gap-2">
+              <Filter className="h-4 w-4 text-brand-blue" />
+              <h2 className="text-sm font-extrabold text-brand-navy">ตัวกรองรายงาน</h2>
+            </div>
+            <button
+              type="button"
+              onClick={resetFilters}
+              className="inline-flex items-center gap-1.5 self-start text-xs font-bold text-slate-500 transition hover:text-brand-blue sm:self-auto"
+            >
+              <RotateCcw className="h-3.5 w-3.5" />
+              ล้างตัวกรอง
+            </button>
+          </div>
+
+          <div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-5">
+            <SelectField label="กิจกรรม" value={activity} onChange={setActivity}>
+              <option value="ALL">ทุกกิจกรรม</option>
+              {activities.map((item) => (
+                <option key={item.id} value={item.id}>
+                  {item.title}
+                </option>
+              ))}
+            </SelectField>
+
+            <SelectField label="ช่วงเวลา" value={period} onChange={(value) => setPeriodAndClearChildren(value as Period)}>
+              <option value="ALL">ทั้งหมด</option>
+              <option value="YEAR">รายปี</option>
+              <option value="QUARTER">รายไตรมาส</option>
+              <option value="MONTH">รายเดือน</option>
+              <option value="CUSTOM">กำหนดช่วงวันที่</option>
+            </SelectField>
+
+            <SelectField label="ปี" value={year} onChange={setYear} disabled={period !== "YEAR"}>
+              <option value="ALL">ทุกปี</option>
+              {years.map((item) => (
+                <option key={item} value={item}>
+                  {item + 543}
+                </option>
+              ))}
+            </SelectField>
+
+            <SelectField label="ไตรมาส / เดือน" value={period === "QUARTER" ? quarter : month} onChange={period === "QUARTER" ? setQuarter : setMonth} disabled={period !== "QUARTER" && period !== "MONTH"}>
+              <option value="">เลือกช่วง</option>
+              {(period === "QUARTER" ? quarters : months).map((item) => (
+                <option key={item} value={item}>
+                  {period === "QUARTER"
+                    ? `${item.split("-")[0]} (พ.ศ. ${Number(item.slice(0, 4)) + 543})`
+                    : new Intl.DateTimeFormat("th-TH", { month: "long", year: "numeric" }).format(new Date(`${item}-01`))}
+                </option>
+              ))}
+            </SelectField>
+
+            <div className="grid grid-cols-2 gap-2">
+              <label className="min-w-0">
+                <span className="mb-1.5 block text-[11px] font-bold text-slate-500">ตั้งแต่</span>
+                <input
+                  type="date"
+                  value={from}
+                  disabled={period !== "CUSTOM"}
+                  onChange={(event) => setFrom(event.target.value)}
+                  className="h-10 w-full min-w-0 rounded-lg border border-slate-200 bg-white px-2 text-xs font-semibold text-slate-700 outline-none focus:border-brand-blue focus:ring-2 focus:ring-blue-100 disabled:bg-slate-50"
+                />
+              </label>
+              <label className="min-w-0">
+                <span className="mb-1.5 block text-[11px] font-bold text-slate-500">ถึง</span>
+                <input
+                  type="date"
+                  value={to}
+                  disabled={period !== "CUSTOM"}
+                  onChange={(event) => setTo(event.target.value)}
+                  className="h-10 w-full min-w-0 rounded-lg border border-slate-200 bg-white px-2 text-xs font-semibold text-slate-700 outline-none focus:border-brand-blue focus:ring-2 focus:ring-blue-100 disabled:bg-slate-50"
+                />
+              </label>
+            </div>
+          </div>
+        </section>
+
+        <section className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+          <div className="flex flex-col md:flex-row">
+            <div
+              className="h-44 w-full shrink-0 cursor-pointer bg-slate-100 md:h-32 md:w-60"
+              onClick={() => heroImage && setPreviewImage(heroImage)}
+            >
+              {heroImage ? (
+                <img src={heroImage} alt={title} className="h-full w-full object-cover" />
+              ) : (
+                <div className="grid h-full place-items-center text-slate-300">
+                  <ImageIcon className="h-8 w-8" />
+                </div>
+              )}
+            </div>
+            <div className="min-w-0 flex-1 p-4">
+              <div className="text-xs font-bold text-brand-blue">{selectedActivity?.category || "Executive Report"}</div>
+              <h2 className="mt-1 text-xl font-black tracking-tight text-brand-navy">{title}</h2>
+              <div className="mt-3 flex flex-wrap gap-x-6 gap-y-2 text-xs text-slate-500">
+                <span className="inline-flex items-center gap-1.5">
+                  <Calendar className="h-4 w-4" />
+                  {selectedActivity ? formatDate(selectedActivity.activity_date) : "รวมตามตัวกรอง"}
+                </span>
+                <span className="inline-flex items-center gap-1.5">
+                  <Users className="h-4 w-4" />
+                  ผู้เข้าร่วม {formatNumber(participants)} คน
+                </span>
+                {selectedActivity?.featured_image && (
+                  <span className="inline-flex items-center gap-1.5">
+                    <MapPin className="h-4 w-4" />
+                    {selectedActivity.category || "กิจกรรม"}
+                  </span>
+                )}
+              </div>
+            </div>
+            <div className="flex min-w-[190px] flex-col justify-center border-t border-slate-100 bg-slate-50 p-4 md:border-l md:border-t-0">
+              <p className="text-xs font-bold text-slate-500">ภาพรวมคะแนน</p>
+              <div className="mt-1 flex items-baseline gap-2">
+                <span className="text-3xl font-black text-brand-navy">{overall === null ? "-" : overall.toFixed(2)}</span>
+                <span className="text-xs font-bold text-slate-400">/ 5.00</span>
+              </div>
+              <span className="mt-1 text-xs font-bold text-brand-blue">ระดับ {overallLevel}</span>
+            </div>
+          </div>
+        </section>
+
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-5">
+          <KpiCard icon={<Users className="h-5 w-5" />} label="ผู้เข้าร่วมกิจกรรม" value={formatNumber(participants)} suffix="คน" />
+          <KpiCard icon={<CheckCircle2 className="h-5 w-5" />} label="ผู้ตอบแบบประเมิน" value={formatNumber(responseCount)} suffix="คน" />
+          <KpiCard icon={<Users className="h-5 w-5" />} label="ยังไม่ได้ตอบ" value={formatNumber(pending)} suffix="คน" />
+          <KpiCard icon={<ActivityIcon className="h-5 w-5" />} label="อัตราการตอบกลับ" value={responseRate === null ? "-" : responseRate.toFixed(1)} suffix="%" note={dataMismatch ? "ตรวจสอบจำนวนผู้เข้าร่วมกับคำตอบ" : undefined} />
+          <KpiCard icon={<Star className="h-5 w-5" />} label="คะแนนประเมินเฉลี่ย" value={overall === null ? "-" : overall.toFixed(2)} suffix="/ 5.00" />
+        </div>
+
+        {dataMismatch && (
+          <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-xs font-semibold text-amber-800">
+            จำนวนผู้ตอบแบบประเมินมากกว่าจำนวนผู้เข้าร่วมที่ระบบระบุ จึงไม่ปรับจำนวนผู้ตอบให้ลดลง และแสดงข้อมูลตามข้อมูลจริงที่ได้รับ
+          </div>
+        )}
+
+        <section className="grid grid-cols-1 items-start gap-4 xl:grid-cols-3">
+          <div className="min-w-0 space-y-4">
+            <Card title="ผลการประเมินภาพรวม" right={<span className="text-[11px] text-slate-400">{responseCount} ผู้ตอบ</span>}>
+              <div className="p-4">
+                <div className="flex items-end justify-between gap-4">
+                  <div>
+                    <p className="text-xs font-bold text-slate-500">คะแนนเฉลี่ยรวม</p>
+                    <p className="mt-1 text-4xl font-black text-brand-navy">{overall === null ? "-" : overall.toFixed(2)}</p>
+                  </div>
+                  <div className="text-right">
+                    <Trophy className="ml-auto h-7 w-7 text-amber-500" />
+                    <p className="mt-1 text-xs font-bold text-brand-blue">{overallLevel}</p>
+                  </div>
+                </div>
+                <div className="mt-4 h-2 rounded-full bg-slate-100">
+                  <div className="h-full rounded-full bg-brand-blue transition-all" style={{ width: `${overall === null ? 0 : Math.min(100, (overall / 5) * 100)}%` }} />
+                </div>
+              </div>
+            </Card>
+
+            <Card title="ข้อมูลทั่วไปของผู้ตอบแบบสอบถาม">
+              <div className="p-4">
+                <div className="mb-3 flex items-center justify-between gap-3">
+                  <span className="text-xs font-semibold text-slate-500">มิติข้อมูลที่มีอยู่จริง</span>
+                  <select
+                    value={dimension}
+                    onChange={(event) => setDimension(event.target.value as Dimension)}
+                    className="h-8 rounded-md border border-slate-200 bg-slate-50 px-2 text-[11px] font-bold text-slate-700 outline-none"
+                  >
+                    {dimensionOptions.map((item) => (
+                      <option key={item.key} value={item.key}>{item.label}</option>
+                    ))}
+                  </select>
+                </div>
+                {respondentDistribution.length ? (
+                  <div className="space-y-3">
+                    {respondentDistribution.map(([label, count]) => (
+                      <div key={label}>
+                        <div className="mb-1 flex items-center justify-between gap-3 text-xs">
+                          <span className="truncate font-semibold text-slate-600">{label}</span>
+                          <span className="shrink-0 font-bold text-slate-800">{count} คน ({((count / Math.max(responseCount, 1)) * 100).toFixed(1)}%)</span>
+                        </div>
+                        <div className="h-2 rounded-full bg-slate-100">
+                          <div className="h-full rounded-full bg-brand-blue" style={{ width: `${(count / Math.max(responseCount, 1)) * 100}%` }} />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="py-5 text-center text-xs text-slate-400">ไม่มีข้อมูลมิตินี้ในช่วงที่เลือก</p>
+                )}
+              </div>
+            </Card>
+
+            <Card title="ภาพกิจกรรมล่าสุด" right={<span className="text-[11px] text-slate-400">{photos.length} ภาพ</span>}>
+              <div className="grid grid-cols-2 gap-2 p-3 sm:grid-cols-3">
+                {photos.map((photo) => (
+                  <button key={photo.id} type="button" onClick={() => setPreviewImage(photo.image)} className="group relative aspect-[4/3] overflow-hidden rounded-lg bg-slate-100 text-left">
+                    <img src={photo.image} alt={photo.title} className="h-full w-full object-cover transition duration-300 group-hover:scale-105" />
+                    <span className="absolute inset-x-0 bottom-0 bg-black/55 px-2 py-1 text-[10px] font-semibold text-white opacity-0 transition group-hover:opacity-100">{photo.title}</span>
+                  </button>
+                ))}
+                {!photos.length && <p className="col-span-full py-6 text-center text-xs text-slate-400">ไม่มีภาพกิจกรรม</p>}
+              </div>
+            </Card>
+
+            <Card title="กิจกรรมล่าสุด">
+              <div className="divide-y divide-slate-100">
+                {recentActivities.map(({ item, occurrence }) => (
+                  <button
+                    key={item.id}
+                    type="button"
+                    onClick={() => setActivity(item.id)}
+                    className="flex w-full items-start gap-3 p-3 text-left transition hover:bg-slate-50"
+                  >
+                    <div className="mt-0.5 grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-blue-50 text-brand-blue"><Calendar className="h-4 w-4" /></div>
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-xs font-bold text-slate-800">{item.title}</p>
+                      <p className="mt-1 text-[11px] text-slate-400">{formatDate(occurrence.start_at)}</p>
+                    </div>
+                  </button>
+                ))}
+                {!recentActivities.length && <p className="py-6 text-center text-xs text-slate-400">ไม่มีกิจกรรมในช่วงที่เลือก</p>}
+              </div>
+            </Card>
+          </div>
+
+          <div className="min-w-0 space-y-4">
+            {scoreGroups.map((group) => (
+              <Card key={group.key} title={group.title} right={<span className="text-[11px] text-slate-400">สเกล 1–5</span>}>
+                <div className="space-y-3 p-4">
+                  {group.items.map((item) => (
+                    <div key={item.field}>
+                      <div className="mb-1 flex items-center justify-between gap-3 text-xs">
+                        <span className="truncate font-semibold text-slate-600">{item.label}</span>
+                        <span className="shrink-0 font-black text-slate-800">{item.value.toFixed(2)} / 5.00</span>
+                      </div>
+                      <div className="h-2 rounded-full bg-slate-100">
+                        <div className="h-full rounded-full bg-brand-blue" style={{ width: `${Math.min(100, (item.value / 5) * 100)}%` }} />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </Card>
+            ))}
+
+            <Card title="กลุ่มผู้ตอบแบบประเมิน">
+              <div className="p-4">
+                {respondentDistribution.length ? (
+                  <div className="space-y-3">
+                    {respondentDistribution.map(([label, count]) => (
+                      <div key={label} className="flex items-center justify-between gap-3 text-xs">
+                        <span className="truncate font-semibold text-slate-600">{label}</span>
+                        <span className="shrink-0 font-bold text-slate-800">{count} คน</span>
+                      </div>
+                    ))}
+                  </div>
+                ) : <p className="py-4 text-center text-xs text-slate-400">ไม่มีข้อมูล</p>}
+              </div>
+            </Card>
+
+            <Card title="ช่องทางการรับรู้กิจกรรม" right={<span className="text-[11px] text-slate-400">{channelTotal} การเลือก</span>}>
+              <div className="space-y-3 p-4">
+                {channelDistribution.length ? channelDistribution.map((channel) => {
+                  const percent = channelTotal ? (channel.count / channelTotal) * 100 : 0;
+                  return (
+                    <div key={channel.label} className="flex items-center gap-2 text-xs">
+                      <span className="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-blue-50 font-black text-brand-blue">{channel.label === "FACEBOOK" ? "f" : channel.label === "LINE" ? "L" : channel.label === "WEBSITE" ? "◉" : "•"}</span>
+                      <span className="w-20 shrink-0 truncate font-semibold text-slate-600">{channel.label}</span>
+                      <div className="h-2 min-w-0 flex-1 rounded-full bg-slate-100"><div className="h-full rounded-full bg-brand-blue" style={{ width: `${percent}%` }} /></div>
+                      <span className="w-16 shrink-0 text-right font-bold text-slate-800">{channel.count} ({percent.toFixed(1)}%)</span>
+                    </div>
+                  );
+                }) : <p className="py-4 text-center text-xs text-slate-400">ไม่มีข้อมูลช่องทางการรับรู้</p>}
+                {channelTotal > responseCount && <p className="text-[10px] font-semibold text-slate-400">หลายคำตอบ: ผู้ตอบหนึ่งคนอาจเลือกมากกว่าหนึ่งช่องทาง</p>}
+              </div>
+            </Card>
+          </div>
+
+          <div className="min-w-0 space-y-4">
+            <Card title="การกระจายคะแนน" right={<span className="text-[11px] text-slate-400">รวมคำตอบที่มีคะแนน</span>}>
+              <div className="space-y-3 p-4">
+                {scoreDistribution.map((item) => (
+                  <div key={item.value} className="flex items-center gap-3 text-xs">
+                    <span className="w-8 shrink-0 font-black text-slate-700">{item.value} ★</span>
+                    <div className="h-3 min-w-0 flex-1 rounded-full bg-slate-100"><div className="h-full rounded-full bg-brand-blue" style={{ width: `${item.percent}%` }} /></div>
+                    <span className="w-20 shrink-0 text-right font-bold text-slate-700">{item.count} ({item.percent.toFixed(1)}%)</span>
+                  </div>
+                ))}
+              </div>
+            </Card>
+
+            <Card title="Executive Highlights">
+              <div className="space-y-3 p-4">
+                <div className="rounded-lg bg-emerald-50 p-3">
+                  <p className="text-[11px] font-bold text-emerald-700">คะแนนสูงสุด</p>
+                  <p className="mt-1 text-xs font-bold text-slate-800">{highest?.label || "-"}</p>
+                  <p className="mt-1 text-lg font-black text-emerald-700">{highest ? highest.value.toFixed(2) : "-"} / 5.00</p>
+                </div>
+                <div className="rounded-lg bg-amber-50 p-3">
+                  <p className="text-[11px] font-bold text-amber-700">ประเด็นที่ควรติดตาม</p>
+                  <p className="mt-1 text-xs font-bold text-slate-800">{lowest?.label || "-"}</p>
+                  <p className="mt-1 text-lg font-black text-amber-700">{lowest ? lowest.value.toFixed(2) : "-"} / 5.00</p>
+                </div>
+                <div className="grid grid-cols-2 gap-2 text-center">
+                  <div className="rounded-lg border border-slate-100 bg-slate-50 p-3"><p className="text-[10px] font-bold text-slate-400">ผู้ตอบ</p><p className="mt-1 font-black text-brand-navy">{responseCount}</p></div>
+                  <div className="rounded-lg border border-slate-100 bg-slate-50 p-3"><p className="text-[10px] font-bold text-slate-400">อัตราตอบกลับ</p><p className="mt-1 font-black text-brand-navy">{responseRate === null ? "-" : `${responseRate.toFixed(1)}%`}</p></div>
+                </div>
+              </div>
+            </Card>
+
+            <Card title="ความคิดเห็นจากผู้ตอบ" right={<MessageSquareQuote className="h-4 w-4 text-slate-400" />}>
+              <div className="divide-y divide-slate-100">
+                {comments.map((comment, index) => (
+                  <div key={`${comment}-${index}`} className="p-4">
+                    <p className="text-xs leading-5 text-slate-700">“{comment}”</p>
+                    <p className="mt-2 text-[10px] font-semibold text-slate-400">ผู้ตอบแบบประเมิน</p>
+                  </div>
+                ))}
+                {!comments.length && <p className="py-8 text-center text-xs text-slate-400">ไม่มีความคิดเห็นในช่วงที่เลือก</p>}
+              </div>
+            </Card>
+          </div>
+        </section>
+      </main>
+
+      {previewImage && (
+        <div
+          className="fixed inset-0 z-50 grid place-items-center bg-slate-950/80 p-4"
+          onClick={() => setPreviewImage(null)}
+        >
+          <div className="relative max-h-[90vh] max-w-5xl" onClick={(event) => event.stopPropagation()}>
+            <img src={previewImage} alt="ภาพกิจกรรม" className="max-h-[85vh] max-w-full rounded-xl object-contain shadow-2xl" />
+            <button
+              type="button"
+              onClick={() => setPreviewImage(null)}
+              className="absolute right-2 top-2 grid h-9 w-9 place-items-center rounded-full bg-black/60 text-lg font-bold text-white"
+              aria-label="ปิดภาพ"
+            >
+              ×
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
 }
