@@ -1,940 +1,158 @@
 import { useEffect, useMemo, useState, type ReactNode } from "react";
 import {
-  Activity as ActivityIcon,
-  Calendar,
-  CheckCircle2,
-  Filter,
-  Image as ImageIcon,
-  MapPin,
-  MessageSquareQuote,
-  RefreshCw,
-  RotateCcw,
-  Star,
-  Trophy,
-  Users,
-  Megaphone,
+  Activity as ActivityIcon, Calendar, CheckCircle2, ChevronLeft, ChevronRight,
+  Download, ExternalLink, Eye, Filter, Image as ImageIcon, MapPin,
+  MessageSquareQuote, Printer, RefreshCw, RotateCcw, Search, Star, Trophy,
+  Users, X,
 } from "lucide-react";
 import { getAdminDashboardData, type AdminDashboardData } from "@/services/api";
 
 type Period = "ALL" | "YEAR" | "QUARTER" | "MONTH" | "CUSTOM";
 type Dimension = "age_group" | "affiliation" | "organization";
-type ResponseWithChannels = AdminDashboardData["responses"][number] & {
-  channels?: string | null;
-};
-type ScoreField = keyof Pick<
-  AdminDashboardData["responses"][number],
-  | "p2_location"
-  | "p2_schedule"
-  | "p2_readiness"
-  | "p2_reception"
-  | "p2_overall"
-  | "p3_interest"
-  | "p3_content"
-  | "p3_clarity"
-  | "p3_benefit"
-  | "p3_application"
-  | "p4_knowledge"
-  | "p4_inspiration"
-  | "p4_community_resource"
-  | "p4_future_return"
->;
-type ScoreItem = {
-  field: ScoreField;
-  label: string;
-  value: number;
-  respondentCount: number;
-};
-type ScoreGroup = {
-  key: string;
-  title: string;
-  fields: ScoreField[];
-};
+type ResponseWithChannels = AdminDashboardData["responses"][number] & { channels?: string | null };
+type ScoreField = keyof Pick<AdminDashboardData["responses"][number],
+  "p2_location" | "p2_schedule" | "p2_readiness" | "p2_reception" | "p2_overall" |
+  "p3_interest" | "p3_content" | "p3_clarity" | "p3_benefit" | "p3_application" |
+  "p4_knowledge" | "p4_inspiration" | "p4_community_resource" | "p4_future_return">;
+type ScoreItem = { field: ScoreField; label: string; value: number; respondentCount: number };
+type ScoreGroup = { key: string; title: string; fields: ScoreField[] };
 
 const SCORE_GROUPS: ScoreGroup[] = [
-  {
-    key: "opening",
-    title: "พิธีเปิด",
-    fields: ["p2_location", "p2_schedule", "p2_readiness", "p2_reception", "p2_overall"],
-  },
-  {
-    key: "learning",
-    title: "ห้องเรียนรู้",
-    fields: ["p3_interest", "p3_content", "p3_clarity", "p3_benefit", "p3_application"],
-  },
-  {
-    key: "outcome",
-    title: "ผลที่ได้รับ",
-    fields: ["p4_knowledge", "p4_inspiration", "p4_community_resource", "p4_future_return"],
-  },
+  { key: "opening", title: "พิธีเปิด", fields: ["p2_location", "p2_schedule", "p2_readiness", "p2_reception", "p2_overall"] },
+  { key: "learning", title: "ห้องเรียนรู้", fields: ["p3_interest", "p3_content", "p3_clarity", "p3_benefit", "p3_application"] },
+  { key: "outcome", title: "ผลที่ได้รับ", fields: ["p4_knowledge", "p4_inspiration", "p4_community_resource", "p4_future_return"] },
 ];
-
 const SCORE_LABELS: Record<ScoreField, string> = {
-  p2_location: "สถานที่",
-  p2_schedule: "กำหนดการ",
-  p2_readiness: "ความพร้อม",
-  p2_reception: "การต้อนรับ",
-  p2_overall: "ภาพรวมกิจกรรม",
-  p3_interest: "ความน่าสนใจ",
-  p3_content: "เนื้อหา",
-  p3_clarity: "ความชัดเจน",
-  p3_benefit: "ประโยชน์",
-  p3_application: "การนำไปใช้",
-  p4_knowledge: "ความรู้ที่ได้รับ",
-  p4_inspiration: "แรงบันดาลใจ",
-  p4_community_resource: "ทรัพยากรชุมชน",
-  p4_future_return: "การกลับมาใช้บริการ",
+  p2_location: "สถานที่", p2_schedule: "กำหนดการ", p2_readiness: "ความพร้อม", p2_reception: "การต้อนรับ", p2_overall: "ภาพรวมกิจกรรม",
+  p3_interest: "ความน่าสนใจ", p3_content: "เนื้อหา", p3_clarity: "ความชัดเจน", p3_benefit: "ประโยชน์", p3_application: "การนำไปใช้",
+  p4_knowledge: "ความรู้ที่ได้รับ", p4_inspiration: "แรงบันดาลใจ", p4_community_resource: "ทรัพยากรชุมชน", p4_future_return: "การกลับมาใช้บริการ",
 };
-
 const ALL_SCORE_FIELDS = Object.keys(SCORE_LABELS) as ScoreField[];
-
-const score = (value: unknown): number | null => {
-  const number = Number(value);
-  return Number.isFinite(number) && number >= 1 && number <= 5 ? number : null;
-};
-
-const average = (values: number[]): number | null =>
-  values.length ? values.reduce((sum, value) => sum + value, 0) / values.length : null;
-
-const formatDate = (value?: string | null) => {
-  if (!value) return "-";
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return "-";
-  return new Intl.DateTimeFormat("th-TH", {
-    day: "numeric",
-    month: "short",
-    year: "numeric",
-  }).format(date);
-};
-
+const score = (value: unknown): number | null => { const n = Number(value); return Number.isFinite(n) && n >= 1 && n <= 5 ? n : null; };
+const average = (values: number[]): number | null => values.length ? values.reduce((a, b) => a + b, 0) / values.length : null;
 const formatNumber = (value: number) => new Intl.NumberFormat("th-TH").format(value);
-
-const matchesDate = (
-  value: string,
-  period: Period,
-  year: string,
-  quarter: string,
-  month: string,
-  from: string,
-  to: string,
-) => {
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return false;
+const formatDate = (value?: string | null) => {
+  if (!value) return "-"; const d = new Date(value); if (Number.isNaN(d.getTime())) return "-";
+  return new Intl.DateTimeFormat("th-TH", { day: "numeric", month: "short", year: "numeric" }).format(d);
+};
+const formatDateTime = (value?: string | null) => {
+  if (!value) return "-"; const d = new Date(value); if (Number.isNaN(d.getTime())) return "-";
+  return new Intl.DateTimeFormat("th-TH", { dateStyle: "medium", timeStyle: "short" }).format(d);
+};
+const matchesDate = (value: string, period: Period, year: string, quarter: string, month: string, from: string, to: string) => {
+  const d = new Date(value); if (Number.isNaN(d.getTime())) return false;
   if (period === "ALL") return true;
-  if (period === "YEAR") return year === "ALL" || String(date.getFullYear()) === year;
-  if (period === "QUARTER") {
-    const currentQuarter = `${date.getFullYear()}-Q${Math.floor(date.getMonth() / 3) + 1}`;
-    return !quarter || currentQuarter === quarter;
-  }
+  if (period === "YEAR") return year === "ALL" || String(d.getFullYear()) === year;
+  if (period === "QUARTER") return !quarter || `${d.getFullYear()}-Q${Math.floor(d.getMonth() / 3) + 1}` === quarter;
   if (period === "MONTH") return !month || value.slice(0, 7) === month;
-  const day = value.slice(0, 10);
-  return (!from || day >= from) && (!to || day <= to);
+  const day = value.slice(0, 10); return (!from || day >= from) && (!to || day <= to);
 };
 
-function Card({
-  title,
-  right,
-  children,
-  className = "",
-}: {
-  title: string;
-  right?: ReactNode;
-  children: ReactNode;
-  className?: string;
-}) {
-  return (
-    <section
-      className={`min-w-0 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm ${className}`}
-    >
-      <div className="flex min-h-12 items-center justify-between gap-3 border-b border-slate-100 px-4 py-3">
-        <div className="flex min-w-0 items-center gap-2">
-          <span className="h-5 w-1 shrink-0 rounded-full bg-brand-blue" />
-          <h2 className="truncate text-sm font-extrabold text-brand-navy">{title}</h2>
-        </div>
-        {right}
-      </div>
-      {children}
-    </section>
-  );
+function Card({ title, right, children }: { title: string; right?: ReactNode; children: ReactNode }) {
+  return <section className="min-w-0 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+    <div className="flex min-h-12 items-center justify-between gap-3 border-b border-slate-100 px-4 py-3">
+      <div className="flex min-w-0 items-center gap-2"><span className="h-5 w-1 shrink-0 rounded-full bg-brand-blue" /><h2 className="truncate text-sm font-extrabold text-brand-navy">{title}</h2></div>{right}
+    </div>{children}
+  </section>;
 }
-
-function SelectField({
-  label,
-  value,
-  onChange,
-  children,
-  disabled = false,
-}: {
-  label: string;
-  value: string;
-  onChange: (value: string) => void;
-  children: ReactNode;
-  disabled?: boolean;
-}) {
-  return (
-    <label className="min-w-0">
-      <span className="mb-1.5 block text-[11px] font-bold text-slate-500">{label}</span>
-      <select
-        value={value}
-        disabled={disabled}
-        onChange={(event) => onChange(event.target.value)}
-        className="h-10 w-full min-w-0 rounded-lg border border-slate-200 bg-white px-3 text-xs font-semibold text-slate-700 outline-none transition focus:border-brand-blue focus:ring-2 focus:ring-blue-100 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-400"
-      >
-        {children}
-      </select>
-    </label>
-  );
+function SelectField({ label, value, onChange, children, disabled = false }: { label: string; value: string; onChange: (v: string) => void; children: ReactNode; disabled?: boolean }) {
+  return <label className="min-w-0"><span className="mb-1.5 block text-[11px] font-bold text-slate-500">{label}</span>
+    <select value={value} disabled={disabled} onChange={e => onChange(e.target.value)} className="h-10 w-full min-w-0 rounded-lg border border-slate-200 bg-white px-3 text-xs font-semibold text-slate-700 outline-none focus:border-brand-blue focus:ring-2 focus:ring-blue-100 disabled:bg-slate-50 disabled:text-slate-400">{children}</select>
+  </label>;
 }
-
-function KpiCard({
-  icon,
-  label,
-  value,
-  suffix,
-  note,
-}: {
-  icon: ReactNode;
-  label: string;
-  value: string;
-  suffix?: string;
-  note?: string;
-}) {
-  return (
-    <article className="flex min-w-0 items-start justify-between gap-3 rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
-      <div className="min-w-0">
-        <p className="text-xs font-bold text-slate-500">{label}</p>
-        <div className="mt-2 flex items-baseline gap-1.5">
-          <span className="text-2xl font-black text-brand-navy">{value}</span>
-          {suffix && <span className="text-xs font-bold text-slate-400">{suffix}</span>}
-        </div>
-        {note && <p className="mt-1 text-[11px] font-semibold text-slate-400">{note}</p>}
-      </div>
-      <div className="grid h-10 w-10 shrink-0 place-items-center rounded-lg bg-blue-50 text-brand-blue">
-        {icon}
-      </div>
-    </article>
-  );
+function KpiCard({ icon, label, value, suffix, note, onClick }: { icon: ReactNode; label: string; value: string; suffix?: string; note?: string; onClick?: () => void }) {
+  return <button type="button" onClick={onClick} className="flex min-w-0 w-full items-start justify-between gap-3 rounded-xl border border-slate-200 bg-white p-4 text-left shadow-sm transition hover:border-slate-300 hover:shadow-md">
+    <div className="min-w-0"><p className="text-xs font-bold text-slate-500">{label}</p><div className="mt-2 flex items-baseline gap-1.5"><span className="text-2xl font-black text-brand-navy">{value}</span>{suffix && <span className="text-xs font-bold text-slate-400">{suffix}</span>}</div>{note && <p className="mt-1 text-[11px] font-semibold text-slate-400">{note}</p>}</div>
+    <div className="grid h-10 w-10 shrink-0 place-items-center rounded-lg bg-blue-50 text-brand-blue">{icon}</div>
+  </button>;
+}
+function Modal({ title, children, onClose, wide = false, dark = false }: { title: string; children: ReactNode; onClose: () => void; wide?: boolean; dark?: boolean }) {
+  return <div className={`fixed inset-0 z-50 flex items-center justify-center p-4 ${dark ? "bg-black/80" : "bg-black/60 backdrop-blur-sm"}`} onClick={onClose}>
+    <div className={`relative flex max-h-[90vh] w-full ${wide ? "max-w-5xl" : "max-w-2xl"} flex-col overflow-hidden rounded-2xl ${dark ? "bg-[#0c2340] text-white" : "bg-white text-slate-800"} shadow-2xl`} onClick={e => e.stopPropagation()}>
+      <div className={`flex items-center justify-between border-b px-5 py-3.5 ${dark ? "border-white/10" : "border-slate-100 bg-slate-50/70"}`}><h2 className="truncate text-[15px] font-bold">{title}</h2><button type="button" onClick={onClose} className="rounded-lg p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-700"><X className="h-5 w-5" /></button></div>{children}
+    </div>
+  </div>;
 }
 
 export function ExecutiveDashboardPage() {
   const [data, setData] = useState<AdminDashboardData | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
-  const [error, setError] = useState("");
-  const [activity, setActivity] = useState("ALL");
-  const [period, setPeriod] = useState<Period>("ALL");
-  const [year, setYear] = useState("ALL");
-  const [quarter, setQuarter] = useState("");
-  const [month, setMonth] = useState("");
-  const [from, setFrom] = useState("");
-  const [to, setTo] = useState("");
+  const [loading, setLoading] = useState(true); const [refreshing, setRefreshing] = useState(false); const [error, setError] = useState("");
+  const [activity, setActivity] = useState("ALL"); const [period, setPeriod] = useState<Period>("ALL"); const [year, setYear] = useState("ALL");
+  const [quarter, setQuarter] = useState(""); const [month, setMonth] = useState(""); const [from, setFrom] = useState(""); const [to, setTo] = useState("");
   const [dimension, setDimension] = useState<Dimension>("age_group");
-  const [previewImage, setPreviewImage] = useState<string | null>(null);
+  const [reportsOpen, setReportsOpen] = useState(false); const [commentsOpen, setCommentsOpen] = useState(false); const [kpiMetric, setKpiMetric] = useState<string | null>(null);
+  const [galleryOpen, setGalleryOpen] = useState(false); const [galleryIndex, setGalleryIndex] = useState(0);
 
-  const load = async (silent = false) => {
-    if (silent) setRefreshing(true);
-    else setLoading(true);
-    setError("");
-    try {
-      setData(await getAdminDashboardData());
-    } catch (cause) {
-      setError(cause instanceof Error ? cause.message : "ไม่สามารถโหลด Dashboard ได้");
-    } finally {
-      setLoading(false);
-      setRefreshing(false);
-    }
-  };
+  const load = async (silent = false) => { silent ? setRefreshing(true) : setLoading(true); setError(""); try { setData(await getAdminDashboardData()); } catch (e) { setError(e instanceof Error ? e.message : "ไม่สามารถโหลด Dashboard ได้"); } finally { setLoading(false); setRefreshing(false); } };
+  useEffect(() => { void load(); }, []);
 
-  useEffect(() => {
-    void load();
-  }, []);
+  const years = useMemo(() => [...new Set((data?.occurrences ?? []).map(x => new Date(x.start_at).getFullYear()))].filter(Number.isFinite).sort((a,b)=>b-a), [data]);
+  const months = useMemo(() => [...new Set((data?.occurrences ?? []).map(x => x.start_at.slice(0,7)))].sort().reverse(), [data]);
+  const quarters = useMemo(() => [...new Set((data?.occurrences ?? []).map(x => { const d=new Date(x.start_at); return `${d.getFullYear()}-Q${Math.floor(d.getMonth()/3)+1}`; }))].sort().reverse(), [data]);
+  const occurrencePool = useMemo(() => (data?.occurrences ?? []).filter(x => !["cancelled","archived"].includes(x.status) && matchesDate(x.start_at, period, year, quarter, month, from, to)), [data,period,year,quarter,month,from,to]);
+  const activities = useMemo(() => (data?.activities ?? []).filter(a => occurrencePool.some(o => o.activity_id === a.id)), [data,occurrencePool]);
+  const activityIds = useMemo(() => new Set((activity === "ALL" ? activities : activities.filter(a=>a.id===activity)).map(a=>a.id)), [activities,activity]);
+  useEffect(() => { if (activity !== "ALL" && !activityIds.has(activity)) setActivity("ALL"); }, [activity,activityIds]);
+  const occurrences = useMemo(() => occurrencePool.filter(o=>activityIds.has(o.activity_id)), [occurrencePool,activityIds]);
+  const responses = useMemo(() => { const ids=new Set(occurrences.map(o=>o.id)); return (data?.responses ?? []).filter(r => r.occurrence_id ? ids.has(r.occurrence_id) : activityIds.has(r.activity_id)); }, [data,occurrences,activityIds]);
+  const selectedActivity = activity === "ALL" ? undefined : data?.activities.find(a=>a.id===activity);
+  const participants = occurrences.reduce((s,o)=>s+Math.max(0,Number(o.participant_count||0)),0);
+  const responseCount = responses.length; const pending=Math.max(0,participants-responseCount); const responseRate=participants?Math.min(responseCount/participants*100,100):null; const mismatch=responseCount>participants&&participants>0;
 
-  const years = useMemo(
-    () =>
-      [...new Set((data?.occurrences ?? []).map((item) => new Date(item.start_at).getFullYear()))]
-        .filter(Number.isFinite)
-        .sort((a, b) => b - a),
-    [data],
-  );
+  const questionScores = useMemo<ScoreItem[]>(() => ALL_SCORE_FIELDS.flatMap(field => { const values=responses.map(r=>score(r[field])).filter((x):x is number=>x!==null); const value=average(values); return value===null?[]:[{field,label:SCORE_LABELS[field],value,respondentCount:values.length}]; }), [responses]);
+  const scoreGroups = useMemo(() => SCORE_GROUPS.map(g=>({...g,items:g.fields.map(f=>questionScores.find(x=>x.field===f)).filter((x):x is ScoreItem=>Boolean(x))})).filter(g=>g.items.length), [questionScores]);
+  const overall=useMemo(()=>average(responses.flatMap(r=>ALL_SCORE_FIELDS.map(f=>score(r[f])).filter((x):x is number=>x!==null))),[responses]);
+  const highest=[...questionScores].sort((a,b)=>b.value-a.value)[0]; const lowest=[...questionScores].sort((a,b)=>a.value-b.value)[0];
+  const dimensionOptions=useMemo(()=>[{key:"age_group" as const,label:"ช่วงอายุ",available:responses.some(r=>Boolean(r.age_group))},{key:"affiliation" as const,label:"ประเภทผู้ตอบ",available:responses.some(r=>Boolean(r.affiliation))},{key:"organization" as const,label:"หน่วยงาน",available:responses.some(r=>Boolean(r.participant_organization_id))&&Boolean(data?.organizations.length)}].filter(x=>x.available),[responses,data]);
+  useEffect(()=>{if(dimensionOptions.length&&!dimensionOptions.some(x=>x.key===dimension))setDimension(dimensionOptions[0].key);},[dimensionOptions,dimension]);
+  const respondentDistribution=useMemo(()=>{const m=new Map<string,number>(); for(const r of responses){const raw=dimension==="age_group"?r.age_group:dimension==="affiliation"?r.affiliation:data?.organizations.find(o=>o.id===r.participant_organization_id)?.name; const v=raw?.trim(); if(v)m.set(v,(m.get(v)||0)+1);} return [...m.entries()].sort((a,b)=>b[1]-a[1]).slice(0,8);},[responses,dimension,data]);
+  const scoreDistribution=useMemo(()=>{const total=responses.reduce((s,r)=>s+ALL_SCORE_FIELDS.filter(f=>score(r[f])!==null).length,0);return [5,4,3,2,1].map(v=>{const count=responses.reduce((s,r)=>s+ALL_SCORE_FIELDS.filter(f=>score(r[f])===v).length,0);return{value:v,count,percent:total?count/total*100:0};});},[responses]);
+  const channelDistribution=useMemo(()=>{const m=new Map<string,number>(); for(const r of responses as ResponseWithChannels[]){const raw=r.channels?.trim();if(!raw||raw==="-")continue;for(const p of new Set(raw.split(",").map(x=>x.trim()).filter(Boolean))){const u=p.toUpperCase();const c=u.includes("FACEBOOK")?"FACEBOOK":u.includes("LINE")?"LINE":u.includes("WEBSITE")?"WEBSITE":"อื่นๆ";m.set(c,(m.get(c)||0)+1);}}return ["FACEBOOK","LINE","WEBSITE","อื่นๆ"].map(label=>({label,count:m.get(label)||0})).filter(x=>x.count>0);},[responses]);
+  const channelTotal=channelDistribution.reduce((s,x)=>s+x.count,0);
+  const comments=useMemo(()=>responses.map(r=>r.feedback?.trim()).filter((x):x is string=>Boolean(x)),[responses]);
+  const photos=useMemo(()=>{if(activity!=="ALL"){const media=(data?.activityMedia??[]).filter(x=>x.activity_id===activity).sort((a,b)=>a.display_order-b.display_order).map(x=>({id:x.id,image:x.public_url,title:x.caption||selectedActivity?.title||"กิจกรรม"}));return [...(selectedActivity?.featured_image?[{id:"featured",image:selectedActivity.featured_image,title:selectedActivity.title}]:[]),...media].slice(0,12);}return (data?.activities??[]).filter(x=>x.featured_image).slice(0,12).map(x=>({id:x.id,image:x.featured_image as string,title:x.title}));},[data,activity,selectedActivity]);
+  const recentActivities=useMemo(()=>{if(!data)return[];return data.activities.map(item=>{const occurrence=occurrencePool.filter(o=>o.activity_id===item.id).sort((a,b)=>new Date(b.start_at).getTime()-new Date(a.start_at).getTime())[0];return occurrence?{item,occurrence}:null;}).filter((x):x is {item:AdminDashboardData["activities"][number];occurrence:AdminDashboardData["occurrences"][number]}=>Boolean(x)).sort((a,b)=>new Date(b.occurrence.start_at).getTime()-new Date(a.occurrence.start_at).getTime()).slice(0,6);},[data,occurrencePool]);
+  const level=overall===null?"-":overall>=4.5?"มากที่สุด":overall>=3.5?"มาก":overall>=2.5?"ปานกลาง":"ควรปรับปรุง";
+  const title=selectedActivity?.title||"ภาพรวมผลการดำเนินงาน"; const heroImage=selectedActivity?.featured_image||photos[0]?.image;
+  const resetFilters=()=>{setActivity("ALL");setPeriod("ALL");setYear("ALL");setQuarter("");setMonth("");setFrom("");setTo("");};
+  const changePeriod=(v:Period)=>{setPeriod(v);if(v!=="YEAR")setYear("ALL");if(v!=="QUARTER")setQuarter("");if(v!=="MONTH")setMonth("");if(v!=="CUSTOM"){setFrom("");setTo("");}};
+  const openGallery=(index:number)=>{setGalleryIndex(Math.max(0,index));setGalleryOpen(true);};
+  const exportCSV=()=>{const rows=activities.map(a=>{const os=occurrencePool.filter(o=>o.activity_id===a.id);const rs=responses.filter(r=>r.activity_id===a.id||os.some(o=>o.id===r.occurrence_id));const p=os.reduce((s,o)=>s+Number(o.participant_count||0),0);const rr=p?Math.min(rs.length/p*100,100):0;const av=average(rs.flatMap(r=>ALL_SCORE_FIELDS.map(f=>score(r[f])).filter((x):x is number=>x!==null)));return [a.title,a.activity_date,p,rs.length,rr.toFixed(1),av?.toFixed(2)||""];});const csv="\\uFEFF"+["กิจกรรม,วันที่,ผู้เข้าร่วม,ผู้ตอบ,อัตราตอบกลับ,คะแนนเฉลี่ย",...rows.map(r=>r.map(v=>`\"${String(v).replaceAll('\\"','\\"\\"')}\"`).join(","))].join("\\n");const blob=new Blob([csv],{type:"text/csv;charset=utf-8"});const url=URL.createObjectURL(blob);const a=document.createElement("a");a.href=url;a.download="Mahidol_Lampang_Executive_Report.csv";a.click();URL.revokeObjectURL(url);};
 
-  const months = useMemo(() => {
-    const values = new Set<string>();
-    for (const occurrence of data?.occurrences ?? []) {
-      const date = new Date(occurrence.start_at);
-      if (!Number.isNaN(date.getTime())) values.add(occurrence.start_at.slice(0, 7));
-    }
-    return [...values].sort().reverse();
-  }, [data]);
+  if(loading)return <div className="grid min-h-[calc(100dvh-4rem)] place-items-center text-sm font-semibold text-slate-500">กำลังโหลดผลการดำเนินงาน...</div>;
+  if(error)return <div className="grid min-h-[calc(100dvh-4rem)] place-items-center px-4"><div className="w-full max-w-md rounded-xl border border-rose-200 bg-rose-50 p-8 text-center"><p className="font-bold text-rose-800">ไม่สามารถโหลด Dashboard ได้</p><p className="mt-2 text-sm text-rose-600">{error}</p><button type="button" onClick={()=>void load()} className="mt-4 rounded-lg bg-brand-navy px-4 py-2 text-sm font-bold text-white">ลองใหม่</button></div></div>;
 
-  const quarters = useMemo(() => {
-    const values = new Set<string>();
-    for (const occurrence of data?.occurrences ?? []) {
-      const date = new Date(occurrence.start_at);
-      if (!Number.isNaN(date.getTime())) {
-        values.add(`${date.getFullYear()}-Q${Math.floor(date.getMonth() / 3) + 1}`);
-      }
-    }
-    return [...values].sort().reverse();
-  }, [data]);
+  return <div className="min-h-[calc(100dvh-4rem)] bg-slate-50"><main className="mx-auto max-w-[1440px] space-y-5 px-4 py-5 sm:px-6 xl:px-8">
+    <header className="flex flex-col gap-4 border-b border-slate-200 pb-4 lg:flex-row lg:items-end lg:justify-between"><div><div className="mb-2 text-xs font-bold text-brand-blue">Executive Dashboard</div><h1 className="text-2xl font-black tracking-tight text-brand-navy sm:text-3xl">รายงานผลสัมฤทธิ์และแบบประเมินความพึงพอใจ</h1><p className="mt-1 text-sm text-slate-500">Faculty of Environment and Resource Studies, Mahidol University</p></div><div className="flex items-center gap-3 text-xs text-slate-500"><span>อัปเดตล่าสุด: {formatDateTime(new Date().toISOString())}</span><button type="button" onClick={()=>void load(true)} disabled={refreshing} className="inline-flex h-9 items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 font-bold shadow-sm"><RefreshCw className={`h-4 w-4 ${refreshing?"animate-spin":""}`}/>รีเฟรช</button></div></header>
+    <section className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm"><div className="mb-3 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between"><div className="flex items-center gap-2"><Filter className="h-4 w-4 text-brand-blue"/><h2 className="text-sm font-extrabold text-brand-navy">ตัวกรองรายงาน</h2></div><button type="button" onClick={resetFilters} className="inline-flex items-center gap-1.5 text-xs font-bold text-slate-500"><RotateCcw className="h-3.5 w-3.5"/>ล้างตัวกรอง</button></div><div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-5">
+      <SelectField label="กิจกรรม" value={activity} onChange={setActivity}><option value="ALL">ทุกกิจกรรม</option>{activities.map(a=><option key={a.id} value={a.id}>{a.title}</option>)}</SelectField>
+      <SelectField label="ช่วงเวลา" value={period} onChange={v=>changePeriod(v as Period)}><option value="ALL">ทั้งหมด</option><option value="YEAR">รายปี</option><option value="QUARTER">รายไตรมาส</option><option value="MONTH">รายเดือน</option><option value="CUSTOM">กำหนดช่วงวันที่</option></SelectField>
+      <SelectField label="ปี" value={year} onChange={setYear} disabled={period!=="YEAR"}><option value="ALL">ทุกปี</option>{years.map(y=><option key={y} value={y}>{y+543}</option>)}</SelectField>
+      <SelectField label="ไตรมาส / เดือน" value={period==="QUARTER"?quarter:month} onChange={period==="QUARTER"?setQuarter:setMonth} disabled={period!=="QUARTER"&&period!=="MONTH"}><option value="">เลือกช่วง</option>{(period==="QUARTER"?quarters:months).map(x=><option key={x} value={x}>{period==="QUARTER"?`${x.split("-")[0]} (Q${x.slice(-1)})`:`${new Intl.DateTimeFormat("th-TH",{month:"long",year:"numeric"}).format(new Date(`${x}-01`))}`}</option>)}</SelectField>
+      <div className="grid grid-cols-2 gap-2"><label><span className="mb-1.5 block text-[11px] font-bold text-slate-500">ตั้งแต่</span><input type="date" value={from} disabled={period!=="CUSTOM"} onChange={e=>setFrom(e.target.value)} className="h-10 w-full rounded-lg border border-slate-200 px-2 text-xs disabled:bg-slate-50"/></label><label><span className="mb-1.5 block text-[11px] font-bold text-slate-500">ถึง</span><input type="date" value={to} disabled={period!=="CUSTOM"} onChange={e=>setTo(e.target.value)} className="h-10 w-full rounded-lg border border-slate-200 px-2 text-xs disabled:bg-slate-50"/></label></div>
+    </div></section>
+    <section className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm"><div className="flex flex-col md:flex-row"><button type="button" className="h-44 w-full shrink-0 bg-slate-100 md:h-32 md:w-60" onClick={()=>heroImage&&openGallery(0)}>{heroImage?<img src={heroImage} alt={title} className="h-full w-full object-cover"/>:<div className="grid h-full place-items-center text-slate-300"><ImageIcon className="h-8 w-8"/></div>}</button><div className="min-w-0 flex-1 p-4"><div className="text-xs font-bold text-brand-blue">{selectedActivity?.category||"Executive Report"}</div><h2 className="mt-1 text-xl font-black text-brand-navy">{title}</h2><div className="mt-3 flex flex-wrap gap-x-6 gap-y-2 text-xs text-slate-500"><span className="inline-flex items-center gap-1.5"><Calendar className="h-4 w-4"/>{selectedActivity?formatDate(selectedActivity.activity_date):"รวมตามตัวกรอง"}</span><span className="inline-flex items-center gap-1.5"><Users className="h-4 w-4"/>ผู้เข้าร่วม {formatNumber(participants)} คน</span></div></div><div className="flex min-w-[190px] flex-col justify-center border-t border-slate-100 bg-slate-50 p-4 md:border-l md:border-t-0"><p className="text-xs font-bold text-slate-500">ภาพรวมคะแนน</p><div className="mt-1 flex items-baseline gap-2"><span className="text-3xl font-black text-brand-navy">{overall===null?"-":overall.toFixed(2)}</span><span className="text-xs font-bold text-slate-400">/ 5.00</span></div><span className="mt-1 text-xs font-bold text-brand-blue">ระดับ {level}</span></div></div></section>
+    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-5"><KpiCard icon={<Users className="h-5 w-5"/>} label="ผู้เข้าร่วมกิจกรรม" value={formatNumber(participants)} suffix="คน" onClick={()=>setKpiMetric("ผู้เข้าร่วมกิจกรรม")}/><KpiCard icon={<CheckCircle2 className="h-5 w-5"/>} label="ผู้ตอบแบบประเมิน" value={formatNumber(responseCount)} suffix="คน" onClick={()=>setKpiMetric("ผู้ตอบแบบประเมิน")}/><KpiCard icon={<Users className="h-5 w-5"/>} label="ยังไม่ได้ตอบ" value={formatNumber(pending)} suffix="คน" onClick={()=>setKpiMetric("ยังไม่ได้ตอบ")}/><KpiCard icon={<ActivityIcon className="h-5 w-5"/>} label="อัตราการตอบกลับ" value={responseRate===null?"-":responseRate.toFixed(1)} suffix="%" onClick={()=>setKpiMetric("อัตราการตอบกลับ")}/><KpiCard icon={<Star className="h-5 w-5"/>} label="คะแนนประเมินเฉลี่ย" value={overall===null?"-":overall.toFixed(2)} suffix="/ 5.00" onClick={()=>setKpiMetric("คะแนนประเมินเฉลี่ย")}/></div>
+    {mismatch&&<div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-xs font-semibold text-amber-800">จำนวนผู้ตอบแบบประเมินมากกว่าจำนวนผู้เข้าร่วมที่ระบบระบุ จึงแสดงข้อมูลตามข้อมูลจริง</div>}
+    <section className="grid grid-cols-1 items-start gap-4 xl:grid-cols-3">
+      <div className="min-w-0 space-y-4"><Card title="ผลการประเมินภาพรวม" right={<span className="text-[11px] text-slate-400">{responseCount} ผู้ตอบ</span>}><div className="p-4"><div className="flex items-end justify-between"><div><p className="text-xs font-bold text-slate-500">คะแนนเฉลี่ยรวม</p><p className="mt-1 text-4xl font-black text-brand-navy">{overall===null?"-":overall.toFixed(2)}</p></div><div className="text-right"><Trophy className="ml-auto h-7 w-7 text-amber-500"/><p className="mt-1 text-xs font-bold text-brand-blue">{level}</p></div></div><div className="mt-4 h-2 rounded-full bg-slate-100"><div className="h-full rounded-full bg-brand-blue" style={{width:`${overall===null?0:Math.min(100,overall/5*100)}%`}}/></div></div></Card>
+        <Card title="ข้อมูลทั่วไปของผู้ตอบแบบสอบถาม"><div className="p-4"><div className="mb-3 flex items-center justify-between gap-3"><span className="text-xs font-semibold text-slate-500">มิติข้อมูลที่มีอยู่จริง</span><select value={dimension} onChange={e=>setDimension(e.target.value as Dimension)} className="h-8 rounded-md border border-slate-200 bg-slate-50 px-2 text-[11px] font-bold">{dimensionOptions.map(x=><option key={x.key} value={x.key}>{x.label}</option>)}</select></div>{respondentDistribution.length?<div className="space-y-3">{respondentDistribution.map(([label,count])=><div key={label}><div className="mb-1 flex justify-between gap-3 text-xs"><span className="truncate font-semibold text-slate-600">{label}</span><span className="font-bold">{count} คน ({(count/Math.max(responseCount,1)*100).toFixed(1)}%)</span></div><div className="h-2 rounded-full bg-slate-100"><div className="h-full rounded-full bg-brand-blue" style={{width:`${count/Math.max(responseCount,1)*100}%`}}/></div></div>)}</div>:<p className="py-5 text-center text-xs text-slate-400">ไม่มีข้อมูลมิตินี้ในช่วงที่เลือก</p>}</div></Card>
+        <Card title="ภาพกิจกรรมล่าสุด" right={<button type="button" onClick={()=>openGallery(0)} className="text-[11px] font-bold text-brand-blue">ดูทั้งหมด</button>}><div className="grid grid-cols-2 gap-2 p-3 sm:grid-cols-3">{photos.slice(0,6).map((p,i)=><button key={p.id} type="button" onClick={()=>openGallery(i)} className="group relative aspect-[4/3] overflow-hidden rounded-lg bg-slate-100"><img src={p.image} alt={p.title} className="h-full w-full object-cover transition group-hover:scale-105"/></button>)}{!photos.length&&<p className="col-span-full py-6 text-center text-xs text-slate-400">ไม่มีภาพกิจกรรม</p>}</div></Card>
+        <Card title="กิจกรรมล่าสุด"><div className="divide-y divide-slate-100">{recentActivities.map(({item,occurrence})=><button key={item.id} type="button" onClick={()=>setActivity(item.id)} className="flex w-full items-start gap-3 p-3 text-left hover:bg-slate-50"><div className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-blue-50 text-brand-blue"><Calendar className="h-4 w-4"/></div><div className="min-w-0 flex-1"><p className="truncate text-xs font-bold">{item.title}</p><p className="mt-1 text-[11px] text-slate-400">{formatDate(occurrence.start_at)}</p></div><ExternalLink className="mt-1 h-3.5 w-3.5 shrink-0 text-slate-300"/></button>)}{!recentActivities.length&&<p className="py-6 text-center text-xs text-slate-400">ไม่มีกิจกรรม</p>}</div></Card></div>
+      <div className="min-w-0 space-y-4">{scoreGroups.map(g=><Card key={g.key} title={g.title} right={<span className="text-[11px] text-slate-400">สเกล 1–5</span>}><div className="space-y-3 p-4">{g.items.map(item=><div key={item.field}><div className="mb-1 flex justify-between gap-3 text-xs"><span className="truncate font-semibold text-slate-600">{item.label}</span><span className="font-black">{item.value.toFixed(2)} / 5.00</span></div><div className="h-2 rounded-full bg-slate-100"><div className="h-full rounded-full bg-brand-blue" style={{width:`${item.value/5*100}%`}}/></div></div>)}</div></Card>)}<Card title="กลุ่มผู้ตอบแบบประเมิน"><div className="p-4">{respondentDistribution.length?<div className="space-y-3">{respondentDistribution.map(([label,count])=><div key={label} className="flex justify-between gap-3 text-xs"><span className="truncate font-semibold text-slate-600">{label}</span><span className="font-bold">{count} คน</span></div>)}</div>:<p className="py-4 text-center text-xs text-slate-400">ไม่มีข้อมูล</p>}</div></Card><Card title="ช่องทางการรับรู้กิจกรรม" right={<span className="text-[11px] text-slate-400">{channelTotal} การเลือก</span>}><div className="space-y-3 p-4">{channelDistribution.length?channelDistribution.map(c=>{const pct=channelTotal?c.count/channelTotal*100:0;return <div key={c.label} className="flex items-center gap-2 text-xs"><span className="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-blue-50 font-black text-brand-blue">{c.label[0]}</span><span className="w-20 shrink-0 truncate font-semibold text-slate-600">{c.label}</span><div className="h-2 min-w-0 flex-1 rounded-full bg-slate-100"><div className="h-full rounded-full bg-brand-blue" style={{width:`${pct}%`}}/></div><span className="w-16 text-right font-bold">{c.count} ({pct.toFixed(1)}%)</span></div>;}):<p className="py-4 text-center text-xs text-slate-400">ไม่มีข้อมูลช่องทางการรับรู้</p>}</div></Card></div>
+      <div className="min-w-0 space-y-4"><Card title="การกระจายคะแนน"><div className="space-y-3 p-4">{scoreDistribution.map(x=><div key={x.value} className="flex items-center gap-3 text-xs"><span className="w-8 font-black">{x.value} ★</span><div className="h-3 min-w-0 flex-1 rounded-full bg-slate-100"><div className="h-full rounded-full bg-brand-blue" style={{width:`${x.percent}%`}}/></div><span className="w-20 text-right font-bold">{x.count} ({x.percent.toFixed(1)}%)</span></div>)}</div></Card><Card title="Executive Highlights"><div className="space-y-3 p-4"><div className="rounded-lg bg-emerald-50 p-3"><p className="text-[11px] font-bold text-emerald-700">คะแนนสูงสุด</p><p className="mt-1 text-xs font-bold">{highest?.label||"-"}</p><p className="mt-1 text-lg font-black text-emerald-700">{highest?.value.toFixed(2)||"-"} / 5.00</p></div><div className="rounded-lg bg-amber-50 p-3"><p className="text-[11px] font-bold text-amber-700">ประเด็นที่ควรติดตาม</p><p className="mt-1 text-xs font-bold">{lowest?.label||"-"}</p><p className="mt-1 text-lg font-black text-amber-700">{lowest?.value.toFixed(2)||"-"} / 5.00</p></div><div className="grid grid-cols-2 gap-2 text-center"><div className="rounded-lg bg-slate-50 p-3"><p className="text-[10px] font-bold text-slate-400">ผู้ตอบ</p><p className="mt-1 font-black text-brand-navy">{responseCount}</p></div><div className="rounded-lg bg-slate-50 p-3"><p className="text-[10px] font-bold text-slate-400">อัตราตอบกลับ</p><p className="mt-1 font-black text-brand-navy">{responseRate===null?"-":`${responseRate.toFixed(1)}%`}</p></div></div></div></Card><Card title="ความคิดเห็นจากผู้ตอบ" right={<button type="button" onClick={()=>setCommentsOpen(true)} className="text-[11px] font-bold text-brand-blue">ดูทั้งหมด ({comments.length})</button>}><div className="divide-y divide-slate-100">{comments.slice(0,4).map((c,i)=><div key={`${c}-${i}`} className="p-4"><p className="text-xs leading-5 text-slate-700">“{c}”</p><p className="mt-2 text-[10px] font-semibold text-slate-400">ผู้ตอบแบบประเมิน</p></div>)}{!comments.length&&<p className="py-8 text-center text-xs text-slate-400">ไม่มีความคิดเห็น</p>}</div></Card></div>
+    </section>
+  </main>
 
-  const occurrencePool = useMemo(
-    () =>
-      (data?.occurrences ?? []).filter(
-        (item) =>
-          !["cancelled", "archived"].includes(item.status) &&
-          matchesDate(item.start_at, period, year, quarter, month, from, to),
-      ),
-    [data, period, year, quarter, month, from, to],
-  );
+  {reportsOpen&&<Modal title="รายงานผลสัมฤทธิ์รวมทุกกิจกรรม (Executive Summary)" onClose={()=>setReportsOpen(false)} wide><div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 p-4"><div className="relative w-full sm:w-72"><Search className="absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400"/><input placeholder="ค้นหากิจกรรม..." className="h-9 w-full rounded-lg border border-slate-200 bg-slate-50 pl-8 pr-3 text-xs outline-none focus:bg-white" onChange={()=>{}}/></div><div className="flex gap-2"><button type="button" onClick={exportCSV} className="inline-flex items-center gap-1.5 rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs font-bold text-emerald-700"><Download className="h-4 w-4"/>ส่งออก CSV</button><button type="button" onClick={()=>window.print()} className="inline-flex items-center gap-1.5 rounded-lg border border-sky-200 bg-sky-50 px-3 py-2 text-xs font-bold text-sky-700"><Printer className="h-4 w-4"/>พิมพ์รายงาน</button></div></div><div className="flex-1 overflow-auto p-5"><table className="w-full min-w-[760px] text-left text-xs"><thead className="border-b bg-slate-50 text-slate-600"><tr><th className="px-3 py-2.5">กิจกรรม</th><th className="px-3 py-2.5">วันที่</th><th className="px-3 py-2.5 text-center">ผู้เข้าร่วม</th><th className="px-3 py-2.5 text-center">ผู้ตอบ</th><th className="px-3 py-2.5 text-center">Response Rate</th><th className="px-3 py-2.5 text-right">คะแนน</th><th className="px-3 py-2.5 text-center">การจัดการ</th></tr></thead><tbody className="divide-y divide-slate-100">{activities.map(a=>{const os=occurrencePool.filter(o=>o.activity_id===a.id);const rs=responses.filter(r=>r.activity_id===a.id||os.some(o=>o.id===r.occurrence_id));const p=os.reduce((s,o)=>s+Number(o.participant_count||0),0);const rr=p?Math.min(rs.length/p*100,100):0;const av=average(rs.flatMap(r=>ALL_SCORE_FIELDS.map(f=>score(r[f])).filter((x):x is number=>x!==null)));return <tr key={a.id} className="hover:bg-slate-50"><td className="px-3 py-3 font-bold">{a.title}</td><td className="px-3 py-3 text-slate-500">{formatDate(a.activity_date)}</td><td className="px-3 py-3 text-center">{formatNumber(p)}</td><td className="px-3 py-3 text-center">{rs.length}</td><td className="px-3 py-3 text-center">{rr.toFixed(1)}%</td><td className="px-3 py-3 text-right font-bold">{av?.toFixed(2)||"-"} / 5.00</td><td className="px-3 py-3 text-center"><button type="button" onClick={()=>{setActivity(a.id);setReportsOpen(false);}} className="inline-flex items-center gap-1 rounded-md px-2.5 py-1 font-bold text-brand-blue hover:bg-blue-50"><Eye className="h-3.5 w-3.5"/>ดูแดชบอร์ด</button></td></tr>})}</tbody></table></div><div className="flex items-center justify-between border-t border-slate-100 bg-slate-50/60 px-5 py-3 text-[11px] text-slate-500"><span>รวมกิจกรรมทั้งหมด: {activities.length} รายการ</span><button type="button" onClick={()=>setReportsOpen(false)} className="rounded-lg bg-slate-800 px-4 py-1.5 font-bold text-white">ปิด</button></div></Modal>}
+  {commentsOpen&&<Modal title={`ความคิดเห็นและข้อเสนอแนะทั้งหมด • ${comments.length} ความคิดเห็น`} onClose={()=>setCommentsOpen(false)}><CommentsContent comments={comments}/></Modal>}
+  {kpiMetric&&<Modal title={`รายละเอียดตัวชี้วัด: ${kpiMetric}`} onClose={()=>setKpiMetric(null)}><div className="space-y-4 p-5"><div className="rounded-xl border border-blue-100 bg-blue-50 p-4"><p className="text-[11px] font-bold text-brand-blue">กิจกรรมปัจจุบัน</p><p className="mt-1 text-sm font-black text-slate-900">{title}</p><p className="mt-1 text-xs text-slate-500">{selectedActivity?.category||"รวมตามตัวกรอง"}</p></div><div className="grid grid-cols-2 gap-3"><div className="rounded-lg border bg-slate-50 p-3 text-center"><p className="text-[11px] text-slate-400">ผู้เข้าร่วมทั้งหมด</p><p className="mt-1 text-xl font-black">{formatNumber(participants)} คน</p></div><div className="rounded-lg border bg-slate-50 p-3 text-center"><p className="text-[11px] text-slate-400">ผู้ตอบแบบประเมิน</p><p className="mt-1 text-xl font-black text-emerald-700">{formatNumber(responseCount)} คน</p></div></div><div className="space-y-2 text-xs text-slate-600"><div className="flex justify-between border-b py-2"><span>อัตราตอบกลับ</span><b>{responseRate===null?"-":`${responseRate.toFixed(1)}%`}</b></div><div className="flex justify-between border-b py-2"><span>คะแนนเฉลี่ย</span><b>{overall===null?"-":`${overall.toFixed(2)} / 5.00`}</b></div><div className="flex justify-between py-2"><span>ยังไม่ได้ตอบ</span><b>{formatNumber(pending)} คน</b></div></div></div></Modal>}
+  {galleryOpen&&photos.length>0&&<Modal title={`ภาพกิจกรรม: ${photos[galleryIndex]?.title||title}`} onClose={()=>setGalleryOpen(false)} wide dark><div className="relative flex min-h-[420px] flex-1 items-center justify-center bg-black/30 p-5"><img src={photos[galleryIndex].image} alt={photos[galleryIndex].title} className="max-h-[58vh] max-w-full rounded-lg object-contain"/>{photos.length>1&&<><button type="button" onClick={()=>setGalleryIndex(i=>(i-1+photos.length)%photos.length)} className="absolute left-5 grid h-11 w-11 place-items-center rounded-full bg-black/60 text-white"><ChevronLeft/></button><button type="button" onClick={()=>setGalleryIndex(i=>(i+1)%photos.length)} className="absolute right-5 grid h-11 w-11 place-items-center rounded-full bg-black/60 text-white"><ChevronRight/></button></>}</div><div className="flex gap-2 overflow-x-auto border-t border-white/10 bg-[#08182b] p-3">{photos.map((p,i)=><button key={p.id} type="button" onClick={()=>setGalleryIndex(i)} className={`h-14 w-20 shrink-0 overflow-hidden rounded border-2 ${i===galleryIndex?"border-sky-400":"border-transparent opacity-60"}`}><img src={p.image} alt="thumbnail" className="h-full w-full object-cover"/></button>)}</div></Modal>}
+  </div>;
+}
 
-  const activities = useMemo(
-    () =>
-      (data?.activities ?? []).filter((item) =>
-        occurrencePool.some((occurrence) => occurrence.activity_id === item.id),
-      ),
-    [data, occurrencePool],
-  );
-
-  const activityIds = useMemo(
-    () =>
-      new Set(
-        (activity === "ALL" ? activities : activities.filter((item) => item.id === activity)).map(
-          (item) => item.id,
-        ),
-      ),
-    [activities, activity],
-  );
-
-  useEffect(() => {
-    if (activity !== "ALL" && !activityIds.has(activity)) setActivity("ALL");
-  }, [activity, activityIds]);
-
-  const occurrences = useMemo(
-    () => occurrencePool.filter((item) => activityIds.has(item.activity_id)),
-    [occurrencePool, activityIds],
-  );
-
-  const responses = useMemo(() => {
-    const occurrenceIds = new Set(occurrences.map((item) => item.id));
-    return (data?.responses ?? []).filter((response) =>
-      response.occurrence_id
-        ? occurrenceIds.has(response.occurrence_id)
-        : activityIds.has(response.activity_id),
-    );
-  }, [data, occurrences, activityIds]);
-
-  const selectedActivity = activity === "ALL" ? undefined : data?.activities.find((item) => item.id === activity);
-  const participants = occurrences.reduce(
-    (sum, occurrence) => sum + Math.max(0, Number(occurrence.participant_count || 0)),
-    0,
-  );
-  const responseCount = responses.length;
-  const pending = Math.max(0, participants - responseCount);
-  const responseRate = participants ? Math.min((responseCount / participants) * 100, 100) : null;
-  const dataMismatch = responseCount > participants && participants > 0;
-
-  const questionScores = useMemo<ScoreItem[]>(() => {
-    return ALL_SCORE_FIELDS.flatMap((field) => {
-      const values = responses
-        .map((response) => score(response[field]))
-        .filter((value): value is number => value !== null);
-      const value = average(values);
-      return value === null
-        ? []
-        : [{ field, label: SCORE_LABELS[field], value, respondentCount: values.length }];
-    });
-  }, [responses]);
-
-  const scoreGroups = useMemo(
-    () =>
-      SCORE_GROUPS.map((group) => ({
-        ...group,
-        items: group.fields
-          .map((field) => questionScores.find((item) => item.field === field))
-          .filter((item): item is ScoreItem => Boolean(item)),
-      })).filter((group) => group.items.length),
-    [questionScores],
-  );
-
-  const overall = useMemo(
-    () =>
-      average(
-        responses.flatMap((response) =>
-          ALL_SCORE_FIELDS.map((field) => score(response[field])).filter(
-            (value): value is number => value !== null,
-          ),
-        ),
-      ),
-    [responses],
-  );
-
-  const highest = [...questionScores].sort((a, b) => b.value - a.value)[0];
-  const lowest = [...questionScores].sort((a, b) => a.value - b.value)[0];
-
-  const dimensionOptions = useMemo(
-    () =>
-      [
-        {
-          key: "age_group" as const,
-          label: "ช่วงอายุ",
-          available: responses.some((item) => Boolean(item.age_group)),
-        },
-        {
-          key: "affiliation" as const,
-          label: "ประเภทผู้ตอบ",
-          available: responses.some((item) => Boolean(item.affiliation)),
-        },
-        {
-          key: "organization" as const,
-          label: "หน่วยงาน",
-          available:
-            responses.some((item) => Boolean(item.participant_organization_id)) &&
-            Boolean(data?.organizations.length),
-        },
-      ].filter((item) => item.available),
-    [responses, data],
-  );
-
-  useEffect(() => {
-    if (dimensionOptions.length && !dimensionOptions.some((item) => item.key === dimension)) {
-      setDimension(dimensionOptions[0].key);
-    }
-  }, [dimensionOptions, dimension]);
-
-  const respondentDistribution = useMemo(() => {
-    const counts = new Map<string, number>();
-    for (const response of responses) {
-      const raw =
-        dimension === "age_group"
-          ? response.age_group
-          : dimension === "affiliation"
-            ? response.affiliation
-            : data?.organizations.find((organization) => organization.id === response.participant_organization_id)
-                ?.name;
-      const value = raw?.trim();
-      if (value) counts.set(value, (counts.get(value) ?? 0) + 1);
-    }
-    return [...counts.entries()].sort((a, b) => b[1] - a[1]).slice(0, 6);
-  }, [responses, dimension, data]);
-
-  const scoreDistribution = useMemo(() => {
-    const total = responses.reduce(
-      (sum, response) =>
-        sum + ALL_SCORE_FIELDS.filter((field) => score(response[field]) !== null).length,
-      0,
-    );
-    return [5, 4, 3, 2, 1].map((value) => {
-      const count = responses.reduce(
-        (sum, response) =>
-          sum + ALL_SCORE_FIELDS.filter((field) => score(response[field]) === value).length,
-        0,
-      );
-      return { value, count, percent: total ? (count / total) * 100 : 0 };
-    });
-  }, [responses]);
-
-  const channelDistribution = useMemo(() => {
-    const counts = new Map<string, number>();
-    for (const response of responses as ResponseWithChannels[]) {
-      const raw = response.channels?.trim();
-      if (!raw || raw === "-") continue;
-      const categories = new Set<string>();
-      for (const part of raw.split(",").map((item) => item.trim()).filter(Boolean)) {
-        const upper = part.toUpperCase();
-        if (upper.includes("FACEBOOK")) categories.add("FACEBOOK");
-        else if (upper === "LINE" || upper.includes("LINE")) categories.add("LINE");
-        else if (upper.includes("WEBSITE")) categories.add("WEBSITE");
-        else categories.add("อื่นๆ");
-      }
-      for (const category of categories) counts.set(category, (counts.get(category) ?? 0) + 1);
-    }
-    return ["FACEBOOK", "LINE", "WEBSITE", "อื่นๆ"]
-      .map((label) => ({ label, count: counts.get(label) ?? 0 }))
-      .filter((item) => item.count > 0);
-  }, [responses]);
-
-  const channelTotal = channelDistribution.reduce((sum, item) => sum + item.count, 0);
-
-  const comments = responses
-    .map((response) => response.feedback?.trim())
-    .filter((value): value is string => Boolean(value))
-    .slice(0, 4);
-
-  const photos = useMemo(() => {
-    if (activity !== "ALL") {
-      const media = (data?.activityMedia ?? [])
-        .filter((item) => item.activity_id === activity)
-        .sort((a, b) => a.display_order - b.display_order)
-        .map((item) => ({
-          id: item.id,
-          image: item.public_url,
-          title: item.caption || selectedActivity?.title || "กิจกรรม",
-        }));
-      return [
-        ...(selectedActivity?.featured_image
-          ? [{ id: "featured", image: selectedActivity.featured_image, title: selectedActivity.title }]
-          : []),
-        ...media,
-      ].slice(0, 6);
-    }
-    return (data?.activities ?? [])
-      .filter((item) => item.featured_image)
-      .slice(0, 6)
-      .map((item) => ({ id: item.id, image: item.featured_image as string, title: item.title }));
-  }, [data, activity, selectedActivity]);
-
-  const recentActivities = useMemo(() => {
-    if (!data) return [];
-    return data.activities
-      .map((item) => {
-        const occurrence = occurrencePool
-          .filter((candidate) => candidate.activity_id === item.id)
-          .sort((a, b) => new Date(b.start_at).getTime() - new Date(a.start_at).getTime())[0];
-        return occurrence ? { item, occurrence } : null;
-      })
-      .filter(
-        (
-          item,
-        ): item is {
-          item: AdminDashboardData["activities"][number];
-          occurrence: AdminDashboardData["occurrences"][number];
-        } => Boolean(item),
-      )
-      .sort(
-        (a, b) =>
-          new Date(b.occurrence.start_at).getTime() - new Date(a.occurrence.start_at).getTime(),
-      )
-      .slice(0, 4);
-  }, [data, occurrencePool]);
-
-  const resetFilters = () => {
-    setActivity("ALL");
-    setPeriod("ALL");
-    setYear("ALL");
-    setQuarter("");
-    setMonth("");
-    setFrom("");
-    setTo("");
-  };
-
-  const setPeriodAndClearChildren = (value: Period) => {
-    setPeriod(value);
-    if (value !== "YEAR") setYear("ALL");
-    if (value !== "QUARTER") setQuarter("");
-    if (value !== "MONTH") setMonth("");
-    if (value !== "CUSTOM") {
-      setFrom("");
-      setTo("");
-    }
-  };
-
-  if (loading) {
-    return (
-      <div className="grid min-h-[calc(100dvh-4rem)] place-items-center text-sm font-semibold text-slate-500">
-        กำลังโหลดผลการดำเนินงาน...
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="grid min-h-[calc(100dvh-4rem)] place-items-center px-4">
-        <div className="w-full max-w-md rounded-xl border border-rose-200 bg-rose-50 p-8 text-center">
-          <p className="font-bold text-rose-800">ไม่สามารถโหลด Dashboard ได้</p>
-          <p className="mt-2 text-sm text-rose-600">{error}</p>
-          <button
-            type="button"
-            onClick={() => void load()}
-            className="mt-4 rounded-lg bg-brand-navy px-4 py-2 text-sm font-bold text-white"
-          >
-            ลองใหม่
-          </button>
-        </div>
-      </div>
-    );
-  }
-
-  const title = selectedActivity?.title || "ภาพรวมผลการดำเนินงาน";
-  const heroImage = selectedActivity?.featured_image || photos[0]?.image;
-  const overallLevel =
-    overall === null
-      ? "-"
-      : overall >= 4.5
-        ? "มากที่สุด"
-        : overall >= 3.5
-          ? "มาก"
-          : overall >= 2.5
-            ? "ปานกลาง"
-            : "ควรปรับปรุง";
-
-  return (
-    <div className="min-h-[calc(100dvh-4rem)] bg-slate-50">
-      <main className="mx-auto max-w-[1440px] space-y-5 px-4 py-5 sm:px-6 xl:px-8">
-        <header className="flex flex-col gap-4 border-b border-slate-200 pb-4 lg:flex-row lg:items-end lg:justify-between">
-          <div>
-            <div className="mb-2 text-xs font-bold text-brand-blue">Executive Dashboard</div>
-            <h1 className="text-2xl font-black tracking-tight text-brand-navy sm:text-3xl">
-              รายงานผลสัมฤทธิ์และแบบประเมินความพึงพอใจ
-            </h1>
-            <p className="mt-1 text-sm text-slate-500">
-              Faculty of Environment and Resource Studies, Mahidol University
-            </p>
-          </div>
-          <div className="flex items-center gap-3 text-xs text-slate-500">
-            <span>อัปเดตล่าสุด: {formatDate(new Date().toISOString())}</span>
-            <button
-              type="button"
-              onClick={() => void load(true)}
-              disabled={refreshing}
-              className="inline-flex h-9 items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 font-bold shadow-sm transition hover:border-slate-300 disabled:opacity-60"
-            >
-              <RefreshCw className={`h-4 w-4 ${refreshing ? "animate-spin" : ""}`} />
-              รีเฟรช
-            </button>
-          </div>
-        </header>
-
-        <section className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
-          <div className="mb-3 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-            <div className="flex items-center gap-2">
-              <Filter className="h-4 w-4 text-brand-blue" />
-              <h2 className="text-sm font-extrabold text-brand-navy">ตัวกรองรายงาน</h2>
-            </div>
-            <button
-              type="button"
-              onClick={resetFilters}
-              className="inline-flex items-center gap-1.5 self-start text-xs font-bold text-slate-500 transition hover:text-brand-blue sm:self-auto"
-            >
-              <RotateCcw className="h-3.5 w-3.5" />
-              ล้างตัวกรอง
-            </button>
-          </div>
-
-          <div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-5">
-            <SelectField label="กิจกรรม" value={activity} onChange={setActivity}>
-              <option value="ALL">ทุกกิจกรรม</option>
-              {activities.map((item) => (
-                <option key={item.id} value={item.id}>
-                  {item.title}
-                </option>
-              ))}
-            </SelectField>
-
-            <SelectField label="ช่วงเวลา" value={period} onChange={(value) => setPeriodAndClearChildren(value as Period)}>
-              <option value="ALL">ทั้งหมด</option>
-              <option value="YEAR">รายปี</option>
-              <option value="QUARTER">รายไตรมาส</option>
-              <option value="MONTH">รายเดือน</option>
-              <option value="CUSTOM">กำหนดช่วงวันที่</option>
-            </SelectField>
-
-            <SelectField label="ปี" value={year} onChange={setYear} disabled={period !== "YEAR"}>
-              <option value="ALL">ทุกปี</option>
-              {years.map((item) => (
-                <option key={item} value={item}>
-                  {item + 543}
-                </option>
-              ))}
-            </SelectField>
-
-            <SelectField label="ไตรมาส / เดือน" value={period === "QUARTER" ? quarter : month} onChange={period === "QUARTER" ? setQuarter : setMonth} disabled={period !== "QUARTER" && period !== "MONTH"}>
-              <option value="">เลือกช่วง</option>
-              {(period === "QUARTER" ? quarters : months).map((item) => (
-                <option key={item} value={item}>
-                  {period === "QUARTER"
-                    ? `${item.split("-")[0]} (พ.ศ. ${Number(item.slice(0, 4)) + 543})`
-                    : new Intl.DateTimeFormat("th-TH", { month: "long", year: "numeric" }).format(new Date(`${item}-01`))}
-                </option>
-              ))}
-            </SelectField>
-
-            <div className="grid grid-cols-2 gap-2">
-              <label className="min-w-0">
-                <span className="mb-1.5 block text-[11px] font-bold text-slate-500">ตั้งแต่</span>
-                <input
-                  type="date"
-                  value={from}
-                  disabled={period !== "CUSTOM"}
-                  onChange={(event) => setFrom(event.target.value)}
-                  className="h-10 w-full min-w-0 rounded-lg border border-slate-200 bg-white px-2 text-xs font-semibold text-slate-700 outline-none focus:border-brand-blue focus:ring-2 focus:ring-blue-100 disabled:bg-slate-50"
-                />
-              </label>
-              <label className="min-w-0">
-                <span className="mb-1.5 block text-[11px] font-bold text-slate-500">ถึง</span>
-                <input
-                  type="date"
-                  value={to}
-                  disabled={period !== "CUSTOM"}
-                  onChange={(event) => setTo(event.target.value)}
-                  className="h-10 w-full min-w-0 rounded-lg border border-slate-200 bg-white px-2 text-xs font-semibold text-slate-700 outline-none focus:border-brand-blue focus:ring-2 focus:ring-blue-100 disabled:bg-slate-50"
-                />
-              </label>
-            </div>
-          </div>
-        </section>
-
-        <section className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
-          <div className="flex flex-col md:flex-row">
-            <div
-              className="h-44 w-full shrink-0 cursor-pointer bg-slate-100 md:h-32 md:w-60"
-              onClick={() => heroImage && setPreviewImage(heroImage)}
-            >
-              {heroImage ? (
-                <img src={heroImage} alt={title} className="h-full w-full object-cover" />
-              ) : (
-                <div className="grid h-full place-items-center text-slate-300">
-                  <ImageIcon className="h-8 w-8" />
-                </div>
-              )}
-            </div>
-            <div className="min-w-0 flex-1 p-4">
-              <div className="text-xs font-bold text-brand-blue">{selectedActivity?.category || "Executive Report"}</div>
-              <h2 className="mt-1 text-xl font-black tracking-tight text-brand-navy">{title}</h2>
-              <div className="mt-3 flex flex-wrap gap-x-6 gap-y-2 text-xs text-slate-500">
-                <span className="inline-flex items-center gap-1.5">
-                  <Calendar className="h-4 w-4" />
-                  {selectedActivity ? formatDate(selectedActivity.activity_date) : "รวมตามตัวกรอง"}
-                </span>
-                <span className="inline-flex items-center gap-1.5">
-                  <Users className="h-4 w-4" />
-                  ผู้เข้าร่วม {formatNumber(participants)} คน
-                </span>
-                {selectedActivity?.featured_image && (
-                  <span className="inline-flex items-center gap-1.5">
-                    <MapPin className="h-4 w-4" />
-                    {selectedActivity.category || "กิจกรรม"}
-                  </span>
-                )}
-              </div>
-            </div>
-            <div className="flex min-w-[190px] flex-col justify-center border-t border-slate-100 bg-slate-50 p-4 md:border-l md:border-t-0">
-              <p className="text-xs font-bold text-slate-500">ภาพรวมคะแนน</p>
-              <div className="mt-1 flex items-baseline gap-2">
-                <span className="text-3xl font-black text-brand-navy">{overall === null ? "-" : overall.toFixed(2)}</span>
-                <span className="text-xs font-bold text-slate-400">/ 5.00</span>
-              </div>
-              <span className="mt-1 text-xs font-bold text-brand-blue">ระดับ {overallLevel}</span>
-            </div>
-          </div>
-        </section>
-
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-5">
-          <KpiCard icon={<Users className="h-5 w-5" />} label="ผู้เข้าร่วมกิจกรรม" value={formatNumber(participants)} suffix="คน" />
-          <KpiCard icon={<CheckCircle2 className="h-5 w-5" />} label="ผู้ตอบแบบประเมิน" value={formatNumber(responseCount)} suffix="คน" />
-          <KpiCard icon={<Users className="h-5 w-5" />} label="ยังไม่ได้ตอบ" value={formatNumber(pending)} suffix="คน" />
-          <KpiCard icon={<ActivityIcon className="h-5 w-5" />} label="อัตราการตอบกลับ" value={responseRate === null ? "-" : responseRate.toFixed(1)} suffix="%" note={dataMismatch ? "ตรวจสอบจำนวนผู้เข้าร่วมกับคำตอบ" : undefined} />
-          <KpiCard icon={<Star className="h-5 w-5" />} label="คะแนนประเมินเฉลี่ย" value={overall === null ? "-" : overall.toFixed(2)} suffix="/ 5.00" />
-        </div>
-
-        {dataMismatch && (
-          <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-xs font-semibold text-amber-800">
-            จำนวนผู้ตอบแบบประเมินมากกว่าจำนวนผู้เข้าร่วมที่ระบบระบุ จึงไม่ปรับจำนวนผู้ตอบให้ลดลง และแสดงข้อมูลตามข้อมูลจริงที่ได้รับ
-          </div>
-        )}
-
-        <section className="grid grid-cols-1 items-start gap-4 xl:grid-cols-3">
-          <div className="min-w-0 space-y-4">
-            <Card title="ผลการประเมินภาพรวม" right={<span className="text-[11px] text-slate-400">{responseCount} ผู้ตอบ</span>}>
-              <div className="p-4">
-                <div className="flex items-end justify-between gap-4">
-                  <div>
-                    <p className="text-xs font-bold text-slate-500">คะแนนเฉลี่ยรวม</p>
-                    <p className="mt-1 text-4xl font-black text-brand-navy">{overall === null ? "-" : overall.toFixed(2)}</p>
-                  </div>
-                  <div className="text-right">
-                    <Trophy className="ml-auto h-7 w-7 text-amber-500" />
-                    <p className="mt-1 text-xs font-bold text-brand-blue">{overallLevel}</p>
-                  </div>
-                </div>
-                <div className="mt-4 h-2 rounded-full bg-slate-100">
-                  <div className="h-full rounded-full bg-brand-blue transition-all" style={{ width: `${overall === null ? 0 : Math.min(100, (overall / 5) * 100)}%` }} />
-                </div>
-              </div>
-            </Card>
-
-            <Card title="ข้อมูลทั่วไปของผู้ตอบแบบสอบถาม">
-              <div className="p-4">
-                <div className="mb-3 flex items-center justify-between gap-3">
-                  <span className="text-xs font-semibold text-slate-500">มิติข้อมูลที่มีอยู่จริง</span>
-                  <select
-                    value={dimension}
-                    onChange={(event) => setDimension(event.target.value as Dimension)}
-                    className="h-8 rounded-md border border-slate-200 bg-slate-50 px-2 text-[11px] font-bold text-slate-700 outline-none"
-                  >
-                    {dimensionOptions.map((item) => (
-                      <option key={item.key} value={item.key}>{item.label}</option>
-                    ))}
-                  </select>
-                </div>
-                {respondentDistribution.length ? (
-                  <div className="space-y-3">
-                    {respondentDistribution.map(([label, count]) => (
-                      <div key={label}>
-                        <div className="mb-1 flex items-center justify-between gap-3 text-xs">
-                          <span className="truncate font-semibold text-slate-600">{label}</span>
-                          <span className="shrink-0 font-bold text-slate-800">{count} คน ({((count / Math.max(responseCount, 1)) * 100).toFixed(1)}%)</span>
-                        </div>
-                        <div className="h-2 rounded-full bg-slate-100">
-                          <div className="h-full rounded-full bg-brand-blue" style={{ width: `${(count / Math.max(responseCount, 1)) * 100}%` }} />
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <p className="py-5 text-center text-xs text-slate-400">ไม่มีข้อมูลมิตินี้ในช่วงที่เลือก</p>
-                )}
-              </div>
-            </Card>
-
-            <Card title="ภาพกิจกรรมล่าสุด" right={<span className="text-[11px] text-slate-400">{photos.length} ภาพ</span>}>
-              <div className="grid grid-cols-2 gap-2 p-3 sm:grid-cols-3">
-                {photos.map((photo) => (
-                  <button key={photo.id} type="button" onClick={() => setPreviewImage(photo.image)} className="group relative aspect-[4/3] overflow-hidden rounded-lg bg-slate-100 text-left">
-                    <img src={photo.image} alt={photo.title} className="h-full w-full object-cover transition duration-300 group-hover:scale-105" />
-                    <span className="absolute inset-x-0 bottom-0 bg-black/55 px-2 py-1 text-[10px] font-semibold text-white opacity-0 transition group-hover:opacity-100">{photo.title}</span>
-                  </button>
-                ))}
-                {!photos.length && <p className="col-span-full py-6 text-center text-xs text-slate-400">ไม่มีภาพกิจกรรม</p>}
-              </div>
-            </Card>
-
-            <Card title="กิจกรรมล่าสุด">
-              <div className="divide-y divide-slate-100">
-                {recentActivities.map(({ item, occurrence }) => (
-                  <button
-                    key={item.id}
-                    type="button"
-                    onClick={() => setActivity(item.id)}
-                    className="flex w-full items-start gap-3 p-3 text-left transition hover:bg-slate-50"
-                  >
-                    <div className="mt-0.5 grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-blue-50 text-brand-blue"><Calendar className="h-4 w-4" /></div>
-                    <div className="min-w-0 flex-1">
-                      <p className="truncate text-xs font-bold text-slate-800">{item.title}</p>
-                      <p className="mt-1 text-[11px] text-slate-400">{formatDate(occurrence.start_at)}</p>
-                    </div>
-                  </button>
-                ))}
-                {!recentActivities.length && <p className="py-6 text-center text-xs text-slate-400">ไม่มีกิจกรรมในช่วงที่เลือก</p>}
-              </div>
-            </Card>
-          </div>
-
-          <div className="min-w-0 space-y-4">
-            {scoreGroups.map((group) => (
-              <Card key={group.key} title={group.title} right={<span className="text-[11px] text-slate-400">สเกล 1–5</span>}>
-                <div className="space-y-3 p-4">
-                  {group.items.map((item) => (
-                    <div key={item.field}>
-                      <div className="mb-1 flex items-center justify-between gap-3 text-xs">
-                        <span className="truncate font-semibold text-slate-600">{item.label}</span>
-                        <span className="shrink-0 font-black text-slate-800">{item.value.toFixed(2)} / 5.00</span>
-                      </div>
-                      <div className="h-2 rounded-full bg-slate-100">
-                        <div className="h-full rounded-full bg-brand-blue" style={{ width: `${Math.min(100, (item.value / 5) * 100)}%` }} />
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </Card>
-            ))}
-
-            <Card title="กลุ่มผู้ตอบแบบประเมิน">
-              <div className="p-4">
-                {respondentDistribution.length ? (
-                  <div className="space-y-3">
-                    {respondentDistribution.map(([label, count]) => (
-                      <div key={label} className="flex items-center justify-between gap-3 text-xs">
-                        <span className="truncate font-semibold text-slate-600">{label}</span>
-                        <span className="shrink-0 font-bold text-slate-800">{count} คน</span>
-                      </div>
-                    ))}
-                  </div>
-                ) : <p className="py-4 text-center text-xs text-slate-400">ไม่มีข้อมูล</p>}
-              </div>
-            </Card>
-
-            <Card title="ช่องทางการรับรู้กิจกรรม" right={<span className="text-[11px] text-slate-400">{channelTotal} การเลือก</span>}>
-              <div className="space-y-3 p-4">
-                {channelDistribution.length ? channelDistribution.map((channel) => {
-                  const percent = channelTotal ? (channel.count / channelTotal) * 100 : 0;
-                  return (
-                    <div key={channel.label} className="flex items-center gap-2 text-xs">
-                      <span className="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-blue-50 font-black text-brand-blue">{channel.label === "FACEBOOK" ? "f" : channel.label === "LINE" ? "L" : channel.label === "WEBSITE" ? "◉" : "•"}</span>
-                      <span className="w-20 shrink-0 truncate font-semibold text-slate-600">{channel.label}</span>
-                      <div className="h-2 min-w-0 flex-1 rounded-full bg-slate-100"><div className="h-full rounded-full bg-brand-blue" style={{ width: `${percent}%` }} /></div>
-                      <span className="w-16 shrink-0 text-right font-bold text-slate-800">{channel.count} ({percent.toFixed(1)}%)</span>
-                    </div>
-                  );
-                }) : <p className="py-4 text-center text-xs text-slate-400">ไม่มีข้อมูลช่องทางการรับรู้</p>}
-                {channelTotal > responseCount && <p className="text-[10px] font-semibold text-slate-400">หลายคำตอบ: ผู้ตอบหนึ่งคนอาจเลือกมากกว่าหนึ่งช่องทาง</p>}
-              </div>
-            </Card>
-          </div>
-
-          <div className="min-w-0 space-y-4">
-            <Card title="การกระจายคะแนน" right={<span className="text-[11px] text-slate-400">รวมคำตอบที่มีคะแนน</span>}>
-              <div className="space-y-3 p-4">
-                {scoreDistribution.map((item) => (
-                  <div key={item.value} className="flex items-center gap-3 text-xs">
-                    <span className="w-8 shrink-0 font-black text-slate-700">{item.value} ★</span>
-                    <div className="h-3 min-w-0 flex-1 rounded-full bg-slate-100"><div className="h-full rounded-full bg-brand-blue" style={{ width: `${item.percent}%` }} /></div>
-                    <span className="w-20 shrink-0 text-right font-bold text-slate-700">{item.count} ({item.percent.toFixed(1)}%)</span>
-                  </div>
-                ))}
-              </div>
-            </Card>
-
-            <Card title="Executive Highlights">
-              <div className="space-y-3 p-4">
-                <div className="rounded-lg bg-emerald-50 p-3">
-                  <p className="text-[11px] font-bold text-emerald-700">คะแนนสูงสุด</p>
-                  <p className="mt-1 text-xs font-bold text-slate-800">{highest?.label || "-"}</p>
-                  <p className="mt-1 text-lg font-black text-emerald-700">{highest ? highest.value.toFixed(2) : "-"} / 5.00</p>
-                </div>
-                <div className="rounded-lg bg-amber-50 p-3">
-                  <p className="text-[11px] font-bold text-amber-700">ประเด็นที่ควรติดตาม</p>
-                  <p className="mt-1 text-xs font-bold text-slate-800">{lowest?.label || "-"}</p>
-                  <p className="mt-1 text-lg font-black text-amber-700">{lowest ? lowest.value.toFixed(2) : "-"} / 5.00</p>
-                </div>
-                <div className="grid grid-cols-2 gap-2 text-center">
-                  <div className="rounded-lg border border-slate-100 bg-slate-50 p-3"><p className="text-[10px] font-bold text-slate-400">ผู้ตอบ</p><p className="mt-1 font-black text-brand-navy">{responseCount}</p></div>
-                  <div className="rounded-lg border border-slate-100 bg-slate-50 p-3"><p className="text-[10px] font-bold text-slate-400">อัตราตอบกลับ</p><p className="mt-1 font-black text-brand-navy">{responseRate === null ? "-" : `${responseRate.toFixed(1)}%`}</p></div>
-                </div>
-              </div>
-            </Card>
-
-            <Card title="ความคิดเห็นจากผู้ตอบ" right={<MessageSquareQuote className="h-4 w-4 text-slate-400" />}>
-              <div className="divide-y divide-slate-100">
-                {comments.map((comment, index) => (
-                  <div key={`${comment}-${index}`} className="p-4">
-                    <p className="text-xs leading-5 text-slate-700">“{comment}”</p>
-                    <p className="mt-2 text-[10px] font-semibold text-slate-400">ผู้ตอบแบบประเมิน</p>
-                  </div>
-                ))}
-                {!comments.length && <p className="py-8 text-center text-xs text-slate-400">ไม่มีความคิดเห็นในช่วงที่เลือก</p>}
-              </div>
-            </Card>
-          </div>
-        </section>
-      </main>
-
-      {previewImage && (
-        <div
-          className="fixed inset-0 z-50 grid place-items-center bg-slate-950/80 p-4"
-          onClick={() => setPreviewImage(null)}
-        >
-          <div className="relative max-h-[90vh] max-w-5xl" onClick={(event) => event.stopPropagation()}>
-            <img src={previewImage} alt="ภาพกิจกรรม" className="max-h-[85vh] max-w-full rounded-xl object-contain shadow-2xl" />
-            <button
-              type="button"
-              onClick={() => setPreviewImage(null)}
-              className="absolute right-2 top-2 grid h-9 w-9 place-items-center rounded-full bg-black/60 text-lg font-bold text-white"
-              aria-label="ปิดภาพ"
-            >
-              ×
-            </button>
-          </div>
-        </div>
-      )}
-    </div>
-  );
+function CommentsContent({ comments }: { comments: string[] }) {
+  const [search, setSearch] = useState("");
+  const filtered = comments.filter(c=>c.toLowerCase().includes(search.toLowerCase()));
+  return <><div className="border-b border-slate-100 p-3.5"><div className="relative"><Search className="absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400"/><input value={search} onChange={e=>setSearch(e.target.value)} placeholder="ค้นหาข้อความ..." className="h-9 w-full rounded-lg border border-slate-200 bg-slate-50 pl-8 pr-3 text-xs outline-none focus:bg-white"/></div></div><div className="flex-1 space-y-2.5 overflow-y-auto p-4">{filtered.length?filtered.map((c,i)=><div key={`${c}-${i}`} className="rounded-xl border border-slate-200 bg-slate-50 p-3"><p className="text-xs leading-relaxed text-slate-800">“{c}”</p><p className="mt-2 text-[10px] text-slate-400">ผู้ตอบแบบประเมิน</p></div>):<div className="py-12 text-center text-xs text-slate-400">ไม่พบความคิดเห็นที่ตรงกับการค้นหา</div>}</div></>;
 }
