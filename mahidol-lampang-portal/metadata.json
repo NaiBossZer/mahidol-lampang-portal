@@ -1,0 +1,6 @@
+{
+  "name": "Mahidol Lampang Portal",
+  "description": "ระบบบริหารจัดการและข้อมูลเชิงสถิติ รายงานผลสัมฤทธิ์รายกิจกรรม มหาวิทยาลัยมหิดล วิทยาเขตลำปาง",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

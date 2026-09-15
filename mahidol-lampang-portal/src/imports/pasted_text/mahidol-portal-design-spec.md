@@ -19,9 +19,8 @@ ONE public application shell, ONE admin application shell,
 and ONE reusable design system.
 
 ==================================================
-
 1. DESIGN DIRECTION
-   \==================================================
+==================================================
 
 Core design concept:
 
@@ -65,7 +64,8 @@ Avoid:
 The website should feel like ONE institution,
 not a collection of unrelated microsites.
 
-================================================== 2. CRITICAL ARCHITECTURE REQUIREMENT
+==================================================
+2. CRITICAL ARCHITECTURE REQUIREMENT
 ==================================================
 
 Design TWO application shells.
@@ -91,7 +91,8 @@ AdminAppShell
 The Public and Admin experiences may have different information density,
 but they MUST share the same underlying design language.
 
-================================================== 3. BRAND COLOR SYSTEM
+==================================================
+3. BRAND COLOR SYSTEM
 ==================================================
 
 Use these existing approved design-system tokens as the foundation.
@@ -143,7 +144,8 @@ DO NOT reproduce that system as the default public website style.
 The primary public experience should be light,
 warm, spacious and content-oriented.
 
-================================================== 4. DESIGN TOKENS
+==================================================
+4. DESIGN TOKENS
 ==================================================
 
 Create Figma Variables / Styles for:
@@ -151,30 +153,30 @@ Create Figma Variables / Styles for:
 COLOR
 
 brand/
-navy
-blue
+  navy
+  blue
 
 accent/
-terracotta
-gold
-leaf
+  terracotta
+  gold
+  leaf
 
 surface/
-warm
-white
-subtle
+  warm
+  white
+  subtle
 
 text/
-primary
-secondary
-muted
-inverse
+  primary
+  secondary
+  muted
+  inverse
 
 state/
-success
-warning
-error
-info
+  success
+  warning
+  error
+  info
 
 SPACING
 
@@ -218,7 +220,8 @@ Use subtle shadows only.
 
 Avoid heavy floating-card effects.
 
-================================================== 5. TYPOGRAPHY
+==================================================
+5. TYPOGRAPHY
 ==================================================
 
 Primary body font:
@@ -264,7 +267,8 @@ Button
 
 Thai text must remain highly readable on mobile.
 
-================================================== 6. GLOBAL CONTAINER
+==================================================
+6. GLOBAL CONTAINER
 ==================================================
 
 Maximum content width:
@@ -284,7 +288,8 @@ Mobile:
 
 Never allow content to touch the screen edge on mobile.
 
-================================================== 7. PUBLIC HEADER
+==================================================
+7. PUBLIC HEADER
 ==================================================
 
 Create ONE canonical Public Header.
@@ -310,7 +315,8 @@ Minimum interactive target:
 
 Header must NOT be independently redesigned on each page.
 
-================================================== 8. FOOTER
+==================================================
+8. FOOTER
 ==================================================
 
 Create one shared footer.
@@ -326,7 +332,8 @@ Include areas for:
 
 Keep the footer structured rather than visually heavy.
 
-================================================== 9. PAGE HEADER
+==================================================
+9. PAGE HEADER
 ==================================================
 
 Create reusable PageHeader component.
@@ -349,7 +356,8 @@ Each should support:
 
 Do not allow every page to invent its own header.
 
-================================================== 10. BUTTON SYSTEM
+==================================================
+10. BUTTON SYSTEM
 ==================================================
 
 Create component:
@@ -390,7 +398,8 @@ Button text must describe an action clearly.
 Avoid icon-only actions unless universally understandable
 and accompanied by accessible labels.
 
-================================================== 11. CARD SYSTEM
+==================================================
+11. CARD SYSTEM
 ==================================================
 
 Create reusable Card components.
@@ -419,7 +428,8 @@ Use subtle border and shadow.
 
 Cards should not become excessively decorative.
 
-================================================== 12. FORM SYSTEM
+==================================================
+12. FORM SYSTEM
 ==================================================
 
 Create:
@@ -453,7 +463,8 @@ Checkout
 
 Do NOT allow each page to invent its own form style.
 
-================================================== 13. FEEDBACK SYSTEM
+==================================================
+13. FEEDBACK SYSTEM
 ==================================================
 
 Create:
@@ -485,7 +496,8 @@ Warning
 Error
 "เกิดข้อผิดพลาด"
 
-================================================== 14. CONTENT LISTING
+==================================================
+14. CONTENT LISTING
 ==================================================
 
 Create a reusable listing pattern.
@@ -521,7 +533,8 @@ Mobile:
 
 1-column.
 
-================================================== 15. DETAIL PAGE
+==================================================
+15. DETAIL PAGE
 ==================================================
 
 Create reusable detail template.
@@ -555,7 +568,8 @@ CTA
 
 The template should support long-form Thai content.
 
-================================================== 16. FLAGSHIP SHELLAC EXPERIENCE
+==================================================
+16. FLAGSHIP SHELLAC EXPERIENCE
 ==================================================
 
 The Shellac Learning Center is a flagship experience.
@@ -574,7 +588,8 @@ Use:
 
 Do not turn it into a completely separate website.
 
-================================================== 17. SYSTEM SHOWCASE
+==================================================
+17. SYSTEM SHOWCASE
 ==================================================
 
 Create shared System Detail patterns for:
@@ -603,7 +618,8 @@ Related learning / project content
 System pages may use domain accents,
 but must inherit the global design system.
 
-================================================== 18. SITE MAP / 3D MAP
+==================================================
+18. SITE MAP / 3D MAP
 ==================================================
 
 The Site Map is an immersive experience.
@@ -624,7 +640,8 @@ Provide:
 
 Do not make the map page visually unrelated to the rest of the portal.
 
-================================================== 19. STOREFRONT
+==================================================
+19. STOREFRONT
 ==================================================
 
 The Storefront should use the same PublicAppShell.
@@ -650,7 +667,8 @@ into the main storefront visual experience.
 
 Those are separate future system domains.
 
-================================================== 20. ADMIN DESIGN
+==================================================
+20. ADMIN DESIGN
 ==================================================
 
 Create AdminAppShell.
@@ -692,7 +710,8 @@ Facility Safety
 
 Do NOT make Admin look like a marketing website.
 
-================================================== 21. ACCESSIBILITY
+==================================================
+21. ACCESSIBILITY
 ==================================================
 
 Design for WCAG AA baseline.
@@ -722,7 +741,8 @@ Error
 Loading
 Success
 
-================================================== 22. RESPONSIVE DESIGN
+==================================================
+22. RESPONSIVE DESIGN
 ==================================================
 
 Design all major components for:
@@ -744,7 +764,8 @@ maps,
 dialogs,
 and admin layouts must have explicit responsive behavior.
 
-================================================== 23. REQUIRED FIGMA STRUCTURE
+==================================================
+23. REQUIRED FIGMA STRUCTURE
 ==================================================
 
 Organize the Figma file into pages:
@@ -762,7 +783,8 @@ Organize the Figma file into pages:
 11 — Accessibility
 12 — Page Designs
 
-================================================== 24. COMPONENT LIBRARY
+==================================================
+24. COMPONENT LIBRARY
 ==================================================
 
 Create reusable components with variants.
@@ -803,7 +825,8 @@ All components must use Auto Layout.
 Use component properties and variants
 instead of duplicated components.
 
-================================================== 25. FIRST SCREENS TO DESIGN
+==================================================
+25. FIRST SCREENS TO DESIGN
 ==================================================
 
 Do NOT immediately design every page.
@@ -824,7 +847,8 @@ First establish the system with these screens:
 These screens are reference implementations
 for the rest of the application.
 
-================================================== 26. DESIGN QUALITY BAR
+==================================================
+26. DESIGN QUALITY BAR
 ==================================================
 
 The result must look like a mature university digital platform.
@@ -850,7 +874,8 @@ ONE DESIGN SYSTEM
 TWO APPLICATION SHELLS
 MANY REUSABLE PAGE PATTERNS
 
-================================================== 27. IMPLEMENTATION AWARENESS
+==================================================
+27. IMPLEMENTATION AWARENESS
 ==================================================
 
 The existing application is React + Vite + Tailwind
