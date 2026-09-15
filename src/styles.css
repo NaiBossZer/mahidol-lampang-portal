@@ -111,7 +111,6 @@
   .dashboard-filter { position: relative; }
 }
 @media (min-width: 1024px) {
-  /* Executive dashboard: compact Stitch spacing, while retaining natural document scrolling. */
   .admin-dashboard-shell #admin-main {
     min-height: calc(100vh - 4rem);
     height: auto;
@@ -127,16 +126,77 @@
     height: auto;
     overflow: visible;
   }
-  .admin-dashboard-shell #admin-main .dashboard-screen > main > .dashboard-filter { flex: none; }
-  .admin-dashboard-shell #admin-main .dashboard-screen > main > section { min-height: 0; }
-  .admin-dashboard-shell #admin-main .dashboard-screen .dashboard-panel { min-height: 0; }
 
-  /* Match the Stitch baseline: light slate canvas, 16px content inset and compact 10px section rhythm. */
-  .admin-dashboard-shell #admin-main main {
+  /* Stitch baseline: compact 16px content inset, 10px section rhythm, natural page scroll. */
+  .admin-dashboard-shell #admin-main .dashboard-screen > main {
     max-width: 90rem;
     padding: 1rem;
   }
-  .admin-dashboard-shell #admin-main main > * + * { margin-top: 0.625rem; }
+  .admin-dashboard-shell #admin-main .dashboard-screen > main > * + * { margin-top: 0.625rem; }
+
+  /* Header hierarchy from the reference: compact, crisp, executive-first. */
+  .admin-dashboard-shell #admin-main .dashboard-screen > main > header {
+    gap: 0.5rem;
+    padding-bottom: 0.5rem;
+  }
+  .admin-dashboard-shell #admin-main .dashboard-screen > main > header h1 {
+    font-size: 1.25rem;
+    line-height: 1.25;
+  }
+  .admin-dashboard-shell #admin-main .dashboard-screen > main > header p { font-size: 0.6875rem; }
+  .admin-dashboard-shell #admin-main .dashboard-screen > main > header > div:last-child { font-size: 0.6875rem; }
+
+  /* Filter + hero cards keep the same rounded white treatment as Stitch. */
+  .admin-dashboard-shell #admin-main .dashboard-screen > main > section:first-of-type,
+  .admin-dashboard-shell #admin-main .dashboard-screen > main > section:nth-of-type(2) {
+    padding: 0.75rem;
+  }
+  .admin-dashboard-shell #admin-main .dashboard-screen > main > section:first-of-type label > span {
+    font-size: 0.6875rem;
+  }
+  .admin-dashboard-shell #admin-main .dashboard-screen > main > section:first-of-type select,
+  .admin-dashboard-shell #admin-main .dashboard-screen > main > section:first-of-type input {
+    height: 2.25rem;
+    font-size: 0.75rem;
+  }
+
+  /* KPI strip: narrow gutters and stronger numbers, matching the dense executive view. */
+  .admin-dashboard-shell #admin-main .dashboard-screen > main > section:nth-of-type(3) {
+    gap: 0.625rem;
+  }
+  .admin-dashboard-shell #admin-main .dashboard-screen > main > section:nth-of-type(3) article {
+    padding: 0.75rem;
+    min-height: 7rem;
+  }
+  .admin-dashboard-shell #admin-main .dashboard-screen > main > section:nth-of-type(3) article > div:first-child > p:first-child {
+    font-size: 0.6875rem;
+  }
+  .admin-dashboard-shell #admin-main .dashboard-screen > main > section:nth-of-type(3) article .text-2xl {
+    font-size: 1.5rem;
+  }
+
+  /* Analytics cards: compact section headers, restrained internal padding, no clipping. */
+  .admin-dashboard-shell #admin-main .dashboard-screen > main > section:nth-of-type(4) {
+    gap: 0.625rem;
+  }
+  .admin-dashboard-shell #admin-main .dashboard-screen > main > section:nth-of-type(4) > div > section > div:first-child {
+    min-height: 2.75rem;
+    padding: 0.625rem 0.75rem;
+  }
+  .admin-dashboard-shell #admin-main .dashboard-screen > main > section:nth-of-type(4) > div > section > div:first-child h2 {
+    font-size: 0.8125rem;
+  }
+  .admin-dashboard-shell #admin-main .dashboard-screen > main > section:nth-of-type(4) > div > section > div:nth-child(2) {
+    padding: 0.75rem;
+  }
+
+  /* Keep the photo strip compact and fully visible while allowing the page to grow vertically. */
+  .admin-dashboard-shell #admin-main .dashboard-screen > main > section:nth-of-type(5) {
+    gap: 0.625rem;
+  }
+  .admin-dashboard-shell #admin-main .dashboard-screen > main > section:nth-of-type(5) > section > div:last-child {
+    padding: 0.75rem;
+  }
 }
 @media (max-width: 1023px) {
   .dashboard-screen { min-height: calc(100vh - 4rem); }
