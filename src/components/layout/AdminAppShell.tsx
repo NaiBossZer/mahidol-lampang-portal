@@ -7,7 +7,7 @@ import {
   ChevronDown,
   ExternalLink,
   FileText,
-  FolderShared,
+  FolderOpen,
   Group,
   LogOut,
   Menu,
@@ -74,7 +74,7 @@ const navItems: readonly NavItem[] = [
   {
     to: "/admin/cms",
     label: "คลังเอกสารราชการ",
-    icon: FolderShared,
+    icon: FolderOpen,
     permission: "cms.read",
   },
   {
@@ -338,7 +338,7 @@ export function AdminAppShell({ children }: { children: ReactNode }) {
                     <span className="truncate">{item.label}</span>
                   </span>
                   {item.badge && (
-                    <span className="rounded-full bg-rose-500 px-1.5 py-0.5 text-[10px] font-bold leading-none text-white">
+                    <span className="ml-2 shrink-0 rounded bg-rose-500 px-1.5 py-0.5 text-[9px] font-bold text-white">
                       {item.badge}
                     </span>
                   )}
@@ -349,93 +349,80 @@ export function AdminAppShell({ children }: { children: ReactNode }) {
         </div>
 
         <div className="border-t border-white/10 p-3">
-          <div className="mb-1 flex items-center justify-between px-2">
-            <div className="flex min-w-0 items-center gap-2.5">
-              <div className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-white/10 text-white/80 ring-1 ring-white/20">
-                <span className="text-xs font-bold">MU</span>
-              </div>
-              <div className="flex min-w-0 flex-col text-left">
-                <span className="truncate text-[12px] font-medium leading-snug text-white">
-                  เจ้าหน้าที่ส่วนกลาง
-                </span>
-                <span className="truncate text-[10px] leading-none text-slate-400">{roleText}</span>
-              </div>
+          <a
+            href="/"
+            target="_blank"
+            rel="noreferrer"
+            className="mb-2 flex items-center gap-2 rounded-lg px-3 py-2 text-xs text-slate-300 transition-colors hover:bg-white/5 hover:text-white"
+          >
+            <ExternalLink className="h-4 w-4" />
+            <span>กลับสู่เว็บไซต์</span>
+          </a>
+          <div className="flex items-center gap-3 rounded-lg bg-white/5 px-3 py-2.5">
+            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-white/10 text-xs font-bold text-slate-200">
+              MU
             </div>
-            <Sparkles className="h-3.5 w-3.5 text-amber-400" />
-          </div>
-
-          <div className="mt-2 grid grid-cols-2 gap-1">
-            <Link
-              to="/"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center justify-center gap-1 rounded-lg px-2 py-2 text-[11px] font-medium text-slate-300 transition-colors hover:bg-white/5 hover:text-white"
-            >
-              <ExternalLink className="h-3.5 w-3.5" />
-              หน้าเว็บ
-            </Link>
+            <div className="min-w-0 flex-1">
+              <div className="truncate text-xs font-semibold text-white">เจ้าหน้าที่ส่วนกลาง</div>
+              <div className="truncate text-[10px] text-slate-400">{roleText}</div>
+            </div>
             <button
               type="button"
-              onClick={() => void logout()}
-              className="flex items-center justify-center gap-1 rounded-lg px-2 py-2 text-[11px] font-medium text-slate-300 transition-colors hover:bg-rose-500/10 hover:text-rose-300"
+              onClick={logout}
+              className="rounded p-1.5 text-slate-400 transition-colors hover:bg-white/10 hover:text-white"
+              aria-label="ออกจากระบบ"
             >
-              <LogOut className="h-3.5 w-3.5" />
-              ออกจากระบบ
+              <LogOut className="h-4 w-4" />
             </button>
           </div>
         </div>
       </aside>
 
-      <div className="lg:pl-[245px]">
-        <header className="sticky top-0 z-30 border-b border-slate-200/80 bg-white/95 backdrop-blur-md">
-          <div className="flex min-h-16 items-center justify-between gap-4 px-4 sm:px-6">
-            <div className="flex min-w-0 items-center gap-3">
-              <button
-                type="button"
-                aria-label="เปิดเมนูนำทาง"
-                className="grid h-10 w-10 place-items-center rounded-xl border border-slate-200 bg-white text-slate-700 shadow-xs hover:bg-slate-50 lg:hidden"
-                onClick={() => setMobileOpen(true)}
-              >
-                <Menu className="h-5 w-5" />
-              </button>
-              <div className="flex min-w-0 items-center gap-2 text-xs">
-                <span className="hidden font-semibold text-slate-400 sm:inline">{currentBreadcrumb.group}</span>
-                <span className="hidden text-slate-300 sm:inline">/</span>
-                <span className="truncate font-bold text-[#0c2340]">{currentBreadcrumb.title}</span>
-              </div>
-            </div>
+      <div className="min-h-screen lg:pl-[245px]">
+        <header className="sticky top-0 z-30 flex h-16 items-center gap-3 border-b border-slate-200 bg-white/95 px-4 shadow-sm backdrop-blur lg:px-6">
+          <button
+            type="button"
+            onClick={() => setMobileOpen(true)}
+            className="rounded-lg p-2 text-slate-600 hover:bg-slate-100 lg:hidden"
+            aria-label="เปิดเมนู"
+            aria-controls="app-sidebar"
+            aria-expanded={mobileOpen}
+          >
+            <Menu className="h-5 w-5" />
+          </button>
 
-            <div className="flex shrink-0 items-center gap-2">
-              <button
-                type="button"
-                aria-label="ค้นหาระบบ"
-                title="ค้นหาข้อมูลกลาง"
-                onClick={() => navigate("/admin/governance?tab=search")}
-                className="grid h-9 w-9 place-items-center rounded-xl border border-slate-200 bg-white text-slate-600 shadow-2xs transition hover:bg-slate-50 hover:text-[#0c2340]"
-              >
-                <Search className="h-4 w-4" />
-              </button>
-              <button
-                type="button"
-                aria-label="การแจ้งเตือนระบบ"
-                title="การแจ้งเตือน"
-                onClick={() => navigate("/admin/governance?tab=notifications")}
-                className="relative grid h-9 w-9 place-items-center rounded-xl border border-slate-200 bg-white text-slate-600 shadow-2xs transition hover:bg-slate-50 hover:text-[#0c2340]"
-              >
-                <Bell className="h-4 w-4" />
-                <span className="absolute right-2 top-2 h-1.5 w-1.5 rounded-full bg-blue-600" />
-              </button>
-              <div className="hidden h-5 w-px bg-slate-200 sm:block" />
-              <span className="hidden rounded-lg bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-700 sm:inline-flex">
-                {roleText}
-              </span>
+          <div className="min-w-0 flex-1">
+            <div className="flex items-center gap-2 text-[11px] text-slate-400">
+              <span className="truncate">{currentBreadcrumb.group}</span>
+              <span>/</span>
+              <span className="truncate text-slate-600">{currentBreadcrumb.title}</span>
             </div>
+          </div>
+
+          <div className="hidden items-center gap-2 md:flex">
+            <div className="flex h-9 w-56 items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 text-slate-400">
+              <Search className="h-4 w-4" />
+              <span className="text-xs">ค้นหาในระบบ...</span>
+            </div>
+            <Link
+              to="/admin/ai"
+              className="inline-flex h-9 items-center gap-2 rounded-lg bg-[#002d62] px-3 text-xs font-semibold text-white transition-colors hover:bg-[#003d7a]"
+            >
+              <Sparkles className="h-4 w-4" />
+              AI Assistant
+            </Link>
+            <Link
+              to="/admin/governance?tab=notifications"
+              className="relative rounded-lg p-2 text-slate-600 hover:bg-slate-100"
+              aria-label="การแจ้งเตือน"
+            >
+              <Bell className="h-5 w-5" />
+              <span className="absolute right-1 top-1 h-2 w-2 rounded-full bg-rose-500" />
+            </Link>
           </div>
         </header>
 
-        <main id="admin-main" className="min-h-[calc(100vh-4rem)]">
-          {children}
-        </main>
+        <main className="min-h-[calc(100vh-4rem)] p-4 lg:p-6">{children}</main>
       </div>
     </div>
   );
