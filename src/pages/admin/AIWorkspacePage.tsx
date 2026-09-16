@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { Bot, CheckCircle2, Clock3, History, ListTodo, Sparkles, ShieldCheck } from "lucide-react";
+import { Bot, CheckCircle2, Clock3, History, ListTodo, Sparkles, ShieldCheck, TrendingUp } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { AICommandCenterPage } from "./AICommandCenterPage";
 import { AIWorkQueuePage } from "./AIWorkQueuePage";
@@ -7,9 +7,11 @@ import { AIExecutionPage } from "./AIExecutionPage";
 import { AIApprovalPage } from "./AIApprovalPage";
 import { AIHistoryPage } from "./AIHistoryPage";
 import { AIStudioWorkspacePage } from "./AIStudioWorkspacePage";
+import AIImprovementDashboard from "@/components/admin/AIImprovementDashboard";
 
 const TABS = [
   { id: "studio", label: "AI Studio", description: "Workflow และเครื่องมือทั้งหมด", icon: Sparkles },
+  { id: "improvement", label: "Model Improvement", description: "Feedback Loop และการปรับปรุงโมเดล AI", icon: TrendingUp },
   { id: "command", label: "Command", description: "สั่งงานและวางแผน", icon: Bot },
   { id: "queue", label: "Queue", description: "คิวงานที่กำลังดำเนินการ", icon: ListTodo },
   { id: "execution", label: "Execution", description: "แผนและผลการทำงาน", icon: Clock3 },
@@ -63,6 +65,11 @@ export function AIWorkspacePage() {
       </section>
       <div className="[&>section]:min-h-0">
         {activeTab === "studio" && <AIStudioWorkspacePage />}
+        {activeTab === "improvement" && (
+          <div className="mx-auto max-w-[1400px] px-4 py-6 sm:px-6 lg:px-8">
+            <AIImprovementDashboard />
+          </div>
+        )}
         {activeTab === "command" && <AICommandCenterPage />}
         {activeTab === "queue" && <AIWorkQueuePage />}
         {activeTab === "execution" && <AIExecutionPage />}

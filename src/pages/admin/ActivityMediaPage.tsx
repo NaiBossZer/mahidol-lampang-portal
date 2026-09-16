@@ -22,7 +22,11 @@ export function ActivityMediaPage() {
     });
     const b = await r.json();
     if (!r.ok) throw new Error(b?.error || "โหลดกิจกรรมไม่สำเร็จ");
-    setActivities(b.data ?? []);
+    const list = b.data ?? [];
+    setActivities(list);
+    if (!activityId && list[0]?.id) {
+      setActivityId(list[0].id);
+    }
   }
   async function loadMedia(id: string) {
     if (!id) {

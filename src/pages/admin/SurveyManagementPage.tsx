@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
-import { Plus, RefreshCw, Save, Trash2 } from "lucide-react";
+import { Link } from "react-router-dom";
+import { Plus, RefreshCw, Save, Sparkles, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { getAdminOccurrences, type ActivityOccurrence } from "@/services/admin-occurrences";
 import {
@@ -141,14 +142,23 @@ export function SurveyManagementPage() {
             แบบสอบถามและ Question Builder
           </h1>
         </div>
-        <button
-          type="button"
-          onClick={() => void load()}
-          className="inline-flex min-h-11 items-center gap-2 rounded-xl border bg-white px-4 text-sm font-semibold"
-        >
-          <RefreshCw className="h-4 w-4" />
-          รีเฟรช
-        </button>
+        <div className="flex gap-2">
+          <Link
+            to="/admin/ai"
+            className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-violet-200 bg-violet-50 px-4 text-sm font-semibold text-violet-800"
+          >
+            <Sparkles className="h-4 w-4" />
+            AI Studio Workspace
+          </Link>
+          <button
+            type="button"
+            onClick={() => void load()}
+            className="inline-flex min-h-11 items-center gap-2 rounded-xl border bg-white px-4 text-sm font-semibold"
+          >
+            <RefreshCw className="h-4 w-4" />
+            รีเฟรช
+          </button>
+        </div>
       </div>
       <div className="mt-6 grid gap-5 lg:grid-cols-[.9fr_1.6fr]">
         <div className="rounded-2xl border bg-white p-5 shadow-sm">

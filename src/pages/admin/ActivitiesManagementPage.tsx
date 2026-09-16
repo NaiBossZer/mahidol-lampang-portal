@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { CalendarDays, ImagePlus, Pencil, Plus, RefreshCw, Search, Upload, X } from "lucide-react";
+import { CalendarDays, ImagePlus, Lightbulb, Pencil, Plus, RefreshCw, Search, Upload, X } from "lucide-react";
 import { toast } from "sonner";
 import {
   createActivity,
@@ -10,6 +10,7 @@ import {
   type AdminActivity,
 } from "@/services/api";
 import { getAdminLearningCenters, type LearningCenter } from "@/services/admin-learning-centers";
+import AIRecommendationsSidebar from "@/components/admin/AIRecommendationsSidebar";
 
 const blankActivity: ActivityWriteInput = {
   title: "",
@@ -29,20 +30,14 @@ const blankActivity: ActivityWriteInput = {
 const statusLabel: Record<ActivityStatus, string> = {
   draft: "Draft",
   published: "Published",
-  scheduled: "Scheduled",
-  ongoing: "Ongoing",
-  completed: "Completed",
-  cancelled: "Cancelled",
   archived: "Archived",
 };
 function statusClass(s: ActivityStatus) {
-  return s === "completed"
+  return s === "published"
     ? "bg-emerald-50 text-emerald-700 border-emerald-200"
-    : s === "cancelled" || s === "archived"
+    : s === "archived"
       ? "bg-slate-100 text-slate-600 border-slate-200"
-      : s === "ongoing"
-        ? "bg-blue-50 text-blue-700 border-blue-200"
-        : "bg-amber-50 text-amber-700 border-amber-200";
+      : "bg-amber-50 text-amber-700 border-slate-200";
 }
 
 type ActivityMedia = {
@@ -116,7 +111,8 @@ export function ActivitiesManagementPage() {
     [open, setOpen] = useState(false),
     [loading, setLoading] = useState(true),
     [saving, setSaving] = useState(false),
-    [uploading, setUploading] = useState(false);
+    [uploading, setUploading] = useState(false),
+    [recommendationActivity, setRecommendationActivity] = useState<AdminActivity | null>(null);
   async function load() {
     setLoading(true);
     try {
@@ -253,11 +249,9 @@ export function ActivitiesManagementPage() {
           className="dashboard-control"
         >
           <option value="all">ทุกสถานะ</option>
-          {Object.entries(statusLabel).map(([value, label]) => (
-            <option key={value} value={value}>
-              {label}
-            </option>
-          ))}
+          <option value="draft">Draft</option>
+          <option value="published">Published</option>
+          <option value="archived">Archived</option>
         </select>
       </div>
       <div className="mt-4 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
@@ -320,14 +314,25 @@ export function ActivitiesManagementPage() {
                       </span>
                     </td>
                     <td className="px-5 py-4 text-right">
-                      <button
-                        type="button"
-                        onClick={() => void openEdit(x)}
-                        className="inline-flex min-h-9 items-center gap-1.5 rounded-lg border border-slate-200 px-3 text-xs font-semibold text-brand-navy"
-                      >
-                        <Pencil className="h-3.5 w-3.5" />
-                        แก้ไข
-                      </button>
+                      <div className="flex items-center justify-end gap-2">
+                        <button
+                          type="button"
+                          onClick={() => setRecommendationActivity(x)}
+                          className="inline-flex min-h-9 items-center gap-1.5 rounded-lg border border-violet-200 bg-violet-50 px-2.5 text-xs font-semibold text-violet-700 hover:bg-violet-100 transition-colors"
+                          title="ดูคำแนะนำจาก AI"
+                        >
+                          <Lightbulb className="h-3.5 w-3.5 text-amber-500" />
+                          <span className="hidden sm:inline">AI Advice</span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => void openEdit(x)}
+                          className="inline-flex min-h-9 items-center gap-1.5 rounded-lg border border-slate-200 px-3 text-xs font-semibold text-brand-navy"
+                        >
+                          <Pencil className="h-3.5 w-3.5" />
+                          แก้ไข
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))}
@@ -390,11 +395,9 @@ export function ActivitiesManagementPage() {
                     }
                     className="dashboard-control mt-1 w-full"
                   >
-                    {Object.entries(statusLabel).map(([value, label]) => (
-                      <option key={value} value={value}>
-                        {label}
-                      </option>
-                    ))}
+                    <option value="draft">Draft</option>
+                    <option value="published">Published</option>
+                    <option value="archived">Archived</option>
                   </select>
                 </label>
               </div>
@@ -511,6 +514,14 @@ export function ActivitiesManagementPage() {
             </div>
           </div>
         </div>
+      )}
+      {recommendationActivity && (
+        <AIRecommendationsSidebar
+          isOpen={!!recommendationActivity}
+          onClose={() => setRecommendationActivity(null)}
+          activityId={recommendationActivity.id}
+          activityTitle={recommendationActivity.title}
+        />
       )}
     </section>
   );

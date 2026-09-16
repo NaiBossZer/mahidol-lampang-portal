@@ -74,6 +74,7 @@ const PATH_TITLE_MAP: Record<string, { group: string; title: string }> = {
   "/admin/facility-safety": { group: "ระบบหลังบ้าน", title: "อาคารและความปลอดภัย" },
   "/admin/learning-centers": { group: "ระบบหลังบ้าน", title: "ศูนย์การเรียนรู้ชุมชน" },
   "/admin/ai": { group: "AI Assistant Studio", title: "AI Command Center & Workspace" },
+  "/admin/ai/improvement": { group: "AI Assistant Studio", title: "AI Model Improvement & Feedback" },
   "/admin/surveys/analytics": { group: "บริหารกิจกรรม & Survey", title: "ผลการวิเคราะห์แบบสอบถาม" },
   "/admin/surveys/response": { group: "บริหารกิจกรรม & Survey", title: "รายละเอียดคำตอบแบบสอบถาม" },
   "/admin/cms": { group: "คลังเอกสารราชการ", title: "จัดการเนื้อหาเว็บไซต์ (CMS)" },
