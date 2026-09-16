@@ -144,7 +144,7 @@ export function SurveyManagementPage() {
         </div>
         <div className="flex gap-2">
           <Link
-            to="/admin/ai-studio-workspace"
+            to="/admin/ai"
             className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-violet-200 bg-violet-50 px-4 text-sm font-semibold text-violet-800"
           >
             <Sparkles className="h-4 w-4" />

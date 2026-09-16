@@ -132,6 +132,13 @@ export async function onRequest({ request, env }: { request: Request; env: Env }
     if (method === "POST") {
       const input = (await request.json()) as ActivityInput;
       if (!input.title?.trim() || !input.activityDate) return json({ success: false, error: "กรุณาระบุชื่อกิจกรรมและวันที่" }, 400);
+      if (!input.slug?.trim()) {
+        const baseSlug = input.title
+          .toLowerCase()
+          .replace(/[^\w\u0E00-\u0E7F]+/g, "-")
+          .replace(/^-+|-+$/g, "");
+        input.slug = `${baseSlug || "activity"}-${Date.now()}`;
+      }
       const rows = await supabaseRequest<ActivityRow[]>(env, auth.accessToken, "activities", {
         method: "POST",
         headers: { Prefer: "return=representation" },
