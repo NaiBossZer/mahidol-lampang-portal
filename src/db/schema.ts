@@ -162,7 +162,6 @@ export const activities = pgTable(
   "activities",
   {
     id: uuid("id").defaultRandom().primaryKey(),
-    projectId: uuid("project_id").references(() => socialProjects.id, { onDelete: "set null" }),
     centerId: uuid("center_id").references(() => learningCenters.id, { onDelete: "set null" }),
     title: varchar("title", { length: 255 }).notNull(),
     slug: varchar("slug", { length: 255 }).notNull(),
@@ -247,14 +246,10 @@ export const activityOutcomes = pgTable("activity_outcomes", {
   description: text("description"),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
 });
-export const socialProjectsRelations = relations(socialProjects, ({ many }) => ({
-  activities: many(activities),
-}));
 export const learningCentersRelations = relations(learningCenters, ({ many }) => ({
   activities: many(activities),
 }));
 export const activitiesRelations = relations(activities, ({ one, many }) => ({
-  project: one(socialProjects, { fields: [activities.projectId], references: [socialProjects.id] }),
   center: one(learningCenters, { fields: [activities.centerId], references: [learningCenters.id] }),
   photos: many(activityPhotos),
   outcomes: many(activityOutcomes),
