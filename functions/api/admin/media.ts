@@ -21,6 +21,7 @@ const MEDIA_CONTRACTS: Record<string, Record<string, string>> = {
   social_projects: { coverImage: "projects.create" },
   learning_centers: { coverImage: "learning_centers.create" },
   partners: { logo: "partners.create" },
+  activities: { documents: "activities.update", coverImage: "activities.update" },
 };
 
 const WRITE_PERMISSION_FALLBACK: Record<string, string> = {
@@ -29,6 +30,7 @@ const WRITE_PERMISSION_FALLBACK: Record<string, string> = {
   social_projects: "projects.update",
   learning_centers: "learning_centers.update",
   partners: "partners.update",
+  activities: "activities.update",
 };
 
 function cleanSegment(value: string) {
@@ -166,6 +168,19 @@ export async function onRequest({ request, env }: { request: Request; env: Env }
             created_by: user.id,
           }),
         })) as MediaRow[];
+        if (file.type.startsWith("application/pdf") || fieldKey === "documents") {
+          await rest(env, token, "audit_logs", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              actor_id: user.id,
+              action: "document uploaded",
+              table_name: "portal_media_assets",
+              record_id: rows[0]?.id ? String(rows[0].id) : entityId,
+              new_data: { fileName: file.name, sizeBytes: file.size, entityType, entityId, publicUrl },
+            }),
+          }).catch(() => undefined);
+        }
         return json({ success: true, data: rows[0] ?? null }, 201);
       } catch (error) {
         await storage(env, token, path, { method: "DELETE" }).catch(() => undefined);
