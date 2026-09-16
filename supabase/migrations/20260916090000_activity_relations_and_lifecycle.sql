@@ -1,15 +1,3 @@
--- Keep the application Activity lifecycle aligned with the production API/UI.
-DO $$
-BEGIN
-  ALTER TYPE public.activity_status ADD VALUE IF NOT EXISTS 'scheduled';
-  ALTER TYPE public.activity_status ADD VALUE IF NOT EXISTS 'ongoing';
-  ALTER TYPE public.activity_status ADD VALUE IF NOT EXISTS 'completed';
-  ALTER TYPE public.activity_status ADD VALUE IF NOT EXISTS 'cancelled';
-EXCEPTION
-  WHEN undefined_object THEN
-    NULL;
-END $$;
-
 -- Activity relations are writable only by central admin roles.
 ALTER TABLE public.activity_learning_centers ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.activity_organizers ENABLE ROW LEVEL SECURITY;
