@@ -40,11 +40,17 @@ export type ProductWriteInput = {
   plotId?: string;
 };
 export type ActivityStatus =
-  "draft" | "published" | "scheduled" | "ongoing" | "completed" | "cancelled" | "archived";
+  | "draft"
+  | "published"
+  | "scheduled"
+  | "ongoing"
+  | "completed"
+  | "cancelled"
+  | "archived";
 export type ActivityWriteInput = {
   id?: string;
-  projectId?: string;
-  centerId?: string;
+  projectId?: string | null;
+  centerId?: string | null;
   title: string;
   slug: string;
   summary?: string;
@@ -59,6 +65,7 @@ export type ActivityWriteInput = {
   featuredImage?: string;
   status: ActivityStatus;
 };
+export type ActivityPatchInput = Partial<Omit<ActivityWriteInput, "id">> & { id: string };
 export type AdminActivity = ActivityWriteInput & {
   id: string;
   publishedAt?: string | null;
@@ -367,9 +374,9 @@ export async function createActivity(input: ActivityWriteInput) {
   invalidateApiCache("/api/activities");
   return result;
 }
-export async function updateActivity(input: ActivityWriteInput & { id: string }) {
+export async function updateActivity(input: ActivityPatchInput) {
   const result = await apiRequest(`/api/admin/activities?id=${encodeURIComponent(input.id)}`, {
-    method: "PUT",
+    method: "PATCH",
     body: JSON.stringify(input),
   });
   invalidateApiCache("/api/admin/activities");

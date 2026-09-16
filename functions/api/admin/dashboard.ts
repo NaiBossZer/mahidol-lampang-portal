@@ -81,7 +81,7 @@ export async function onRequestGet({ request, env }: { request: Request; env: En
       }),
       supabaseUserRest(env, accessToken, "survey_responses", {
         select:
-          "id,activity_id,occurrence_id,survey_id,participant_organization_id,submitted_at,age_group,affiliation,p2_location,p2_schedule,p2_readiness,p2_reception,p2_overall,p3_interest,p3_content,p3_clarity,p3_benefit,p3_application,p4_knowledge,p4_inspiration,p4_community_resource,p4_future_return,feedback",
+          "id,activity_id,occurrence_id,survey_id,participant_organization_id,submitted_at,age_group,affiliation,channels,p2_location,p2_schedule,p2_readiness,p2_reception,p2_overall,p3_interest,p3_content,p3_clarity,p3_benefit,p3_application,p4_knowledge,p4_inspiration,p4_community_resource,p4_future_return,feedback",
         order: "submitted_at.desc",
       }),
       supabaseUserRest(env, accessToken, "activity_learning_centers", {

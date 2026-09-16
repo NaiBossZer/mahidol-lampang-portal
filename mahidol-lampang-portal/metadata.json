@@ -1,0 +1,6 @@
+{
+  "name": "Mahidol Lampang Portal",
+  "description": "ระบบบริหารจัดการโครงการและกิจกรรมระดับมหาวิทยาลัย พร้อม AI ช่วยวิเคราะห์เอกสารราชการและจัดทำแบบประเมินผลสัมฤทธิ์ (Mahidol Lampang Portal)",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

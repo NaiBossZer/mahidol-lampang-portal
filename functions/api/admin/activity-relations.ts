@@ -1,12 +1,10 @@
 import { getCookie, getSupabaseUser, isAdminRole, json, supabaseConfig } from "../auth/_shared";
 
 type Env = Record<string, unknown>;
-
 type ActivityOrganization = {
   organizationId: string;
-  organizerRole?: string;
+  organizerRole?: "primary" | "co";
 };
-
 type RelationBody = {
   learningCenterIds?: string[];
   organizations?: ActivityOrganization[];
@@ -15,7 +13,6 @@ type RelationBody = {
 async function call(env: Env, token: string, path: string, init: RequestInit = {}) {
   const { url, key, configured } = supabaseConfig(env);
   if (!configured) throw new Error("Supabase is not configured");
-
   const response = await fetch(`${url}/rest/v1/${path}`, {
     ...init,
     headers: {
@@ -26,10 +23,10 @@ async function call(env: Env, token: string, path: string, init: RequestInit = {
       ...(init.headers ?? {}),
     },
   });
-
   const body = await response.json().catch(() => null);
   if (!response.ok) {
-    throw new Error(`Supabase REST ${response.status}`);
+    const detail = typeof body === "object" && body && "message" in body ? String(body.message) : "";
+    throw new Error(`Supabase REST ${response.status}${detail ? `: ${detail.slice(0, 300)}` : ""}`);
   }
   return body;
 }
@@ -46,9 +43,7 @@ export async function onRequest({ request, env }: { request: Request; env: Env }
 
     const params = new URL(request.url).searchParams;
     const activityId = params.get("activityId");
-    if (!activityId) {
-      return json({ success: false, error: "activityId required" }, 400);
-    }
+    if (!activityId) return json({ success: false, error: "activityId required" }, 400);
 
     if (request.method === "GET") {
       const [learningCenters, organizations] = await Promise.all([
@@ -84,51 +79,32 @@ export async function onRequest({ request, env }: { request: Request; env: Env }
     }
 
     const body = (await request.json()) as RelationBody;
-    const learningCenterIds = Array.isArray(body.learningCenterIds) ? body.learningCenterIds : [];
-    const organizations = Array.isArray(body.organizations) ? body.organizations : [];
+    const learningCenterIds = Array.isArray(body.learningCenterIds) ? [...new Set(body.learningCenterIds)] : [];
+    const organizations = Array.isArray(body.organizations)
+      ? body.organizations.map((organization) => ({
+          organizationId: organization.organizationId,
+          organizerRole: organization.organizerRole ?? "co",
+        }))
+      : [];
 
-    await call(
-      env,
-      token,
-      `activity_learning_centers?activity_id=eq.${encodeURIComponent(activityId)}`,
-      { method: "DELETE" },
-    );
-
-    if (learningCenterIds.length) {
-      await call(env, token, "activity_learning_centers", {
-        method: "POST",
-        headers: { Prefer: "return=minimal" },
-        body: JSON.stringify(
-          learningCenterIds.map((learning_center_id) => ({
-            activity_id: activityId,
-            learning_center_id,
-          })),
-        ),
-      });
+    if (learningCenterIds.some((id) => !id) || organizations.some((item) => !item.organizationId)) {
+      return json({ success: false, error: "ข้อมูลความสัมพันธ์ไม่ถูกต้อง" }, 400);
+    }
+    if (organizations.some((item) => !["primary", "co"].includes(item.organizerRole))) {
+      return json({ success: false, error: "บทบาทผู้จัดกิจกรรมไม่ถูกต้อง" }, 400);
     }
 
-    await call(env, token, `activity_organizers?activity_id=eq.${encodeURIComponent(activityId)}`, {
-      method: "DELETE",
+    const result = await call(env, token, "rpc/replace_activity_relations", {
+      method: "POST",
+      headers: { Prefer: "return=representation" },
+      body: JSON.stringify({
+        p_activity_id: activityId,
+        p_learning_center_ids: learningCenterIds,
+        p_organizations: organizations,
+      }),
     });
 
-    if (organizations.length) {
-      await call(env, token, "activity_organizers", {
-        method: "POST",
-        headers: { Prefer: "return=minimal" },
-        body: JSON.stringify(
-          organizations.map((organization) => ({
-            activity_id: activityId,
-            organization_id: organization.organizationId,
-            organizer_role: organization.organizerRole ?? "co",
-          })),
-        ),
-      });
-    }
-
-    return json({
-      success: true,
-      data: { learningCenterIds, organizations },
-    });
+    return json({ success: true, data: result });
   } catch (error) {
     console.error("/api/admin/activity-relations", error);
     return json(
