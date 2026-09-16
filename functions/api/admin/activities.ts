@@ -4,7 +4,6 @@ type Env = Record<string, unknown>;
 type ActivityStatus = "draft" | "published" | "archived";
 type ActivityInput = {
   id?: string;
-  centerId?: string | null;
   title?: string;
   slug?: string;
   summary?: string;
@@ -58,7 +57,6 @@ function toActivity(row: ActivityRow) {
     : [];
   return {
     id: String(row.id),
-    centerId: row.center_id ? String(row.center_id) : undefined,
     slug: String(row.slug ?? ""),
     title: String(row.title ?? ""),
     summary: String(row.summary ?? ""),
@@ -73,7 +71,6 @@ function toActivity(row: ActivityRow) {
     featuredImage: String(row.featured_image ?? ""),
     images,
     status: String(row.status ?? "draft") as ActivityStatus,
-    publishedAt: row.published_at ? String(row.published_at) : null,
     createdAt: String(row.created_at ?? ""),
     updatedAt: String(row.updated_at ?? ""),
   };
@@ -93,7 +90,6 @@ function toRow(input: ActivityInput, partial = false) {
     row.participant_count = Number.isFinite(participantCount) ? participantCount : 0;
     row.participants = String(Number.isFinite(participantCount) ? participantCount : 0);
   }
-  if (!partial || has("centerId")) row.center_id = input.centerId ?? null;
   if (!partial || has("objective")) row.objective = String(input.objective ?? (partial ? "" : input.summary ?? "")).trim();
   if (!partial || has("process")) row.key_activities = String(input.process ?? "").split(/\r?\n/).map((item) => item.trim()).filter(Boolean);
   if (!partial || has("outcome")) row.outcomes = String(input.outcome ?? "").trim();
@@ -121,7 +117,7 @@ export async function onRequest({ request, env }: { request: Request; env: Env }
   if ("error" in auth) return auth.error;
   try {
     const id = new URL(request.url).searchParams.get("id");
-    const select = "id,center_id,title,slug,summary,content,activity_date,location,participant_count,participants,featured_image,images,objective,key_activities,outcomes,impact,status,created_at,updated_at";
+    const select = "id,title,slug,summary,content,activity_date,location,participant_count,participants,featured_image,images,objective,key_activities,outcomes,impact,status,created_at,updated_at";
     if (method === "GET") {
       const rows = await supabaseRequest<ActivityRow[]>(env, auth.accessToken, `activities?select=${select}&order=activity_date.desc`);
       return json({ success: true, data: rows.map(toActivity) });

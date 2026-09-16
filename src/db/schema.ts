@@ -162,7 +162,6 @@ export const activities = pgTable(
   "activities",
   {
     id: uuid("id").defaultRandom().primaryKey(),
-    centerId: uuid("center_id").references(() => learningCenters.id, { onDelete: "set null" }),
     title: varchar("title", { length: 255 }).notNull(),
     slug: varchar("slug", { length: 255 }).notNull(),
     summary: text("summary"),
@@ -176,18 +175,16 @@ export const activities = pgTable(
     impact: text("impact"),
     featuredImage: text("featured_image"),
     status: activityStatusEnum("status").notNull().default("draft"),
-    publishedAt: timestamp("published_at", { withTimezone: true }),
     createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
     updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
   },
   (table) => ({
     slugUnique: unique("activities_slug_unique").on(table.slug),
     activityDateIdx: index("activities_activity_date_idx").on(table.activityDate),
-    statusPublishedIdx: index("activities_status_published_idx").on(
+    statusActivityDateIdx: index("activities_status_activity_date_idx").on(
       table.status,
-      table.publishedAt,
+      table.activityDate,
     ),
-    centerDateIdx: index("activities_center_date_idx").on(table.centerId, table.activityDate),
   }),
 );
 
@@ -249,8 +246,7 @@ export const activityOutcomes = pgTable("activity_outcomes", {
 export const learningCentersRelations = relations(learningCenters, ({ many }) => ({
   activities: many(activities),
 }));
-export const activitiesRelations = relations(activities, ({ one, many }) => ({
-  center: one(learningCenters, { fields: [activities.centerId], references: [learningCenters.id] }),
+export const activitiesRelations = relations(activities, ({ many }) => ({
   photos: many(activityPhotos),
   outcomes: many(activityOutcomes),
   partners: many(activityPartners),
