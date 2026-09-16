@@ -2,6 +2,7 @@ import { useMemo, useState, type ReactNode } from "react";
 import {
   BarChart3,
   Bell,
+  Bot,
   Building2,
   CalendarRange,
   ChevronDown,
@@ -22,7 +23,6 @@ import {
   Sparkles,
   User,
   X,
-  Bot,
 } from "lucide-react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
@@ -81,6 +81,14 @@ const operationsGroup: NavGroup = {
       icon: ShieldAlert,
       permission: "facility.read",
     },
+  ],
+};
+
+const aiWorkspaceGroup: NavGroup = {
+  id: "ai-workspace",
+  label: "AI Workspace",
+  icon: Bot,
+  items: [
     {
       to: "/admin/ai",
       label: "AI Command Center",
@@ -148,7 +156,12 @@ const administrationGroup: NavGroup = {
   ],
 };
 
-const ALL_GROUPS: readonly NavGroup[] = [operationsGroup, insightsGroup, administrationGroup];
+const ALL_GROUPS: readonly NavGroup[] = [
+  operationsGroup,
+  aiWorkspaceGroup,
+  insightsGroup,
+  administrationGroup,
+];
 
 const PATH_TITLE_MAP: Record<string, { group: string; title: string }> = {
   "/dashboard": { group: "ภาพรวม", title: "ภาพรวมสถิติ (Executive Dashboard)" },
@@ -159,7 +172,7 @@ const PATH_TITLE_MAP: Record<string, { group: string; title: string }> = {
   "/admin/activities/relations": { group: "ภารกิจและการดำเนินงาน", title: "ความเชื่อมโยงกิจกรรมและภาคี" },
   "/admin/learning-centers": { group: "ภารกิจและการดำเนินงาน", title: "ศูนย์การเรียนรู้ชุมชน" },
   "/admin/facility-safety": { group: "ภารกิจและการดำเนินงาน", title: "อาคารและความปลอดภัย" },
-  "/admin/ai": { group: "ภารกิจและการดำเนินงาน", title: "AI Command Center & Workspace" },
+  "/admin/ai": { group: "AI Workspace", title: "AI Command Center & Workspace" },
   "/admin/surveys": { group: "การประเมิน & Insights", title: "แบบสอบถามประเมินผล" },
   "/admin/surveys/analytics": { group: "การประเมิน & Insights", title: "ผลการวิเคราะห์แบบสอบถาม" },
   "/admin/surveys/response": { group: "การประเมิน & Insights", title: "รายละเอียดคำตอบแบบสอบถาม" },
@@ -249,7 +262,6 @@ export function AdminAppShell({ children }: { children: ReactNode }) {
         isDashboard && "admin-dashboard-shell",
       )}
     >
-      {/* Mobile Backdrop */}
       {mobileOpen && (
         <div
           role="button"
@@ -263,14 +275,12 @@ export function AdminAppShell({ children }: { children: ReactNode }) {
         />
       )}
 
-      {/* Sidebar navigation */}
       <aside
         className={cn(
           "fixed inset-y-0 left-0 z-50 flex w-72 flex-col bg-brand-navy text-white shadow-xl transition-transform duration-300 ease-in-out lg:translate-x-0",
           mobileOpen ? "translate-x-0" : "-translate-x-full",
         )}
       >
-        {/* Brand header */}
         <div className="flex h-18 items-center justify-between border-b border-white/10 px-5">
           <div className="flex items-center gap-3">
             <div className="grid h-10 w-10 place-items-center rounded-xl bg-white/10 text-northern-gold ring-1 ring-white/15">
@@ -295,7 +305,6 @@ export function AdminAppShell({ children }: { children: ReactNode }) {
           </button>
         </div>
 
-        {/* User context banner */}
         <div className="border-b border-white/8 bg-white/[0.03] px-5 py-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
@@ -322,9 +331,7 @@ export function AdminAppShell({ children }: { children: ReactNode }) {
           </div>
         </div>
 
-        {/* Navigation list */}
         <nav className="flex-1 overflow-y-auto px-3.5 py-4 space-y-4" aria-label="Admin navigation">
-          {/* Overview Group */}
           <div>
             <p className="px-3 pb-2 text-[10px] font-bold uppercase tracking-wider text-white/40">
               OVERVIEW
@@ -353,7 +360,6 @@ export function AdminAppShell({ children }: { children: ReactNode }) {
             </div>
           </div>
 
-          {/* Dynamic Groups */}
           {visibleGroups.map((group) => {
             const GroupIcon = group.icon;
             const active = isGroupActive(location.pathname, group);
@@ -415,7 +421,6 @@ export function AdminAppShell({ children }: { children: ReactNode }) {
           })}
         </nav>
 
-        {/* Sidebar Footer */}
         <div className="border-t border-white/10 p-3.5">
           <button
             type="button"
@@ -428,12 +433,9 @@ export function AdminAppShell({ children }: { children: ReactNode }) {
         </div>
       </aside>
 
-      {/* Main Content Area */}
       <div className="lg:pl-72">
-        {/* Top Header Bar */}
         <header className="sticky top-0 z-30 border-b border-slate-200/80 bg-white/95 backdrop-blur-md">
           <div className="flex min-h-16 items-center justify-between gap-4 px-4 sm:px-6">
-            {/* Left: Mobile menu trigger + Breadcrumb */}
             <div className="flex items-center gap-3">
               <button
                 type="button"
@@ -455,7 +457,6 @@ export function AdminAppShell({ children }: { children: ReactNode }) {
               </div>
             </div>
 
-            {/* Right: Actions and User Menu */}
             <div className="flex items-center gap-2">
               {isDashboard && (
                 <button
@@ -511,7 +512,6 @@ export function AdminAppShell({ children }: { children: ReactNode }) {
           </div>
         </header>
 
-        {/* Child page container */}
         <main id="admin-main" className="min-h-[calc(100vh-4rem)]">
           {children}
         </main>
