@@ -40,11 +40,17 @@ export type ProductWriteInput = {
   plotId?: string;
 };
 export type ActivityStatus =
-  "draft" | "published" | "scheduled" | "ongoing" | "completed" | "cancelled" | "archived";
+  | "draft"
+  | "published"
+  | "scheduled"
+  | "ongoing"
+  | "completed"
+  | "cancelled"
+  | "archived";
 export type ActivityWriteInput = {
   id?: string;
-  projectId?: string;
-  centerId?: string;
+  projectId?: string | null;
+  centerId?: string | null;
   title: string;
   slug: string;
   summary?: string;
@@ -59,6 +65,7 @@ export type ActivityWriteInput = {
   featuredImage?: string;
   status: ActivityStatus;
 };
+export type ActivityPatchInput = Partial<Omit<ActivityWriteInput, "id">> & { id: string };
 export type AdminActivity = ActivityWriteInput & {
   id: string;
   publishedAt?: string | null;
@@ -178,7 +185,6 @@ function isRecord(v: unknown): v is Record<string, unknown> {
 const pendingGets = new Map<string, Promise<unknown>>();
 const GET_CACHE_TTL_MS = 30_000;
 const MAX_GET_CACHE_ENTRIES = 100;
-const getCache = new Map<string, { expiresAt: number; value: unknown }>();
 const CACHEABLE_GET_PREFIXES = [
   "/api/products",
   "/api/activities",
@@ -367,9 +373,9 @@ export async function createActivity(input: ActivityWriteInput) {
   invalidateApiCache("/api/activities");
   return result;
 }
-export async function updateActivity(input: ActivityWriteInput & { id: string }) {
+export async function updateActivity(input: ActivityPatchInput) {
   const result = await apiRequest(`/api/admin/activities?id=${encodeURIComponent(input.id)}`, {
-    method: "PUT",
+    method: "PATCH",
     body: JSON.stringify(input),
   });
   invalidateApiCache("/api/admin/activities");
@@ -410,7 +416,7 @@ export async function createEvBooking(input: EvBookingInput): Promise<EvBookingR
       old = JSON.parse(localStorage.getItem(key) ?? "[]");
     localStorage.setItem(
       key,
-      JSON.stringify([...(Array.isArray(old) ? old : []), { ...input, id, status: "pending" }]),
+      JSON.stringify([...(Array.isArray(old) ? old : []), { id, ...input, status: "pending" }]),
     );
     return { id, persisted: "local" };
   }
