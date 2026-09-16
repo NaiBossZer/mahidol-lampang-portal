@@ -29,20 +29,14 @@ const blankActivity: ActivityWriteInput = {
 const statusLabel: Record<ActivityStatus, string> = {
   draft: "Draft",
   published: "Published",
-  scheduled: "Scheduled",
-  ongoing: "Ongoing",
-  completed: "Completed",
-  cancelled: "Cancelled",
   archived: "Archived",
 };
 function statusClass(s: ActivityStatus) {
-  return s === "completed"
+  return s === "published"
     ? "bg-emerald-50 text-emerald-700 border-emerald-200"
-    : s === "cancelled" || s === "archived"
+    : s === "archived"
       ? "bg-slate-100 text-slate-600 border-slate-200"
-      : s === "ongoing"
-        ? "bg-blue-50 text-blue-700 border-blue-200"
-        : "bg-amber-50 text-amber-700 border-amber-200";
+      : "bg-amber-50 text-amber-700 border-slate-200";
 }
 
 type ActivityMedia = {
@@ -253,11 +247,9 @@ export function ActivitiesManagementPage() {
           className="dashboard-control"
         >
           <option value="all">ทุกสถานะ</option>
-          {Object.entries(statusLabel).map(([value, label]) => (
-            <option key={value} value={value}>
-              {label}
-            </option>
-          ))}
+          <option value="draft">Draft</option>
+          <option value="published">Published</option>
+          <option value="archived">Archived</option>
         </select>
       </div>
       <div className="mt-4 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
@@ -390,11 +382,9 @@ export function ActivitiesManagementPage() {
                     }
                     className="dashboard-control mt-1 w-full"
                   >
-                    {Object.entries(statusLabel).map(([value, label]) => (
-                      <option key={value} value={value}>
-                        {label}
-                      </option>
-                    ))}
+                    <option value="draft">Draft</option>
+                    <option value="published">Published</option>
+                    <option value="archived">Archived</option>
                   </select>
                 </label>
               </div>

@@ -39,14 +39,7 @@ export type ProductWriteInput = {
   researchTag?: string;
   plotId?: string;
 };
-export type ActivityStatus =
-  | "draft"
-  | "published"
-  | "scheduled"
-  | "ongoing"
-  | "completed"
-  | "cancelled"
-  | "archived";
+export type ActivityStatus = "draft" | "published" | "archived";
 export type ActivityWriteInput = {
   id?: string;
   projectId?: string | null;

@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { ArrowRight, Check, CheckCircle2, FileText, GripVertical, Plus, Sparkles, Wand2 } from "lucide-react";
+import { Link } from "react-router-dom";
+import { ArrowRight, Check, CheckCircle2, FileText, GripVertical, Info, Plus, Sparkles, Wand2 } from "lucide-react";
 import { UnifiedSurveyWorkflowShell, UNIFIED_SURVEY_WORKFLOW_STEPS, type UnifiedSurveyWorkflowStep } from "@/components/layout/UnifiedSurveyWorkflowShell";
 
 type DraftQuestion = {
@@ -73,7 +74,20 @@ export function UnifiedSurveyWorkflowPage() {
             <h2 className="mt-1 text-2xl font-bold tracking-tight text-brand-navy">สร้างคำถามจากผลการวิเคราะห์</h2>
             <p className="mt-1 text-sm text-slate-500">ตรวจ แก้ไข จัดลำดับ และเติมคำถามก่อนเข้าสู่ Review</p>
           </div>
-          <div className="rounded-xl bg-slate-50 px-4 py-3 text-right"><p className="text-[11px] text-slate-500">Draft Questions</p><p className="text-xl font-black text-brand-navy">{questions.length}</p></div>
+          <div className="flex gap-2">
+            <Link
+              to="/admin/ai-studio-workspace"
+              className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-violet-200 bg-violet-50 px-4 text-sm font-semibold text-violet-800"
+            >
+              <Sparkles className="h-4 w-4" />
+              AI Studio Workspace
+            </Link>
+            <div className="rounded-xl bg-slate-50 px-4 py-3 text-right"><p className="text-[11px] text-slate-500">Draft Questions</p><p className="text-xl font-black text-brand-navy">{questions.length}</p></div>
+          </div>
+        </div>
+
+        <div className="mt-6 rounded-2xl border border-amber-200 bg-amber-50 p-4">
+          <div className="flex items-start gap-3"><div className="rounded-xl bg-white p-2 text-amber-700 shadow-sm"><Info className="h-5 w-5" /></div><div><p className="text-sm font-bold text-amber-950">หมายเหตุ: หน้านี้เป็น Legacy UI</p><p className="mt-1 text-xs leading-5 text-amber-900/70">สำหรับ Workflow แบบสมบูรณ์แบบ กรุณาใช้ <Link to="/admin/ai-studio-workspace" className="font-bold underline">AI Studio Workspace</Link> ซึ่งรองรับการวิเคราะห์เอกสารและสร้างแบบสอบถามอัตโนมัติ</p></div></div>
         </div>
 
         <div className="mt-6 rounded-2xl border border-violet-100 bg-violet-50/60 p-4">
