@@ -25,6 +25,7 @@ import {
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { getAdminActivities, type AdminActivity } from "@/services/api";
+import PredictiveMetricsPanel from "@/components/admin/PredictiveMetricsPanel";
 import {
   analyzeActivityDocument,
   confirmAiSurvey,
@@ -469,6 +470,19 @@ export function AIStudioWorkspacePage() {
                   </div>
                 )}
               </div>
+
+              {/* Predictive Metrics for Selected Activity */}
+              {selectedActivityId && (
+                <div className="mt-6 border-t pt-5">
+                  <PredictiveMetricsPanel
+                    activityId={selectedActivityId}
+                    activityTitle={selectedActivity?.title}
+                    historicalData={{
+                      participantCounts: [selectedActivity?.participantCount || 40],
+                    }}
+                  />
+                </div>
+              )}
 
               {/* Bottom Nav */}
               <div className="mt-6 flex justify-end border-t pt-4">

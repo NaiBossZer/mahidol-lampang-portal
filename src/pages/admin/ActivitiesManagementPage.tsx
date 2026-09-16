@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { CalendarDays, ImagePlus, Pencil, Plus, RefreshCw, Search, Upload, X } from "lucide-react";
+import { CalendarDays, ImagePlus, Lightbulb, Pencil, Plus, RefreshCw, Search, Upload, X } from "lucide-react";
 import { toast } from "sonner";
 import {
   createActivity,
@@ -10,6 +10,7 @@ import {
   type AdminActivity,
 } from "@/services/api";
 import { getAdminLearningCenters, type LearningCenter } from "@/services/admin-learning-centers";
+import AIRecommendationsSidebar from "@/components/admin/AIRecommendationsSidebar";
 
 const blankActivity: ActivityWriteInput = {
   title: "",
@@ -110,7 +111,8 @@ export function ActivitiesManagementPage() {
     [open, setOpen] = useState(false),
     [loading, setLoading] = useState(true),
     [saving, setSaving] = useState(false),
-    [uploading, setUploading] = useState(false);
+    [uploading, setUploading] = useState(false),
+    [recommendationActivity, setRecommendationActivity] = useState<AdminActivity | null>(null);
   async function load() {
     setLoading(true);
     try {
@@ -312,14 +314,25 @@ export function ActivitiesManagementPage() {
                       </span>
                     </td>
                     <td className="px-5 py-4 text-right">
-                      <button
-                        type="button"
-                        onClick={() => void openEdit(x)}
-                        className="inline-flex min-h-9 items-center gap-1.5 rounded-lg border border-slate-200 px-3 text-xs font-semibold text-brand-navy"
-                      >
-                        <Pencil className="h-3.5 w-3.5" />
-                        แก้ไข
-                      </button>
+                      <div className="flex items-center justify-end gap-2">
+                        <button
+                          type="button"
+                          onClick={() => setRecommendationActivity(x)}
+                          className="inline-flex min-h-9 items-center gap-1.5 rounded-lg border border-violet-200 bg-violet-50 px-2.5 text-xs font-semibold text-violet-700 hover:bg-violet-100 transition-colors"
+                          title="ดูคำแนะนำจาก AI"
+                        >
+                          <Lightbulb className="h-3.5 w-3.5 text-amber-500" />
+                          <span className="hidden sm:inline">AI Advice</span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => void openEdit(x)}
+                          className="inline-flex min-h-9 items-center gap-1.5 rounded-lg border border-slate-200 px-3 text-xs font-semibold text-brand-navy"
+                        >
+                          <Pencil className="h-3.5 w-3.5" />
+                          แก้ไข
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))}
@@ -501,6 +514,14 @@ export function ActivitiesManagementPage() {
             </div>
           </div>
         </div>
+      )}
+      {recommendationActivity && (
+        <AIRecommendationsSidebar
+          isOpen={!!recommendationActivity}
+          onClose={() => setRecommendationActivity(null)}
+          activityId={recommendationActivity.id}
+          activityTitle={recommendationActivity.title}
+        />
       )}
     </section>
   );
