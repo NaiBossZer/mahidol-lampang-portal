@@ -125,7 +125,7 @@ export function AdminAppShell({ children }: { children: ReactNode }) {
   const surveyActive = visibleSurveyItems.some((item) => isItemActive(location.pathname, item));
 
   return (
-    <div className="min-h-screen bg-slate-50/70 font-sans text-slate-900">
+    <div className={cn("admin-app-shell min-h-screen font-sans text-slate-900", location.pathname === "/dashboard" ? "admin-dashboard-shell" : "admin-modern-shell")}>
       {mobileOpen && (
         <div
           role="button"

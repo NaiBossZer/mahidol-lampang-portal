@@ -247,3 +247,66 @@
   border: 1px solid #eee9df;
   background: #fff;
 }
+
+
+@layer components {
+  .admin-modern-shell {
+    --admin-page: #f8f9ff;
+    --admin-surface: #ffffff;
+    --admin-border: #e2e8f0;
+    --admin-primary: #002d62;
+    --admin-text: #0f172a;
+    --admin-muted: #64748b;
+    background: var(--admin-page);
+  }
+  .admin-modern-shell > aside {
+    width: 264px;
+    background: linear-gradient(180deg, #071d36 0%, #0c2340 52%, #102d50 100%);
+    border-right: 1px solid rgba(148,163,184,.16);
+    box-shadow: 8px 0 30px rgba(15,23,42,.08);
+  }
+  .admin-modern-shell > aside > div:first-child > div:first-child {
+    height: 76px;
+    background: linear-gradient(135deg, rgba(124,58,237,.16), rgba(14,165,233,.08));
+  }
+  .admin-modern-shell > div { margin-left: 264px; }
+  .admin-modern-shell > div > header {
+    height: 68px;
+    background: rgba(255,255,255,.94);
+    color: var(--admin-text);
+    border-bottom: 1px solid var(--admin-border);
+    box-shadow: 0 1px 12px rgba(15,23,42,.05);
+    backdrop-filter: blur(12px);
+  }
+  .admin-modern-shell > div > header .text-white { color: var(--admin-text) !important; }
+  .admin-modern-shell > div > header .text-slate-300,
+  .admin-modern-shell > div > header .text-slate-400 { color: var(--admin-muted) !important; }
+  .admin-modern-shell #admin-main { background: var(--admin-page); }
+  .admin-modern-shell #admin-main > * { max-width: 1440px; margin-inline: auto; }
+  .admin-modern-shell #admin-main [class*="rounded-xl"][class*="border"],
+  .admin-modern-shell #admin-main [class*="rounded-2xl"][class*="border"] {
+    border-color: var(--admin-border);
+    box-shadow: 0 1px 2px rgba(15,23,42,.04);
+  }
+  .admin-modern-shell #admin-main h1 { color: var(--admin-primary); }
+  .admin-modern-shell #admin-main h2,
+  .admin-modern-shell #admin-main h3 { color: var(--admin-text); }
+  .admin-modern-shell #admin-main input,
+  .admin-modern-shell #admin-main select,
+  .admin-modern-shell #admin-main textarea {
+    border-color: #dbe3ec;
+    border-radius: .75rem;
+    background: #fff;
+  }
+  .admin-modern-shell #admin-main input:focus,
+  .admin-modern-shell #admin-main select:focus,
+  .admin-modern-shell #admin-main textarea:focus {
+    border-color: rgba(0,45,98,.50);
+    box-shadow: 0 0 0 3px rgba(0,45,98,.10);
+    outline: none;
+  }
+  @media (max-width: 1023px) {
+    .admin-modern-shell > aside { width: 280px; }
+    .admin-modern-shell > div { margin-left: 0; }
+  }
+}
