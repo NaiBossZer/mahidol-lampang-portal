@@ -134,6 +134,11 @@ export type DashboardResponse = {
   p4_community_resource?: number | null;
   p4_future_return?: number | null;
   feedback?: string | null;
+  // AI Integration metadata
+  ai_generated?: boolean | null;
+  ai_confidence_score?: number | null;
+  ai_model_version?: string | null;
+  ai_execution_id?: string | null;
 };
 export type DashboardActivityLearningCenter = { activity_id: string; learning_center_id: string };
 export type DashboardActivityOrganizer = {
