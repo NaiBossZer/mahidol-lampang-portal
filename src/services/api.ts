@@ -185,6 +185,7 @@ function isRecord(v: unknown): v is Record<string, unknown> {
 const pendingGets = new Map<string, Promise<unknown>>();
 const GET_CACHE_TTL_MS = 30_000;
 const MAX_GET_CACHE_ENTRIES = 100;
+const getCache = new Map<string, { expiresAt: number; value: unknown }>();
 const CACHEABLE_GET_PREFIXES = [
   "/api/products",
   "/api/activities",
@@ -416,7 +417,7 @@ export async function createEvBooking(input: EvBookingInput): Promise<EvBookingR
       old = JSON.parse(localStorage.getItem(key) ?? "[]");
     localStorage.setItem(
       key,
-      JSON.stringify([...(Array.isArray(old) ? old : []), { id, ...input, status: "pending" }]),
+      JSON.stringify([...(Array.isArray(old) ? old : []), { ...input, id, status: "pending" }]),
     );
     return { id, persisted: "local" };
   }
