@@ -2,9 +2,17 @@ import { getSupabaseUser, isAdminRole, json, supabaseConfig } from "../auth/_sha
 
 type Env = Record<string, unknown>;
 type ActivityStatus =
-  "draft" | "published" | "scheduled" | "ongoing" | "completed" | "cancelled" | "archived";
+  | "draft"
+  | "published"
+  | "scheduled"
+  | "ongoing"
+  | "completed"
+  | "cancelled"
+  | "archived";
 type ActivityInput = {
   id?: string;
+  projectId?: string | null;
+  centerId?: string | null;
   title?: string;
   slug?: string;
   summary?: string;
@@ -21,6 +29,7 @@ type ActivityInput = {
   status?: ActivityStatus;
 };
 type ActivityRow = Record<string, unknown>;
+
 function cookieValue(request: Request, name: string) {
   const part = (request.headers.get("Cookie") ?? "")
     .split(";")
@@ -28,6 +37,7 @@ function cookieValue(request: Request, name: string) {
     .find((item) => item.startsWith(`${name}=`));
   return part ? decodeURIComponent(part.slice(name.length + 1)) : null;
 }
+
 async function supabaseRequest<T>(
   env: Env,
   accessToken: string,
@@ -54,6 +64,7 @@ async function supabaseRequest<T>(
   }
   return body as T;
 }
+
 function toActivity(row: ActivityRow) {
   const participantCount = Number(row.participant_count ?? row.participants ?? 0);
   const images = Array.isArray(row.images)
@@ -63,6 +74,8 @@ function toActivity(row: ActivityRow) {
     : [];
   return {
     id: String(row.id),
+    projectId: row.project_id ? String(row.project_id) : undefined,
+    centerId: row.center_id ? String(row.center_id) : undefined,
     slug: String(row.slug ?? ""),
     title: String(row.title ?? ""),
     summary: String(row.summary ?? ""),
@@ -79,41 +92,48 @@ function toActivity(row: ActivityRow) {
     featuredImage: String(row.featured_image ?? ""),
     images,
     status: String(row.status ?? "draft") as ActivityStatus,
+    publishedAt: row.published_at ? String(row.published_at) : null,
     createdAt: String(row.created_at ?? ""),
     updatedAt: String(row.updated_at ?? ""),
   };
 }
-function toRow(input: ActivityInput) {
-  const status: ActivityStatus = input.status ?? "draft";
-  const keyActivities = String(input.process ?? "")
-    .split(/\r?\n/)
-    .map((item) => item.trim())
-    .filter(Boolean);
-  const participantCount = Math.max(0, Number(input.participantCount ?? 0));
-  const images = Array.isArray(input.images)
-    ? input.images
-        .map(String)
-        .map((item) => item.trim())
-        .filter(Boolean)
-    : [];
-  return {
-    title: String(input.title ?? "").trim(),
-    slug: String(input.slug ?? "").trim(),
-    summary: String(input.summary ?? "").trim(),
-    content: String(input.content ?? "").trim(),
-    activity_date: String(input.activityDate ?? "").slice(0, 10),
-    location: String(input.location ?? "").trim(),
-    participant_count: Number.isFinite(participantCount) ? participantCount : 0,
-    participants: String(Number.isFinite(participantCount) ? participantCount : 0),
-    objective: String(input.objective ?? input.summary ?? "").trim(),
-    key_activities: keyActivities,
-    outcomes: String(input.outcome ?? "").trim(),
-    impact: String(input.impact ?? "").trim(),
-    featured_image: String(input.featuredImage ?? "").trim(),
-    images,
-    status,
-  };
+
+function toRow(input: ActivityInput, partial = false) {
+  const row: Record<string, unknown> = {};
+  const has = (key: keyof ActivityInput) => Object.prototype.hasOwnProperty.call(input, key);
+
+  if (!partial || has("title")) row.title = String(input.title ?? "").trim();
+  if (!partial || has("slug")) row.slug = String(input.slug ?? "").trim();
+  if (!partial || has("summary")) row.summary = String(input.summary ?? "").trim();
+  if (!partial || has("content")) row.content = String(input.content ?? "").trim();
+  if (!partial || has("activityDate")) row.activity_date = String(input.activityDate ?? "").slice(0, 10);
+  if (!partial || has("location")) row.location = String(input.location ?? "").trim();
+  if (!partial || has("participantCount")) {
+    const participantCount = Math.max(0, Number(input.participantCount ?? 0));
+    row.participant_count = Number.isFinite(participantCount) ? participantCount : 0;
+    row.participants = String(Number.isFinite(participantCount) ? participantCount : 0);
+  }
+  if (!partial || has("projectId")) row.project_id = input.projectId ?? null;
+  if (!partial || has("centerId")) row.center_id = input.centerId ?? null;
+  if (!partial || has("objective")) row.objective = String(input.objective ?? (partial ? "" : input.summary ?? "")).trim();
+  if (!partial || has("process")) {
+    row.key_activities = String(input.process ?? "")
+      .split(/\r?\n/)
+      .map((item) => item.trim())
+      .filter(Boolean);
+  }
+  if (!partial || has("outcome")) row.outcomes = String(input.outcome ?? "").trim();
+  if (!partial || has("impact")) row.impact = String(input.impact ?? "").trim();
+  if (!partial || has("featuredImage")) row.featured_image = String(input.featuredImage ?? "").trim();
+  if (!partial || has("images")) {
+    row.images = Array.isArray(input.images)
+      ? input.images.map(String).map((item) => item.trim()).filter(Boolean)
+      : [];
+  }
+  if (!partial || has("status")) row.status = input.status ?? "draft";
+  return row;
 }
+
 async function authorize(request: Request, env: Env) {
   const user = await getSupabaseUser(request, env);
   const role = user?.app_metadata?.role;
@@ -125,16 +145,17 @@ async function authorize(request: Request, env: Env) {
     return { error: json({ success: false, error: "Forbidden" }, 403) } as const;
   return { accessToken } as const;
 }
+
 export async function onRequest({ request, env }: { request: Request; env: Env }) {
   const method = request.method.toUpperCase();
-  if (!["GET", "POST", "PUT", "DELETE"].includes(method))
-    return json({ error: "Method Not Allowed" }, 405, { Allow: "GET, POST, PUT, DELETE" });
+  if (!["GET", "POST", "PUT", "PATCH", "DELETE"].includes(method))
+    return json({ error: "Method Not Allowed" }, 405, { Allow: "GET, POST, PUT, PATCH, DELETE" });
   const auth = await authorize(request, env);
   if ("error" in auth) return auth.error;
   try {
     const id = new URL(request.url).searchParams.get("id");
     const select =
-      "id,title,slug,summary,content,activity_date,location,participant_count,participants,featured_image,images,objective,key_activities,outcomes,impact,status,created_at,updated_at";
+      "id,project_id,center_id,title,slug,summary,content,activity_date,location,participant_count,participants,featured_image,images,objective,key_activities,outcomes,impact,status,published_at,created_at,updated_at";
     if (method === "GET") {
       const rows = await supabaseRequest<ActivityRow[]>(
         env,
@@ -155,10 +176,18 @@ export async function onRequest({ request, env }: { request: Request; env: Env }
       return json({ success: true, data: rows[0] ? toActivity(rows[0]) : null }, 201);
     }
     if (!id) return json({ success: false, error: "ต้องระบุ id ของกิจกรรม" }, 400);
-    if (method === "PUT") {
+    if (method === "PUT" || method === "PATCH") {
       const input = (await request.json()) as ActivityInput;
-      if (!input.title?.trim() || !input.activityDate)
-        return json({ success: false, error: "กรุณาระบุชื่อกิจกรรมและวันที่" }, 400);
+      const partial = method === "PATCH" || method === "PUT";
+      if (method === "PUT" && !input.title?.trim() && !input.activityDate)
+        return json({ success: false, error: "ต้องระบุข้อมูลที่ต้องการอัปเดต" }, 400);
+      if (method === "PATCH" && Object.keys(input).length === 0)
+        return json({ success: false, error: "ต้องระบุข้อมูลที่ต้องการอัปเดต" }, 400);
+      if (input.status && !["draft", "published", "scheduled", "ongoing", "completed", "cancelled", "archived"].includes(input.status))
+        return json({ success: false, error: "สถานะกิจกรรมไม่ถูกต้อง" }, 400);
+      const patch = toRow(input, partial);
+      if (!Object.keys(patch).length)
+        return json({ success: false, error: "ไม่พบ field ที่รองรับสำหรับการอัปเดต" }, 400);
       const rows = await supabaseRequest<ActivityRow[]>(
         env,
         auth.accessToken,
@@ -166,7 +195,7 @@ export async function onRequest({ request, env }: { request: Request; env: Env }
         {
           method: "PATCH",
           headers: { Prefer: "return=representation" },
-          body: JSON.stringify(toRow(input)),
+          body: JSON.stringify(patch),
         },
       );
       if (!rows[0]) return json({ success: false, error: "ไม่พบกิจกรรม" }, 404);
