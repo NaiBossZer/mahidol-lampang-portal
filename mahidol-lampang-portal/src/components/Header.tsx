@@ -1,20 +1,35 @@
 import React from 'react';
 
+export interface BreadcrumbItem {
+  label: string;
+  onClick?: () => void;
+  active?: boolean;
+}
+
 interface HeaderProps {
+  breadcrumbs?: BreadcrumbItem[];
   onToggleSidebar: () => void;
   onOpenNotifications: () => void;
   onOpenProfile: () => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
+  breadcrumbs,
   onToggleSidebar,
   onOpenNotifications,
   onOpenProfile,
 }) => {
+  const defaultBreadcrumbs: BreadcrumbItem[] = [
+    { label: 'หน้าหลัก' },
+    { label: 'ระบบบริหารโครงการและกิจกรรม (AI-assisted Management)', active: true },
+  ];
+
+  const crumbs = breadcrumbs && breadcrumbs.length > 0 ? breadcrumbs : defaultBreadcrumbs;
+
   return (
     <header className="h-14 bg-[#0c2340] text-white px-4 sm:px-6 flex items-center justify-between sticky top-0 z-40 border-b border-white/10 shadow-xs">
-      {/* Left: Mobile hamburger & Breadcrumbs */}
-      <div className="flex items-center gap-3 text-[12px] text-slate-300 min-w-0">
+      {/* Left: Mobile hamburger & Dynamic Breadcrumbs */}
+      <div className="flex items-center gap-2.5 text-[12px] text-slate-300 min-w-0">
         <button
           type="button"
           onClick={onToggleSidebar}
@@ -24,18 +39,29 @@ export const Header: React.FC<HeaderProps> = ({
           <span className="material-symbols-outlined text-[22px]">menu</span>
         </button>
 
-        <div className="flex items-center gap-2 truncate">
-          <a
-            href="#"
-            onClick={(e) => e.preventDefault()}
-            className="hover:text-white transition-colors shrink-0"
-          >
-            หน้าหลัก
-          </a>
-          <span className="text-slate-500 text-[10px]">&gt;</span>
-          <span className="text-slate-200 truncate font-medium">
-            สรุปผลแบบประเมินความพึงพอใจ (Executive Dashboard)
-          </span>
+        <div className="flex items-center gap-1.5 truncate">
+          {crumbs.map((crumb, idx) => (
+            <React.Fragment key={idx}>
+              {idx > 0 && <span className="text-slate-500 text-[10px]">&gt;</span>}
+              {crumb.onClick && !crumb.active ? (
+                <button
+                  type="button"
+                  onClick={crumb.onClick}
+                  className="hover:text-white transition-colors truncate text-slate-300 hover:underline cursor-pointer"
+                >
+                  {crumb.label}
+                </button>
+              ) : (
+                <span
+                  className={`truncate ${
+                    crumb.active ? 'text-white font-medium' : 'text-slate-300'
+                  }`}
+                >
+                  {crumb.label}
+                </span>
+              )}
+            </React.Fragment>
+          ))}
         </div>
       </div>
 

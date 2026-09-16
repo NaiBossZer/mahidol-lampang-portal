@@ -3,11 +3,13 @@ import React from 'react';
 interface NotificationPopoverProps {
   isOpen: boolean;
   onClose: () => void;
+  onViewAll?: () => void;
 }
 
 export const NotificationPopover: React.FC<NotificationPopoverProps> = ({
   isOpen,
   onClose,
+  onViewAll,
 }) => {
   if (!isOpen) return null;
 
@@ -92,13 +94,27 @@ export const NotificationPopover: React.FC<NotificationPopoverProps> = ({
           ))}
         </div>
 
-        <div className="p-2.5 text-center border-t border-slate-100 bg-slate-50/50">
+        <div className="p-2.5 flex items-center justify-between border-t border-slate-100 bg-slate-50/50">
           <button
             type="button"
-            className="text-[11px] font-medium text-sky-700 hover:text-sky-800"
+            className="text-[11px] font-medium text-slate-500 hover:text-slate-800 cursor-pointer"
           >
             ทำเครื่องหมายว่าอ่านทั้งหมด
           </button>
+
+          {onViewAll && (
+            <button
+              type="button"
+              onClick={() => {
+                onClose();
+                onViewAll();
+              }}
+              className="text-[11px] font-semibold text-sky-700 hover:text-sky-800 flex items-center gap-0.5 cursor-pointer"
+            >
+              <span>ดูทั้งหมด</span>
+              <span className="material-symbols-outlined text-[14px]">arrow_forward</span>
+            </button>
+          )}
         </div>
       </div>
     </>

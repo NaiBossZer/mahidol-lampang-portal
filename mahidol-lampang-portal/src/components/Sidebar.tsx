@@ -15,32 +15,47 @@ export const Sidebar: React.FC<SidebarProps> = ({
   setActiveNav,
   onOpenProfile,
 }) => {
-  const [surveySubmenuOpen, setSurveySubmenuOpen] = useState(false);
+  const [surveySubmenuOpen, setSurveySubmenuOpen] = useState(true);
 
   const navItems = [
-    { id: 'home', label: 'หน้าหลัก', icon: 'home' },
-    { id: 'docs', label: 'เอกสารและข้อมูล', icon: 'description' },
+    {
+      id: 'analytics',
+      label: 'รายงานผลสัมฤทธิ์ & สถิติ',
+      icon: 'analytics',
+      iconColor: 'text-amber-400',
+    },
     {
       id: 'surveys',
-      label: 'Survey & แบบประเมิน',
-      icon: 'edit_square',
+      label: 'บริหารกิจกรรม & Survey',
+      icon: 'rule',
       hasSubmenu: true,
     },
     {
-      id: 'analytics',
-      label: 'ผลการประเมิน & วิเคราะห์',
-      icon: 'analytics',
-      iconColor: 'text-sky-400',
+      id: 'docs',
+      label: 'คลังเอกสารราชการ',
+      icon: 'folder_shared',
     },
-    { id: 'ai-workspace', label: 'AI Workspace', icon: 'psychology' },
-    { id: 'users', label: 'ผู้ใช้งาน & สิทธิ์การเข้าถึง', icon: 'group' },
+    {
+      id: 'ai-workspace',
+      label: 'AI Assistant Studio',
+      icon: 'psychology',
+    },
+    {
+      id: 'users',
+      label: 'ผู้ใช้งาน & สิทธิ์การเข้าถึง',
+      icon: 'group',
+    },
     {
       id: 'notifications',
       label: 'การแจ้งเตือน',
       icon: 'notifications',
       badge: 3,
     },
-    { id: 'settings', label: 'ตั้งค่าระบบ', icon: 'settings' },
+    {
+      id: 'settings',
+      label: 'ตั้งค่าระบบ',
+      icon: 'settings',
+    },
   ];
 
   return (
@@ -62,7 +77,14 @@ export const Sidebar: React.FC<SidebarProps> = ({
         <div className="flex flex-col">
           {/* Brand Logo Header */}
           <div className="h-16 px-4 flex items-center justify-between border-b border-white/10">
-            <div className="flex items-center gap-3">
+            <button
+              type="button"
+              onClick={() => {
+                setActiveNav('home');
+                if (window.innerWidth < 1024) onClose();
+              }}
+              className="flex items-center gap-3 text-left cursor-pointer"
+            >
               <div className="w-9 h-9 rounded-full bg-white flex items-center justify-center shrink-0 shadow-sm">
                 <span className="text-[#0c2340] font-bold text-xs tracking-tighter border-2 border-[#0c2340] rounded-full w-7 h-7 flex items-center justify-center">
                   MU
@@ -76,7 +98,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                   ระบบบริหารจัดการและข้อมูลเชิงสถิติ
                 </span>
               </div>
-            </div>
+            </button>
 
             {/* Mobile close button */}
             <button
@@ -91,7 +113,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
           {/* Navigation Items */}
           <nav className="p-3 space-y-1 text-[13px] overflow-y-auto max-h-[calc(100vh-140px)]">
             {navItems.map((item) => {
-              const isActive = activeNav === item.id;
+              const isParentActive =
+                activeNav === item.id ||
+                (item.id === 'surveys' &&
+                  (activeNav === 'workflow' || activeNav === 'activity-detail'));
 
               if (item.hasSubmenu) {
                 return (
@@ -100,10 +125,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
                       type="button"
                       onClick={() => {
                         setSurveySubmenuOpen(!surveySubmenuOpen);
-                        setActiveNav(item.id);
+                        setActiveNav('home');
                       }}
                       className={`w-full flex items-center justify-between px-3 py-2 rounded-lg transition-colors cursor-pointer ${
-                        isActive
+                        isParentActive
                           ? 'bg-[#163a66] text-white font-medium shadow-xs'
                           : 'text-slate-300 hover:text-white hover:bg-white/5'
                       }`}
@@ -127,17 +152,34 @@ export const Sidebar: React.FC<SidebarProps> = ({
                       <div className="pl-9 pr-2 py-1 space-y-1 text-[12px]">
                         <button
                           type="button"
-                          onClick={() => setActiveNav('survey-list')}
-                          className="w-full text-left py-1 px-2 rounded text-slate-400 hover:text-white hover:bg-white/5 block truncate"
+                          onClick={() => {
+                            setActiveNav('home');
+                            if (window.innerWidth < 1024) onClose();
+                          }}
+                          className={`w-full text-left py-1 px-2 rounded block truncate transition-colors ${
+                            activeNav === 'home'
+                              ? 'text-sky-300 font-semibold bg-white/10'
+                              : 'text-slate-400 hover:text-white hover:bg-white/5'
+                          }`}
                         >
-                          รายการแบบสอบถาม
+                          รายการกิจกรรมโครงการ
                         </button>
                         <button
                           type="button"
-                          onClick={() => setActiveNav('survey-create')}
-                          className="w-full text-left py-1 px-2 rounded text-slate-400 hover:text-white hover:bg-white/5 block truncate"
+                          onClick={() => {
+                            setActiveNav('workflow');
+                            if (window.innerWidth < 1024) onClose();
+                          }}
+                          className={`w-full text-left py-1 px-2 rounded block truncate transition-colors flex items-center justify-between ${
+                            activeNav === 'workflow'
+                              ? 'text-sky-300 font-semibold bg-white/10'
+                              : 'text-slate-400 hover:text-white hover:bg-white/5'
+                          }`}
                         >
-                          สร้างแบบประเมินใหม่
+                          <span>+ สร้างกิจกรรม &amp; AI Survey</span>
+                          <span className="text-[9px] px-1 py-0.2 bg-purple-600 text-white rounded font-bold">
+                            AI
+                          </span>
                         </button>
                       </div>
                     )}
@@ -154,7 +196,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                     if (window.innerWidth < 1024) onClose();
                   }}
                   className={`w-full flex items-center justify-between px-3 py-2 rounded-lg transition-colors cursor-pointer ${
-                    isActive
+                    activeNav === item.id
                       ? 'bg-[#163a66] text-white font-medium shadow-xs'
                       : 'text-slate-300 hover:text-white hover:bg-white/5'
                   }`}

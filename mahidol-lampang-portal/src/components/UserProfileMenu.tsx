@@ -3,11 +3,13 @@ import React from 'react';
 interface UserProfileMenuProps {
   isOpen: boolean;
   onClose: () => void;
+  onNavigate?: (nav: string) => void;
 }
 
 export const UserProfileMenu: React.FC<UserProfileMenuProps> = ({
   isOpen,
   onClose,
+  onNavigate,
 }) => {
   if (!isOpen) return null;
 
@@ -37,30 +39,42 @@ export const UserProfileMenu: React.FC<UserProfileMenuProps> = ({
         <div className="p-1 text-[12px] space-y-0.5">
           <button
             type="button"
+            onClick={() => {
+              onClose();
+              if (onNavigate) onNavigate('users');
+            }}
             className="w-full flex items-center gap-2.5 px-3 py-2 text-slate-700 hover:bg-slate-50 rounded-lg transition-colors cursor-pointer text-left"
           >
             <span className="material-symbols-outlined text-[18px] text-slate-400">
               account_circle
             </span>
-            <span>ข้อมูลส่วนตัว (Profile)</span>
+            <span>ข้อมูลส่วนตัว &amp; สิทธิ์ผู้ใช้งาน</span>
           </button>
           <button
             type="button"
+            onClick={() => {
+              onClose();
+              if (onNavigate) onNavigate('users');
+            }}
             className="w-full flex items-center gap-2.5 px-3 py-2 text-slate-700 hover:bg-slate-50 rounded-lg transition-colors cursor-pointer text-left"
           >
             <span className="material-symbols-outlined text-[18px] text-slate-400">
               security
             </span>
-            <span>สิทธิ์การเข้าถึงและความปลอดภัย</span>
+            <span>สิทธิ์การเข้าถึงและความปลอดภัย (RBAC)</span>
           </button>
           <button
             type="button"
+            onClick={() => {
+              onClose();
+              if (onNavigate) onNavigate('settings');
+            }}
             className="w-full flex items-center gap-2.5 px-3 py-2 text-slate-700 hover:bg-slate-50 rounded-lg transition-colors cursor-pointer text-left"
           >
             <span className="material-symbols-outlined text-[18px] text-slate-400">
               tune
             </span>
-            <span>ตั้งค่าการแสดงผลสถิติ</span>
+            <span>ตั้งค่าระบบ &amp; ธรรมาภิบาล</span>
           </button>
         </div>
 
