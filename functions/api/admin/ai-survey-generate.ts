@@ -128,7 +128,7 @@ export async function onRequest({ request, env }: { request: Request; env: Env }
 
     if (apiKey) {
       try {
-        const systemPrompt = `คุณคือผู้เชี่ยวชาญการออกแบบเครื่องมือวัดและประเมินผลโครงการ มหาวิทยาลัยมหิดล วิทยาเขตลำปาง
+        const systemPrompt = `คุณคือผู้เชี่ยวชาญการออกแบบเครื่องมือวัดและประเมินผลโครงการ งานพันธกิจเพื่อสังคม คณะสิ่งแวดล้อมและทรัพยากรศาสตร์ มหาวิทยาลัยมหิดล
 หน้าที่ของคุณคือออกแบบแบบประเมินผลสัมฤทธิ์และความพึงพอใจสำหรับกิจกรรม/โครงการ
 ต้องแบ่งเป็น 3 ตอน:
 1. ตอนที่ 1: ข้อมูลทั่วไปของผู้ตอบ (single_choice)
@@ -138,7 +138,7 @@ export async function onRequest({ request, env }: { request: Request; env: Env }
 
         const userPrompt = `กิจกรรม: ${title}
 วัตถุประสงค์: ${activity.objective || title}
-สถานที่: ${activity.location || "มหาวิทยาลัยมหิดล วิทยาเขตลำปาง"}
+สถานที่: ${activity.location || "งานพันธกิจเพื่อสังคม คณะสิ่งแวดล้อมและทรัพยากรศาสตร์ มหาวิทยาลัยมหิดล"}
 ผู้เข้าร่วมเป้าหมาย: ${activity.participant_count || 30} คน`;
 
         const model = String(env.GEMINI_MODEL ?? "gemini-3.8-flash");

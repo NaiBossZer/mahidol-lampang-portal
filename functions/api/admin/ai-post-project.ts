@@ -83,9 +83,9 @@ export async function onRequest({ request, env }: { request: Request; env: Env }
       day: "numeric",
     });
 
-    let reportTitle = `ม.มหิดล วิทยาเขตลำปาง จัดกิจกรรม "${title}" ขับเคลื่อนสุขภาวะและสิ่งแวดล้อมยั่งยืน`;
-    let reportSummary = `มหาวิทยาลัยมหิดล วิทยาเขตลำปาง จัดกิจกรรม "${title}" ณ ${activity.location || "วิทยาเขตลำปาง"} เมื่อวันที่ ${dateStr} โดยมีผู้เข้าร่วม ${activity.participant_count || 30} คน`;
-    let reportContent = `เมื่อวันที่ ${dateStr} มหาวิทยาลัยมหิดล วิทยาเขตลำปาง ได้จัดกิจกรรม "${title}" ณ ${activity.location || "มหาวิทยาลัยมหิดล วิทยาเขตลำปาง"}\n\nโดยมีวัตถุประสงค์เพื่อ ${activity.objective || "ส่งเสริมและพัฒนาการมีส่วนร่วมของชุมชน"}\n\nกิจกรรมประกอบด้วย: ${activity.key_activities || "การอบรม การสาธิต และการแลกเปลี่ยนเรียนรู้ระหว่างคณาจารย์และชุมชน"}`;
+    let reportTitle = `งานพันธกิจเพื่อสังคม คณะสิ่งแวดล้อมและทรัพยากรศาสตร์ มหาวิทยาลัยมหิดล จัดกิจกรรม "${title}" ขับเคลื่อนสุขภาวะและสิ่งแวดล้อมยั่งยืน`;
+    let reportSummary = `งานพันธกิจเพื่อสังคม คณะสิ่งแวดล้อมและทรัพยากรศาสตร์ มหาวิทยาลัยมหิดล จัดกิจกรรม "${title}" ณ ${activity.location || "วิทยาเขตลำปาง"} เมื่อวันที่ ${dateStr} โดยมีผู้เข้าร่วม ${activity.participant_count || 30} คน`;
+    let reportContent = `เมื่อวันที่ ${dateStr} งานพันธกิจเพื่อสังคม คณะสิ่งแวดล้อมและทรัพยากรศาสตร์ มหาวิทยาลัยมหิดล ได้จัดกิจกรรม "${title}" ณ ${activity.location || "งานพันธกิจเพื่อสังคม คณะสิ่งแวดล้อมและทรัพยากรศาสตร์ มหาวิทยาลัยมหิดล"}\n\nโดยมีวัตถุประสงค์เพื่อ ${activity.objective || "ส่งเสริมและพัฒนาการมีส่วนร่วมของชุมชน"}\n\nกิจกรรมประกอบด้วย: ${activity.key_activities || "การอบรม การสาธิต และการแลกเปลี่ยนเรียนรู้ระหว่างคณาจารย์และชุมชน"}`;
     let performanceResults = `มีผู้เข้าร่วมกิจกรรมทั้งสิ้น ${activity.participant_count || 30} คน`;
     if (responses.length > 0 && satisfaction != null) {
       performanceResults += ` โดยมีผู้ตอบแบบประเมินจำนวน ${responses.length} คน ผลการประเมินภาพรวมได้คะแนนเฉลี่ย ${average?.toFixed(4)} จากเต็ม 5.0000 คะแนน คิดเป็นระดับความพึงพอใจ ${satisfaction}% (ระดับดีมาก)`;
@@ -93,20 +93,20 @@ export async function onRequest({ request, env }: { request: Request; env: Env }
       performanceResults += ` (อยู่ระหว่างการประมวลผลข้อมูลแบบประเมินความพึงพอใจ)`;
     }
     let outcomesAndImpact = String(
-      activity.impact || activity.outcomes || "เกิดความร่วมมืออย่างยั่งยืนระหว่างมหาวิทยาลัยมหิดล วิทยาเขตลำปาง และชุมชนในพื้นที่",
+      activity.impact || activity.outcomes || "เกิดความร่วมมืออย่างยั่งยืนระหว่างงานพันธกิจเพื่อสังคม คณะสิ่งแวดล้อมและทรัพยากรศาสตร์ มหาวิทยาลัยมหิดล และชุมชนในพื้นที่",
     );
 
     // Optional Gemini synthesis if configured
     const apiKey = String(env.GEMINI_API_KEY ?? "").trim();
     if (apiKey) {
       try {
-        const systemPrompt = `คุณคือนักประชาสัมพันธ์และบรรณาธิการข่าวสาร มหาวิทยาลัยมหิดล วิทยาเขตลำปาง
+        const systemPrompt = `คุณคือนักประชาสัมพันธ์และบรรณาธิการข่าวสาร งานพันธกิจเพื่อสังคม คณะสิ่งแวดล้อมและทรัพยากรศาสตร์ มหาวิทยาลัยมหิดล
 หน้าที่ของคุณคือร่างข่าวประชาสัมพันธ์และรายงานสรุปผลการจัดกิจกรรมอย่างเป็นทางการ
 ตอบกลับเป็น JSON: {"title":"...","summary":"...","content":"...","performanceResults":"...","outcomesAndImpact":"..."}`;
 
         const userContext = `กิจกรรม: ${title}
 วันที่: ${dateStr}
-สถานที่: ${activity.location || "มหาวิทยาลัยมหิดล วิทยาเขตลำปาง"}
+สถานที่: ${activity.location || "งานพันธกิจเพื่อสังคม คณะสิ่งแวดล้อมและทรัพยากรศาสตร์ มหาวิทยาลัยมหิดล"}
 ผู้เข้าร่วม: ${activity.participant_count || 30} คน
 ผู้ตอบแบบประเมิน: ${responses.length} คน
 คะแนนเฉลี่ย: ${average ? average.toFixed(2) : "รอการประเมิน"} / 5.00 (ความพึงพอใจ: ${satisfaction ? satisfaction + "%" : "รอการประเมิน"})
