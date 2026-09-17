@@ -1,51 +1,50 @@
-name: Resolve Activity Report Branch
+name: Temporary Respondent Report Fix
 
 on:
   push:
     branches:
-      - fix/activity-report-hero-fit
+      - feat/move-ai-insights-to-activities
 
 permissions:
   contents: write
 
 jobs:
-  sync:
+  fix:
     if: github.actor != 'github-actions[bot]'
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout branch
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          token: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Sync main and reapply intended changes
+      - name: Patch respondent-level report
         run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git fetch origin main
-          git merge origin/main -m "chore: sync branch with main" || true
-          if git diff --name-only --diff-filter=U | grep -q .; then
-            git checkout --theirs src/pages/admin/ExecutiveDashboardPage.tsx
-            git add src/pages/admin/ExecutiveDashboardPage.tsx
-            git commit -m "chore: resolve activity report merge conflict" || true
-          fi
           python - <<'PY'
           from pathlib import Path
-          files = [Path("src/pages/admin/ExecutiveDashboardPage.tsx"), Path("src/App.tsx")]
-          old = "รายงานผลสัมฤทธิ์รายกิจกรรม"
-          new = "รายงานผลสัมฤทธิ์ทั้งหมด"
-          for path in files:
-              text = path.read_text(encoding="utf-8")
-              text = text.replace(old, new)
-              if path.name == "ExecutiveDashboardPage.tsx":
-                  target = 'className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"'
-                  replacement = 'className="h-full w-full object-contain transition-transform duration-300 group-hover:scale-105"'
-                  text = text.replace(target, replacement, 1)
-              path.write_text(text, encoding="utf-8")
+          p = Path('src/pages/admin/ExecutiveDashboardPage.tsx')
+          s = p.read_text(encoding='utf-8')
+          replacements = [
+              ('const headers = ["กิจกรรม", "วันที่กิจกรรม", "วันที่ส่งแบบประเมิน", "ช่วงอายุ", "ประเภทผู้ตอบ", "หน่วยงาน", ...ALL_SCORE_FIELDS.map(f => SCORE_LABELS[f]), "ความคิดเห็น", "ช่องทางการรับรู้"]; const rows = filteredReportRows.map(r => [r.activity, formatDate(r.date), formatDateTime(r.submittedAt), r.ageGroup, r.affiliation, r.organization,',
+               'const headers = ["รหัสผู้ตอบ", "กิจกรรม", "วันที่กิจกรรม", "วันที่ส่งแบบประเมิน", "ช่วงอายุ", "ประเภทผู้ตอบ", "หน่วยงาน", ...ALL_SCORE_FIELDS.map(f => SCORE_LABELS[f]), "ความคิดเห็น", "ช่องทางการรับรู้"]; const rows = filteredReportRows.map(r => [r.id, r.activity, formatDate(r.date), formatDateTime(r.submittedAt), r.ageGroup, r.affiliation, r.organization,'),
+              ('const headers = ["#", "กิจกรรม", "วันที่กิจกรรม", "วันที่ส่งแบบประเมิน", "ช่วงอายุ", "ประเภทผู้ตอบ", "หน่วยงาน", ...ALL_SCORE_FIELDS.map(f => SCORE_LABELS[f]), "ความคิดเห็น", "ช่องทางการรับรู้"]; const body = filteredReportRows.map((r, i) => `<tr><td>${i + 1}</td><td>${printCell(r.activity)}</td>',
+               'const headers = ["#", "รหัสผู้ตอบ", "กิจกรรม", "วันที่กิจกรรม", "วันที่ส่งแบบประเมิน", "ช่วงอายุ", "ประเภทผู้ตอบ", "หน่วยงาน", ...ALL_SCORE_FIELDS.map(f => SCORE_LABELS[f]), "ความคิดเห็น", "ช่องทางการรับรู้"]; const body = filteredReportRows.map((r, i) => `<tr><td>${i + 1}</td><td>${printCell(r.id)}</td><td>${printCell(r.activity)}</td>'),
+              ('["#", "กิจกรรม", "วันที่จัด", "ผู้ตอบ", "ช่วงอายุ", "ประเภทผู้ตอบ", "หน่วยงาน", ...ALL_SCORE_FIELDS.map(f => SCORE_LABELS[f]), "ความคิดเห็น", "ช่องทางการรับรู้"]',
+               '["#", "รหัสผู้ตอบ", "กิจกรรม", "วันที่จัด", "วันที่ส่งแบบประเมิน", "ช่วงอายุ", "ประเภทผู้ตอบ", "หน่วยงาน", ...ALL_SCORE_FIELDS.map(f => SCORE_LABELS[f]), "ความคิดเห็น", "ช่องทางการรับรู้"]'),
+              ('{[i + 1, r.activity, formatDate(r.date), formatDateTime(r.submittedAt), r.ageGroup, r.affiliation, r.organization,',
+               '{[i + 1, r.id, r.activity, formatDate(r.date), formatDateTime(r.submittedAt), r.ageGroup, r.affiliation, r.organization,'),
+              ('j >= 7 && j < 7 + ALL_SCORE_FIELDS.length', 'j >= 8 && j < 8 + ALL_SCORE_FIELDS.length'),
+              ('j >= 7 + ALL_SCORE_FIELDS.length', 'j >= 8 + ALL_SCORE_FIELDS.length'),
+              ('colSpan={7 + ALL_SCORE_FIELDS.length + 2}', 'colSpan={8 + ALL_SCORE_FIELDS.length + 2}'),
+              ('[r.activity, r.ageGroup, r.affiliation, r.organization, r.feedback, r.channels, ...ALL_SCORE_FIELDS.map(f => r.scores[f])]', '[r.id, r.activity, r.ageGroup, r.affiliation, r.organization, r.feedback, r.channels, ...ALL_SCORE_FIELDS.map(f => r.scores[f])]'),
+          ]
+          for old, new in replacements:
+              if old not in s:
+                  raise SystemExit(f'Expected fragment not found: {old[:100]}')
+              s = s.replace(old, new, 1)
+          p.write_text(s, encoding='utf-8')
           PY
-          git add src/pages/admin/ExecutiveDashboardPage.tsx src/App.tsx
-          git commit -m "fix: fit activity hero image and rename report" || true
-          git push origin HEAD:fix/activity-report-hero-fit
-
-          # trigger sync once after the workflow is installed
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add src/pages/admin/ExecutiveDashboardPage.tsx
+          git rm .github/workflows/resolve-activity-report-conflict.yml qa/.respondent-export-trigger-2 2>/dev/null || true
+          git commit -m "fix: make dashboard report exports respondent-level"
+          git push
