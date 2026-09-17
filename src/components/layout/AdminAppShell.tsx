@@ -1,5 +1,5 @@
 import { useMemo, useState, type ReactNode } from "react";
-import { Activity, BarChart3, Bell, Bot, ChevronDown, ExternalLink, FolderOpen, Group, LogOut, Menu, Search, Settings, Sparkles, X } from "lucide-react";
+import { Activity, BarChart3, Bell, Bot, ChevronDown, ExternalLink, LogOut, Menu, Search, Sparkles, X } from "lucide-react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { useAdminAuth } from "../AdminGuard";
@@ -14,11 +14,6 @@ const surveyGroup: NavGroup = { id: "surveys", label: "บริหารกิ�
 ] };
 const navItems: readonly NavItem[] = [
   { to: "/admin/ai-studio-workspace", label: "AI Studio Workspace", icon: Sparkles, permission: "ai.command.read", badge: "9" },
-  { to: "/admin/cms", label: "คลังเอกสารราชการ", icon: FolderOpen, permission: "cms.read" },
-  { to: "/admin/ai", label: "AI Assistant Studio", icon: Bot, permission: "ai.command.read" },
-  { to: "/admin/organizations", label: "ผู้ใช้งาน & สิทธิ์การเข้าถึง", icon: Group, permission: "overview.read" },
-  { to: "/admin/governance?tab=notifications", label: "การแจ้งเตือน", icon: Bell, permission: "system.read", badge: "3" },
-  { to: "/admin/settings", label: "ตั้งค่าระบบ", icon: Settings, permission: "system.read" },
 ];
 const PATH_TITLE_MAP: Record<string, { group: string; title: string }> = {
   "/dashboard": { group: "รายงานผลสัมฤทธิ์ & สถิติ", title: "ภาพรวมสถิติ (Executive Dashboard)" },
