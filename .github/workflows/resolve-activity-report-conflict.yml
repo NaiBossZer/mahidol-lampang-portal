@@ -47,3 +47,5 @@ jobs:
           git add src/pages/admin/ExecutiveDashboardPage.tsx src/App.tsx
           git commit -m "fix: fit activity hero image and rename report" || true
           git push origin HEAD:fix/activity-report-hero-fit
+
+          # trigger sync once after the workflow is installed
