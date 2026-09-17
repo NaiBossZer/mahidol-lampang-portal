@@ -23,6 +23,8 @@ import { Link } from "react-router-dom";
 import { toast } from "sonner";
 import { getAdminActivities, type AdminActivity } from "@/services/api";
 import PredictiveMetricsPanel from "@/components/admin/PredictiveMetricsPanel";
+import { getAdminOccurrences } from "@/services/admin-occurrences";
+import { getAdminSurveys } from "@/services/admin-surveys";
 import {
   analyzeActivityDocument,
   confirmAiSurvey,
@@ -139,8 +141,25 @@ export function AIStudioWorkspacePage() {
       setExtractedEntities(previousAnalysis?.output?.extractedEntities ?? []);
       setGeneratedSurvey(previousSurvey?.survey ?? null);
       setSurveyExecutionId(previousSurvey?.id ?? "");
-      setConfirmedSurveyId(previousSurvey?.status === "completed" ? previousSurvey.id : null);
-      setConfirmedOccurrenceId(null);
+
+      // The survey-generation execution id is not the persisted occurrence_surveys id.
+      // Resolve the confirmed survey through the same first-occurrence binding used by the approval workflow.
+      if (previousSurvey?.status === "completed") {
+        const occurrences = await getAdminOccurrences(activityId);
+        const firstOccurrence = occurrences[0];
+        if (firstOccurrence) {
+          const surveys = await getAdminSurveys(firstOccurrence.id);
+          const boundSurvey = surveys[0] ?? null;
+          setConfirmedSurveyId(boundSurvey?.id ?? null);
+          setConfirmedOccurrenceId(boundSurvey?.occurrence_id ?? firstOccurrence.id);
+        } else {
+          setConfirmedSurveyId(null);
+          setConfirmedOccurrenceId(null);
+        }
+      } else {
+        setConfirmedSurveyId(null);
+        setConfirmedOccurrenceId(null);
+      }
       setPostReport(null);
     } catch (error) {
       console.error("Failed to load AI Studio data", error);
@@ -202,7 +221,7 @@ export function AIStudioWorkspacePage() {
     setConfirming(true);
     try {
       const result = await confirmAiSurvey(surveyExecutionId, "approved");
-      setConfirmedSurveyId(result.surveyId ?? surveyExecutionId);
+      setConfirmedSurveyId(result.surveyId ?? null);
       setConfirmedOccurrenceId(result.occurrenceId ?? null);
       toast.success("ยืนยันแบบประเมินและผูกเข้ากับกิจกรรมแล้ว");
     } catch (error) { toast.error(error instanceof Error ? error.message : "การยืนยันล้มเหลว"); }
@@ -355,7 +374,7 @@ export function AIStudioWorkspacePage() {
           <aside className="space-y-5">
             <StudioCard eyebrow="WORKSPACE" title="Execution State" icon={<Bot className="h-4 w-4" />}>
               <div className="space-y-3 text-xs">
-                {[ ["Source documents", documents.length > 0], ["AI analysis", analysisReady], ["AI survey", surveyReady], ["Admin review", checklistReady], ["Confirmed", Boolean(confirmedSurveyId)] ].map(([label, ready]) => <div key={String(label)} className="flex items-center justify-between gap-3"><span className="text-slate-600">{label}</span><span className={`rounded-full px-2 py-1 text-[10px] font-bold ${ready ? "bg-emerald-50 text-emerald-700" : "bg-slate-100 text-slate-400"}`}>{ready ? "READY" : "PENDING"}</span></div>)}
+                {[["Source documents", documents.length > 0], ["AI analysis", analysisReady], ["AI survey", surveyReady], ["Admin review", checklistReady], ["Confirmed", Boolean(confirmedSurveyId)]].map(([label, ready]) => <div key={String(label)} className="flex items-center justify-between gap-3"><span className="text-slate-600">{label}</span><span className={`rounded-full px-2 py-1 text-[10px] font-bold ${ready ? "bg-emerald-50 text-emerald-700" : "bg-slate-100 text-slate-400"}`}>{ready ? "READY" : "PENDING"}</span></div>)}
               </div>
             </StudioCard>
 
