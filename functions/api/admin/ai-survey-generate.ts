@@ -138,7 +138,7 @@ export async function onRequest({ request, env }: { request: Request; env: Env }
 
         const userPrompt = `กิจกรรม: ${title}
 วัตถุประสงค์: ${activity.objective || title}
-สถานที่: ${activity.location || "งานพันธกิจเพื่อสังคม คณะสิ่งแวดล้อมและทรัพยากรศาสตร์ มหาวิทยาลัยมหิดล"}
+สถานที่: ${activity.location || "มหาวิทยาลัยมหิดล วิทยาเขตลำปาง"}
 ผู้เข้าร่วมเป้าหมาย: ${activity.participant_count || 30} คน`;
 
         const model = String(env.GEMINI_MODEL ?? "gemini-3.8-flash");

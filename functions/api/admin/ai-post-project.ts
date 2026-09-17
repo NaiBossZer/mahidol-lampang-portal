@@ -85,7 +85,7 @@ export async function onRequest({ request, env }: { request: Request; env: Env }
 
     let reportTitle = `งานพันธกิจเพื่อสังคม คณะสิ่งแวดล้อมและทรัพยากรศาสตร์ มหาวิทยาลัยมหิดล จัดกิจกรรม "${title}" ขับเคลื่อนสุขภาวะและสิ่งแวดล้อมยั่งยืน`;
     let reportSummary = `งานพันธกิจเพื่อสังคม คณะสิ่งแวดล้อมและทรัพยากรศาสตร์ มหาวิทยาลัยมหิดล จัดกิจกรรม "${title}" ณ ${activity.location || "วิทยาเขตลำปาง"} เมื่อวันที่ ${dateStr} โดยมีผู้เข้าร่วม ${activity.participant_count || 30} คน`;
-    let reportContent = `เมื่อวันที่ ${dateStr} งานพันธกิจเพื่อสังคม คณะสิ่งแวดล้อมและทรัพยากรศาสตร์ มหาวิทยาลัยมหิดล ได้จัดกิจกรรม "${title}" ณ ${activity.location || "งานพันธกิจเพื่อสังคม คณะสิ่งแวดล้อมและทรัพยากรศาสตร์ มหาวิทยาลัยมหิดล"}\n\nโดยมีวัตถุประสงค์เพื่อ ${activity.objective || "ส่งเสริมและพัฒนาการมีส่วนร่วมของชุมชน"}\n\nกิจกรรมประกอบด้วย: ${activity.key_activities || "การอบรม การสาธิต และการแลกเปลี่ยนเรียนรู้ระหว่างคณาจารย์และชุมชน"}`;
+    let reportContent = `เมื่อวันที่ ${dateStr} งานพันธกิจเพื่อสังคม คณะสิ่งแวดล้อมและทรัพยากรศาสตร์ มหาวิทยาลัยมหิดล ได้จัดกิจกรรม "${title}" ณ ${activity.location || "มหาวิทยาลัยมหิดล วิทยาเขตลำปาง"}\n\nโดยมีวัตถุประสงค์เพื่อ ${activity.objective || "ส่งเสริมและพัฒนาการมีส่วนร่วมของชุมชน"}\n\nกิจกรรมประกอบด้วย: ${activity.key_activities || "การอบรม การสาธิต และการแลกเปลี่ยนเรียนรู้ระหว่างคณาจารย์และชุมชน"}`;
     let performanceResults = `มีผู้เข้าร่วมกิจกรรมทั้งสิ้น ${activity.participant_count || 30} คน`;
     if (responses.length > 0 && satisfaction != null) {
       performanceResults += ` โดยมีผู้ตอบแบบประเมินจำนวน ${responses.length} คน ผลการประเมินภาพรวมได้คะแนนเฉลี่ย ${average?.toFixed(4)} จากเต็ม 5.0000 คะแนน คิดเป็นระดับความพึงพอใจ ${satisfaction}% (ระดับดีมาก)`;
@@ -106,7 +106,7 @@ export async function onRequest({ request, env }: { request: Request; env: Env }
 
         const userContext = `กิจกรรม: ${title}
 วันที่: ${dateStr}
-สถานที่: ${activity.location || "งานพันธกิจเพื่อสังคม คณะสิ่งแวดล้อมและทรัพยากรศาสตร์ มหาวิทยาลัยมหิดล"}
+สถานที่: ${activity.location || "มหาวิทยาลัยมหิดล วิทยาเขตลำปาง"}
 ผู้เข้าร่วม: ${activity.participant_count || 30} คน
 ผู้ตอบแบบประเมิน: ${responses.length} คน
 คะแนนเฉลี่ย: ${average ? average.toFixed(2) : "รอการประเมิน"} / 5.00 (ความพึงพอใจ: ${satisfaction ? satisfaction + "%" : "รอการประเมิน"})

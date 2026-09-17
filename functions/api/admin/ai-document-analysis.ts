@@ -164,7 +164,7 @@ export async function onRequest({ request, env }: { request: Request; env: Env }
 
         const userContext = `กิจกรรม: ${activity.title}
 วันที่: ${activity.activity_date}
-สถานที่: ${activity.location || "งานพันธกิจเพื่อสังคม คณะสิ่งแวดล้อมและทรัพยากรศาสตร์ มหาวิทยาลัยมหิดล"}
+สถานที่: ${activity.location || "มหาวิทยาลัยมหิดล วิทยาเขตลำปาง"}
 จำนวนผู้เข้าร่วมเป้าหมาย: ${activity.participant_count || 30} คน
 วัตถุประสงค์เดิม: ${activity.objective || activity.summary || "-"}
 กระบวนการ: ${activity.key_activities || "-"}
@@ -253,8 +253,8 @@ export async function onRequest({ request, env }: { request: Request; env: Env }
           id: `ent-${activityId}-3`,
           category: "location",
           categoryLabel: "สถานที่และสิ่งอำนวยความสะดวก",
-          title: String(activity.location || "งานพันธกิจเพื่อสังคม คณะสิ่งแวดล้อมและทรัพยากรศาสตร์ มหาวิทยาลัยมหิดล"),
-          text: `${activity.location || "งานพันธกิจเพื่อสังคม คณะสิ่งแวดล้อมและทรัพยากรศาสตร์ มหาวิทยาลัยมหิดล"} พร้อมอุปกรณ์และสิ่งอำนวยความสะดวกสำหรับการอบรมและสาธิต`,
+          title: String(activity.location || "มหาวิทยาลัยมหิดล วิทยาเขตลำปาง"),
+          text: `${activity.location || "มหาวิทยาลัยมหิดล วิทยาเขตลำปาง"} พร้อมอุปกรณ์และสิ่งอำนวยความสะดวกสำหรับการอบรมและสาธิต`,
           sourceDoc: docName,
           page: "กำหนดการแนบท้าย",
           confidence: 99.1,
