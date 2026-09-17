@@ -37,10 +37,10 @@ async function downloadStorageObject(
 ): Promise<{ bytes: ArrayBuffer; contentType: string }> {
   const { url, key, configured } = supabaseConfig(env);
   if (!configured) throw new Error("Supabase is not configured");
-  const response = await fetch(\`\${url}/storage/v1/object/portal-media/\${storagePath}\`, {
-    headers: { apikey: key, Authorization: \`Bearer \${token}\` },
+  const response = await fetch(`${url}/storage/v1/object/portal-media/${storagePath}`, {
+    headers: { apikey: key, Authorization: `Bearer ${token}` },
   });
-  if (!response.ok) throw new Error(\`Storage download \${response.status}\`);
+  if (!response.ok) throw new Error(`Storage download ${response.status}`);
   return {
     bytes: await response.arrayBuffer(),
     contentType: response.headers.get("content-type") || "application/octet-stream",
@@ -133,7 +133,7 @@ export async function onRequest({ request, env }: { request: Request; env: Env }
     const documents = await callDb<Record<string, unknown>[]>(
       env,
       token,
-      \`portal_media_assets?entity_type=eq.activities&entity_id=eq.\${encodeURIComponent(activityId)}&field_key=eq.documents&select=id,original_name,storage_path,public_url,size_bytes,mime_type,caption&order=created_at.desc\`,
+      `portal_media_assets?entity_type=eq.activities&entity_id=eq.${encodeURIComponent(activityId)}&field_key=eq.documents&select=id,original_name,storage_path,public_url,size_bytes,mime_type,caption&order=created_at.desc`,
     );
 
     const requestedDocumentId = body.documentId?.trim() || "";
@@ -207,15 +207,15 @@ export async function onRequest({ request, env }: { request: Request; env: Env }
 
 ต้องตอบกลับเป็น JSON ตาม Schema ที่กำหนดเท่านั้น`;
 
-        const userContext = \`กิจกรรม: \${activity.title}
-วันที่: \${activity.activity_date}
-สถานที่: \${activity.location || "มหาวิทยาลัยมหิดล วิทยาเขตลำปาง"}
-จำนวนผู้เข้าร่วมเป้าหมาย: \${activity.participant_count || 30} คน
-ข้อมูลกิจกรรมเดิม (ใช้เพื่อระบุตัวตนและตรวจสอบความสอดคล้องเท่านั้น): \${activity.objective || activity.summary || "-"}
-ชื่อเอกสารต้นฉบับ: \${docName}
+        const userContext = `กิจกรรม: ${activity.title}
+วันที่: ${activity.activity_date}
+สถานที่: ${activity.location || "มหาวิทยาลัยมหิดล วิทยาเขตลำปาง"}
+จำนวนผู้เข้าร่วมเป้าหมาย: ${activity.participant_count || 30} คน
+ข้อมูลกิจกรรมเดิม (ใช้เพื่อระบุตัวตนและตรวจสอบความสอดคล้องเท่านั้น): ${activity.objective || activity.summary || "-"}
+ชื่อเอกสารต้นฉบับ: ${docName}
 
 จงวิเคราะห์ "เนื้อหาจริงของไฟล์แนบ" ที่ส่งมาใน file/image part เป็นหลัก ห้ามแต่งข้อมูลจาก Activity Brief หากไม่มีหลักฐานในไฟล์
-สำหรับแต่ละ entity ให้ระบุ sourceDoc เป็นชื่อไฟล์ และ page เป็นเลขหน้าจริงถ้าระบุได้; ถ้าระบุไม่ได้ให้ใช้ "-" \`;
+สำหรับแต่ละ entity ให้ระบุ sourceDoc เป็นชื่อไฟล์ และ page เป็นเลขหน้าจริงถ้าระบุได้; ถ้าระบุไม่ได้ให้ใช้ "-" `;
 
         const model = String(env.GEMINI_MODEL ?? "gemini-3.8-flash");
         const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`;
