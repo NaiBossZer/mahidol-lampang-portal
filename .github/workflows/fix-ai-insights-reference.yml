@@ -1,0 +1,36 @@
+name: Cleanup AI Insights Dashboard Reference
+on:
+  push:
+    branches: [feat/move-ai-insights-to-activities]
+permissions:
+  contents: write
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Remove stale AI Insights JSX
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import re
+          p = Path('src/pages/admin/ExecutiveDashboardPage.tsx')
+          s = p.read_text()
+          pattern = r'    /\*\* AI Insights Panel \*/\n    \{aiInsights && \(.*?\n    \}\n'
+          s2, n = re.subn(pattern, '', s, count=1, flags=re.S)
+          if n != 1:
+              raise SystemExit(f'expected exactly one stale AI Insights panel, found {n}')
+          p.write_text(s2)
+          if 'aiInsights' in s2 or 'Sparkles' in s2 or 'AIPerformanceFeedbackModal' in s2:
+              raise SystemExit('stale AI Insights references remain')
+          PY
+      - name: Commit cleanup and remove workflow
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git rm .github/workflows/fix-ai-insights-reference.yml
+          git add src/pages/admin/ExecutiveDashboardPage.tsx
+          git commit -m "fix: remove stale AI insights dashboard reference"
+          git push
