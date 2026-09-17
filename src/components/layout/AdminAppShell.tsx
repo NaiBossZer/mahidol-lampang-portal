@@ -123,6 +123,7 @@ export function AdminAppShell({ children }: { children: ReactNode }) {
   const currentBreadcrumb = PATH_TITLE_MAP[location.pathname] ?? { group: "ระบบหลังบ้าน", title: "Central Admin" };
   const roleText = (role && ROLE_DISPLAY_MAP[role]) ?? role ?? "Staff";
   const surveyActive = visibleSurveyItems.some((item) => isItemActive(location.pathname, item));
+  const contentOffsetClass = location.pathname === "/dashboard" ? "lg:ml-[var(--admin-sidebar-width)]" : "";
 
   return (
     <div className={cn("admin-app-shell min-h-screen font-sans text-slate-900", location.pathname === "/dashboard" ? "admin-dashboard-shell" : "admin-modern-shell")}>
@@ -140,7 +141,7 @@ export function AdminAppShell({ children }: { children: ReactNode }) {
       <aside
         id="app-sidebar"
         className={cn(
-          "fixed inset-y-0 left-0 z-50 flex h-screen w-[245px] shrink-0 flex-col justify-between select-none bg-[#0c2340] text-white shadow-xl transition-transform duration-300 ease-in-out",
+          "fixed inset-y-0 left-0 z-50 flex h-screen w-[var(--admin-sidebar-width)] shrink-0 flex-col justify-between select-none bg-[#0c2340] text-white shadow-xl transition-transform duration-300 ease-in-out",
           mobileOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0",
         )}
       >
@@ -224,7 +225,7 @@ export function AdminAppShell({ children }: { children: ReactNode }) {
         </div>
       </aside>
 
-      <div className="min-h-screen">
+      <div className={cn("min-h-screen", contentOffsetClass)}>
         <header className="sticky top-0 z-40 flex h-14 items-center justify-between border-b border-white/10 bg-[#0c2340] px-4 text-white shadow-xs sm:px-6">
           <div className="flex min-w-0 items-center gap-2.5 text-[12px] text-slate-300">
             <button type="button" onClick={() => setMobileOpen(true)} className="rounded p-1 text-slate-300 transition-colors hover:bg-white/10 hover:text-white lg:hidden" aria-label="เปิดเมนูนำทาง" aria-controls="app-sidebar" aria-expanded={mobileOpen}><Menu className="h-[22px] w-[22px]" /></button>
@@ -242,7 +243,7 @@ export function AdminAppShell({ children }: { children: ReactNode }) {
               <Bell className="h-5 w-5" />
               <span className="absolute right-1 top-1 h-2 w-2 animate-pulse rounded-full bg-rose-500 ring-2 ring-[#0c2340]" />
             </Link>
-            <button type="button" onClick={() => navigate("/admin/settings")} className="hidden items-center gap-2 rounded-lg p-1 text-left transition-colors hover:bg-white/10 sm:flex" aria-label="โปรไฟล์และการตั้งค่า">
+            <button type="button" onClick={() => navigate("/admin/settings")} className="hidden items-center gap-2 rounded-lg p-1 text-left transition-colors hover:bg-white/10 hover:text-white sm:flex" aria-label="โปรไฟล์และการตั้งค่า">
               <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-white/10 text-[10px] font-bold text-white ring-1 ring-white/30">MU</div>
               <div className="hidden leading-tight lg:block"><div className="text-[12px] font-medium text-white">เจ้าหน้าที่ส่วนกลาง</div><div className="text-[10px] text-slate-400">{roleText}</div></div>
               <ChevronDown className="h-4 w-4 text-slate-400" />
