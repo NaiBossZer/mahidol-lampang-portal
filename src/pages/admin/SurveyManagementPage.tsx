@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { Plus, RefreshCw, Save, Sparkles, Trash2 } from "lucide-react";
 import { toast } from "sonner";
@@ -12,20 +12,36 @@ import {
   type AdminSurvey,
   type SurveyQuestion,
 } from "@/services/admin-surveys";
+import {
+  AdminButton,
+  AdminCard,
+  AdminEmptyState,
+  AdminFilterBar,
+  AdminLoadingState,
+  AdminPageHeader,
+  AdminSearchInput,
+  AdminStatusBadge,
+  AdminTable,
+  AdminTableHeader,
+  AdminTableRow,
+} from "@/components/admin/ui/AdminPrimitives";
+
+const emptyDraft: Partial<SurveyQuestion> = {
+  question_type: "rating",
+  required: true,
+  section_key: "general",
+  scale_min: 1,
+  scale_max: 5,
+  options: [],
+};
 
 export function SurveyManagementPage() {
   const [occurrences, setOccurrences] = useState<ActivityOccurrence[]>([]);
   const [surveys, setSurveys] = useState<AdminSurvey[]>([]);
   const [occurrenceId, setOccurrenceId] = useState("");
   const [selected, setSelected] = useState<AdminSurvey | null>(null);
-  const [draft, setDraft] = useState<Partial<SurveyQuestion>>({
-    question_type: "rating",
-    required: true,
-    section_key: "general",
-    scale_min: 1,
-    scale_max: 5,
-    options: [],
-  });
+  const [draft, setDraft] = useState<Partial<SurveyQuestion>>(emptyDraft);
+  const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
 
   async function load() {
@@ -38,17 +54,22 @@ export function SurveyManagementPage() {
         })
       ).json();
       const all: ActivityOccurrence[] = [];
-      for (const a of (body.data ?? []).slice(0, 50))
+      for (const activity of (body.data ?? []).slice(0, 50)) {
         all.push(
-          ...(await getAdminOccurrences(String(a.id))).filter(
+          ...(await getAdminOccurrences(String(activity.id))).filter(
             (x) => !["cancelled", "archived"].includes(x.status),
           ),
         );
+      }
       setOccurrences(all);
-      const s = await getAdminSurveys();
-      setSurveys(s);
-      if (selected) setSelected(s.find((x) => x.id === selected.id) ?? null);
-      else setSelected(s[0] ?? null);
+
+      const loaded = await getAdminSurveys();
+      setSurveys(loaded);
+      if (selected) {
+        setSelected(loaded.find((x) => x.id === selected.id) ?? null);
+      } else {
+        setSelected(loaded[0] ?? null);
+      }
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "โหลดข้อมูลไม่สำเร็จ");
     } finally {
@@ -60,10 +81,36 @@ export function SurveyManagementPage() {
     void load();
   }, []);
 
+  const filteredSurveys = useMemo(() => {
+    const needle = search.trim().toLowerCase();
+    if (!needle) return surveys;
+    return surveys.filter((survey) => {
+      const occurrence = occurrences.find((item) => item.id === survey.occurrence_id);
+      const occurrenceLabel = occurrence
+        ? `ครั้งที่ ${occurrence.occurrence_no} ${new Date(occurrence.start_at).toLocaleDateString("th-TH")}`
+        : "";
+      return `${occurrenceLabel} ${survey.anonymous ? "anonymous" : "identified"} ${survey.questions.length}`
+        .toLowerCase()
+        .includes(needle);
+    });
+  }, [occurrences, search, surveys]);
+
+  function resetDraft() {
+    setDraft({ ...emptyDraft });
+  }
+
+  function selectSurvey(survey: AdminSurvey) {
+    setSelected(survey);
+    resetDraft();
+  }
+
   async function createSurvey() {
-    if (!occurrenceId) return toast.error("กรุณาเลือกรอบกิจกรรม");
+    if (!occurrenceId) {
+      toast.error("กรุณาเลือกรอบกิจกรรม");
+      return;
+    }
     try {
-      const s = await createAdminSurvey({
+      const created = await createAdminSurvey({
         occurrenceId,
         enabled: true,
         anonymous: false,
@@ -71,18 +118,22 @@ export function SurveyManagementPage() {
         closeAt: null,
         welcomeText: "ขอความร่วมมือประเมินกิจกรรม",
       });
-      setSurveys((x) => [s, ...x]);
-      setSelected(s);
+      setSurveys((items) => [created, ...items]);
+      setSelected(created);
+      resetDraft();
       toast.success("สร้างแบบสอบถามแล้ว");
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "สร้างไม่สำเร็จ");
+      toast.error(e instanceof Error ? e.message : "สร้างแบบสอบถามไม่สำเร็จ");
     }
   }
 
   async function saveQuestion() {
-    if (!selected || !String(draft.question_text ?? "").trim())
-      return toast.error("กรุณาระบุคำถาม");
-    const q: SurveyQuestion = {
+    if (!selected || !String(draft.question_text ?? "").trim()) {
+      toast.error("กรุณาระบุคำถาม");
+      return;
+    }
+
+    const question: SurveyQuestion = {
       id: String(draft.id ?? ""),
       survey_id: selected.id,
       section_key: String(draft.section_key ?? "general"),
@@ -95,35 +146,50 @@ export function SurveyManagementPage() {
       scale_max: Number(draft.scale_max ?? 5),
       active: draft.active !== false,
     };
+
     try {
-      const saved = q.id ? await updateAdminQuestion(q) : await createAdminQuestion(q);
+      const saved = question.id
+        ? await updateAdminQuestion(question)
+        : await createAdminQuestion(question);
       setSelected({
         ...selected,
-        questions: q.id
-          ? selected.questions.map((x) => (x.id === saved.id ? saved : x))
+        questions: question.id
+          ? selected.questions.map((item) => (item.id === saved.id ? saved : item))
           : [...selected.questions, saved],
       });
-      setDraft({
-        question_type: "rating",
-        required: true,
-        section_key: "general",
-        scale_min: 1,
-        scale_max: 5,
-        options: [],
-      });
-      toast.success(q.id ? "บันทึกคำถามแล้ว" : "เพิ่มคำถามแล้ว");
+      setSurveys((items) =>
+        items.map((item) =>
+          item.id === selected.id
+            ? {
+                ...item,
+                questions: question.id
+                  ? item.questions.map((q) => (q.id === saved.id ? saved : q))
+                  : [...item.questions, saved],
+              }
+            : item,
+        ),
+      );
+      resetDraft();
+      toast.success(question.id ? "บันทึกคำถามแล้ว" : "เพิ่มคำถามแล้ว");
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "บันทึกคำถามไม่สำเร็จ");
     }
   }
 
-  async function deactivate(q: SurveyQuestion) {
+  async function deactivate(question: SurveyQuestion) {
+    if (!selected) return;
     try {
-      const saved = await updateAdminQuestion({ ...q, active: false });
-      setSelected(
-        selected
-          ? { ...selected, questions: selected.questions.filter((x) => x.id !== saved.id) }
-          : null,
+      const saved = await updateAdminQuestion({ ...question, active: false });
+      setSelected({
+        ...selected,
+        questions: selected.questions.filter((item) => item.id !== saved.id),
+      });
+      setSurveys((items) =>
+        items.map((item) =>
+          item.id === selected.id
+            ? { ...item, questions: item.questions.filter((q) => q.id !== saved.id) }
+            : item,
+        ),
       );
       toast.success("ปิดใช้งานคำถามแล้ว");
     } catch (e) {
@@ -131,190 +197,239 @@ export function SurveyManagementPage() {
     }
   }
 
+  const selectedOccurrence = selected
+    ? occurrences.find((item) => item.id === selected.occurrence_id)
+    : null;
+
   return (
     <section className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
-      <div className="flex items-end justify-between gap-3">
-        <div>
-          <p className="text-xs font-semibold uppercase tracking-[.14em] text-emerald-700">
-            Survey Management
-          </p>
-          <h1 className="mt-1 text-2xl font-bold text-brand-navy lg:text-3xl">
-            แบบสอบถามและ Question Builder
-          </h1>
-        </div>
-        <div className="flex gap-2">
-          <Link
-            to="/admin/ai"
-            className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-violet-200 bg-violet-50 px-4 text-sm font-semibold text-violet-800"
-          >
-            <Sparkles className="h-4 w-4" />
-            AI Studio Workspace
-          </Link>
-          <button
-            type="button"
-            onClick={() => void load()}
-            className="inline-flex min-h-11 items-center gap-2 rounded-xl border bg-white px-4 text-sm font-semibold"
-          >
-            <RefreshCw className="h-4 w-4" />
-            รีเฟรช
-          </button>
-        </div>
-      </div>
-      <div className="mt-6 grid gap-5 lg:grid-cols-[.9fr_1.6fr]">
-        <div className="rounded-2xl border bg-white p-5 shadow-sm">
-          <h2 className="font-bold text-brand-navy">แบบสอบถาม</h2>
-          <div className="mt-4 flex gap-2">
+      <AdminPageHeader
+        eyebrow="SURVEYS"
+        title="จัดการแบบประเมิน"
+        description="สร้างและจัดการแบบประเมินกิจกรรม พร้อม Question Builder ในหน้าจอเดียว"
+        actions={
+          <>
+            <Link to="/admin/ai" className="inline-flex min-h-10 items-center justify-center gap-2 rounded-xl border border-violet-200 bg-violet-50 px-4 text-sm font-semibold text-violet-800 hover:bg-violet-100">
+              <Sparkles className="h-4 w-4" />
+              AI Studio
+            </Link>
+            <AdminButton variant="secondary" icon={<RefreshCw className="h-4 w-4" />} onClick={() => void load()}>
+              รีเฟรช
+            </AdminButton>
+          </>
+        }
+      />
+
+      <AdminFilterBar>
+        <AdminSearchInput
+          value={search}
+          onChange={setSearch}
+          placeholder="ค้นหารอบกิจกรรมหรือรูปแบบแบบประเมิน"
+        />
+        <div className="flex min-w-[260px] flex-1 items-center gap-2 lg:max-w-xl">
+          <label className="min-w-0 flex-1">
+            <span className="sr-only">เลือกรอบกิจกรรมสำหรับสร้างแบบประเมิน</span>
             <select
               value={occurrenceId}
-              onChange={(e) => setOccurrenceId(e.target.value)}
-              className="dashboard-control min-w-0 flex-1"
+              onChange={(event) => setOccurrenceId(event.target.value)}
+              className="h-11 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm outline-none transition focus:border-[#002d62] focus:ring-4 focus:ring-[#002d62]/10"
             >
               <option value="">เลือกรอบกิจกรรม</option>
-              {occurrences.map((x) => (
-                <option key={x.id} value={x.id}>
-                  ครั้งที่ {x.occurrence_no} · {new Date(x.start_at).toLocaleDateString("th-TH")}
+              {occurrences.map((occurrence) => (
+                <option key={occurrence.id} value={occurrence.id}>
+                  ครั้งที่ {occurrence.occurrence_no} · {new Date(occurrence.start_at).toLocaleDateString("th-TH")}
                 </option>
               ))}
             </select>
-            <button
-              type="button"
-              onClick={() => void createSurvey()}
-              className="inline-flex min-h-11 items-center gap-2 rounded-xl bg-brand-navy px-4 text-sm font-bold text-white"
-            >
-              <Plus className="h-4 w-4" />
-              สร้าง
-            </button>
-          </div>
-          <div className="mt-5 space-y-2">
-            {loading ? (
-              <p className="text-sm text-slate-500">กำลังโหลด...</p>
-            ) : surveys.length === 0 ? (
-              <p className="text-sm text-slate-500">ยังไม่มีแบบสอบถาม</p>
-            ) : (
-              surveys.map((x) => (
-                <button
-                  type="button"
-                  key={x.id}
-                  onClick={() => setSelected(x)}
-                  className={`block w-full rounded-xl border p-3 text-left ${selected?.id === x.id ? "border-brand-navy bg-slate-50" : "border-slate-200"}`}
-                >
-                  <div className="flex justify-between">
-                    <b>
-                      รอบ {occurrences.find((o) => o.id === x.occurrence_id)?.occurrence_no ?? "-"}
-                    </b>
-                    <span className="text-xs font-semibold text-emerald-700">
-                      {x.anonymous ? "Anonymous" : "Identified"}
-                    </span>
-                  </div>
-                  <p className="mt-1 text-xs text-slate-500">{x.questions.length} คำถาม</p>
-                </button>
-              ))
-            )}
-          </div>
+          </label>
+          <AdminButton variant="primary" icon={<Plus className="h-4 w-4" />} onClick={() => void createSurvey()} disabled={!occurrenceId}>
+            สร้างแบบประเมิน
+          </AdminButton>
         </div>
-        <div className="rounded-2xl border bg-white p-5 shadow-sm">
+      </AdminFilterBar>
+
+      <div className="mt-4 grid gap-5 xl:grid-cols-[1.05fr_1.55fr]">
+        <AdminCard className="overflow-hidden">
+          <div className="border-b border-slate-200 px-5 py-4">
+            <div className="flex items-center justify-between gap-3">
+              <div>
+                <h2 className="text-base font-bold text-[#002d62]">รายการแบบประเมิน</h2>
+                <p className="mt-0.5 text-xs text-slate-500">เลือกแบบประเมินเพื่อจัดการคำถาม</p>
+              </div>
+              <span className="text-xs font-semibold text-slate-400">{filteredSurveys.length} รายการ</span>
+            </div>
+          </div>
+          {loading ? (
+            <AdminLoadingState label="กำลังโหลดแบบประเมิน..." />
+          ) : filteredSurveys.length === 0 ? (
+            <AdminEmptyState
+              title={surveys.length ? "ไม่พบแบบประเมินตามคำค้น" : "ยังไม่มีแบบประเมิน"}
+              description={surveys.length ? "ลองเปลี่ยนคำค้นหาหรือเลือกรอบกิจกรรมใหม่" : "เลือกรอบกิจกรรมด้านบนแล้วสร้างแบบประเมินได้ทันที"}
+            />
+          ) : (
+            <AdminTable minWidth="620px" className="mt-0 rounded-none border-0 shadow-none">
+              <AdminTableHeader>
+                <tr>
+                  <th className="px-5 py-3 text-left">แบบประเมิน</th>
+                  <th className="px-4 py-3 text-center">คำถาม</th>
+                  <th className="px-4 py-3 text-center">โหมด</th>
+                </tr>
+              </AdminTableHeader>
+              <tbody>
+                {filteredSurveys.map((survey) => {
+                  const occurrence = occurrences.find((item) => item.id === survey.occurrence_id);
+                  const active = selected?.id === survey.id;
+                  return (
+                    <AdminTableRow key={survey.id}>
+                      <td className="px-5 py-4">
+                        <button type="button" onClick={() => selectSurvey(survey)} className="w-full text-left">
+                          <p className={`font-semibold ${active ? "text-[#002d62]" : "text-slate-900"}`}>
+                            แบบประเมิน{occurrence ? ` · ครั้งที่ ${occurrence.occurrence_no}` : ""}
+                          </p>
+                          <p className="mt-1 text-xs text-slate-500">
+                            {occurrence ? new Date(occurrence.start_at).toLocaleString("th-TH") : "ไม่พบรอบกิจกรรม"}
+                          </p>
+                        </button>
+                      </td>
+                      <td className="px-4 py-4 text-center font-semibold text-slate-700">{survey.questions.length}</td>
+                      <td className="px-4 py-4 text-center">
+                        <AdminStatusBadge
+                          tone={survey.anonymous ? "neutral" : "success"}
+                        >
+                          {survey.anonymous ? "Anonymous" : "Identified"}
+                        </AdminStatusBadge>
+                      </td>
+                    </AdminTableRow>
+                  );
+                })}
+              </tbody>
+            </AdminTable>
+          )}
+        </AdminCard>
+
+        <AdminCard className="overflow-hidden">
           {selected ? (
             <>
-              <div className="flex items-center justify-between">
-                <div>
-                  <h2 className="font-bold text-brand-navy">Question Builder</h2>
-                  <p className="text-xs text-slate-500">สร้าง แก้ไข ปิดใช้งาน และจัดลำดับคำถาม</p>
-                </div>
-                <button
-                  type="button"
-                  onClick={() =>
-                    void updateAdminSurvey(selected.id, { anonymous: !selected.anonymous })
-                      .then((u) => {
-                        setSelected({ ...selected, ...u });
-                        setSurveys((xs) =>
-                          xs.map((x) => (x.id === selected.id ? { ...x, ...u } : x)),
-                        );
-                      })
-                      .catch((e) => toast.error(e instanceof Error ? e.message : "บันทึกไม่สำเร็จ"))
-                  }
-                  className="rounded-xl border px-3 py-2 text-xs font-bold"
-                >
-                  {selected.anonymous ? "Anonymous" : "Identified"}
-                </button>
-              </div>
-              <div className="mt-4 grid gap-2 md:grid-cols-[1fr_150px_auto]">
-                <input
-                  value={String(draft.question_text ?? "")}
-                  onChange={(e) => setDraft((d) => ({ ...d, question_text: e.target.value }))}
-                  placeholder="คำถาม"
-                  className="dashboard-control"
-                />
-                <select
-                  value={String(draft.question_type ?? "rating")}
-                  onChange={(e) =>
-                    setDraft((d) => ({
-                      ...d,
-                      question_type: e.target.value as SurveyQuestion["question_type"],
-                    }))
-                  }
-                  className="dashboard-control"
-                >
-                  <option value="rating">Rating 1–5</option>
-                  <option value="text">Text</option>
-                  <option value="single_choice">Single choice</option>
-                  <option value="multi_choice">Multi choice</option>
-                </select>
-                <button
-                  type="button"
-                  onClick={() => void saveQuestion()}
-                  className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-brand-navy px-4 text-sm font-bold text-white"
-                >
-                  <Save className="h-4 w-4" />
-                  บันทึก
-                </button>
-              </div>
-              <label className="mt-3 flex items-center gap-2 text-xs text-slate-600">
-                <input
-                  type="checkbox"
-                  checked={draft.required !== false}
-                  onChange={(e) => setDraft((d) => ({ ...d, required: e.target.checked }))}
-                />
-                คำถามบังคับ
-              </label>
-              <div className="mt-5 space-y-2">
-                {selected.questions.map((q, i) => (
-                  <div key={q.id} className="rounded-xl border p-3">
-                    <div className="flex items-start justify-between gap-3">
-                      <button
-                        type="button"
-                        className="flex min-w-0 gap-3 text-left"
-                        onClick={() => setDraft(q)}
-                      >
-                        <span className="rounded-full bg-slate-100 px-2 py-1 text-xs font-bold">
-                          {i + 1}
-                        </span>
-                        <span>
-                          <b className="text-sm">{q.question_text}</b>
-                          <small className="mt-1 block text-xs text-slate-500">
-                            {q.question_type} · {q.required ? "จำเป็น" : "ไม่จำเป็น"} ·{" "}
-                            {q.scale_min}–{q.scale_max}
-                          </small>
-                        </span>
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => void deactivate(q)}
-                        aria-label="ปิดใช้งานคำถาม"
-                        className="text-slate-400 hover:text-red-600"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </button>
-                    </div>
+              <div className="border-b border-slate-200 px-5 py-4">
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                  <div className="min-w-0">
+                    <p className="text-xs font-semibold uppercase tracking-[0.14em] text-violet-600">QUESTION BUILDER</p>
+                    <h2 className="mt-1 text-lg font-bold text-[#002d62]">
+                      แบบประเมิน{selectedOccurrence ? ` · ครั้งที่ ${selectedOccurrence.occurrence_no}` : ""}
+                    </h2>
+                    <p className="mt-1 text-xs text-slate-500">
+                      {selectedOccurrence
+                        ? new Date(selectedOccurrence.start_at).toLocaleString("th-TH")
+                        : "ไม่พบรอบกิจกรรม"}
+                    </p>
                   </div>
-                ))}
+                  <AdminButton
+                    variant="secondary"
+                    onClick={() =>
+                      void updateAdminSurvey(selected.id, { anonymous: !selected.anonymous })
+                        .then((updated) => {
+                          setSelected({ ...selected, ...updated });
+                          setSurveys((items) => items.map((item) => (item.id === selected.id ? { ...item, ...updated } : item)));
+                        })
+                        .catch((e) => toast.error(e instanceof Error ? e.message : "บันทึกไม่สำเร็จ"))
+                    }
+                  >
+                    {selected.anonymous ? "Anonymous" : "Identified"}
+                  </AdminButton>
+                </div>
+              </div>
+
+              <div className="p-5">
+                <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                  <div className="grid gap-3 md:grid-cols-[minmax(0,1fr)_160px_auto]">
+                    <label className="block">
+                      <span className="mb-1 block text-xs font-semibold text-slate-600">คำถาม</span>
+                      <input
+                        value={String(draft.question_text ?? "")}
+                        onChange={(event) => setDraft((current) => ({ ...current, question_text: event.target.value }))}
+                        placeholder="ระบุคำถาม"
+                        className="h-11 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm outline-none transition focus:border-[#002d62] focus:ring-4 focus:ring-[#002d62]/10"
+                      />
+                    </label>
+                    <label className="block">
+                      <span className="mb-1 block text-xs font-semibold text-slate-600">ประเภท</span>
+                      <select
+                        value={String(draft.question_type ?? "rating")}
+                        onChange={(event) => setDraft((current) => ({ ...current, question_type: event.target.value as SurveyQuestion["question_type"] }))}
+                        className="h-11 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm outline-none transition focus:border-[#002d62] focus:ring-4 focus:ring-[#002d62]/10"
+                      >
+                        <option value="rating">Rating 1–5</option>
+                        <option value="text">Text</option>
+                        <option value="single_choice">Single choice</option>
+                        <option value="multi_choice">Multi choice</option>
+                      </select>
+                    </label>
+                    <AdminButton variant="primary" icon={<Save className="h-4 w-4" />} className="self-end" onClick={() => void saveQuestion()}>
+                      บันทึกคำถาม
+                    </AdminButton>
+                  </div>
+                  <label className="mt-3 inline-flex items-center gap-2 text-xs font-medium text-slate-600">
+                    <input
+                      type="checkbox"
+                      checked={draft.required !== false}
+                      onChange={(event) => setDraft((current) => ({ ...current, required: event.target.checked }))}
+                    />
+                    คำถามบังคับ
+                  </label>
+                </div>
+
+                <div className="mt-5 flex items-center justify-between gap-3">
+                  <div>
+                    <h3 className="text-sm font-bold text-slate-900">รายการคำถาม</h3>
+                    <p className="mt-0.5 text-xs text-slate-500">คลิกคำถามเพื่อแก้ไข</p>
+                  </div>
+                  <span className="text-xs font-semibold text-slate-400">{selected.questions.length} ข้อ</span>
+                </div>
+
+                <div className="mt-3 space-y-2">
+                  {selected.questions.length === 0 ? (
+                    <AdminEmptyState title="ยังไม่มีคำถาม" description="เพิ่มคำถามแรกของแบบประเมินนี้จากช่องด้านบน" />
+                  ) : (
+                    selected.questions.map((question, index) => (
+                      <div key={question.id} className="rounded-2xl border border-slate-200 bg-white p-4 transition hover:border-slate-300 hover:shadow-sm">
+                        <div className="flex items-start gap-3">
+                          <button
+                            type="button"
+                            onClick={() => setDraft(question)}
+                            className="flex min-w-0 flex-1 gap-3 text-left"
+                          >
+                            <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-slate-100 text-xs font-bold text-slate-600">
+                              {index + 1}
+                            </span>
+                            <span className="min-w-0">
+                              <span className="block font-semibold text-slate-900">{question.question_text}</span>
+                              <span className="mt-1 block text-xs text-slate-500">
+                                {question.question_type} · {question.required ? "จำเป็น" : "ไม่จำเป็น"}
+                                {question.question_type === "rating" ? ` · ${question.scale_min}–${question.scale_max}` : ""}
+                              </span>
+                            </span>
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => void deactivate(question)}
+                            aria-label="ปิดใช้งานคำถาม"
+                            className="rounded-lg p-2 text-slate-400 transition hover:bg-red-50 hover:text-red-600"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </button>
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
               </div>
             </>
           ) : (
-            <div className="grid min-h-72 place-items-center text-sm text-slate-500">
-              เลือกแบบสอบถาม
+            <div className="grid min-h-[520px] place-items-center p-8">
+              <AdminEmptyState title="เลือกแบบประเมิน" description="เลือกแบบประเมินจากรายการด้านซ้ายเพื่อเริ่มจัดการคำถาม" />
             </div>
           )}
-        </div>
+        </AdminCard>
       </div>
     </section>
   );

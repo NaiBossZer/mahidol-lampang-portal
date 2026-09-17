@@ -9,7 +9,15 @@ type MediaRow = {
   created_at: string;
 };
 const SELECT =
-  "id,title,activity_date,category,featured_image,images,objective,key_activities,outcomes,participants,status,created_at,updated_at,survey_enabled,survey_open_at,survey_close_at,survey_welcome_text";
+  "id,title,activity_date,category,featured_image,images,objective,key_activities,outcomes,participant_count,participants,status,created_at,updated_at,survey_enabled,survey_open_at,survey_close_at,survey_welcome_text";
+
+function canonicalParticipantCount(row: ActivityRow) {
+  const canonical = Number(row.participant_count);
+  if (Number.isFinite(canonical) && canonical >= 0) return canonical;
+  const legacy = Number(row.participants);
+  return Number.isFinite(legacy) && legacy >= 0 ? legacy : undefined;
+}
+
 function toActivity(row: ActivityRow, media: MediaRow[] = []) {
   const stored = media
     .filter((item) => item.public_url)
@@ -32,9 +40,7 @@ function toActivity(row: ActivityRow, media: MediaRow[] = []) {
       : String(row.key_activities ?? ""),
     outcome: String(row.outcomes ?? ""),
     impact: "",
-    participantCount: Number.isFinite(Number(row.participants))
-      ? Number(row.participants)
-      : undefined,
+    participantCount: canonicalParticipantCount(row),
     category: String(row.category ?? ""),
     status: String(row.status ?? "draft"),
     images,
@@ -46,6 +52,7 @@ function toActivity(row: ActivityRow, media: MediaRow[] = []) {
     updatedAt: String(row.updated_at ?? ""),
   };
 }
+
 export async function onRequestGet({ env }: { env: Env }) {
   if (!getSupabaseRestConfig(env).configured)
     return json({ error: "Supabase is not configured" }, 503);
@@ -78,6 +85,7 @@ export async function onRequestGet({ env }: { env: Env }) {
     return json({ error: "ไม่สามารถโหลดกิจกรรมได้" }, 500);
   }
 }
+
 export function onRequest({ request, env }: { request: Request; env: Env }) {
   if (request.method === "GET") return onRequestGet({ env });
   return methodNotAllowed("GET");

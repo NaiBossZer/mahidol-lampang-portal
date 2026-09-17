@@ -42,7 +42,6 @@ export type ProductWriteInput = {
 export type ActivityStatus = "draft" | "published" | "archived";
 export type ActivityWriteInput = {
   id?: string;
-  centerId?: string | null;
   title: string;
   slug: string;
   summary?: string;

@@ -9,7 +9,7 @@ import {
 } from "@/services/ai-predictive-analytics";
 
 interface PredictiveMetricsPanelProps {
-  activityId: string;
+  activityId?: string;
   activityTitle?: string;
   historicalData?: {
     participantCounts?: number[];
@@ -33,11 +33,15 @@ export default function PredictiveMetricsPanel({
 
   useEffect(() => {
     if (activityId) {
-      loadPredictiveMetrics();
+      void loadPredictiveMetrics();
+    } else {
+      setMetrics(null);
+      setError(null);
     }
   }, [activityId]);
 
   const loadPredictiveMetrics = async () => {
+    if (!activityId) return;
     setLoading(true);
     setError(null);
 
@@ -106,6 +110,7 @@ export default function PredictiveMetricsPanel({
           onClick={loadPredictiveMetrics}
           className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
           title="Refresh predictions"
+          disabled={!activityId}
         >
           <RefreshCw className="w-4 h-4 text-gray-600" />
         </button>

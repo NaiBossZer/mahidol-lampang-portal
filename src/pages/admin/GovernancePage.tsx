@@ -1,9 +1,19 @@
 import { useEffect, useMemo, useState } from "react";
-import { Bell, Bot, RefreshCw, Search, Shield, UserCog, Workflow } from "lucide-react";
+import {
+  Bell,
+  CheckCircle2,
+  CircleUserRound,
+  Clock3,
+  RefreshCw,
+  ShieldCheck,
+  Sparkles,
+  Users,
+} from "lucide-react";
+import { useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
 import { useAdminAuth } from "@/components/AdminGuard";
 
-type Tab = "users" | "reports" | "search" | "notifications" | "ai" | "lifecycle";
+type Tab = "users" | "notifications";
 type UserRow = {
   user_id: string;
   full_name: string;
@@ -12,29 +22,44 @@ type UserRow = {
   central_role?: string | null;
   active: boolean;
 };
-type Tool = {
+
+type NotificationRow = {
   id: string;
-  tool_key: string;
-  name: string;
-  description?: string;
-  domain: string;
-  risk_level: string;
-  enabled: boolean;
-  endpoint?: string;
-  method: string;
-};
-type Life = {
-  id: string;
-  entity_type: string;
-  entity_id: string;
-  from_status: string;
-  to_status: string;
-  actor_id?: string;
-  created_at: string;
+  title: string;
+  body?: string | null;
+  created_at?: string;
+  read_at?: string | null;
 };
 
+const ROLE_OPTIONS = [
+  "SUPER_ADMIN",
+  "CONTENT_ADMIN",
+  "OPERATIONS_ADMIN",
+  "FACILITY_ADMIN",
+] as const;
+
+const tabs: Array<{
+  id: Tab;
+  label: string;
+  description: string;
+  icon: typeof Users;
+}> = [
+  {
+    id: "users",
+    label: "ผู้ใช้งาน & สิทธิ์การเข้าถึง",
+    description: "Users · RBAC · Access Control",
+    icon: Users,
+  },
+  {
+    id: "notifications",
+    label: "การแจ้งเตือน",
+    description: "Alerts · Approvals · Operational Updates",
+    icon: Bell,
+  },
+];
+
 async function getJson<T>(url: string, init?: RequestInit) {
-  const r = await fetch(url, {
+  const response = await fetch(url, {
     ...init,
     credentials: "include",
     headers: {
@@ -43,21 +68,126 @@ async function getJson<T>(url: string, init?: RequestInit) {
       ...(init?.headers ?? {}),
     },
   });
-  const b = await r.json().catch(() => null);
-  if (!r.ok) throw new Error(b?.error || "Request failed");
-  return b.data as T;
+  const body = await response.json().catch(() => null);
+  if (!response.ok) throw new Error(body?.error || "Request failed");
+  return body.data as T;
+}
+
+function StudioModuleTabs({ active, onSelect, unreadCount }: { active: Tab; onSelect: (tab: Tab) => void; unreadCount: number }) {
+  return (
+    <div className="rounded-2xl border border-slate-200 bg-white p-2 shadow-sm">
+      <div className="flex gap-2 overflow-x-auto" role="tablist" aria-label="Admin control modules">
+        {tabs.map((tab) => {
+          const Icon = tab.icon;
+          const selected = tab.id === active;
+          return (
+            <button
+              key={tab.id}
+              type="button"
+              role="tab"
+              aria-selected={selected}
+              onClick={() => onSelect(tab.id)}
+              className={`min-w-[240px] flex-1 rounded-xl border px-3 py-3 text-left transition ${
+                selected
+                  ? "border-sky-200 bg-[#002d62] text-white shadow-sm"
+                  : "border-transparent text-slate-600 hover:bg-slate-50"
+              }`}
+            >
+              <div className="flex items-center gap-2">
+                <Icon className="h-4 w-4 shrink-0" />
+                <span className="truncate text-xs font-bold">{tab.label}</span>
+                {tab.id === "notifications" && unreadCount > 0 && (
+                  <span className="rounded-full bg-rose-500 px-1.5 py-0.5 text-[9px] font-black text-white">
+                    {unreadCount}
+                  </span>
+                )}
+              </div>
+              <p className={`mt-1 truncate text-[10px] ${selected ? "text-blue-100" : "text-slate-400"}`}>
+                {tab.description}
+              </p>
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+function ControlHeader({ tab, userCount, unreadCount, loading, onRefresh }: { tab: Tab; userCount: number; unreadCount: number; loading: boolean; onRefresh: () => void }) {
+  const isUsers = tab === "users";
+  return (
+    <header className="overflow-hidden rounded-2xl bg-gradient-to-br from-[#002d62] via-[#0c2340] to-[#00152f] text-white shadow-sm">
+      <div className="px-5 py-6 sm:px-7 sm:py-7">
+        <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
+          <div>
+            <div className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3 py-1 text-[10px] font-bold tracking-[0.16em] text-sky-100">
+              <Sparkles className="h-3.5 w-3.5 text-sky-300" />
+              AI STUDIO · CONTROL PLANE
+            </div>
+            <h1 className="mt-3 text-2xl font-bold tracking-tight sm:text-3xl">
+              {isUsers ? "ผู้ใช้งาน & สิทธิ์การเข้าถึง" : "การแจ้งเตือน"}
+            </h1>
+            <p className="mt-2 max-w-4xl text-sm leading-6 text-blue-100">
+              {isUsers
+                ? "ศูนย์ควบคุมบัญชีผู้ดูแลระบบ Role และ authorization boundary โดยใช้ interaction model เดียวกับ AI Studio"
+                : "ศูนย์ควบคุม Alerts, approvals และ operational updates ด้วย interaction model เดียวกับ AI Studio"}
+            </p>
+          </div>
+
+          <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap">
+            <div className="rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-[10px]">
+              <div className="flex items-center gap-1.5 text-sky-100"><ShieldCheck className="h-3.5 w-3.5 text-emerald-300" />Governance</div>
+              <p className="mt-1 text-xs font-bold text-white">Protected</p>
+            </div>
+            <div className="rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-[10px]">
+              <div className="flex items-center gap-1.5 text-sky-100">{isUsers ? <Users className="h-3.5 w-3.5 text-violet-300" /> : <Bell className="h-3.5 w-3.5 text-sky-300" />}{isUsers ? "Users" : "Unread"}</div>
+              <p className="mt-1 text-xs font-bold text-white">{isUsers ? userCount : unreadCount}</p>
+            </div>
+          </div>
+        </div>
+
+        <div className="mt-6 rounded-2xl border border-white/10 bg-white/5 p-3 sm:p-4">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-sky-200">Admin Control Flow</p>
+              <p className="mt-1 text-xs font-semibold text-white">Review → Verify → Apply → Observe</p>
+            </div>
+            <button
+              type="button"
+              onClick={onRefresh}
+              disabled={loading}
+              className="inline-flex items-center gap-2 rounded-xl border border-white/10 bg-white/10 px-3 py-2 text-xs font-bold text-white transition hover:bg-white/15 disabled:opacity-50"
+            >
+              <RefreshCw className={`h-3.5 w-3.5 ${loading ? "animate-spin" : ""}`} />
+              รีเฟรชข้อมูล
+            </button>
+          </div>
+          <div className="mt-3 grid gap-2 sm:grid-cols-4">
+            {[
+              ["01", "Review", "ตรวจสอบรายการ"],
+              ["02", "Verify", "ยืนยันขอบเขต"],
+              ["03", "Apply", "ดำเนินการผ่านสิทธิ์"],
+              ["04", "Observe", "ติดตามสถานะ"],
+            ].map(([step, title, subtitle]) => (
+              <div key={step} className="rounded-xl border border-white/10 bg-white/5 px-3 py-2">
+                <div className="flex items-center gap-2"><span className="flex h-6 w-6 items-center justify-center rounded-full bg-white/10 text-[9px] font-black text-sky-100">{step}</span><span className="text-[10px] font-bold text-white">{title}</span></div>
+                <p className="mt-1 pl-8 text-[9px] text-blue-100/60">{subtitle}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </header>
+  );
 }
 
 export function GovernancePage() {
   const { role } = useAdminAuth();
-  const [tab, setTab] = useState<Tab>("users");
+  const [searchParams, setSearchParams] = useSearchParams();
+  const requestedTab = searchParams.get("tab");
+  const tab: Tab = requestedTab === "notifications" ? "notifications" : "users";
   const [users, setUsers] = useState<UserRow[]>([]);
-  const [tools, setTools] = useState<Tool[]>([]);
-  const [notifications, setNotifications] = useState<any[]>([]);
-  const [report, setReport] = useState<any>(null);
-  const [life, setLife] = useState<Life[]>([]);
-  const [results, setResults] = useState<any[]>([]);
-  const [q, setQ] = useState("");
+  const [notifications, setNotifications] = useState<NotificationRow[]>([]);
   const [loading, setLoading] = useState(false);
   const canManage = role === "SUPER_ADMIN";
 
@@ -65,13 +195,9 @@ export function GovernancePage() {
     setLoading(true);
     try {
       if (tab === "users") setUsers(await getJson<UserRow[]>("/api/admin/users"));
-      if (tab === "ai") setTools(await getJson<Tool[]>("/api/admin/ai-tools"));
-      if (tab === "notifications")
-        setNotifications(await getJson<any[]>("/api/admin/notifications"));
-      if (tab === "reports") setReport(await getJson<any>("/api/admin/reports"));
-      if (tab === "lifecycle") setLife(await getJson<Life[]>("/api/admin/lifecycle"));
-    } catch (e) {
-      toast.error(e instanceof Error ? e.message : "โหลดข้อมูลไม่สำเร็จ");
+      else setNotifications(await getJson<NotificationRow[]>("/api/admin/notifications"));
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "โหลดข้อมูลไม่สำเร็จ");
     } finally {
       setLoading(false);
     }
@@ -82,287 +208,152 @@ export function GovernancePage() {
   }, [tab]);
 
   async function setRole(userId: string, value: string) {
-    if (!canManage) return toast.error("เฉพาะ SUPER_ADMIN เท่านั้น");
+    if (!canManage) {
+      toast.error("เฉพาะ SUPER_ADMIN เท่านั้น");
+      return;
+    }
     try {
       await getJson("/api/admin/users", {
         method: "PATCH",
         body: JSON.stringify({ userId, role: value }),
       });
-      toast.success("ปรับ Role แล้ว");
-      void load();
-    } catch (e) {
-      toast.error(e instanceof Error ? e.message : "ปรับ Role ไม่สำเร็จ");
+      toast.success("ปรับสิทธิ์ผู้ใช้งานแล้ว");
+      await load();
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "ปรับสิทธิ์ไม่สำเร็จ");
     }
   }
 
-  async function search() {
-    if (q.trim().length < 2) return toast.error("พิมพ์อย่างน้อย 2 ตัวอักษร");
+  async function markRead(id: string) {
     try {
-      setResults(await getJson<any[]>(`/api/admin/search?q=${encodeURIComponent(q)}`));
-    } catch (e) {
-      toast.error(e instanceof Error ? e.message : "ค้นหาไม่สำเร็จ");
-    }
-  }
-
-  async function execute(toolKey: string) {
-    try {
-      const x = await getJson<any>("/api/admin/ai-tools", {
-        method: "POST",
-        body: JSON.stringify({ toolKey, input: {} }),
+      await getJson("/api/admin/notifications", {
+        method: "PATCH",
+        body: JSON.stringify({ id }),
       });
-      toast.success(x.requiresApproval ? "ส่งเข้า Approval แล้ว" : "AI execution สำเร็จ");
-    } catch (e) {
-      toast.error(e instanceof Error ? e.message : "AI execution ไม่สำเร็จ");
+      toast.success("ทำเครื่องหมายว่าอ่านแล้ว");
+      await load();
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "อัปเดตการแจ้งเตือนไม่สำเร็จ");
     }
   }
 
-  const tabs = useMemo(
-    () =>
-      [
-        { id: "users", label: "Admin Users / RBAC", icon: UserCog },
-        { id: "reports", label: "Reports", icon: Shield },
-        { id: "search", label: "Global Search", icon: Search },
-        { id: "notifications", label: "Notifications", icon: Bell },
-        { id: "ai", label: "AI Tools / Agents", icon: Bot },
-        { id: "lifecycle", label: "Data Lifecycle", icon: Workflow },
-      ] as const,
-    [],
+  const unreadCount = useMemo(
+    () => notifications.filter((item) => !item.read_at).length,
+    [notifications],
   );
-  const agents = [
-    "Activity Agent",
-    "Survey Agent",
-    "Learning Center / CMS Agent",
-    "Analytics Agent",
-  ];
+
+  const roleSummary = useMemo(() => {
+    const summary = new Map<string, number>();
+    users.forEach((user) => {
+      const key = user.central_role ?? "UNASSIGNED";
+      summary.set(key, (summary.get(key) ?? 0) + 1);
+    });
+    return Array.from(summary.entries());
+  }, [users]);
 
   return (
-    <section className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
-      <div className="flex items-end justify-between gap-3">
-        <div>
-          <p className="text-xs font-semibold uppercase tracking-[.14em] text-emerald-700">
-            Governance & Automation
-          </p>
-          <h1 className="mt-1 text-2xl font-bold text-brand-navy lg:text-3xl">System Governance</h1>
-          <p className="mt-1 text-sm text-slate-600">
-            RBAC · lifecycle · audit · reports · search · notifications · governed AI
-          </p>
-        </div>
-        <button
-          type="button"
-          onClick={() => void load()}
-          className="inline-flex min-h-11 items-center gap-2 rounded-xl border bg-white px-4 text-sm font-semibold"
-        >
-          <RefreshCw className="h-4 w-4" />
-          รีเฟรช
-        </button>
-      </div>
-      <div className="mt-6 flex gap-2 overflow-x-auto border-b">
-        {tabs.map((t) => {
-          const I = t.icon;
-          return (
-            <button
-              key={t.id}
-              type="button"
-              onClick={() => setTab(t.id)}
-              className={`whitespace-nowrap border-b-2 px-3 py-3 text-sm font-semibold ${tab === t.id ? "border-brand-navy text-brand-navy" : "border-transparent text-slate-500"}`}
-            >
-              <I className="mr-2 inline h-4 w-4" />
-              {t.label}
-            </button>
-          );
-        })}
-      </div>
-      {loading ? (
-        <div className="mt-6 rounded-2xl border bg-white p-10 text-center text-sm text-slate-500">
-          กำลังโหลด...
-        </div>
-      ) : (
-        <div className="mt-6 rounded-2xl border bg-white p-5 shadow-sm">
-          {tab === "users" && (
-            <>
-              <h2 className="font-bold text-brand-navy">Admin Users & RBAC</h2>
-              {!canManage && (
-                <p className="mt-1 text-xs text-slate-500">
-                  Role assignment ถูกจำกัดให้ SUPER_ADMIN
-                </p>
-              )}
-              <div className="mt-4 divide-y">
-                {users.map((u) => (
-                  <div
-                    key={u.user_id}
-                    className="flex flex-col gap-3 py-4 md:flex-row md:items-center md:justify-between"
-                  >
-                    <div>
-                      <p className="font-semibold">{u.full_name}</p>
-                      <p className="text-xs text-slate-500">
-                        {u.position ?? ""} {u.department ? `· ${u.department}` : ""}
-                      </p>
+    <section className="min-h-[calc(100vh-4rem)] bg-[#f8f9ff] px-4 py-5 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-[1400px] space-y-5">
+        <ControlHeader
+          tab={tab}
+          userCount={users.length}
+          unreadCount={unreadCount}
+          loading={loading}
+          onRefresh={() => void load()}
+        />
+
+        <StudioModuleTabs
+          active={tab}
+          unreadCount={unreadCount}
+          onSelect={(nextTab) => setSearchParams({ tab: nextTab })}
+        />
+
+        <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+          <div className="border-b border-slate-100 bg-slate-50 px-5 py-4 sm:px-6">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-violet-600">Control Module</p>
+                <div className="mt-1 flex items-center gap-2">
+                  {tab === "users" ? <CircleUserRound className="h-4 w-4 text-violet-600" /> : <Bell className="h-4 w-4 text-sky-600" />}
+                  <h2 className="text-sm font-bold text-[#002d62]">{tab === "users" ? "Admin Users / RBAC" : "Notifications Center"}</h2>
+                </div>
+                <p className="mt-1 text-[10px] text-slate-500">{tab === "users" ? "Role assignment ผ่าน authorization boundary เดิมของระบบ" : "ติดตาม alerts, approvals และ operational state"}</p>
+              </div>
+              <div className={`rounded-full px-2.5 py-1 text-[10px] font-bold ${tab === "users" ? "bg-violet-50 text-violet-700" : "bg-sky-50 text-sky-700"}`}>
+                {tab === "users" ? `${users.length} users` : `${unreadCount} unread`}
+              </div>
+            </div>
+          </div>
+
+          {loading ? (
+            <div className="p-14 text-center">
+              <RefreshCw className="mx-auto h-5 w-5 animate-spin text-violet-500" />
+              <p className="mt-3 text-sm text-slate-500">กำลังซิงก์ข้อมูล...</p>
+            </div>
+          ) : tab === "users" ? (
+            <div>
+              <div className="grid gap-3 border-b border-slate-100 bg-white p-4 sm:grid-cols-4 sm:p-5">
+                <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4"><p className="text-[10px] font-bold uppercase tracking-[0.12em] text-slate-400">Total Users</p><p className="mt-2 text-2xl font-bold text-[#002d62]">{users.length}</p><p className="mt-1 text-[10px] text-slate-500">บัญชีในระบบ</p></div>
+                <div className="rounded-2xl border border-emerald-100 bg-emerald-50 p-4"><p className="text-[10px] font-bold uppercase tracking-[0.12em] text-emerald-600">Active</p><p className="mt-2 text-2xl font-bold text-emerald-700">{users.filter((user) => user.active).length}</p><p className="mt-1 text-[10px] text-emerald-700/70">พร้อมใช้งาน</p></div>
+                <div className="rounded-2xl border border-violet-100 bg-violet-50 p-4"><p className="text-[10px] font-bold uppercase tracking-[0.12em] text-violet-600">Roles</p><p className="mt-2 text-2xl font-bold text-violet-700">{roleSummary.length}</p><p className="mt-1 text-[10px] text-violet-700/70">Role ที่ถูกใช้งาน</p></div>
+                <div className="rounded-2xl border border-sky-100 bg-sky-50 p-4"><p className="text-[10px] font-bold uppercase tracking-[0.12em] text-sky-600">Admin Control</p><p className="mt-2 text-sm font-bold text-sky-700">{canManage ? "SUPER_ADMIN" : "READ ONLY"}</p><p className="mt-1 text-[10px] text-sky-700/70">สิทธิ์การเปลี่ยน Role</p></div>
+              </div>
+
+              <div className="divide-y divide-slate-100">
+                {users.map((user) => (
+                  <div key={user.user_id} className="flex flex-col gap-4 px-5 py-4 transition hover:bg-slate-50/70 sm:flex-row sm:items-center sm:justify-between sm:px-6">
+                    <div className="flex min-w-0 items-center gap-3">
+                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-violet-50 text-violet-600"><CircleUserRound className="h-5 w-5" /></div>
+                      <div className="min-w-0">
+                        <div className="flex flex-wrap items-center gap-2"><p className="truncate text-sm font-bold text-slate-900">{user.full_name}</p>{user.active && <span className="rounded-full bg-emerald-50 px-2 py-0.5 text-[9px] font-bold text-emerald-700">ACTIVE</span>}</div>
+                        <p className="mt-1 text-xs text-slate-500">{user.position ?? ""}{user.department ? ` · ${user.department}` : ""}</p>
+                      </div>
                     </div>
-                    <select
-                      disabled={!canManage}
-                      value={u.central_role ?? ""}
-                      onChange={(e) => void setRole(u.user_id, e.target.value)}
-                      className="dashboard-control w-full md:w-60"
-                    >
+                    <select disabled={!canManage} value={user.central_role ?? ""} onChange={(event) => void setRole(user.user_id, event.target.value)} className="dashboard-control w-full max-w-sm sm:w-60">
                       <option value="">ยังไม่กำหนด</option>
-                      {["SUPER_ADMIN", "CONTENT_ADMIN", "OPERATIONS_ADMIN", "FACILITY_ADMIN"].map(
-                        (r) => (
-                          <option key={r}>{r}</option>
-                        ),
-                      )}
+                      {ROLE_OPTIONS.map((option) => <option key={option} value={option}>{option}</option>)}
                     </select>
                   </div>
                 ))}
+                {!users.length && <div className="p-10 text-center text-sm text-slate-500">ยังไม่มีข้อมูลผู้ใช้งาน</div>}
               </div>
-            </>
-          )}
-          {tab === "reports" && (
-            <>
-              <h2 className="font-bold text-brand-navy">Reports</h2>
-              <div className="mt-5 grid gap-4 md:grid-cols-5">
-                {[
-                  ["กิจกรรม", report?.activities],
-                  ["Learning Centers", report?.learningCenters],
-                  ["Responses", report?.responses],
-                  ["Avg score", report?.averageScore ?? "—"],
-                  ["Satisfaction", report?.satisfaction == null ? "—" : `${report.satisfaction}%`],
-                ].map(([k, v]) => (
-                  <div key={String(k)} className="rounded-xl bg-slate-50 p-4">
-                    <p className="text-xs text-slate-500">{k}</p>
-                    <p className="mt-2 text-2xl font-black text-brand-navy">{String(v ?? 0)}</p>
-                  </div>
-                ))}
+            </div>
+          ) : (
+            <div>
+              <div className="grid gap-3 border-b border-slate-100 bg-white p-4 sm:grid-cols-3 sm:p-5">
+                <div className="rounded-2xl border border-sky-100 bg-sky-50 p-4"><p className="text-[10px] font-bold uppercase tracking-[0.12em] text-sky-600">Inbox</p><p className="mt-2 text-2xl font-bold text-sky-700">{notifications.length}</p><p className="mt-1 text-[10px] text-sky-700/70">รายการแจ้งเตือน</p></div>
+                <div className="rounded-2xl border border-rose-100 bg-rose-50 p-4"><p className="text-[10px] font-bold uppercase tracking-[0.12em] text-rose-600">Attention</p><p className="mt-2 text-2xl font-bold text-rose-700">{unreadCount}</p><p className="mt-1 text-[10px] text-rose-700/70">ยังไม่ได้อ่าน</p></div>
+                <div className="rounded-2xl border border-emerald-100 bg-emerald-50 p-4"><p className="text-[10px] font-bold uppercase tracking-[0.12em] text-emerald-600">Read</p><p className="mt-2 text-2xl font-bold text-emerald-700">{notifications.filter((item) => item.read_at).length}</p><p className="mt-1 text-[10px] text-emerald-700/70">ดำเนินการแล้ว</p></div>
               </div>
-            </>
-          )}
-          {tab === "search" && (
-            <>
-              <h2 className="font-bold text-brand-navy">Global Search</h2>
-              <div className="mt-4 flex gap-2">
-                <input
-                  value={q}
-                  onChange={(e) => setQ(e.target.value)}
-                  onKeyDown={(e) => e.key === "Enter" && void search()}
-                  placeholder="Activity / Learning Center / Organization"
-                  className="dashboard-control flex-1"
-                />
-                <button
-                  type="button"
-                  onClick={() => void search()}
-                  className="inline-flex min-h-11 items-center gap-2 rounded-xl bg-brand-navy px-4 text-sm font-bold text-white"
-                >
-                  <Search className="h-4 w-4" />
-                  ค้นหา
-                </button>
-              </div>
-              <div className="mt-5 space-y-2">
-                {results.map((r, i) => (
-                  <div key={`${r.type}-${r.id}-${i}`} className="rounded-xl border p-3">
-                    <span className="text-[11px] font-bold uppercase text-emerald-700">
-                      {r.type}
-                    </span>
-                    <p className="mt-1 font-semibold">{r.title ?? r.name}</p>
-                  </div>
-                ))}
-              </div>
-            </>
-          )}
-          {tab === "notifications" && (
-            <>
-              <h2 className="font-bold text-brand-navy">Notifications</h2>
-              <div className="mt-4 space-y-2">
-                {notifications.length ? (
-                  notifications.map((n) => (
-                    <button
-                      type="button"
-                      key={n.id}
-                      onClick={() =>
-                        void getJson(`/api/admin/notifications`, {
-                          method: "PATCH",
-                          body: JSON.stringify({ id: n.id }),
-                        }).then(load)
-                      }
-                      className="w-full rounded-xl border p-4 text-left"
-                    >
-                      <p className="font-semibold">{n.title}</p>
-                      <p className="text-xs text-slate-500">{n.body ?? ""}</p>
-                    </button>
-                  ))
-                ) : (
-                  <p className="text-sm text-slate-500">ยังไม่มีการแจ้งเตือน</p>
-                )}
-              </div>
-            </>
-          )}
-          {tab === "ai" && (
-            <>
-              <h2 className="font-bold text-brand-navy">AI Tool Registry / Manager</h2>
-              <p className="mt-1 text-xs text-slate-500">
-                AI เรียกได้เฉพาะ Portal API ที่ลงทะเบียนใน registry; medium/high risk เข้าสู่
-                approval
-              </p>
-              <div className="mt-4 space-y-2">
-                {tools.map((t) => (
-                  <div
-                    key={t.id}
-                    className="flex flex-col gap-3 rounded-xl border p-4 md:flex-row md:items-center md:justify-between"
-                  >
-                    <div>
-                      <p className="font-semibold">{t.name}</p>
-                      <p className="text-xs text-slate-500">
-                        {t.tool_key} · {t.domain} · {t.risk_level} · {t.method} {t.endpoint}
-                      </p>
+
+              <div className="divide-y divide-slate-100">
+                {notifications.map((notification) => (
+                  <button key={notification.id} type="button" onClick={() => void markRead(notification.id)} className="flex w-full items-start gap-3 px-5 py-4 text-left transition hover:bg-slate-50 sm:px-6">
+                    <div className={`mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl ${notification.read_at ? "bg-slate-100 text-slate-400" : "bg-sky-50 text-sky-600"}`}>
+                      {notification.read_at ? <CheckCircle2 className="h-4 w-4" /> : <Bell className="h-4 w-4" />}
                     </div>
-                    <button
-                      type="button"
-                      onClick={() => void execute(t.tool_key)}
-                      className="rounded-xl border px-3 py-2 text-xs font-bold"
-                    >
-                      Run
-                    </button>
-                  </div>
-                ))}
-                <div className="grid gap-3 pt-3 md:grid-cols-2">
-                  {agents.map((a) => (
-                    <div key={a} className="rounded-xl bg-slate-50 p-4">
-                      <p className="font-semibold text-brand-navy">{a}</p>
-                      <p className="mt-1 text-xs text-slate-500">
-                        Uses registered tools + existing Portal APIs; no direct SQL.
-                      </p>
+                    <div className="min-w-0 flex-1">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <p className={`text-sm font-bold ${notification.read_at ? "text-slate-700" : "text-[#002d62]"}`}>{notification.title}</p>
+                        {!notification.read_at && <span className="rounded-full bg-rose-50 px-2 py-0.5 text-[9px] font-bold text-rose-600">ATTENTION</span>}
+                      </div>
+                      <p className="mt-1 text-xs leading-5 text-slate-500">{notification.body ?? ""}</p>
+                      {notification.created_at && <p className="mt-2 flex items-center gap-1 text-[9px] text-slate-400"><Clock3 className="h-3 w-3" />{new Date(notification.created_at).toLocaleString("th-TH")}</p>}
                     </div>
-                  ))}
-                </div>
-              </div>
-            </>
-          )}
-          {tab === "lifecycle" && (
-            <>
-              <h2 className="font-bold text-brand-navy">Active → Archived → Retired</h2>
-              <p className="mt-1 text-xs text-slate-500">
-                Historical records are preserved; cancelled records remain audit/history and are
-                excluded from normal views/calculations.
-              </p>
-              <div className="mt-4 divide-y">
-                {life.map((x) => (
-                  <div key={x.id} className="grid gap-1 py-3 md:grid-cols-[140px_1fr_180px_180px]">
-                    <span className="text-xs font-semibold text-emerald-700">{x.entity_type}</span>
-                    <span className="font-mono text-xs text-slate-500">{x.entity_id}</span>
-                    <span className="text-sm">
-                      {x.from_status || "—"} → <b>{x.to_status}</b>
-                    </span>
-                    <span className="text-xs text-slate-500">
-                      {new Date(x.created_at).toLocaleString("th-TH")}
-                    </span>
-                  </div>
+                    <span className="mt-1 text-[10px] font-bold text-slate-400">{notification.read_at ? "READ" : "OPEN"}</span>
+                  </button>
                 ))}
-                {!life.length && (
-                  <p className="py-6 text-sm text-slate-500">ยังไม่มี lifecycle events</p>
-                )}
+                {!notifications.length && <div className="p-10 text-center text-sm text-slate-500">ยังไม่มีการแจ้งเตือน</div>}
               </div>
-            </>
+            </div>
           )}
         </div>
-      )}
+
+        <div className="flex flex-col gap-2 rounded-2xl border border-slate-200 bg-white p-4 text-[11px] text-slate-500 shadow-sm sm:flex-row sm:items-center sm:justify-between">
+          <span><strong className="text-slate-700">AI Studio Control Plane</strong> · ทุก action สำคัญผ่านสิทธิ์และ verification ก่อน commit</span>
+          <span className="font-semibold text-[#002d62]">Review · Verify · Apply · Observe</span>
+        </div>
+      </div>
     </section>
   );
 }
