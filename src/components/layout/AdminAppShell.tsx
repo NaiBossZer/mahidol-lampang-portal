@@ -4,7 +4,6 @@ import {
   BarChart3,
   Bell,
   Bot,
-  Building2,
   ChevronDown,
   ClipboardList,
   ExternalLink,
@@ -113,7 +112,7 @@ const navGroups: readonly NavGroup[] = [
   },
   {
     id: "content",
-    label: "เนื้อหา & เครือข่าย",
+    label: "เนื้อหา",
     icon: FolderOpen,
     items: [
       {
@@ -121,25 +120,6 @@ const navGroups: readonly NavGroup[] = [
         label: "คลังเอกสารราชการ / CMS",
         icon: FolderOpen,
         permission: "cms.read",
-      },
-      {
-        to: "/admin/organizations",
-        label: "หน่วยงาน & ภาคีเครือข่าย",
-        icon: Group,
-        permission: "partners.read",
-      },
-    ],
-  },
-  {
-    id: "operations",
-    label: "ปฏิบัติการ & ศูนย์การเรียนรู้",
-    icon: Building2,
-    items: [
-      {
-        to: "/admin/learning-centers",
-        label: "ศูนย์การเรียนรู้ชุมชน",
-        icon: Building2,
-        permission: "learning_centers.read",
       },
     ],
   },
@@ -213,15 +193,13 @@ const PATH_TITLE_MAP: Record<string, { group: string; title: string }> = {
   "/admin/activities/photos": { group: "บริหารกิจกรรม & Survey", title: "คลังภาพกิจกรรม (Media)" },
   "/admin/activities/relations": { group: "บริหารกิจกรรม & Survey", title: "ความเชื่อมโยงกิจกรรมและภาคี" },
   "/admin/facility-safety": { group: "อาคาร & ความปลอดภัย", title: "อาคารและความปลอดภัย" },
-  "/admin/learning-centers": { group: "ปฏิบัติการ & ศูนย์การเรียนรู้", title: "ศูนย์การเรียนรู้ชุมชน" },
   "/admin/ai": { group: "AI Assistant Studio", title: "AI Command Center & Workspace" },
   "/admin/ai-studio-workspace": { group: "AI Studio", title: "AI Studio Unified Workspace" },
   "/admin/ai/improvement": { group: "AI Assistant Studio", title: "AI Model Improvement & Feedback" },
   "/admin/surveys/analytics": { group: "บริหารกิจกรรม & Survey", title: "ผลการวิเคราะห์แบบสอบถาม" },
   "/admin/surveys/response": { group: "บริหารกิจกรรม & Survey", title: "รายละเอียดคำตอบแบบสอบถาม" },
-  "/admin/cms": { group: "เนื้อหา & เครือข่าย", title: "จัดการเนื้อหาเว็บไซต์ (CMS)" },
+  "/admin/cms": { group: "เนื้อหา", title: "จัดการเนื้อหาเว็บไซต์ (CMS)" },
   "/admin/analytics": { group: "รายงาน & Analytics", title: "รายงานการวิเคราะห์ (Analytics)" },
-  "/admin/organizations": { group: "เนื้อหา & เครือข่าย", title: "หน่วยงานและภาคีเครือข่าย" },
   "/admin/governance": { group: "กำกับดูแลระบบ", title: "การกำกับดูแลระบบ (Governance)" },
   "/admin/audit-trail": { group: "กำกับดูแลระบบ", title: "ประวัติการใช้งาน (Audit Trail)" },
   "/admin/settings": { group: "กำกับดูแลระบบ", title: "การตั้งค่าระบบ (System Settings)" },
@@ -371,7 +349,7 @@ export function AdminAppShell({ children }: { children: ReactNode }) {
           </div>
 
           <nav
-            className="max-h-[calc(100vh-140px)] space-y-2 overflow-y-auto p-3 text-[13px]"
+            className="max-h-[calc(100vh-140px)] space-y-1 overflow-y-auto p-3 text-[13px]"
             aria-label="Admin navigation"
           >
             {visibleOverview && (
@@ -379,7 +357,7 @@ export function AdminAppShell({ children }: { children: ReactNode }) {
                 to={overviewItem.to}
                 onClick={() => setMobileOpen(false)}
                 className={cn(
-                  "flex w-full items-center gap-3 rounded-lg px-3 py-2.5 transition-colors",
+                  "flex w-full items-center gap-3 rounded-lg px-3 py-2 transition-colors",
                   isItemActive(location.pathname, overviewItem)
                     ? "bg-[#163a66] font-medium text-white shadow-xs"
                     : "text-slate-300 hover:bg-white/5 hover:text-white",
@@ -394,14 +372,13 @@ export function AdminAppShell({ children }: { children: ReactNode }) {
               const GroupIcon = group.icon;
               const active = isGroupActive(group);
               const open = isGroupOpen(group);
-
               return (
                 <div key={group.id} className="space-y-1">
                   <button
                     type="button"
                     onClick={() => toggleGroup(group.id)}
                     className={cn(
-                      "flex w-full items-center justify-between rounded-lg px-3 py-2.5 text-left transition-colors",
+                      "flex w-full items-center justify-between rounded-lg px-3 py-2 text-left transition-colors",
                       active
                         ? "bg-[#163a66] font-medium text-white shadow-xs"
                         : "text-slate-300 hover:bg-white/5 hover:text-white",
@@ -421,20 +398,17 @@ export function AdminAppShell({ children }: { children: ReactNode }) {
                   </button>
 
                   {open && (
-                    <div className="space-y-1 py-1 pl-9 pr-1 text-[12px]">
+                    <div className="space-y-1 py-1 pl-9 pr-2 text-[12px]">
                       {group.items.map((item) => {
                         const ItemIcon = item.icon;
-                        const itemActive = isItemActive(
-                          location.pathname,
-                          item,
-                        );
+                        const itemActive = isItemActive(location.pathname, item);
                         return (
                           <Link
                             key={item.to}
                             to={item.to}
                             onClick={() => setMobileOpen(false)}
                             className={cn(
-                              "flex w-full items-center justify-between rounded-md px-2.5 py-2 text-left transition-colors",
+                              "flex w-full items-center justify-between rounded px-2 py-1.5 text-left transition-colors",
                               itemActive
                                 ? "bg-white/10 font-semibold text-sky-300"
                                 : "text-slate-400 hover:bg-white/5 hover:text-white",
@@ -490,14 +464,10 @@ export function AdminAppShell({ children }: { children: ReactNode }) {
               <LogOut className="h-3.5 w-3.5" />
               ออกจากระบบ
             </button>
-            <button
-              type="button"
-              onClick={() => window.open("/", "_blank", "noopener,noreferrer")}
-              className="inline-flex items-center gap-1 hover:text-white"
-            >
+            <span className="inline-flex items-center gap-1">
               <ExternalLink className="h-3.5 w-3.5" />
               Public Portal
-            </button>
+            </span>
           </div>
         </div>
       </aside>
@@ -549,7 +519,6 @@ export function AdminAppShell({ children }: { children: ReactNode }) {
             </button>
           </div>
         </header>
-
         <main>{children}</main>
       </div>
     </div>
