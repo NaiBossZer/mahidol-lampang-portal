@@ -6,7 +6,6 @@ import {
   Bot,
   ChevronDown,
   ExternalLink,
-  FileText,
   FolderOpen,
   Group,
   LogOut,
@@ -50,7 +49,6 @@ const surveyGroup: NavGroup = {
   items: [
     { to: "/admin/activities", label: "รายการกิจกรรมโครงการ", icon: Activity, permission: "activities.read" },
     { to: "/admin/survey-workflow", label: "สร้างกิจกรรม & AI Survey", icon: Bot, permission: "survey.read", badge: "AI" },
-    { to: "/admin/surveys", label: "แบบสอบถามประเมิน", icon: FileText, permission: "survey.read" },
   ],
 };
 
