@@ -2,7 +2,16 @@ import { getSupabaseUser, isAdminRole, json, supabaseConfig } from "../auth/_sha
 
 type Env = Record<string, unknown>;
 type RestParams = Record<string, string>;
-type DashboardActivityRow = { id: string; featured_image?: string | null; [key: string]: unknown };
+type DashboardActivityRow = {
+  id: string;
+  title?: string | null;
+  activity_date?: string | null;
+  category?: string | null;
+  status?: string | null;
+  participant_count?: number | null;
+  participants?: string | number | null;
+  featured_image?: string | null;
+};
 type DashboardMediaRow = {
   activity_id: string;
   public_url?: string | null;
@@ -38,6 +47,26 @@ function cookieValue(request: Request, name: string) {
   return part ? decodeURIComponent(part.slice(name.length + 1)) : null;
 }
 
+function canonicalParticipantCount(row: DashboardActivityRow) {
+  const canonical = Number(row.participant_count);
+  if (Number.isFinite(canonical) && canonical >= 0) return canonical;
+  const legacy = Number(row.participants);
+  return Number.isFinite(legacy) && legacy >= 0 ? legacy : 0;
+}
+
+function toDashboardActivity(row: DashboardActivityRow, featuredImage: string) {
+  const participantCount = canonicalParticipantCount(row);
+  return {
+    id: row.id,
+    title: String(row.title ?? ""),
+    activity_date: String(row.activity_date ?? ""),
+    category: row.category ?? null,
+    status: String(row.status ?? "draft"),
+    participants: participantCount,
+    featured_image: featuredImage,
+  };
+}
+
 export async function onRequestGet({ request, env }: { request: Request; env: Env }) {
   const user = await getSupabaseUser(request, env);
   const role = user?.app_metadata?.role;
@@ -58,7 +87,7 @@ export async function onRequestGet({ request, env }: { request: Request; env: En
       activityMedia,
     ] = await Promise.all([
       supabaseUserRest<DashboardActivityRow[]>(env, accessToken, "activities", {
-        select: "id,title,activity_date,category,status,participants,featured_image",
+        select: "id,title,activity_date,category,status,participant_count,participants,featured_image",
         order: "activity_date.desc",
       }),
       supabaseUserRest(env, accessToken, "activity_occurrences", {
@@ -105,11 +134,12 @@ export async function onRequestGet({ request, env }: { request: Request; env: En
       if (media.activity_id && url && !firstMediaByActivity.has(media.activity_id))
         firstMediaByActivity.set(media.activity_id, url);
     }
-    const activitiesWithMedia = activities.map((activity) => ({
-      ...activity,
-      featured_image:
+    const activitiesWithMedia = activities.map((activity) =>
+      toDashboardActivity(
+        activity,
         String(activity.featured_image ?? "").trim() || firstMediaByActivity.get(activity.id) || "",
-    }));
+      ),
+    );
 
     return json({
       success: true,
