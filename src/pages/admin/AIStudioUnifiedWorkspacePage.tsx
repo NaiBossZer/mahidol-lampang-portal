@@ -19,6 +19,7 @@ import { GovernancePage } from "./GovernancePage";
 import { SystemSettingsPage } from "./SystemSettingsPage";
 import { useAdminAuth } from "@/components/AdminGuard";
 import type { AdminPermission } from "@/auth/permissions";
+import { AI_STUDIO_WORKFLOW_STEPS } from "@/features/ai-studio/activityWorkflow";
 
 type ModuleId =
   | "workflow"
@@ -28,24 +29,7 @@ type ModuleId =
   | "notifications"
   | "settings";
 
-type Step = {
-  id: number;
-  title: string;
-  subtitle: string;
-  phase: 1 | 2;
-};
-
-const steps: Step[] = [
-  { id: 1, title: "Activity Brief", subtitle: "บริบทกิจกรรม", phase: 1 },
-  { id: 2, title: "AI Analysis", subtitle: "วิเคราะห์ข้อมูล", phase: 1 },
-  { id: 3, title: "AI Survey", subtitle: "สร้างแบบประเมิน", phase: 1 },
-  { id: 4, title: "Admin Review", subtitle: "ทวนสอบ", phase: 1 },
-  { id: 5, title: "Confirm", subtitle: "ยืนยัน", phase: 1 },
-  { id: 6, title: "Outcome Capture", subtitle: "รวบรวมผลจริง", phase: 2 },
-  { id: 7, title: "AI Outcome Report", subtitle: "สังเคราะห์รายงาน", phase: 2 },
-  { id: 8, title: "Publish Review", subtitle: "ตรวจสอบก่อนเผยแพร่", phase: 2 },
-  { id: 9, title: "Publish & Close", subtitle: "เผยแพร่และปิดงาน", phase: 2 },
-];
+const steps = AI_STUDIO_WORKFLOW_STEPS;
 
 const modules: Array<{
   id: ModuleId;
