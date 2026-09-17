@@ -314,7 +314,7 @@ export function AIStudioWorkspacePage() {
                       <p className="mt-1 text-[11px] text-slate-500">PDF, DOCX หรือเอกสารประกอบที่ใช้เป็น source</p>
                       <label className="mt-4 inline-flex cursor-pointer items-center gap-2 rounded-xl bg-[#002d62] px-4 py-2.5 text-xs font-bold text-white hover:bg-[#0c2340]">
                         {uploadingDoc ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />} เลือกไฟล์
-                        <input type="file" className="hidden" accept=".pdf,.doc,.docx,.txt,.md" disabled={uploadingDoc} onChange={(e) => { const file = e.target.files?.[0]; if (file) void handleFileUpload(file); e.currentTarget.value = ""; }} />
+                        <input type="file" className="hidden" accept=".pdf,.jpg,.jpeg,.png,.webp" disabled={uploadingDoc} onChange={(e) => { const file = e.target.files?.[0]; if (file) void handleFileUpload(file); e.currentTarget.value = ""; }} />
                       </label>
                     </div>
                   </div>
