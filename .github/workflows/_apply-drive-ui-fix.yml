@@ -1,0 +1,59 @@
+name: Apply Drive UI fix
+
+on:
+  push:
+    branches:
+      - fix/activity-management-review
+    paths:
+      - '.github/workflows/_apply-drive-ui-fix.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: fix/activity-management-review
+          fetch-depth: 1
+
+      - name: Update activity form labels and picker
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p = Path('src/pages/admin/ActivitiesManagementPage.tsx')
+          s = p.read_text(encoding='utf-8')
+
+          s = s.replace('import AIInsightsPanel from "@/components/admin/AIInsightsPanel";\n', 'import AIInsightsPanel from "@/components/admin/AIInsightsPanel";\nimport GoogleDriveImagePicker from "@/components/admin/GoogleDriveImagePicker";\n')
+          s = s.replace('draft: "Draft",\n  published: "Published",\n  archived: "Archived",', 'draft: "ร่าง",\n  published: "เผยแพร่",\n  archived: "เก็บถาวร",')
+          s = s.replace('<option value="draft">Draft</option>\n          <option value="published">Published</option>\n          <option value="archived">Archived</option>', '<option value="draft">ร่าง</option>\n          <option value="published">เผยแพร่</option>\n          <option value="archived">เก็บถาวร</option>')
+          old = '''                <Field label="Featured Image URL">\n                  <input value={form.featuredImage ?? ""} onChange={(event) => setForm((current) => ({ ...current, featuredImage: event.target.value }))} className="dashboard-control mt-1 w-full" placeholder="https://..." />\n                </Field>'''
+          new = '''                <Field label="รูปภาพหน้าปกกิจกรรม">\n                  <GoogleDriveImagePicker\n                    value={form.featuredImage}\n                    onChange={(url) => setForm((current) => ({ ...current, featuredImage: url }))}\n                  />\n                </Field>'''
+          if old not in s:
+              raise SystemExit('Featured Image URL field pattern not found')
+          s = s.replace(old, new, 1)
+          p.write_text(s, encoding='utf-8')
+          PY
+
+      - name: Update env example
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p = Path('.env.example')
+          s = p.read_text(encoding='utf-8')
+          marker = '# Optional public configuration\n'
+          addition = '# Google Drive Picker (public browser config; restrict the API key by domain/API)\nVITE_GOOGLE_CLIENT_ID=replace-with-google-oauth-client-id\nVITE_GOOGLE_API_KEY=replace-with-restricted-google-api-key\n\n'
+          if 'VITE_GOOGLE_CLIENT_ID=' not in s:
+              s = s.replace(marker, marker + addition, 1)
+          p.write_text(s, encoding='utf-8')
+          PY
+
+      - name: Commit changes
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add src/pages/admin/ActivitiesManagementPage.tsx .env.example
+          git diff --cached --quiet || git commit -m 'feat(admin): connect activity cover image to Google Drive picker'
+          git push origin HEAD:fix/activity-management-review
