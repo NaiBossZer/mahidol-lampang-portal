@@ -1,0 +1,36 @@
+name: Temporary Activity Report Hero Fix
+
+on:
+  push:
+    branches:
+      - fix/activity-report-hero-image-filter
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Patch hero image fallback
+        run: |
+          node - <<'NODE'
+          const fs = require('fs');
+          const path = 'src/pages/admin/ExecutiveDashboardPage.tsx';
+          let source = fs.readFileSync(path, 'utf8');
+          const oldValue = 'const level = overall === null ? "-" : overall >= 4.5 ? "ดีมาก" : overall >= 3.5 ? "ดี" : overall >= 2.5 ? "ปานกลาง" : "ควรปรับปรุง"; const title = selectedActivity?.title || "รายงานผลสัมฤทธิ์รายกิจกรรม"; const heroImage = selectedActivity?.featured_image || photos[0]?.image;';
+          const newValue = 'const level = overall === null ? "-" : overall >= 4.5 ? "ดีมาก" : overall >= 3.5 ? "ดี" : overall >= 2.5 ? "ปานกลาง" : "ควรปรับปรุง"; const title = selectedActivity?.title || "รายงานผลสัมฤทธิ์รายกิจกรรม"; const heroImage = selectedActivity?.featured_image || photos[0]?.image || "/social-engagement-logo.png";';
+          if (!source.includes(oldValue)) throw new Error('Hero image source line not found');
+          source = source.replace(oldValue, newValue);
+          fs.writeFileSync(path, source);
+          NODE
+      - name: Remove temporary runner and commit
+        run: |
+          rm .github/workflows/temp-activity-report-hero-fix.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add src/pages/admin/ExecutiveDashboardPage.tsx .github/workflows/temp-activity-report-hero-fix.yml
+          git diff --cached --check
+          git commit -m "fix: use activity image with social engagement fallback"
+          git push
