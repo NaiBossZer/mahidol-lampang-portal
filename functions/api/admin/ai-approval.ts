@@ -10,7 +10,7 @@ type Env = Record<string, unknown>;
 const cookie = (request: Request): string | null => {
   const cookies = (request.headers.get("Cookie") ?? "").split(";").map((v) => v.trim());
   const found = cookies.find((v) => v.startsWith("sb_access_token="));
-  return found ? decodeURIComponent(found.slice(17)) : null;
+  return found ? decodeURIComponent(found.slice("sb_access_token=".length)) : null;
 };
 
 async function callSupabase(env: Env, token: string, path: string, init: RequestInit = {}) {
@@ -212,7 +212,7 @@ export async function onRequest({ request, env }: { request: Request; env: Env }
         success: true,
         status: "approved",
         executionTriggered: true,
-        message: "ยืนยันแบบสอบถามและผูกกับกิจกรรมสำเร็จแล้ว",
+        message: "ยืนยันแบบประเมินและผูกเข้ากับกิจกรรมแล้ว",
         data: {
           surveyId,
           occurrenceId,
