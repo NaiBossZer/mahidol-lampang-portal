@@ -11,45 +11,34 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - name: Fix dashboard respondent-level report
+      - name: Fix respondent-level report exports
         run: |
           python - <<'PY'
           from pathlib import Path
-          import re
           p = Path('src/pages/admin/ExecutiveDashboardPage.tsx')
           s = p.read_text()
-          marker = '    {/* AI Insights Panel */}\n'
-          if marker in s:
-              start = s.index(marker)
-              end = s.index('    <div className="grid grid-cols-1 items-start gap-3 lg:grid-cols-12">', start)
-              s = s[:start] + s[end:]
-          csv_pattern = re.compile(r'const exportCSV = \(\) => \{.*?const blob = new Blob', re.S)
-          csv_replacement = '''const exportCSV = () => { const headers = ["รหัสผู้ตอบ", "กิจกรรม", "วันที่กิจกรรม", "วันที่ส่งแบบประเมิน", "ช่วงอายุ", "ประเภทผู้ตอบ", "หน่วยงาน", ...ALL_SCORE_FIELDS.map(f => SCORE_LABELS[f]), "ความคิดเห็น", "ช่องทางการรับรู้"]; const rows = filteredReportRows.map(r => [r.id, r.activity, formatDate(r.date), formatDateTime(r.submittedAt), r.ageGroup, r.affiliation, r.organization, ...ALL_SCORE_FIELDS.map(f => r.scores[f]), r.feedback, r.channels]); const csv = "\\uFEFF" + [headers, ...rows].map(row => row.map(csvCell).join(",")).join("\\r\\n"); const blob = new Blob'''
-          if not csv_pattern.search(s): raise SystemExit('exportCSV function not found')
-          s = csv_pattern.sub(csv_replacement, s, count=1)
-          print_pattern = re.compile(r'const printReport = \(\) => \{.*?const body = filteredReportRows\.map\(.*?\); printWindow\.document\.write', re.S)
-          m = print_pattern.search(s)
-          if not m: raise SystemExit('printReport function not found')
-          old = m.group(0)
-          body_start = old.index('const body = filteredReportRows.map')
-          prefix = re.sub(r'const headers = \[.*?\]; ', 'const headers = ["#", "รหัสผู้ตอบ", "กิจกรรม", "วันที่กิจกรรม", "วันที่ส่งแบบประเมิน", "ช่วงอายุ", "ประเภทผู้ตอบ", "หน่วยงาน", ...ALL_SCORE_FIELDS.map(f => SCORE_LABELS[f]), "ความคิดเห็น", "ช่องทางการรับรู้"]; ', old[:body_start], count=1, flags=re.S)
-          new_body = '''const body = filteredReportRows.map((r, i) => `<tr><td>${i + 1}</td><td>${printCell(r.id)}</td><td>${printCell(r.activity)}</td><td>${printCell(formatDate(r.date))}</td><td>${printCell(formatDateTime(r.submittedAt))}</td><td>${printCell(r.ageGroup)}</td><td>${printCell(r.affiliation)}</td><td>${printCell(r.organization)}</td>${ALL_SCORE_FIELDS.map(f => `<td class="score">${printCell(r.scores[f])}</td>`).join("")}<td class="text">${printCell(r.feedback)}</td><td>${printCell(r.channels)}</td></tr>`).join(""); printWindow.document.write'''
-          s = s[:m.start()] + prefix + new_body + s[m.end()-len('printWindow.document.write'):]
-          old_header = '["#", "กิจกรรม", "วันที่จัด", "ผู้ตอบ", "ช่วงอายุ", "ประเภทผู้ตอบ", "หน่วยงาน", ...ALL_SCORE_FIELDS.map(f => SCORE_LABELS[f]), "ความคิดเห็น", "ช่องทางการรับรู้"]'
-          new_header = '["#", "รหัสผู้ตอบ", "กิจกรรม", "วันที่จัด", "วันที่ส่งแบบประเมิน", "ช่วงอายุ", "ประเภทผู้ตอบ", "หน่วยงาน", ...ALL_SCORE_FIELDS.map(f => SCORE_LABELS[f]), "ความคิดเห็น", "ช่องทางการรับรู้"]'
-          if old_header not in s: raise SystemExit('visible report header not found')
-          s = s.replace(old_header, new_header, 1)
-          old_row = '{[i + 1, r.activity, formatDate(r.date), formatDateTime(r.submittedAt), r.ageGroup, r.affiliation, r.organization, ...ALL_SCORE_FIELDS.map(f => r.scores[f]), r.feedback, r.channels].map((value, j) =>'
-          new_row = '{[i + 1, r.id, r.activity, formatDate(r.date), formatDateTime(r.submittedAt), r.ageGroup, r.affiliation, r.organization, ...ALL_SCORE_FIELDS.map(f => r.scores[f]), r.feedback, r.channels].map((value, j) =>'
-          if old_row not in s: raise SystemExit('visible report row not found')
-          s = s.replace(old_row, new_row, 1)
-          s = s.replace('j >= 7 && j < 7 + ALL_SCORE_FIELDS.length', 'j >= 8 && j < 8 + ALL_SCORE_FIELDS.length', 1)
-          s = s.replace('j >= 7 + ALL_SCORE_FIELDS.length', 'j >= 8 + ALL_SCORE_FIELDS.length', 1)
-          s = s.replace('colSpan={7 + ALL_SCORE_FIELDS.length + 2}', 'colSpan={8 + ALL_SCORE_FIELDS.length + 2}', 1)
-          s = s.replace('[r.activity, r.ageGroup, r.affiliation, r.organization, r.feedback, r.channels, ...ALL_SCORE_FIELDS.map(f => r.scores[f])]', '[r.id, r.activity, r.ageGroup, r.affiliation, r.organization, r.feedback, r.channels, ...ALL_SCORE_FIELDS.map(f => r.scores[f])]', 1)
-          s = s.replace('<Modal title="รายงานผลสัมฤทธิ์รวมทุกกิจกรรม (Executive Summary)"', '<Modal title={`ตารางข้อมูลผู้ตอบแบบประเมินรายบุคคล • ${filteredReportRows.length.toLocaleString("th-TH")} รายการ`}', 1)
-          if 'aiInsights' in s or 'AIPerformanceFeedbackModal' in s or 'Sparkles' in s: raise SystemExit('stale AI Insights references remain')
-          if old_header in s or old_row in s: raise SystemExit('old respondent table structure remains')
+
+          replacements = [
+              ('const headers = ["กิจกรรม", "วันที่กิจกรรม", "วันที่ส่งแบบประเมิน", "ช่วงอายุ", "ประเภทผู้ตอบ", "หน่วยงาน", ...ALL_SCORE_FIELDS.map(f => SCORE_LABELS[f]), "ความคิดเห็น", "ช่องทางการรับรู้"]; const rows = filteredReportRows.map(r => [r.activity, formatDate(r.date), formatDateTime(r.submittedAt), r.ageGroup, r.affiliation, r.organization,',
+               'const headers = ["รหัสผู้ตอบ", "กิจกรรม", "วันที่กิจกรรม", "วันที่ส่งแบบประเมิน", "ช่วงอายุ", "ประเภทผู้ตอบ", "หน่วยงาน", ...ALL_SCORE_FIELDS.map(f => SCORE_LABELS[f]), "ความคิดเห็น", "ช่องทางการรับรู้"]; const rows = filteredReportRows.map(r => [r.id, r.activity, formatDate(r.date), formatDateTime(r.submittedAt), r.ageGroup, r.affiliation, r.organization,'),
+              ('const headers = ["#", "กิจกรรม", "วันที่กิจกรรม", "วันที่ส่งแบบประเมิน", "ช่วงอายุ", "ประเภทผู้ตอบ", "หน่วยงาน", ...ALL_SCORE_FIELDS.map(f => SCORE_LABELS[f]), "ความคิดเห็น", "ช่องทางการรับรู้"]; const body = filteredReportRows.map((r, i) => `<tr><td>${i + 1}</td><td>${printCell(r.activity)}</td>',
+               'const headers = ["#", "รหัสผู้ตอบ", "กิจกรรม", "วันที่กิจกรรม", "วันที่ส่งแบบประเมิน", "ช่วงอายุ", "ประเภทผู้ตอบ", "หน่วยงาน", ...ALL_SCORE_FIELDS.map(f => SCORE_LABELS[f]), "ความคิดเห็น", "ช่องทางการรับรู้"]; const body = filteredReportRows.map((r, i) => `<tr><td>${i + 1}</td><td>${printCell(r.id)}</td><td>${printCell(r.activity)}</td>'),
+              ('["#", "กิจกรรม", "วันที่จัด", "ผู้ตอบ", "ช่วงอายุ", "ประเภทผู้ตอบ", "หน่วยงาน", ...ALL_SCORE_FIELDS.map(f => SCORE_LABELS[f]), "ความคิดเห็น", "ช่องทางการรับรู้"]',
+               '["#", "รหัสผู้ตอบ", "กิจกรรม", "วันที่จัด", "วันที่ส่งแบบประเมิน", "ช่วงอายุ", "ประเภทผู้ตอบ", "หน่วยงาน", ...ALL_SCORE_FIELDS.map(f => SCORE_LABELS[f]), "ความคิดเห็น", "ช่องทางการรับรู้"]'),
+              ('{[i + 1, r.activity, formatDate(r.date), formatDateTime(r.submittedAt), r.ageGroup, r.affiliation, r.organization,',
+               '{[i + 1, r.id, r.activity, formatDate(r.date), formatDateTime(r.submittedAt), r.ageGroup, r.affiliation, r.organization,'),
+              ('j >= 7 && j < 7 + ALL_SCORE_FIELDS.length', 'j >= 8 && j < 8 + ALL_SCORE_FIELDS.length'),
+              ('j >= 7 + ALL_SCORE_FIELDS.length', 'j >= 8 + ALL_SCORE_FIELDS.length'),
+              ('colSpan={7 + ALL_SCORE_FIELDS.length + 2}', 'colSpan={8 + ALL_SCORE_FIELDS.length + 2}'),
+              ('[r.activity, r.ageGroup, r.affiliation, r.organization, r.feedback, r.channels, ...ALL_SCORE_FIELDS.map(f => r.scores[f])]', '[r.id, r.activity, r.ageGroup, r.affiliation, r.organization, r.feedback, r.channels, ...ALL_SCORE_FIELDS.map(f => r.scores[f])]'),
+          ]
+          for old, new in replacements:
+              if old not in s:
+                  raise SystemExit(f'Expected fragment not found: {old[:100]}')
+              s = s.replace(old, new, 1)
+
+          if 'r.id, r.activity' not in s or 'printCell(r.id)' not in s:
+              raise SystemExit('Respondent ID was not wired into report outputs')
           p.write_text(s)
           PY
       - name: Commit changes and remove workflow
