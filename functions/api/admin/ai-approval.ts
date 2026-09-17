@@ -22,6 +22,7 @@ type AiExecution = {
   risk_level?: string | null;
   input?: Record<string, unknown> | null;
   output?: Record<string, unknown> | null;
+  completed_at?: string | null;
 };
 
 async function callSupabase<T>(
@@ -53,6 +54,41 @@ async function callSupabase<T>(
   }
 
   return body as T;
+}
+
+async function updateExecution(
+  env: Env,
+  token: string,
+  executionId: string,
+  patch: Record<string, unknown>,
+): Promise<AiExecution> {
+  const updated = await callSupabase<AiExecution[]>(
+    env,
+    token,
+    `ai_executions?id=eq.${encodeURIComponent(executionId)}&select=id,status,completed_at,input,output&limit=1`,
+    {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        Prefer: "return=representation",
+      },
+      body: JSON.stringify(patch),
+    },
+  );
+
+  const row = updated?.[0];
+  if (!row) {
+    throw new Error("AI execution update returned no rows; execution state was not changed");
+  }
+
+  const expectedStatus = typeof patch.status === "string" ? patch.status : null;
+  if (expectedStatus && row.status !== expectedStatus) {
+    throw new Error(
+      `AI execution update did not persist expected status '${expectedStatus}' (actual '${row.status}')`,
+    );
+  }
+
+  return row;
 }
 
 function isAllowedSurveyQuestionType(value: string):
@@ -129,42 +165,48 @@ export async function onRequest({
       );
     }
 
-    const existingApprovals = await callSupabase<Array<{ id: string }>>(
+    const existingApprovals = await callSupabase<
+      Array<{ id: string; decision: "approved" | "rejected"; reviewer_id?: string | null }>
+    >(
       env,
       token,
-      `ai_approvals?execution_id=eq.${encodeURIComponent(execution.id)}&select=id&order=decided_at.desc&limit=1`,
+      `ai_approvals?execution_id=eq.${encodeURIComponent(execution.id)}&select=id,decision,reviewer_id&order=decided_at.desc&limit=1`,
     );
 
+    let approvalRecorded = false;
     if (existingApprovals?.length) {
-      return json(
-        { success: false, error: "Execution already has an approval decision" },
-        409,
-      );
+      const existingApproval = existingApprovals[0];
+      if (existingApproval.decision !== decision) {
+        return json(
+          { success: false, error: "Execution already has a different approval decision" },
+          409,
+        );
+      }
+      // Idempotent retry: continue the approved execution if a previous request
+      // recorded the approval but did not persist the execution lifecycle update.
+      approvalRecorded = true;
+    } else {
+      await callSupabase(env, token, "ai_approvals", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Prefer: "return=minimal",
+        },
+        body: JSON.stringify({
+          execution_id: execution.id,
+          reviewer_id: user.id,
+          decision,
+          reason: body.reason?.trim() || null,
+          decided_at: new Date().toISOString(),
+        }),
+      });
+      approvalRecorded = true;
     }
 
-    await callSupabase(env, token, "ai_approvals", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Prefer: "return=minimal",
-      },
-      body: JSON.stringify({
-        execution_id: execution.id,
-        reviewer_id: user.id,
-        decision,
-        reason: body.reason?.trim() || null,
-        decided_at: new Date().toISOString(),
-      }),
-    });
-
     if (decision === "rejected") {
-      await callSupabase(env, token, `ai_executions?id=eq.${encodeURIComponent(execution.id)}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          status: "rejected",
-          completed_at: new Date().toISOString(),
-        }),
+      await updateExecution(env, token, execution.id, {
+        status: "rejected",
+        completed_at: new Date().toISOString(),
       });
 
       return json({
@@ -175,17 +217,19 @@ export async function onRequest({
       });
     }
 
-    await callSupabase(env, token, "audit_logs", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        actor_id: user.id,
-        action: "survey reviewed",
-        table_name: "ai_executions",
-        record_id: execution.id,
-        new_data: { decision },
-      }),
-    }).catch(() => undefined);
+    if (approvalRecorded && !existingApprovals?.length) {
+      await callSupabase(env, token, "audit_logs", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          actor_id: user.id,
+          action: "survey reviewed",
+          table_name: "ai_executions",
+          record_id: execution.id,
+          new_data: { decision },
+        }),
+      }).catch(() => undefined);
+    }
 
     if (execution.intent === "survey_generation") {
       const input = execution.input ?? {};
@@ -288,11 +332,18 @@ export async function onRequest({
         );
       }
 
+      const currentQuestions = await callSupabase<Array<{ order_index: number | null }>>(
+        env,
+        token,
+        `survey_questions?survey_id=eq.${encodeURIComponent(surveyId)}&select=order_index&order=order_index.desc.nullslast&limit=1`,
+      );
+      let orderIndex =
+        Math.max(0, Number(currentQuestions?.[0]?.order_index ?? 0)) + 1;
+      let questionCount = 0;
+
       const sections = Array.isArray(survey.sections)
         ? (survey.sections as Array<Record<string, unknown>>)
         : [];
-      let orderIndex = 1;
-      let questionCount = 0;
 
       for (const section of sections) {
         const questions = Array.isArray(section.questions)
@@ -310,7 +361,6 @@ export async function onRequest({
           );
 
           if (existingQuestion?.length) {
-            orderIndex += 1;
             continue;
           }
 
@@ -341,20 +391,16 @@ export async function onRequest({
       }
 
       const completedAt = new Date().toISOString();
-      await callSupabase(env, token, `ai_executions?id=eq.${encodeURIComponent(execution.id)}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          status: "completed",
-          completed_at: completedAt,
-          output: {
-            ...output,
-            surveyId,
-            occurrenceId,
-            attachedAt: completedAt,
-            questionCount,
-          },
-        }),
+      await updateExecution(env, token, execution.id, {
+        status: "completed",
+        completed_at: completedAt,
+        output: {
+          ...output,
+          surveyId,
+          occurrenceId,
+          attachedAt: completedAt,
+          questionCount,
+        },
       });
 
       await callSupabase(env, token, "audit_logs", {
