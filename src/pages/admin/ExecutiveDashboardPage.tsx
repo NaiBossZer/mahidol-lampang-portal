@@ -106,10 +106,7 @@ export function ExecutiveDashboardPage() {
     feedback: r.feedback,
     channels: r.channels,
   }))), [filteredReportRows]);
-  const reportDetailRows = useMemo<ReportDetailRow[]>(() => filteredReportRows.flatMap(r => ALL_SCORE_FIELDS.map(field => ({
-    respondentId: r.id, activity: r.activity, date: r.date, submittedAt: r.submittedAt, ageGroup: r.ageGroup, affiliation: r.affiliation, organization: r.organization,
-    group: SCORE_GROUPS.find(g => g.fields.includes(field))?.title || "-", question: SCORE_LABELS[field], score: r.scores[field] || "", feedback: r.feedback, channels: r.channels,
-  }))), [filteredReportRows]);
+
   const exportCSV = () => {
     const headers = ["รหัสผู้ตอบ", "กิจกรรม", "วันที่กิจกรรม", "วันที่ส่งแบบประเมิน", "ช่วงอายุ", "ประเภทผู้ตอบ", "หน่วยงาน", "หมวดคำถาม", "ข้อคำถาม", "คะแนน (1-5)", "ความคิดเห็น", "ช่องทางการรับรู้"];
     const rows = reportDetailRows.map(r => [r.respondentId, r.activity, formatDate(r.date), formatDateTime(r.submittedAt), r.ageGroup, r.affiliation, r.organization, r.group, r.question, r.score, r.feedback, r.channels]);
