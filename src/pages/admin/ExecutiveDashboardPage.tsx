@@ -106,23 +106,22 @@ export function ExecutiveDashboardPage() {
     feedback: r.feedback,
     channels: r.channels,
   }))), [filteredReportRows]);
+  const reportDetailRows = useMemo<ReportDetailRow[]>(() => filteredReportRows.flatMap(r => ALL_SCORE_FIELDS.map(field => ({
+    respondentId: r.id, activity: r.activity, date: r.date, submittedAt: r.submittedAt, ageGroup: r.ageGroup, affiliation: r.affiliation, organization: r.organization,
+    group: SCORE_GROUPS.find(g => g.fields.includes(field))?.title || "-", question: SCORE_LABELS[field], score: r.scores[field] || "", feedback: r.feedback, channels: r.channels,
+  }))), [filteredReportRows]);
   const exportCSV = () => {
     const headers = ["รหัสผู้ตอบ", "กิจกรรม", "วันที่กิจกรรม", "วันที่ส่งแบบประเมิน", "ช่วงอายุ", "ประเภทผู้ตอบ", "หน่วยงาน", "หมวดคำถาม", "ข้อคำถาม", "คะแนน (1-5)", "ความคิดเห็น", "ช่องทางการรับรู้"];
     const rows = reportDetailRows.map(r => [r.respondentId, r.activity, formatDate(r.date), formatDateTime(r.submittedAt), r.ageGroup, r.affiliation, r.organization, r.group, r.question, r.score, r.feedback, r.channels]);
     const csv = "\uFEFF" + [headers, ...rows].map(row => row.map(csvCell).join(",")).join("\r\n");
-    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `Mahidol_Lampang_Survey_Respondent_Question_Report_${new Date().toISOString().slice(0, 10)}.csv`;
-    document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" }); const url = URL.createObjectURL(blob); const a = document.createElement("a");
+    a.href = url; a.download = `Mahidol_Lampang_Survey_Respondent_Question_Report_${new Date().toISOString().slice(0, 10)}.csv`; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
   };
   const printReport = () => {
-    const printWindow = window.open("", "_blank", "noopener,noreferrer,width=1400,height=900");
-    if (!printWindow) { window.print(); return; }
+    const printWindow = window.open("", "_blank", "noopener,noreferrer,width=1400,height=900"); if (!printWindow) { window.print(); return; }
     const headers = ["#", "รหัสผู้ตอบ", "กิจกรรม", "วันที่กิจกรรม", "วันที่ส่งแบบประเมิน", "ช่วงอายุ", "ประเภทผู้ตอบ", "หน่วยงาน", "หมวดคำถาม", "ข้อคำถาม", "คะแนน (1-5)", "ความคิดเห็น", "ช่องทางการรับรู้"];
     const body = reportDetailRows.map((r, i) => `<tr><td>${i + 1}</td><td>${printCell(r.respondentId)}</td><td>${printCell(r.activity)}</td><td>${printCell(formatDate(r.date))}</td><td>${printCell(formatDateTime(r.submittedAt))}</td><td>${printCell(r.ageGroup)}</td><td>${printCell(r.affiliation)}</td><td>${printCell(r.organization)}</td><td>${printCell(r.group)}</td><td class="text">${printCell(r.question)}</td><td class="score">${printCell(r.score)}</td><td class="text">${printCell(r.feedback)}</td><td>${printCell(r.channels)}</td></tr>`).join("");
-    printWindow.document.write(`<!doctype html><html lang="th"><head><meta charset="utf-8"><title>Mahidol Lampang Survey — Respondent & Question</title><style>@page{size:A4 landscape;margin:10mm}*{box-sizing:border-box}body{font-family:Arial,'Noto Sans Thai',sans-serif;color:#111827;font-size:9px;margin:0}h1{font-size:16px;margin:0 0 4px}p{margin:0 0 8px;color:#64748b}.sheet{border-collapse:collapse;width:100%;table-layout:auto}th,td{border:1px solid #cbd5e1;padding:4px 5px;vertical-align:top;white-space:nowrap}th{background:#e2e8f0;font-weight:700;text-align:center}.score{text-align:center;font-weight:700}.text{white-space:normal;min-width:130px;max-width:260px}.footer{margin-top:8px;color:#64748b}@media print{th{background:#e2e8f0!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}}</style></head><body><h1>รายงานข้อมูลแบบประเมินรายบุคคลและรายข้อ — Mahidol Lampang</h1><p>${printCell(title)} • ข้อมูลจริงจาก Supabase • ${filteredReportRows.length.toLocaleString("th-TH")} ผู้ตอบ • ${reportDetailRows.length.toLocaleString("th-TH")} รายการรายข้อ • พิมพ์เมื่อ ${printCell(formatDateTime(new Date().toISOString()))}</p><table class="sheet"><thead><tr>${headers.map(h => `<th>${printCell(h)}</th>`).join("")}</tr></thead><tbody>${body || `<tr><td colspan="${headers.length}">ไม่พบข้อมูล</td></tr>`}</tbody></table></body></html>`);
+    printWindow.document.write(`<!doctype html><html lang="th"><head><meta charset="utf-8"><title>Mahidol Lampang Survey — Respondent & Question</title><style>@page{size:A4 landscape;margin:10mm}*{box-sizing:border-box}body{font-family:Arial,'Noto Sans Thai',sans-serif;color:#111827;font-size:9px;margin:0}h1{font-size:16px;margin:0 0 4px}p{margin:0 0 8px;color:#64748b}.sheet{border-collapse:collapse;width:100%;table-layout:auto}th,td{border:1px solid #cbd5e1;padding:4px 5px;vertical-align:top;white-space:nowrap}th{background:#e2e8f0;font-weight:700;text-align:center}.score{text-align:center;font-weight:700}.text{white-space:normal;min-width:130px;max-width:260px}@media print{th{background:#e2e8f0!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}}</style></head><body><h1>รายงานข้อมูลแบบประเมินรายบุคคลและรายข้อ — Mahidol Lampang</h1><p>${printCell(title)} • ข้อมูลจริงจาก Supabase • ${filteredReportRows.length.toLocaleString("th-TH")} ผู้ตอบ • ${reportDetailRows.length.toLocaleString("th-TH")} รายการรายข้อ • พิมพ์เมื่อ ${printCell(formatDateTime(new Date().toISOString()))}</p><table class="sheet"><thead><tr>${headers.map(h => `<th>${printCell(h)}</th>`).join("")}</tr></thead><tbody>${body || `<tr><td colspan="${headers.length}">ไม่พบข้อมูล</td></tr>`}</tbody></table></body></html>`);
     printWindow.document.close(); printWindow.focus(); window.setTimeout(() => { printWindow.print(); printWindow.close(); }, 300);
   };
 
