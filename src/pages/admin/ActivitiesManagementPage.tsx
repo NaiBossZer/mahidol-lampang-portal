@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { CalendarDays, ImagePlus, Lightbulb, Pencil, Plus, RefreshCw, Search, Upload, X } from "lucide-react";
+import { CalendarDays, ImagePlus, Lightbulb, Pencil, Plus, RefreshCw, Upload, X } from "lucide-react";
 import { toast } from "sonner";
 import {
   createActivity,
@@ -11,6 +11,17 @@ import {
 } from "@/services/api";
 import { getAdminLearningCenters, type LearningCenter } from "@/services/admin-learning-centers";
 import AIRecommendationsSidebar from "@/components/admin/AIRecommendationsSidebar";
+import {
+  AdminPageHeader,
+  AdminButton,
+  AdminFilterBar,
+  AdminTable,
+  AdminTableHeader,
+  AdminTableRow,
+  AdminStatusBadge,
+  AdminLoadingState,
+  AdminEmptyState,
+} from "@/components/admin/ui/AdminPrimitives";
 
 const blankActivity: ActivityWriteInput = {
   title: "",
@@ -32,12 +43,8 @@ const statusLabel: Record<ActivityStatus, string> = {
   published: "Published",
   archived: "Archived",
 };
-function statusClass(s: ActivityStatus) {
-  return s === "published"
-    ? "bg-emerald-50 text-emerald-700 border-emerald-200"
-    : s === "archived"
-      ? "bg-slate-100 text-slate-600 border-slate-200"
-      : "bg-amber-50 text-amber-700 border-slate-200";
+function statusTone(s: ActivityStatus): "success" | "warning" | "neutral" {
+  return s === "published" ? "success" : s === "archived" ? "neutral" : "warning";
 }
 
 type ActivityMedia = {
@@ -201,146 +208,128 @@ export function ActivitiesManagementPage() {
   }
   return (
     <section className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-        <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-emerald-700">
-            Activity Management
-          </p>
-          <h1 className="mt-1 text-2xl font-bold tracking-tight text-brand-navy lg:text-3xl">
-            จัดการกิจกรรม
-          </h1>
-          <p className="mt-1 text-sm text-slate-600">
-            กิจกรรมเป็นจุดเดียวสำหรับข้อมูล ศูนย์การเรียนรู้ และรูปภาพ
-          </p>
-        </div>
-        <div className="flex gap-2">
-          <button
-            type="button"
-            onClick={() => void load()}
-            className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 text-sm font-semibold text-brand-navy"
-          >
-            <RefreshCw className="h-4 w-4" />
-            รีเฟรช
-          </button>
-          <button
-            type="button"
-            onClick={create}
-            className="inline-flex min-h-11 items-center gap-2 rounded-xl bg-brand-navy px-4 text-sm font-bold text-white"
-          >
-            <Plus className="h-4 w-4" />
-            เพิ่มกิจกรรม
-          </button>
-        </div>
-      </div>
-      <div className="mt-6 grid gap-3 rounded-2xl border border-slate-200 bg-white p-4 md:grid-cols-[1fr_220px]">
-        <label className="relative block">
-          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
-          <span className="sr-only">ค้นหากิจกรรม</span>
-          <input
-            value={q}
-            onChange={(e) => setQ(e.target.value)}
-            placeholder="ค้นหาชื่อกิจกรรม, slug หรือสถานที่"
-            className="dashboard-control w-full pl-10"
-          />
-        </label>
+      <AdminPageHeader
+        eyebrow="ACTIVITIES"
+        title="จัดการกิจกรรม"
+        description="กิจกรรมเป็นจุดเดียวสำหรับข้อมูล ศูนย์การเรียนรู้ และรูปภาพ"
+        actions={
+          <>
+            <AdminButton variant="secondary" icon={<RefreshCw className="h-4 w-4" />} onClick={() => void load()}>
+              รีเฟรช
+            </AdminButton>
+            <AdminButton variant="primary" icon={<Plus className="h-4 w-4" />} onClick={create}>
+              เพิ่มกิจกรรม
+            </AdminButton>
+          </>
+        }
+      />
+      <AdminFilterBar
+        search={q}
+        onSearchChange={setQ}
+        placeholder="ค้นหาชื่อกิจกรรม, slug หรือสถานที่"
+      >
         <select
           value={status}
           onChange={(e) => setStatus(e.target.value as typeof status)}
-          className="dashboard-control"
+          className="min-h-11 rounded-xl border border-slate-200 bg-white px-3 text-sm outline-none transition focus:border-[#002d62] focus:ring-4 focus:ring-[#002d62]/10"
         >
           <option value="all">ทุกสถานะ</option>
           <option value="draft">Draft</option>
           <option value="published">Published</option>
           <option value="archived">Archived</option>
         </select>
-      </div>
-      <div className="mt-4 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+      </AdminFilterBar>
+      <AdminTable minWidth="820px">
         {loading ? (
-          <div className="p-10 text-center text-sm text-slate-500">กำลังโหลดกิจกรรม...</div>
+          <AdminLoadingState label="กำลังโหลดกิจกรรม..." />
         ) : filtered.length === 0 ? (
-          <div className="p-10 text-center text-sm text-slate-500">ไม่พบกิจกรรมตามเงื่อนไข</div>
+          <AdminEmptyState
+            title="ไม่พบกิจกรรมตามเงื่อนไข"
+            description="ลองปรับเงื่อนไขการค้นหาหรือเพิ่มกิจกรรมใหม่"
+            action={
+              <AdminButton variant="primary" icon={<Plus className="h-4 w-4" />} onClick={create}>
+                เพิ่มกิจกรรม
+              </AdminButton>
+            }
+          />
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full min-w-[820px] text-sm">
-              <thead className="bg-slate-50 text-xs font-semibold text-slate-500">
-                <tr>
-                  <th className="px-5 py-3 text-left">กิจกรรม</th>
-                  <th className="px-4 py-3 text-left">วันที่</th>
-                  <th className="px-4 py-3 text-left">สถานที่</th>
-                  <th className="px-4 py-3 text-center">ผู้เข้าร่วม</th>
-                  <th className="px-4 py-3 text-center">สถานะ</th>
-                  <th className="px-5 py-3 text-right">จัดการ</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100">
-                {filtered.map((x) => (
-                  <tr key={x.id} className="hover:bg-slate-50/80">
-                    <td className="px-5 py-4">
-                      <div className="flex items-center gap-3">
-                        {x.featuredImage ? (
-                          <img
-                            src={x.featuredImage}
-                            alt=""
-                            className="h-12 w-16 rounded-lg object-cover"
-                          />
-                        ) : (
-                          <div className="grid h-12 w-16 place-items-center rounded-lg bg-slate-100 text-slate-400">
-                            <ImagePlus className="h-5 w-5" />
-                          </div>
-                        )}
-                        <div className="min-w-0">
-                          <p className="font-semibold text-slate-900">{x.title}</p>
-                          <p className="mt-0.5 truncate text-xs text-slate-400">/{x.slug}</p>
+          <>
+            <AdminTableHeader>
+              <tr>
+                <th className="px-5 py-3 text-left">กิจกรรม</th>
+                <th className="px-4 py-3 text-left">วันที่</th>
+                <th className="px-4 py-3 text-left">สถานที่</th>
+                <th className="px-4 py-3 text-center">ผู้เข้าร่วม</th>
+                <th className="px-4 py-3 text-center">สถานะ</th>
+                <th className="px-5 py-3 text-right">จัดการ</th>
+              </tr>
+            </AdminTableHeader>
+            <tbody className="divide-y divide-slate-100">
+              {filtered.map((x) => (
+                <AdminTableRow key={x.id}>
+                  <td className="px-5 py-4">
+                    <div className="flex items-center gap-3">
+                      {x.featuredImage ? (
+                        <img
+                          src={x.featuredImage}
+                          alt=""
+                          className="h-12 w-16 rounded-lg object-cover"
+                        />
+                      ) : (
+                        <div className="grid h-12 w-16 place-items-center rounded-lg bg-slate-100 text-slate-400">
+                          <ImagePlus className="h-5 w-5" />
                         </div>
+                      )}
+                      <div className="min-w-0">
+                        <p className="font-semibold text-slate-900">{x.title}</p>
+                        <p className="mt-0.5 truncate text-xs text-slate-400">/{x.slug}</p>
                       </div>
-                    </td>
-                    <td className="whitespace-nowrap px-4 py-4 text-slate-600">
-                      <span className="inline-flex items-center gap-1.5">
-                        <CalendarDays className="h-4 w-4 text-slate-400" />
-                        {new Date(x.activityDate).toLocaleDateString("th-TH")}
-                      </span>
-                    </td>
-                    <td className="max-w-[180px] truncate px-4 py-4 text-slate-600">
-                      {x.location || "—"}
-                    </td>
-                    <td className="px-4 py-4 text-center font-semibold text-slate-700">
-                      {x.participantCount ?? 0}
-                    </td>
-                    <td className="px-4 py-4 text-center">
-                      <span
-                        className={`inline-flex rounded-full border px-2.5 py-1 text-xs font-semibold ${statusClass(x.status)}`}
+                    </div>
+                  </td>
+                  <td className="whitespace-nowrap px-4 py-4 text-slate-600">
+                    <span className="inline-flex items-center gap-1.5">
+                      <CalendarDays className="h-4 w-4 text-slate-400" />
+                      {new Date(x.activityDate).toLocaleDateString("th-TH")}
+                    </span>
+                  </td>
+                  <td className="max-w-[180px] truncate px-4 py-4 text-slate-600">
+                    {x.location || "—"}
+                  </td>
+                  <td className="px-4 py-4 text-center font-semibold text-slate-700">
+                    {x.participantCount ?? 0}
+                  </td>
+                  <td className="px-4 py-4 text-center">
+                    <AdminStatusBadge tone={statusTone(x.status)}>
+                      {statusLabel[x.status]}
+                    </AdminStatusBadge>
+                  </td>
+                  <td className="px-5 py-4 text-right">
+                    <div className="flex items-center justify-end gap-2">
+                      <button
+                        type="button"
+                        onClick={() => setRecommendationActivity(x)}
+                        className="inline-flex min-h-9 items-center gap-1.5 rounded-lg border border-violet-200 bg-violet-50 px-2.5 text-xs font-semibold text-violet-700 hover:bg-violet-100 transition-colors"
+                        title="ดูคำแนะนำจาก AI"
                       >
-                        {statusLabel[x.status]}
-                      </span>
-                    </td>
-                    <td className="px-5 py-4 text-right">
-                      <div className="flex items-center justify-end gap-2">
-                        <button
-                          type="button"
-                          onClick={() => setRecommendationActivity(x)}
-                          className="inline-flex min-h-9 items-center gap-1.5 rounded-lg border border-violet-200 bg-violet-50 px-2.5 text-xs font-semibold text-violet-700 hover:bg-violet-100 transition-colors"
-                          title="ดูคำแนะนำจาก AI"
-                        >
-                          <Lightbulb className="h-3.5 w-3.5 text-amber-500" />
-                          <span className="hidden sm:inline">AI Advice</span>
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => void openEdit(x)}
-                          className="inline-flex min-h-9 items-center gap-1.5 rounded-lg border border-slate-200 px-3 text-xs font-semibold text-brand-navy"
-                        >
-                          <Pencil className="h-3.5 w-3.5" />
-                          แก้ไข
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                        <Lightbulb className="h-3.5 w-3.5 text-amber-500" />
+                        <span className="hidden sm:inline">AI Advice</span>
+                      </button>
+                      <AdminButton
+                        variant="secondary"
+                        icon={<Pencil className="h-3.5 w-3.5" />}
+                        onClick={() => void openEdit(x)}
+                        className="min-h-9 px-3 text-xs"
+                      >
+                        แก้ไข
+                      </AdminButton>
+                    </div>
+                  </td>
+                </AdminTableRow>
+              ))}
+            </tbody>
+          </>
         )}
-      </div>
+      </AdminTable>
       {open && (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/40 p-4"
@@ -349,10 +338,10 @@ export function ActivitiesManagementPage() {
         >
           <div className="flex max-h-[92vh] w-full max-w-4xl flex-col overflow-hidden rounded-2xl bg-white shadow-2xl">
             <div className="flex items-center justify-between border-b border-slate-200 px-5 py-4">
-              <h2 className="text-lg font-bold text-brand-navy">
+              <h2 className="text-lg font-bold text-[#002d62]">
                 {edit ? "แก้ไขกิจกรรม" : "เพิ่มกิจกรรม"}
               </h2>
-              <button type="button" onClick={() => setOpen(false)} aria-label="ปิด">
+              <button type="button" onClick={() => setOpen(false)} aria-label="ปิด" className="rounded-lg p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition-colors">
                 <X className="h-5 w-5" />
               </button>
             </div>
@@ -379,7 +368,7 @@ export function ActivitiesManagementPage() {
                             key === "participantCount" ? Number(e.target.value) : e.target.value,
                         }))
                       }
-                      className="dashboard-control mt-1 w-full"
+                      className="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm outline-none transition focus:border-[#002d62] focus:ring-4 focus:ring-[#002d62]/10"
                     />
                   </label>
                 ))}
@@ -393,7 +382,7 @@ export function ActivitiesManagementPage() {
                         status: e.target.value as ActivityStatus,
                       }))
                     }
-                    className="dashboard-control mt-1 w-full"
+                    className="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm outline-none transition focus:border-[#002d62] focus:ring-4 focus:ring-[#002d62]/10"
                   >
                     <option value="draft">Draft</option>
                     <option value="published">Published</option>
@@ -402,7 +391,7 @@ export function ActivitiesManagementPage() {
                 </label>
               </div>
               <div className="mt-5 rounded-2xl border border-slate-200 bg-slate-50 p-4">
-                <h3 className="text-sm font-bold text-brand-navy">ศูนย์การเรียนรู้ที่เกี่ยวข้อง</h3>
+                <h3 className="text-sm font-bold text-[#002d62]">ศูนย์การเรียนรู้ที่เกี่ยวข้อง</h3>
                 <p className="mt-1 text-xs text-slate-500">
                   เลือกจากข้อมูล Master Data ระหว่างบันทึกกิจกรรม ไม่ต้องจัดการความสัมพันธ์แยก
                 </p>
@@ -411,7 +400,7 @@ export function ActivitiesManagementPage() {
                     centers.map((center) => (
                       <label
                         key={center.id}
-                        className="flex items-center gap-2 rounded-xl bg-white px-3 py-2 text-sm font-medium text-slate-700"
+                        className="flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 transition-colors cursor-pointer"
                       >
                         <input
                           type="checkbox"
@@ -423,6 +412,7 @@ export function ActivitiesManagementPage() {
                                 : current.filter((id) => id !== center.id),
                             )
                           }
+                          className="rounded border-slate-300 text-[#002d62] focus:ring-[#002d62]"
                         />
                         {center.name}
                       </label>
@@ -435,12 +425,12 @@ export function ActivitiesManagementPage() {
               <div className="mt-5 rounded-2xl border border-slate-200 bg-white p-4">
                 <div className="flex items-center justify-between gap-3">
                   <div>
-                    <h3 className="text-sm font-bold text-brand-navy">รูปภาพกิจกรรม</h3>
+                    <h3 className="text-sm font-bold text-[#002d62]">รูปภาพกิจกรรม</h3>
                     <p className="mt-1 text-xs text-slate-500">
                       อัปโหลดจากหน้ากิจกรรมโดยตรง · JPEG, PNG หรือ WebP ไม่เกิน 10MB/ไฟล์
                     </p>
                   </div>
-                  <label className="inline-flex min-h-10 cursor-pointer items-center gap-2 rounded-xl border border-slate-200 px-3 text-sm font-semibold text-brand-navy">
+                  <label className="inline-flex min-h-10 cursor-pointer items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 text-sm font-semibold text-[#002d62] hover:bg-slate-50 transition-colors">
                     <Upload className="h-4 w-4" />
                     เพิ่มรูป
                     <input
@@ -489,28 +479,23 @@ export function ActivitiesManagementPage() {
                       onChange={(e) =>
                         setForm((current) => ({ ...current, [key]: e.target.value }))
                       }
-                      className="dashboard-control mt-1 w-full"
+                      className="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm outline-none transition focus:border-[#002d62] focus:ring-4 focus:ring-[#002d62]/10"
                     />
                   </label>
                 ))}
               </div>
             </div>
             <div className="flex justify-end gap-2 border-t border-slate-200 px-5 py-4">
-              <button
-                type="button"
-                onClick={() => setOpen(false)}
-                className="min-h-11 rounded-xl border border-slate-200 px-4 text-sm font-semibold"
-              >
+              <AdminButton variant="secondary" onClick={() => setOpen(false)}>
                 ยกเลิก
-              </button>
-              <button
-                type="button"
+              </AdminButton>
+              <AdminButton
+                variant="primary"
                 disabled={saving || uploading}
                 onClick={() => void save()}
-                className="min-h-11 rounded-xl bg-brand-navy px-5 text-sm font-bold text-white disabled:opacity-60"
               >
                 {uploading ? "กำลังอัปโหลดรูป..." : saving ? "กำลังบันทึก..." : "บันทึกกิจกรรม"}
-              </button>
+              </AdminButton>
             </div>
           </div>
         </div>

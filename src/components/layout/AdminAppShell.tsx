@@ -224,7 +224,7 @@ export function AdminAppShell({ children }: { children: ReactNode }) {
         </div>
       </aside>
 
-      <div className="min-h-screen lg:pl-[245px]">
+      <div className="min-h-screen">
         <header className="sticky top-0 z-40 flex h-14 items-center justify-between border-b border-white/10 bg-[#0c2340] px-4 text-white shadow-xs sm:px-6">
           <div className="flex min-w-0 items-center gap-2.5 text-[12px] text-slate-300">
             <button type="button" onClick={() => setMobileOpen(true)} className="rounded p-1 text-slate-300 transition-colors hover:bg-white/10 hover:text-white lg:hidden" aria-label="เปิดเมนูนำทาง" aria-controls="app-sidebar" aria-expanded={mobileOpen}><Menu className="h-[22px] w-[22px]" /></button>

@@ -265,11 +265,13 @@
     border-right: 1px solid rgba(148,163,184,.16);
     box-shadow: 8px 0 30px rgba(15,23,42,.08);
   }
+  .admin-modern-shell > div {
+    margin-left: 264px;
+  }
   .admin-modern-shell > aside > div:first-child > div:first-child {
     height: 76px;
     background: linear-gradient(135deg, rgba(124,58,237,.16), rgba(14,165,233,.08));
   }
-  .admin-modern-shell > div { margin-left: 264px; }
   .admin-modern-shell > div > header {
     height: 68px;
     background: rgba(255,255,255,.94);
