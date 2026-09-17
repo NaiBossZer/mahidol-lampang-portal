@@ -1,4 +1,4 @@
-import { getSupabaseUser, isAdminRole, json, supabaseConfig } from "../auth/_shared";
+import { getCookie, getSupabaseUser, isAdminRole, json, supabaseConfig } from "../auth/_shared";
 
 type Env = Record<string, unknown>;
 type ActivityStatus = "draft" | "published" | "archived";
@@ -21,13 +21,8 @@ type ActivityInput = {
 };
 type ActivityRow = Record<string, unknown>;
 
-function cookieValue(request: Request, name: string) {
-  const part = (request.headers.get("Cookie") ?? "")
-    .split(";")
-    .map((item) => item.trim())
-    .find((item) => item.startsWith(`${name}=`));
-  return part ? decodeURIComponent(part.slice(name.length + 1)) : null;
-}
+const WRITE_ROLES = new Set(["SUPER_ADMIN", "OPERATIONS_ADMIN"]);
+const ALLOWED_STATUS = new Set<ActivityStatus>(["draft", "published", "archived"]);
 
 async function supabaseRequest<T>(env: Env, accessToken: string, path: string, init: RequestInit = {}) {
   const { url, key, configured } = supabaseConfig(env);
@@ -45,9 +40,37 @@ async function supabaseRequest<T>(env: Env, accessToken: string, path: string, i
   const body = await response.json().catch(() => null);
   if (!response.ok) {
     const detail = typeof body === "object" && body && "message" in body ? String(body.message) : "";
-    throw new Error(`Supabase REST ${response.status}${detail ? `: ${detail.slice(0, 300)}` : ""}`);
+    const code = typeof body === "object" && body && "code" in body ? String(body.code) : "";
+    const suffix = [code, detail].filter(Boolean).join(": ");
+    const error = new Error(`Supabase REST ${response.status}${suffix ? `: ${suffix.slice(0, 350)}` : ""}`);
+    (error as Error & { status?: number; code?: string }).status = response.status;
+    (error as Error & { status?: number; code?: string }).code = code;
+    throw error;
   }
   return body as T;
+}
+
+function normalizeActivityDate(value: unknown) {
+  const raw = String(value ?? "").trim();
+  const date = raw.slice(0, 10);
+  return /^\d{4}-\d{2}-\d{2}$/.test(date) ? date : "";
+}
+
+function normalizeParticipantCount(value: unknown, required = false) {
+  if (value == null || value === "") return required ? 0 : undefined;
+  const number = Number(value);
+  if (!Number.isFinite(number) || number < 0 || !Number.isInteger(number)) {
+    throw new Error("จำนวนผู้เข้าร่วมต้องเป็นจำนวนเต็มตั้งแต่ 0 ขึ้นไป");
+  }
+  return number;
+}
+
+function makeSlug(title: string) {
+  const base = title
+    .toLowerCase()
+    .replace(/[^\w\u0E00-\u0E7F]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+  return `${base || "activity"}-${Date.now()}`;
 }
 
 function toActivity(row: ActivityRow) {
@@ -83,12 +106,12 @@ function toRow(input: ActivityInput, partial = false) {
   if (!partial || has("slug")) row.slug = String(input.slug ?? "").trim();
   if (!partial || has("summary")) row.summary = String(input.summary ?? "").trim();
   if (!partial || has("content")) row.content = String(input.content ?? "").trim();
-  if (!partial || has("activityDate")) row.activity_date = String(input.activityDate ?? "").slice(0, 10);
+  if (!partial || has("activityDate")) row.activity_date = normalizeActivityDate(input.activityDate);
   if (!partial || has("location")) row.location = String(input.location ?? "").trim();
   if (!partial || has("participantCount")) {
-    const participantCount = Math.max(0, Number(input.participantCount ?? 0));
-    row.participant_count = Number.isFinite(participantCount) ? participantCount : 0;
-    row.participants = String(Number.isFinite(participantCount) ? participantCount : 0);
+    const participantCount = normalizeParticipantCount(input.participantCount, false) ?? 0;
+    row.participant_count = participantCount;
+    row.participants = String(participantCount);
   }
   if (!partial || has("objective")) row.objective = String(input.objective ?? (partial ? "" : input.summary ?? "")).trim();
   if (!partial || has("process")) row.key_activities = String(input.process ?? "").split(/\r?\n/).map((item) => item.trim()).filter(Boolean);
@@ -102,51 +125,81 @@ function toRow(input: ActivityInput, partial = false) {
 
 async function authorize(request: Request, env: Env) {
   const user = await getSupabaseUser(request, env);
-  const role = user?.app_metadata?.role;
-  if (!user || !isAdminRole(role)) return { error: json({ success: false, error: "Forbidden" }, 403) } as const;
-  const accessToken = cookieValue(request, "sb_access_token");
-  if (!accessToken) return { error: json({ success: false, error: "Unauthorized" }, 401) } as const;
-  if (role !== "SUPER_ADMIN" && role !== "OPERATIONS_ADMIN") return { error: json({ success: false, error: "Forbidden" }, 403) } as const;
-  return { accessToken } as const;
+  const role = String(user?.app_metadata?.role ?? "");
+  const accessToken = getCookie(request, "sb_access_token");
+  if (!user || !isAdminRole(role) || !accessToken) return { error: json({ success: false, error: "Unauthorized" }, 401) } as const;
+  if (!WRITE_ROLES.has(role)) return { error: json({ success: false, error: "Forbidden" }, 403) } as const;
+  return { accessToken, role } as const;
+}
+
+function friendlyError(error: unknown) {
+  const value = error as { code?: string; message?: string } | null;
+  if (value?.code === "23505") return "Slug นี้ถูกใช้งานแล้ว กรุณาเปลี่ยน Slug หรือเว้นว่างเพื่อให้ระบบสร้างให้อัตโนมัติ";
+  if (value?.code === "23503") return "ข้อมูลที่เชื่อมโยงไม่ถูกต้องหรือไม่พบรายการอ้างอิง";
+  return error instanceof Error ? error.message : "ไม่สามารถดำเนินการกับกิจกรรมได้";
 }
 
 export async function onRequest({ request, env }: { request: Request; env: Env }) {
   const method = request.method.toUpperCase();
-  if (!["GET", "POST", "PUT", "PATCH", "DELETE"].includes(method)) return json({ error: "Method Not Allowed" }, 405, { Allow: "GET, POST, PUT, PATCH, DELETE" });
+  if (!["GET", "POST", "PUT", "PATCH", "DELETE"].includes(method)) {
+    return json({ error: "Method Not Allowed" }, 405, { Allow: "GET, POST, PUT, PATCH, DELETE" });
+  }
+
   const auth = await authorize(request, env);
   if ("error" in auth) return auth.error;
+
   try {
     const id = new URL(request.url).searchParams.get("id");
     const select = "id,title,slug,summary,content,activity_date,location,participant_count,participants,featured_image,images,objective,key_activities,outcomes,impact,status,created_at,updated_at";
+
     if (method === "GET") {
       const rows = await supabaseRequest<ActivityRow[]>(env, auth.accessToken, `activities?select=${select}&order=activity_date.desc`);
       return json({ success: true, data: rows.map(toActivity) });
     }
+
     if (method === "POST") {
       const input = (await request.json()) as ActivityInput;
-      if (!input.title?.trim() || !input.activityDate) return json({ success: false, error: "กรุณาระบุชื่อกิจกรรมและวันที่" }, 400);
-      if (!input.slug?.trim()) {
-        const baseSlug = input.title
-          .toLowerCase()
-          .replace(/[^\w\u0E00-\u0E7F]+/g, "-")
-          .replace(/^-+|-+$/g, "");
-        input.slug = `${baseSlug || "activity"}-${Date.now()}`;
-      }
+      const title = String(input.title ?? "").trim();
+      const activityDate = normalizeActivityDate(input.activityDate);
+      if (!title || !activityDate) return json({ success: false, error: "กรุณาระบุชื่อกิจกรรมและวันที่ให้ถูกต้อง" }, 400);
+
+      const participantCount = normalizeParticipantCount(input.participantCount, false) ?? 0;
+      const status = input.status ?? "draft";
+      if (!ALLOWED_STATUS.has(status)) return json({ success: false, error: "สถานะกิจกรรมไม่ถูกต้อง" }, 400);
+
+      const payload: ActivityInput = {
+        ...input,
+        title,
+        activityDate,
+        participantCount,
+        slug: String(input.slug ?? "").trim() || makeSlug(title),
+        status,
+      };
+
       const rows = await supabaseRequest<ActivityRow[]>(env, auth.accessToken, "activities", {
         method: "POST",
         headers: { Prefer: "return=representation" },
-        body: JSON.stringify(toRow(input)),
+        body: JSON.stringify(toRow(payload)),
       });
-      return json({ success: true, data: rows[0] ? toActivity(rows[0]) : null }, 201);
+      const created = rows[0] ? toActivity(rows[0]) : null;
+      if (!created) return json({ success: false, error: "สร้างกิจกรรมไม่สำเร็จ: ไม่ได้รับข้อมูลรายการที่บันทึก" }, 500);
+      return json({ success: true, data: created }, 201);
     }
+
     if (!id) return json({ success: false, error: "ต้องระบุ id ของกิจกรรม" }, 400);
+
     if (method === "PUT" || method === "PATCH") {
       const input = (await request.json()) as ActivityInput;
+      if (input.title !== undefined && !String(input.title).trim()) return json({ success: false, error: "ชื่อกิจกรรมห้ามว่าง" }, 400);
+      if (input.activityDate !== undefined && !normalizeActivityDate(input.activityDate)) return json({ success: false, error: "วันที่กิจกรรมไม่ถูกต้อง" }, 400);
+      if (input.participantCount !== undefined) normalizeParticipantCount(input.participantCount, false);
+      if (input.status !== undefined && !ALLOWED_STATUS.has(input.status)) return json({ success: false, error: "สถานะกิจกรรมไม่ถูกต้อง" }, 400);
       if (method === "PUT" && !input.title?.trim() && !input.activityDate) return json({ success: false, error: "ต้องระบุข้อมูลที่ต้องการอัปเดต" }, 400);
       if (method === "PATCH" && Object.keys(input).length === 0) return json({ success: false, error: "ต้องระบุข้อมูลที่ต้องการอัปเดต" }, 400);
-      if (input.status && !["draft", "published", "archived"].includes(input.status)) return json({ success: false, error: "สถานะกิจกรรมไม่ถูกต้อง" }, 400);
+
       const patch = toRow(input, true);
       if (!Object.keys(patch).length) return json({ success: false, error: "ไม่พบ field ที่รองรับสำหรับการอัปเดต" }, 400);
+
       const rows = await supabaseRequest<ActivityRow[]>(env, auth.accessToken, `activities?id=eq.${encodeURIComponent(id)}`, {
         method: "PATCH",
         headers: { Prefer: "return=representation" },
@@ -155,6 +208,7 @@ export async function onRequest({ request, env }: { request: Request; env: Env }
       if (!rows[0]) return json({ success: false, error: "ไม่พบกิจกรรม" }, 404);
       return json({ success: true, data: toActivity(rows[0]) });
     }
+
     const rows = await supabaseRequest<ActivityRow[]>(env, auth.accessToken, `activities?id=eq.${encodeURIComponent(id)}`, {
       method: "PATCH",
       headers: { Prefer: "return=representation" },
@@ -164,6 +218,6 @@ export async function onRequest({ request, env }: { request: Request; env: Env }
     return json({ success: true, data: toActivity(rows[0]) });
   } catch (error) {
     console.error(`/api/admin/activities ${method}`, error);
-    return json({ success: false, error: error instanceof Error ? error.message : "ไม่สามารถดำเนินการกับกิจกรรมได้" }, 500);
+    return json({ success: false, error: friendlyError(error) }, 500);
   }
 }
