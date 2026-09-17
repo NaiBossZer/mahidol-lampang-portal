@@ -1,0 +1,36 @@
+name: Temporary hero report fix
+
+on:
+  push:
+    branches:
+      - fix/activity-report-hero-fit
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Patch report hero and title
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path('src/pages/admin/ExecutiveDashboardPage.tsx')
+          s = p.read_text()
+          s = s.replace('const title = selectedActivity?.title || "รายงานผลสัมฤทธิ์รายกิจกรรม";', 'const title = selectedActivity?.title || "รายงานผลสัมฤทธิ์ทั้งหมด";')
+          s = s.replace('className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"', 'className="h-full w-full object-contain transition-transform duration-300 group-hover:scale-105"')
+          p.write_text(s)
+          q = Path('src/App.tsx')
+          s = q.read_text()
+          s = s.replace("label: 'รายงานผลสัมฤทธิ์รายกิจกรรม'", "label: 'รายงานผลสัมฤทธิ์ทั้งหมด'")
+          s = s.replace('รายงานผลสัมฤทธิ์รายกิจกรรม', 'รายงานผลสัมฤทธิ์ทั้งหมด')
+          q.write_text(s)
+          PY
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add src/pages/admin/ExecutiveDashboardPage.tsx src/App.tsx
+          git rm .github/workflows/temporary-hero-report-fix.yml
+          git commit -m "fix: fit activity hero image and rename report title"
+          git push
