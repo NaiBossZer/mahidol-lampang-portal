@@ -1,7 +1,7 @@
 import { Children, isValidElement, type ButtonHTMLAttributes, type HTMLAttributes, type ReactNode } from "react";
 import { Search, RefreshCw, Sparkles, ShieldCheck } from "lucide-react";
 
-type AdminButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & { variant?: "primary" | "secondary" | "ghost"; icon?: ReactNode };
+type AdminButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & { variant?: "primary" | "secondary" | "ghost" | "danger"; icon?: ReactNode };
 
 export function AdminPageHeader({ eyebrow, title, description, actions }: { eyebrow?: string; title: string; description?: string; actions?: ReactNode }) {
   const isActivityStudio = eyebrow === "ACTIVITIES";
@@ -44,6 +44,7 @@ export function AdminButton({ variant = "primary", icon, className = "", childre
     primary: "border border-[#002d62] bg-[#002d62] text-white shadow-sm hover:bg-[#0c2340]",
     secondary: "border border-slate-200 bg-white text-[#002d62] shadow-sm hover:bg-slate-50",
     ghost: "border border-transparent text-slate-600 hover:bg-slate-100",
+    danger: "border border-red-200 bg-red-50 text-red-700 shadow-sm hover:bg-red-100",
   };
   return <button {...props} className={`inline-flex min-h-10 items-center justify-center gap-2 rounded-xl px-4 text-sm font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50 ${variants[variant]} ${className}`}>{icon}{children}</button>;
 }
