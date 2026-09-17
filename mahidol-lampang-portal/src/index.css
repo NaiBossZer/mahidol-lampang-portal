@@ -6,11 +6,26 @@
   }
 }
 
+/*
+ * Material Symbols are used throughout the application as icon glyphs.
+ * Keep the font family explicit here instead of relying on the Google Fonts
+ * stylesheet to inject the class rule. This makes the icon contract stable
+ * across production builds and Tailwind CSS processing.
+ */
 .material-symbols-outlined {
+  font-family: 'Material Symbols Outlined';
+  font-style: normal;
+  font-weight: 400;
+  font-feature-settings: 'liga';
   font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20;
   vertical-align: middle;
   line-height: 1;
   display: inline-block;
+  white-space: nowrap;
+  word-wrap: normal;
+  direction: ltr;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
 }
 
 ::-webkit-scrollbar {
