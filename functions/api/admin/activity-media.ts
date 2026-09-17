@@ -24,6 +24,7 @@ async function rest(env: Env, token: string, path: string, init: RequestInit = {
   if (!response.ok) throw new Error(`Supabase REST ${response.status}`);
   return body;
 }
+
 async function storage(env: Env, token: string, path: string, init: RequestInit = {}) {
   const config = supabaseConfig(env);
   if (!config.configured) throw new Error("Supabase is not configured");
@@ -42,6 +43,7 @@ export async function onRequest({ request, env }: { request: Request; env: Env }
     if (!user || !isAdminRole(role) || !token)
       return json({ success: false, error: "Unauthorized" }, 401);
     const params = new URL(request.url).searchParams;
+
     if (request.method === "GET") {
       const query = new URLSearchParams({
         select:
@@ -54,25 +56,54 @@ export async function onRequest({ request, env }: { request: Request; env: Env }
         data: await rest(env, token, `activity_media?${query.toString()}`),
       });
     }
+
     if (!WRITE_ROLES.has(role)) return json({ success: false, error: "Forbidden" }, 403);
+
     if (request.method === "DELETE") {
       const id = params.get("id");
       if (!id) return json({ success: false, error: "id required" }, 400);
       const rows = (await rest(
         env,
         token,
-        `activity_media?id=eq.${id}&select=id,storage_path`,
+        `activity_media?id=eq.${id}&select=id,activity_id,storage_path,public_url`,
       )) as Row[];
       const row = rows[0];
       if (!row) return json({ success: false, error: "ไม่พบรูปภาพ" }, 404);
+
       await storage(env, token, String(row.storage_path), { method: "DELETE" });
       await rest(env, token, `activity_media?id=eq.${id}`, { method: "DELETE" });
+
+      const activityId = String(row.activity_id ?? "");
+      const deletedUrl = String(row.public_url ?? "");
+      if (activityId && deletedUrl) {
+        const activities = (await rest(
+          env,
+          token,
+          `activities?id=eq.${activityId}&select=id,featured_image`,
+        )) as Row[];
+        if (activities[0] && String(activities[0].featured_image ?? "") === deletedUrl) {
+          const remaining = (await rest(
+            env,
+            token,
+            `activity_media?activity_id=eq.${activityId}&status=eq.active&media_type=eq.image&select=public_url&order=display_order.asc,created_at.asc&limit=1`,
+          )) as Row[];
+          const nextFeatured = String(remaining[0]?.public_url ?? "");
+          await rest(env, token, `activities?id=eq.${activityId}`, {
+            method: "PATCH",
+            headers: { Prefer: "return=minimal" },
+            body: JSON.stringify({ featured_image: nextFeatured }),
+          });
+        }
+      }
+
       return json({ success: true, data: { id } });
     }
+
     if (request.method !== "POST")
       return json({ success: false, error: "Method Not Allowed" }, 405, {
         Allow: "GET, POST, DELETE",
       });
+
     const form = await request.formData();
     const activityId = String(form.get("activityId") ?? "");
     const occurrenceId = String(form.get("occurrenceId") ?? "") || null;
