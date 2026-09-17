@@ -1,4 +1,4 @@
-@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Sarabun:wght@400;500;600;700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap");
 @import "tailwindcss";
 @import "tw-animate-css";
 @source "../src";
@@ -65,7 +65,6 @@
   .font-numeric { font-family: var(--font-numeric); }
 }
 @layer components {
-  .admin-dashboard-shell > div { margin-left: var(--admin-sidebar-width); }
   .admin-dashboard-shell #admin-main > div { background: #f4f6fb; }
   .admin-dashboard-shell #admin-main main > section,
   .admin-dashboard-shell #admin-main main > div > section {
@@ -219,7 +218,6 @@
   .admin-dashboard-shell #admin-main .dashboard-screen > main > section:nth-of-type(4) > div:nth-child(3) > section:nth-child(3) { grid-area: comments; }
 }
 @media (max-width: 1023px) {
-  .admin-dashboard-shell > div { margin-left: 0; }
   .dashboard-screen { min-height: calc(100vh - 4rem); }
   .dashboard-control { flex: 1 1 10rem; }
 }
