@@ -1,0 +1,81 @@
+name: Temporary Dashboard Branding Fix
+
+on:
+  push:
+    branches: [fix/dashboard-content-branding]
+
+permissions:
+  contents: write
+
+jobs:
+  fix:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Apply branding corrections
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          replacements = {
+              "src/pages/admin/ExecutiveDashboardPage.tsx": [
+                  (
+                      "คณะสิ่งแวดล้อมและทรัพยากรศาสตร์ มหาวิทยาลัยมหิดล · วิทยาเขตลำปาง",
+                      "งานพันธกิจเพื่อสังคม คณะสิ่งแวดล้อมและทรัพยากรศาสตร์ มหาวิทยาลัยมหิดล",
+                  ),
+                  (
+                      "มหาวิทยาลัยมหิดล วิทยาเขตลำปาง",
+                      "งานพันธกิจเพื่อสังคม คณะสิ่งแวดล้อมและทรัพยากรศาสตร์ มหาวิทยาลัยมหิดล",
+                  ),
+              ],
+              "src/components/admin/ExecutiveReportOverride.tsx": [
+                  (
+                      "มหาวิทยาลัยมหิดล วิทยาเขตลำปาง",
+                      "งานพันธกิจเพื่อสังคม คณะสิ่งแวดล้อมและทรัพยากรศาสตร์ มหาวิทยาลัยมหิดล",
+                  ),
+              ],
+              "functions/api/admin/ai-document-analysis.ts": [
+                  (
+                      "มหาวิทยาลัยมหิดล วิทยาเขตลำปาง",
+                      "งานพันธกิจเพื่อสังคม คณะสิ่งแวดล้อมและทรัพยากรศาสตร์ มหาวิทยาลัยมหิดล",
+                  ),
+              ],
+              "functions/api/admin/ai-survey-generate.ts": [
+                  (
+                      "มหาวิทยาลัยมหิดล วิทยาเขตลำปาง",
+                      "งานพันธกิจเพื่อสังคม คณะสิ่งแวดล้อมและทรัพยากรศาสตร์ มหาวิทยาลัยมหิดล",
+                  ),
+              ],
+              "functions/api/admin/ai-post-project.ts": [
+                  (
+                      "ม.มหิดล วิทยาเขตลำปาง",
+                      "งานพันธกิจเพื่อสังคม คณะสิ่งแวดล้อมและทรัพยากรศาสตร์ มหาวิทยาลัยมหิดล",
+                  ),
+                  (
+                      "มหาวิทยาลัยมหิดล วิทยาเขตลำปาง",
+                      "งานพันธกิจเพื่อสังคม คณะสิ่งแวดล้อมและทรัพยากรศาสตร์ มหาวิทยาลัยมหิดล",
+                  ),
+              ],
+          }
+
+          for name, pairs in replacements.items():
+              path = Path(name)
+              text = path.read_text(encoding="utf-8")
+              for old, new in pairs:
+                  count = text.count(old)
+                  if count:
+                      text = text.replace(old, new)
+                      print(f"{name}: replaced {count} occurrence(s) of {old!r}")
+              path.write_text(text, encoding="utf-8")
+          PY
+
+          rm .github/workflows/temporary-dashboard-branding-fix.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git diff --cached --check
+          git commit -m "fix: correct social engagement branding content"
+          git push origin HEAD:fix/dashboard-content-branding
