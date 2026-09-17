@@ -7,6 +7,11 @@ type GooglePickerFile = {
   mimeType?: string;
 };
 
+type GooglePickerCallbackData = {
+  action?: string;
+  docs?: GooglePickerFile[];
+};
+
 type GoogleDriveImagePickerProps = {
   value?: string | null;
   onChange: (url: string) => void;
@@ -26,19 +31,25 @@ type GoogleApi = {
   load: (name: string, callback: () => void) => void;
 };
 
+type GooglePickerBuilder = {
+  addView: (view: unknown) => GooglePickerBuilder;
+  setOAuthToken: (token: string) => GooglePickerBuilder;
+  setDeveloperKey: (key: string) => GooglePickerBuilder;
+  setCallback: (callback: (data: GooglePickerCallbackData) => void) => GooglePickerBuilder;
+  build: () => { setVisible: (visible: boolean) => void };
+};
+
 type GooglePicker = {
-  PickerBuilder: new () => {
-    addView: (view: unknown) => unknown;
-    setOAuthToken: (token: string) => unknown;
-    setDeveloperKey: (key: string) => unknown;
-    setCallback: (callback: (data: { action?: string; docs?: GooglePickerFile[] }) => void) => unknown;
-    build: () => { setVisible: (visible: boolean) => void };
-  };
+  PickerBuilder: new () => GooglePickerBuilder;
   ViewId: { DOCS: unknown };
   Action: { PICKED: string };
   DocsView: new (viewId: unknown) => {
-    setMimeTypes: (mimeTypes: string) => unknown;
+    setMimeTypes: (mimeTypes: string) => GooglePickerPickerView;
   };
+};
+
+type GooglePickerPickerView = {
+  setMimeTypes: (mimeTypes: string) => GooglePickerPickerView;
 };
 
 declare global {
@@ -105,19 +116,22 @@ export default function GoogleDriveImagePicker({ value, onChange }: GoogleDriveI
 
     try {
       await ensureGooglePicker();
-      if (!window.google?.accounts || !window.googlePicker) {
+      const googleAccounts = window.google?.accounts;
+      const googlePicker = window.googlePicker;
+      if (!googleAccounts || !googlePicker) {
         throw new Error("Google Drive Picker พร้อมใช้งานไม่ครบ");
       }
 
       const showPicker = (accessToken: string) => {
-        const view = new window.googlePicker!.DocsView(window.googlePicker!.ViewId.DOCS);
+        const view = new googlePicker.DocsView(googlePicker.ViewId.DOCS);
         view.setMimeTypes("image/jpeg,image/png,image/webp,image/gif");
-        const picker = new window.googlePicker!.PickerBuilder()
+
+        const picker = new googlePicker.PickerBuilder()
           .addView(view)
           .setOAuthToken(accessToken)
           .setDeveloperKey(API_KEY)
-          .setCallback((data) => {
-            if (data.action === window.googlePicker!.Action.PICKED && data.docs?.[0]?.id) {
+          .setCallback((data: GooglePickerCallbackData) => {
+            if (data.action === googlePicker.Action.PICKED && data.docs?.[0]?.id) {
               const fileId = data.docs[0].id;
               onChange(`https://drive.google.com/thumbnail?id=${encodeURIComponent(fileId)}&sz=w1600`);
             }
@@ -125,10 +139,11 @@ export default function GoogleDriveImagePicker({ value, onChange }: GoogleDriveI
             setLoading(false);
           })
           .build();
+
         picker.setVisible(true);
       };
 
-      tokenClient.current = window.google.accounts.oauth2.initTokenClient({
+      tokenClient.current = googleAccounts.oauth2.initTokenClient({
         client_id: CLIENT_ID,
         scope: DRIVE_SCOPE,
         callback: (response) => {
