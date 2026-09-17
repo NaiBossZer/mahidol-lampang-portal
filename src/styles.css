@@ -31,6 +31,7 @@
   --ink: #1f2933;
   --content-max: 90rem;
   --radius: 0.75rem;
+  --admin-sidebar-width: 264px;
   --background: #f4f6fb;
   --foreground: #1f2933;
   --card: #fff;
@@ -64,6 +65,7 @@
   .font-numeric { font-family: var(--font-numeric); }
 }
 @layer components {
+  .admin-dashboard-shell > div { margin-left: var(--admin-sidebar-width); }
   .admin-dashboard-shell #admin-main > div { background: #f4f6fb; }
   .admin-dashboard-shell #admin-main main > section,
   .admin-dashboard-shell #admin-main main > div > section {
@@ -217,6 +219,7 @@
   .admin-dashboard-shell #admin-main .dashboard-screen > main > section:nth-of-type(4) > div:nth-child(3) > section:nth-child(3) { grid-area: comments; }
 }
 @media (max-width: 1023px) {
+  .admin-dashboard-shell > div { margin-left: 0; }
   .dashboard-screen { min-height: calc(100vh - 4rem); }
   .dashboard-control { flex: 1 1 10rem; }
 }
@@ -248,7 +251,6 @@
   background: #fff;
 }
 
-
 @layer components {
   .admin-modern-shell {
     --admin-page: #f8f9ff;
@@ -260,13 +262,13 @@
     background: var(--admin-page);
   }
   .admin-modern-shell > aside {
-    width: 264px;
+    width: var(--admin-sidebar-width);
     background: linear-gradient(180deg, #071d36 0%, #0c2340 52%, #102d50 100%);
     border-right: 1px solid rgba(148,163,184,.16);
     box-shadow: 8px 0 30px rgba(15,23,42,.08);
   }
   .admin-modern-shell > div {
-    margin-left: 264px;
+    margin-left: var(--admin-sidebar-width);
   }
   .admin-modern-shell > aside > div:first-child > div:first-child {
     height: 76px;
@@ -308,7 +310,7 @@
     outline: none;
   }
   @media (max-width: 1023px) {
-    .admin-modern-shell > aside { width: 280px; }
+    .admin-modern-shell > aside { width: var(--admin-sidebar-width); }
     .admin-modern-shell > div { margin-left: 0; }
   }
 }
