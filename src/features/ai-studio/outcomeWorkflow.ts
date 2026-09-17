@@ -42,9 +42,7 @@ export function canAdvanceOutcomeWorkflow(
   }
 }
 
-export function getOutcomeWorkflowProgress(
-  state: OutcomeWorkflowState,
-) {
+export function getOutcomeWorkflowProgress(state: OutcomeWorkflowState) {
   return OUTCOME_WORKFLOW_STEPS.map((step) => ({
     ...step,
     complete: canAdvanceOutcomeWorkflow(step.id, state),
