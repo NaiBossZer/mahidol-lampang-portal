@@ -1,4 +1,4 @@
-import type { ButtonHTMLAttributes, HTMLAttributes, ReactNode } from "react";
+import { Children, isValidElement, type ButtonHTMLAttributes, type HTMLAttributes, type ReactNode } from "react";
 import { Search, RefreshCw } from "lucide-react";
 
 type AdminButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
@@ -147,13 +147,45 @@ export function AdminStatusBadge({ status, label, tone, children }: AdminStatusB
   );
 }
 
+function renderAdminTableChild(child: ReactNode, index: number) {
+  if (!isValidElement(child)) return child;
+  const childType = child.type;
+
+  if (childType === AdminLoading || childType === AdminLoadingState) {
+    return (
+      <tbody key={`loading-${index}`}>
+        <tr>
+          <td colSpan={100} className="p-0">
+            {child}
+          </td>
+        </tr>
+      </tbody>
+    );
+  }
+
+  if (childType === AdminEmptyState || childType === AdminEmpty) {
+    return (
+      <tbody key={`empty-${index}`}>
+        <tr>
+          <td colSpan={100} className="p-0">
+            {child}
+          </td>
+        </tr>
+      </tbody>
+    );
+  }
+
+  return child;
+}
+
 export function AdminTable({ children, minWidth = "min-w-[760px]" }: { children: ReactNode; minWidth?: string }) {
   const isPixelWidth = /^\d+(?:\.\d+)?px$/.test(minWidth);
+  const tableChildren = Children.map(children, renderAdminTableChild);
   return (
     <AdminCard className="mt-4 overflow-hidden">
       <div className="overflow-x-auto">
         <table className={`w-full text-sm ${isPixelWidth ? "" : minWidth}`} style={isPixelWidth ? { minWidth } : undefined}>
-          {children}
+          {tableChildren}
         </table>
       </div>
     </AdminCard>
