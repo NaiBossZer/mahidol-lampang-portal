@@ -28,7 +28,9 @@ jobs:
 
           s = s.replace('import AIInsightsPanel from "@/components/admin/AIInsightsPanel";\n', 'import AIInsightsPanel from "@/components/admin/AIInsightsPanel";\nimport GoogleDriveImagePicker from "@/components/admin/GoogleDriveImagePicker";\n')
           s = s.replace('draft: "Draft",\n  published: "Published",\n  archived: "Archived",', 'draft: "ร่าง",\n  published: "เผยแพร่",\n  archived: "เก็บถาวร",')
-          s = s.replace('<option value="draft">Draft</option>\n          <option value="published">Published</option>\n          <option value="archived">Archived</option>', '<option value="draft">ร่าง</option>\n          <option value="published">เผยแพร่</option>\n          <option value="archived">เก็บถาวร</option>')
+          s = s.replace('<option value="draft">Draft</option>', '<option value="draft">ร่าง</option>')
+          s = s.replace('<option value="published">Published</option>', '<option value="published">เผยแพร่</option>')
+          s = s.replace('<option value="archived">Archived</option>', '<option value="archived">เก็บถาวร</option>')
           old = '''                <Field label="Featured Image URL">\n                  <input value={form.featuredImage ?? ""} onChange={(event) => setForm((current) => ({ ...current, featuredImage: event.target.value }))} className="dashboard-control mt-1 w-full" placeholder="https://..." />\n                </Field>'''
           new = '''                <Field label="รูปภาพหน้าปกกิจกรรม">\n                  <GoogleDriveImagePicker\n                    value={form.featuredImage}\n                    onChange={(url) => setForm((current) => ({ ...current, featuredImage: url }))}\n                  />\n                </Field>'''
           if old not in s:
