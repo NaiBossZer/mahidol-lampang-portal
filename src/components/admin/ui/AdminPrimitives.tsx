@@ -92,12 +92,12 @@ function renderAdminTableChild(child: ReactNode, index: number) {
   return child;
 }
 
-export function AdminTable({ children, minWidth = "min-w-[760px]" }: { children: ReactNode; minWidth?: string }) {
+export function AdminTable({ children, minWidth = "min-w-[760px]", className = "" }: { children: ReactNode; minWidth?: string; className?: string }) {
   const isPixelWidth = /^\d+(?:\.\d+)?px$/.test(minWidth);
   const isActivityStudioTable = minWidth === "820px";
   const tableChildren = Children.map(children, renderAdminTableChild);
   return (
-    <AdminCard className={`mt-4 overflow-hidden ${isActivityStudioTable ? "border-slate-200/80 shadow-sm" : ""}`}>
+    <AdminCard className={`mt-4 overflow-hidden ${isActivityStudioTable ? "border-slate-200/80 shadow-sm" : ""} ${className}`}>
       {isActivityStudioTable && (
         <div className="flex flex-col gap-2 border-b border-slate-200 bg-white px-5 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-6">
           <div>
