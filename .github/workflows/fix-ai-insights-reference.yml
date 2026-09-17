@@ -1,0 +1,96 @@
+name: Cleanup AI Insights Dashboard Reference
+on:
+  push:
+    branches: [feat/move-ai-insights-to-activities]
+permissions:
+  contents: write
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Remove stale AI Insights references and fix respondent-level exports
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p = Path('src/pages/admin/ExecutiveDashboardPage.tsx')
+          s = p.read_text()
+
+          # The stale JSX is a complete dashboard section whose first marker may
+          # have changed during the previous move. Remove it only when the old
+          # runtime symbols are actually still present.
+          if 'aiInsights.aiVsManualPerformance' in s:
+              start = s.rfind('    <div className="grid grid-cols-1 items-start gap-3 lg:grid-cols-12">', 0, s.find('aiInsights.aiVsManualPerformance'))
+              end = s.find('    <div className="grid grid-cols-1 items-start gap-3 lg:grid-cols-12">', s.find('aiInsights.aiVsManualPerformance'))
+              if start < 0 or end < 0:
+                  raise SystemExit('Could not locate stale AI Insights section')
+              s = s[:start] + s[end:]
+
+          # The response table is already one row per survey response. Make that
+          # explicit in the UI/export and expose the response UUID as the stable
+          # respondent record identifier (the schema does not provide a respondent name).
+          s = s.replace(
+              'type ReportRow = { id: string; activity: string; date: string; submittedAt: string;',
+              'type ReportRow = { id: string; activity: string; date: string; submittedAt: string;'
+          )
+
+          old_export = 'const exportCSV = () => { const headers = ["กิจกรรม", "วันที่กิจกรรม", "วันที่ส่งแบบประเมิน", "ช่วงอายุ", "ประเภทผู้ตอบ", "หน่วยงาน", ...ALL_SCORE_FIELDS.map(f => SCORE_LABELS[f]), "ความคิดเห็น", "ช่องทางการรับรู้"]; const rows = filteredReportRows.map(r => [r.activity, formatDate(r.date), formatDateTime(r.submittedAt), r.ageGroup, r.affiliation, r.organization, ...ALL_SCORE_FIELDS.map(f => r.scores[f]), r.feedback, r.channels]);'
+          new_export = 'const exportCSV = () => { const headers = ["รหัสผู้ตอบ", "กิจกรรม", "วันที่กิจกรรม", "วันที่ส่งแบบประเมิน", "ช่วงอายุ", "ประเภทผู้ตอบ", "หน่วยงาน", ...ALL_SCORE_FIELDS.map(f => SCORE_LABELS[f]), "ความคิดเห็น", "ช่องทางการรับรู้"]; const rows = filteredReportRows.map(r => [r.id, r.activity, formatDate(r.date), formatDateTime(r.submittedAt), r.ageGroup, r.affiliation, r.organization, ...ALL_SCORE_FIELDS.map(f => r.scores[f]), r.feedback, r.channels]);'
+          if old_export in s:
+              s = s.replace(old_export, new_export, 1)
+          elif 'const exportCSV = () => {' not in s:
+              raise SystemExit('exportCSV function not found')
+
+          old_print = 'const headers = ["#", "กิจกรรม", "วันที่กิจกรรม", "วันที่ส่งแบบประเมิน", "ช่วงอายุ", "ประเภทผู้ตอบ", "หน่วยงาน", ...ALL_SCORE_FIELDS.map(f => SCORE_LABELS[f]), "ความคิดเห็น", "ช่องทางการรับรู้"]; const body = filteredReportRows.map((r, i) => `<tr><td>${i + 1}</td><td>${printCell(r.activity)}</td><td>${printCell(formatDate(r.date))}</td><td>${printCell(formatDateTime(r.submittedAt))}</td><td>${printCell(r.ageGroup)}</td><td>${printCell(r.affiliation)}</td><td>${printCell(r.organization)}</td>}'
+          new_print = 'const headers = ["#", "รหัสผู้ตอบ", "กิจกรรม", "วันที่กิจกรรม", "วันที่ส่งแบบประเมิน", "ช่วงอายุ", "ประเภทผู้ตอบ", "หน่วยงาน", ...ALL_SCORE_FIELDS.map(f => SCORE_LABELS[f]), "ความคิดเห็น", "ช่องทางการรับรู้"]; const body = filteredReportRows.map((r, i) => `<tr><td>${i + 1}</td><td>${printCell(r.id)}</td><td>${printCell(r.activity)}</td><td>${printCell(formatDate(r.date))}</td><td>${printCell(formatDateTime(r.submittedAt))}</td><td>${printCell(r.ageGroup)}</td><td>${printCell(r.affiliation)}</td><td>${printCell(r.organization)}</td>}'
+          if old_print in s:
+              s = s.replace(old_print, new_print, 1)
+          else:
+              raise SystemExit('printReport header/body not found')
+
+          s = s.replace(
+              '<Modal title="รายงานผลสัมฤทธิ์รวมทุกกิจกรรม (Executive Summary)"',
+              '<Modal title={`ตารางข้อมูลผู้ตอบแบบประเมินรายบุคคล • ${filteredReportRows.length.toLocaleString("th-TH")} รายการ`}',
+              1
+          )
+          s = s.replace(
+              '["#", "กิจกรรม", "วันที่จัด", "ผู้ตอบ", "ช่วงอายุ", "ประเภทผู้ตอบ", "หน่วยงาน", ...ALL_SCORE_FIELDS.map(f => SCORE_LABELS[f]), "ความคิดเห็น", "ช่องทางการรับรู้"]',
+              '["#", "รหัสผู้ตอบ", "กิจกรรม", "วันที่จัด", "วันที่ส่งแบบประเมิน", "ช่วงอายุ", "ประเภทผู้ตอบ", "หน่วยงาน", ...ALL_SCORE_FIELDS.map(f => SCORE_LABELS[f]), "ความคิดเห็น", "ช่องทางการรับรู้"]',
+              1
+          )
+          s = s.replace(
+              '{[i + 1, r.activity, formatDate(r.date), formatDateTime(r.submittedAt), r.ageGroup, r.affiliation, r.organization, ...ALL_SCORE_FIELDS.map(f => r.scores[f]), r.feedback, r.channels].map((value, j) =>',
+              '{[i + 1, r.id, r.activity, formatDate(r.date), formatDateTime(r.submittedAt), r.ageGroup, r.affiliation, r.organization, ...ALL_SCORE_FIELDS.map(f => r.scores[f]), r.feedback, r.channels].map((value, j) =>',
+              1
+          )
+          s = s.replace(
+              'j >= 7 && j < 7 + ALL_SCORE_FIELDS.length',
+              'j >= 8 && j < 8 + ALL_SCORE_FIELDS.length',
+              1
+          )
+          s = s.replace(
+              'j >= 7 + ALL_SCORE_FIELDS.length',
+              'j >= 8 + ALL_SCORE_FIELDS.length',
+              1
+          )
+          s = s.replace(
+              'colSpan={7 + ALL_SCORE_FIELDS.length + 2}',
+              'colSpan={8 + ALL_SCORE_FIELDS.length + 2}',
+              1
+          )
+          p.write_text(s)
+          if 'aiInsights' in s or 'AIPerformanceFeedbackModal' in s or 'Sparkles' in s:
+              raise SystemExit('stale AI Insights references remain')
+          if '["#", "กิจกรรม", "วันที่จัด", "ผู้ตอบ"' in s:
+              raise SystemExit('old non-explicit respondent table header remains')
+          PY
+      - name: Commit changes and remove workflow
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add src/pages/admin/ExecutiveDashboardPage.tsx
+          git rm .github/workflows/fix-ai-insights-reference.yml
+          git commit -m "fix: make dashboard report exports respondent-level"
+          git push
