@@ -9,7 +9,6 @@ import {
   ExternalLink,
   FileText,
   FolderOpen,
-  Group,
   LogOut,
   Menu,
   Search,
@@ -102,12 +101,6 @@ const navGroups: readonly NavGroup[] = [
         icon: FolderOpen,
         permission: "activities.read",
       },
-      {
-        to: "/admin/activities/relations",
-        label: "ความเชื่อมโยงกิจกรรม & ภาคี",
-        icon: Group,
-        permission: "activities.read",
-      },
     ],
   },
   {
@@ -191,7 +184,6 @@ const PATH_TITLE_MAP: Record<string, { group: string; title: string }> = {
   "/admin/surveys": { group: "บริหารกิจกรรม & Survey", title: "แบบสอบถามประเมิน" },
   "/admin/activities/occurrences": { group: "บริหารกิจกรรม & Survey", title: "รอบการจัดกิจกรรม (Occurrences)" },
   "/admin/activities/photos": { group: "บริหารกิจกรรม & Survey", title: "คลังภาพกิจกรรม (Media)" },
-  "/admin/activities/relations": { group: "บริหารกิจกรรม & Survey", title: "ความเชื่อมโยงกิจกรรมและภาคี" },
   "/admin/facility-safety": { group: "อาคาร & ความปลอดภัย", title: "อาคารและความปลอดภัย" },
   "/admin/ai": { group: "AI Assistant Studio", title: "AI Command Center & Workspace" },
   "/admin/ai-studio-workspace": { group: "AI Studio", title: "AI Studio Unified Workspace" },
@@ -396,12 +388,14 @@ export function AdminAppShell({ children }: { children: ReactNode }) {
                       )}
                     />
                   </button>
-
                   {open && (
                     <div className="space-y-1 py-1 pl-9 pr-2 text-[12px]">
                       {group.items.map((item) => {
                         const ItemIcon = item.icon;
-                        const itemActive = isItemActive(location.pathname, item);
+                        const itemActive = isItemActive(
+                          location.pathname,
+                          item,
+                        );
                         return (
                           <Link
                             key={item.to}
@@ -491,7 +485,6 @@ export function AdminAppShell({ children }: { children: ReactNode }) {
               </span>
             </div>
           </div>
-
           <div className="flex items-center gap-2">
             <button
               type="button"
