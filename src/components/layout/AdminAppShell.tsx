@@ -17,8 +17,6 @@ import {
   Settings,
   ShieldCheck,
   Sparkles,
-  Store,
-  Users,
   X,
 } from "lucide-react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
@@ -135,19 +133,13 @@ const navGroups: readonly NavGroup[] = [
   {
     id: "operations",
     label: "ปฏิบัติการ & ศูนย์การเรียนรู้",
-    icon: Store,
+    icon: Building2,
     items: [
       {
         to: "/admin/learning-centers",
         label: "ศูนย์การเรียนรู้ชุมชน",
         icon: Building2,
         permission: "learning_centers.read",
-      },
-      {
-        to: "/storefront",
-        label: "Store / ผลิตภัณฑ์",
-        icon: Store,
-        permission: "store.read",
       },
     ],
   },
@@ -194,17 +186,18 @@ const navGroups: readonly NavGroup[] = [
         icon: Settings,
         permission: "system.read",
       },
+    ],
+  },
+  {
+    id: "reports",
+    label: "รายงาน & Analytics",
+    icon: BarChart3,
+    items: [
       {
         to: "/admin/analytics",
         label: "Analytics",
         icon: BarChart3,
         permission: "overview.read",
-      },
-      {
-        to: "/admin/organizations",
-        label: "ผู้ใช้งาน & สิทธิ์การเข้าถึง",
-        icon: Users,
-        permission: "system.manage",
       },
     ],
   },
@@ -227,7 +220,7 @@ const PATH_TITLE_MAP: Record<string, { group: string; title: string }> = {
   "/admin/surveys/analytics": { group: "บริหารกิจกรรม & Survey", title: "ผลการวิเคราะห์แบบสอบถาม" },
   "/admin/surveys/response": { group: "บริหารกิจกรรม & Survey", title: "รายละเอียดคำตอบแบบสอบถาม" },
   "/admin/cms": { group: "เนื้อหา & เครือข่าย", title: "จัดการเนื้อหาเว็บไซต์ (CMS)" },
-  "/admin/analytics": { group: "กำกับดูแลระบบ", title: "รายงานการวิเคราะห์ (Analytics)" },
+  "/admin/analytics": { group: "รายงาน & Analytics", title: "รายงานการวิเคราะห์ (Analytics)" },
   "/admin/organizations": { group: "เนื้อหา & เครือข่าย", title: "หน่วยงานและภาคีเครือข่าย" },
   "/admin/governance": { group: "กำกับดูแลระบบ", title: "การกำกับดูแลระบบ (Governance)" },
   "/admin/audit-trail": { group: "กำกับดูแลระบบ", title: "ประวัติการใช้งาน (Audit Trail)" },
