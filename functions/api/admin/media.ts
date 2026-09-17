@@ -108,10 +108,13 @@ async function removeStorageObject(env: Env, token: string, path: string) {
     },
     body: JSON.stringify({ prefixes: [path] }),
   });
-  if (!response.ok) {
-    const body = await response.text().catch(() => "");
-    throw new Error(`Storage remove ${response.status}${body ? `: ${body.slice(0, 300)}` : ""}`);
-  }
+  if (response.ok) return;
+
+  const body = await response.text().catch(() => "");
+  // DELETE is intentionally idempotent: if the Storage object is already gone,
+  // the metadata row should still be removable instead of returning HTTP 500.
+  if (response.status === 400 || response.status === 404) return;
+  throw new Error(`Storage remove ${response.status}${body ? `: ${body.slice(0, 300)}` : ""}`);
 }
 
 export async function onRequest({ request, env }: { request: Request; env: Env }) {
