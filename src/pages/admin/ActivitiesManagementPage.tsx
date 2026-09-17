@@ -1,8 +1,9 @@
 import { useEffect, useMemo, useState, type ReactNode } from "react";
-import { CalendarDays, ImagePlus, Lightbulb, Pencil, Plus, RefreshCw, Upload, X } from "lucide-react";
+import { CalendarDays, ImagePlus, Lightbulb, Pencil, Plus, RefreshCw, Trash2, Upload, X } from "lucide-react";
 import { toast } from "sonner";
 import {
   createActivity,
+  deleteActivity,
   getAdminActivities,
   updateActivity,
   type ActivityStatus,
@@ -135,6 +136,7 @@ export function ActivitiesManagementPage() {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
   const [recommendationActivity, setRecommendationActivity] = useState<AdminActivity | null>(null);
 
@@ -199,6 +201,26 @@ export function ActivitiesManagementPage() {
     setFiles([]);
   }
 
+  async function removeActivity(activity: AdminActivity) {
+    if (deletingId) return;
+    const confirmed = window.confirm(
+      `ยืนยันการลบกิจกรรม\n\n"${activity.title}"\n\nการดำเนินการนี้เป็นการลบถาวร ไม่ใช่การเก็บถาวร และจะลบข้อมูล/สื่อที่เกี่ยวข้องด้วย\n\nต้องการดำเนินการต่อหรือไม่?`,
+    );
+    if (!confirmed) return;
+
+    setDeletingId(activity.id);
+    try {
+      await deleteActivity(activity.id);
+      setActivities((current) => current.filter((item) => item.id !== activity.id));
+      if (edit?.id === activity.id) close();
+      toast.success("ลบกิจกรรมถาวรสำเร็จ");
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "ลบกิจกรรมไม่สำเร็จ");
+    } finally {
+      setDeletingId(null);
+    }
+  }
+
   async function save() {
     const title = form.title.trim();
     const activityDate = form.activityDate.slice(0, 10);
@@ -225,7 +247,6 @@ export function ActivitiesManagementPage() {
       const activity = saved as AdminActivity;
       if (!activity?.id) throw new Error("ไม่พบรหัสกิจกรรมหลังบันทึก");
 
-      // Relations are auxiliary to the core activity row. For a new activity with no relations, skip the RPC.
       if (edit || selectedCenters.length || organizers.length) {
         try {
           await saveRelations(activity.id, {
@@ -360,6 +381,16 @@ export function ActivitiesManagementPage() {
                         <Lightbulb className="h-3.5 w-3.5 text-amber-500" /><span className="hidden sm:inline">AI Advice</span>
                       </button>
                       <AdminButton variant="secondary" icon={<Pencil className="h-3.5 w-3.5" />} onClick={() => void openEdit(activity)} className="min-h-9 px-3 text-xs">แก้ไข</AdminButton>
+                      <AdminButton
+                        variant="danger"
+                        icon={<Trash2 className="h-3.5 w-3.5" />}
+                        onClick={() => void removeActivity(activity)}
+                        disabled={deletingId === activity.id || !!deletingId}
+                        className="min-h-9 px-3 text-xs"
+                        title="ลบกิจกรรมถาวร"
+                      >
+                        {deletingId === activity.id ? "กำลังลบ..." : "ลบ"}
+                      </AdminButton>
                     </div>
                   </td>
                 </AdminTableRow>
