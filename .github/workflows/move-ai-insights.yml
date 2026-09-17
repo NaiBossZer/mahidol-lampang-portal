@@ -1,0 +1,51 @@
+name: Move AI Insights to Activities
+on:
+  push:
+    branches: [feat/move-ai-insights-to-activities]
+
+permissions:
+  contents: write
+
+jobs:
+  move:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Move AI Insights UI
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import re
+
+          dashboard = Path('src/pages/admin/ExecutiveDashboardPage.tsx')
+          activities = Path('src/pages/admin/ActivitiesManagementPage.tsx')
+
+          d = dashboard.read_text()
+          d = d.replace('  Download, ExternalLink, Eye, Filter, Image as ImageIcon, Printer, RefreshCw, RotateCcw,\n  Search, Sparkles, Star, Users, X,\n', '  Download, ExternalLink, Eye, Filter, Image as ImageIcon, Printer, RefreshCw, RotateCcw,\n  Search, Star, Users, X,\n')
+          d = d.replace('import { getAIInsights, type AIInsightSummary } from "@/services/ai-dashboard-integration";\n', '')
+          d = d.replace('import AIPerformanceFeedbackModal from "@/components/admin/AIPerformanceFeedbackModal";\n', '')
+          d = d.replace('  const [aiInsights, setAiInsights] = useState<AIInsightSummary | null>(null); const [aiInsightsLoading, setAiInsightsLoading] = useState(false);\n  const [feedbackModalOpen, setFeedbackModalOpen] = useState(false); const [feedbackSurveyId, setFeedbackSurveyId] = useState<string | undefined>();\n', '')
+          d = d.replace('  const loadAIInsights = async () => { setAiInsightsLoading(true); try { setAiInsights(await getAIInsights()); } catch (e) { console.error("Failed to load AI insights:", e); } finally { setAiInsightsLoading(false); } };\n', '')
+          d = d.replace('  useEffect(() => { if (data) void loadAIInsights(); }, [data]);\n', '')
+          d = re.sub(r'    /\*\* AI Insights Panel \*/\n    \{aiInsights && \(.*?\n    <div className="grid grid-cols-1 items-start', '    <div className="grid grid-cols-1 items-start', d, flags=re.S)
+          d = re.sub(r'    \{feedbackModalOpen && <AIPerformanceFeedbackModal .*?\/>\}\n', '', d)
+          dashboard.write_text(d)
+
+          component = '''import { useEffect, useState } from "react";\nimport { Sparkles } from "lucide-react";\nimport { getAIInsights, type AIInsightSummary } from "@/services/ai-dashboard-integration";\n\nexport default function AIInsightsPanel() {\n  const [insights, setInsights] = useState<AIInsightSummary | null>(null);\n  const [loading, setLoading] = useState(true);\n\n  useEffect(() => {\n    let active = true;\n    void getAIInsights()\n      .then((value) => { if (active) setInsights(value); })\n      .catch((error) => console.error("Failed to load AI insights:", error))\n      .finally(() => { if (active) setLoading(false); });\n    return () => { active = false; };\n  }, []);\n\n  return (\n    <section className="rounded-xl border border-violet-200 bg-gradient-to-r from-violet-50 to-purple-50 p-4 shadow-xs">\n      <div className="mb-3 flex items-center justify-between gap-3">\n        <div className="flex items-center gap-2">\n          <Sparkles className="h-4 w-4 text-violet-600" />\n          <h2 className="text-[14px] font-bold text-violet-900">AI Insights และสมรรถนะแบบสอบถาม</h2>\n        </div>\n        <span className="rounded-full bg-violet-100 px-2 py-1 text-[10px] font-medium text-violet-600">AI Studio Integration</span>\n      </div>\n      {loading ? (\n        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">\n          {[1, 2, 3, 4].map((item) => <div key={item} className="h-20 animate-pulse rounded-lg border border-violet-100 bg-white/60" />)}\n        </div>\n      ) : insights ? (\n        <>\n          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">\n            <Metric label="แบบสอบถามทั้งหมด" value={String(insights.totalSurveys)} suffix="surveys" />\n            <Metric label="AI สร้าง" value={String(insights.aiGeneratedSurveys)} suffix={`(${insights.aiPercentage.toFixed(1)}%)`} />\n            <Metric label="Manual" value={String(insights.manualSurveys)} suffix="surveys" />\n            <Metric label="AI Confidence" value={insights.averageAIConfidence.toFixed(2)} suffix="avg score" />\n          </div>\n          <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2">\n            <Compare label="AI vs Manual คะแนนเฉลี่ย" ai={insights.aiVsManualPerformance.aiAvgScore} manual={insights.aiVsManualPerformance.manualAvgScore} />\n            <Compare label="AI vs Manual อัตราตอบกลับ" ai={insights.aiVsManualPerformance.aiResponseRate} manual={insights.aiVsManualPerformance.manualResponseRate} percent />\n          </div>\n        </>\n      ) : (\n        <p className="rounded-lg bg-white/60 p-4 text-center text-xs text-slate-500">ยังไม่มีข้อมูล AI Insights</p>\n      )}\n    </section>\n  );\n}\n\nfunction Metric({ label, value, suffix }: { label: string; value: string; suffix: string }) {\n  return <div className="rounded-lg border border-violet-100 bg-white/60 p-3"><p className="text-[10px] font-medium text-violet-600">{label}</p><p className="text-lg font-bold text-violet-900">{value}</p><p className="text-[10px] text-slate-500">{suffix}</p></div>;\n}\n\nfunction Compare({ label, ai, manual, percent = false }: { label: string; ai: number; manual: number; percent?: boolean }) {\n  const max = percent ? 100 : 5;\n  const format = (value: number) => percent ? `${value.toFixed(1)}%` : value.toFixed(2);\n  return <div className="rounded-lg border border-violet-100 bg-white/60 p-3"><p className="mb-2 text-[11px] font-medium text-violet-700">{label}</p><div className="space-y-2"><Bar label="AI" value={ai} width={Math.min(100, Math.max(0, ai / max * 100))} text={format(ai)} /><Bar label="Manual" value={manual} width={Math.min(100, Math.max(0, manual / max * 100))} text={format(manual)} /></div></div>;\n}\n\nfunction Bar({ label, width, text }: { label: string; value: number; width: number; text: string }) {\n  return <div className="flex items-center gap-2"><span className="w-12 shrink-0 text-[10px] text-slate-500">{label}: {text}</span><div className="h-2 min-w-0 flex-1 overflow-hidden rounded-full bg-slate-200"><div className="h-full rounded-full bg-violet-500" style={{ width: `${width}%` }} /></div></div>;\n}\n'''
+          Path('src/components/admin/AIInsightsPanel.tsx').write_text(component)
+
+          a = activities.read_text()
+          a = a.replace('import AIRecommendationsSidebar from "@/components/admin/AIRecommendationsSidebar";\n', 'import AIRecommendationsSidebar from "@/components/admin/AIRecommendationsSidebar";\nimport AIInsightsPanel from "@/components/admin/AIInsightsPanel";\n')
+          marker = '      />\n\n      <AdminFilterBar'
+          a = a.replace(marker, '      />\n\n      <AIInsightsPanel />\n\n      <AdminFilterBar', 1)
+          activities.write_text(a)
+          PY
+
+          rm .github/workflows/move-ai-insights.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add src/pages/admin/ExecutiveDashboardPage.tsx src/pages/admin/ActivitiesManagementPage.tsx src/components/admin/AIInsightsPanel.tsx .github/workflows/move-ai-insights.yml
+          git commit -m "feat: move AI insights to activity management"
+          git push
