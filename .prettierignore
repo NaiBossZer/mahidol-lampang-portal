@@ -6,3 +6,5 @@ pnpm-lock.yaml
 package-lock.json
 bun.lock
 routeTree.gen.ts
+.github/workflows/temporary-activity-image-fix.yml
+.github/workflows/temporary-activity-image-fix-pr.yml

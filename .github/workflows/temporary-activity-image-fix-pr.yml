@@ -1,0 +1,143 @@
+name: Temporary Activity Image Fix PR
+on:
+  pull_request:
+    types: [opened, synchronize]
+    branches: [main]
+permissions:
+  contents: write
+jobs:
+  patch:
+    if: github.actor == 'NaiBossZer'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+          repository: ${{ github.event.pull_request.head.repo.full_name }}
+          fetch-depth: 0
+      - name: Patch files
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          dashboard = Path('src/pages/admin/ExecutiveDashboardPage.tsx')
+          s = dashboard.read_text()
+          s = s.replace('ข้อมูลจากระบบจริง', 'ผลจาก AI STUDIO')
+          s = s.replace('ดูรายละเอียด <span className="material-symbols-outlined text-[12px]">chevron_right</span>', 'ดูผลลัพธ์ AI <span className="material-symbols-outlined text-[12px]">chevron_right</span>')
+          dashboard.write_text(s)
+
+          api = Path('functions/api/admin/activity-media.ts')
+          s = api.read_text()
+          marker = '    if (request.method !== "POST")\n'
+          block = '''    if (request.method === "PUT") {
+      const id = params.get("id");
+      if (!id) return json({ success: false, error: "id required" }, 400);
+      const rows = (await rest(env, token, `activity_media?id=eq.${id}&select=id,activity_id,storage_path,public_url`)) as Row[];
+      const row = rows[0];
+      if (!row) return json({ success: false, error: "ไม่พบรูปภาพ" }, 404);
+      const form = await request.formData();
+      const captionValue = form.get("caption");
+      const file = form.get("file");
+      const patch: Row = {};
+      if (captionValue !== null) patch.caption = String(captionValue) || null;
+      if (file instanceof File && file.size > 0) {
+        if (!ALLOWED_TYPES.has(file.type)) return json({ success: false, error: "รองรับเฉพาะ JPEG, PNG, WebP" }, 415);
+        if (file.size > MAX_FILE_SIZE) return json({ success: false, error: "ไฟล์ต้องไม่เกิน 10MB" }, 413);
+        const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, "-");
+        const newPath = `activities/${String(row.activity_id)}/${crypto.randomUUID()}-${safeName}`;
+        await storage(env, token, newPath, { method: "POST", headers: { "Content-Type": file.type, "x-upsert": "false" }, body: await file.arrayBuffer() });
+        const config = supabaseConfig(env);
+        const newUrl = `${config.url}/storage/v1/object/public/${BUCKET}/${newPath}`;
+        patch.storage_path = newPath;
+        patch.public_url = newUrl;
+        try {
+          const updated = (await rest(env, token, `activity_media?id=eq.${id}`, { method: "PATCH", headers: { Prefer: "return=representation" }, body: JSON.stringify(patch) })) as Row[];
+          const oldUrl = String(row.public_url ?? "");
+          if (oldUrl) {
+            const activities = (await rest(env, token, `activities?id=eq.${String(row.activity_id)}&select=id,featured_image`)) as Row[];
+            if (activities[0] && String(activities[0].featured_image ?? "") === oldUrl) {
+              await rest(env, token, `activities?id=eq.${String(row.activity_id)}`, { method: "PATCH", headers: { Prefer: "return=minimal" }, body: JSON.stringify({ featured_image: newUrl }) });
+            }
+          }
+          await storage(env, token, String(row.storage_path), { method: "DELETE" }).catch(() => undefined);
+          return json({ success: true, data: updated[0] ?? null });
+        } catch (error) {
+          await storage(env, token, newPath, { method: "DELETE" }).catch(() => undefined);
+          throw error;
+        }
+      }
+      if (!Object.keys(patch).length) return json({ success: true, data: row });
+      const updated = (await rest(env, token, `activity_media?id=eq.${id}`, { method: "PATCH", headers: { Prefer: "return=representation" }, body: JSON.stringify(patch) })) as Row[];
+      return json({ success: true, data: updated[0] ?? null });
+    }
+    if (request.method !== "POST")
+'''
+          if marker in s and 'if (request.method === "PUT")' not in s:
+              s = s.replace(marker, block, 1)
+          s = s.replace('Allow: "GET, POST, DELETE",', 'Allow: "GET, POST, PUT, DELETE",')
+          api.write_text(s)
+
+          page = Path('src/pages/admin/ActivitiesManagementPage.tsx')
+          s = page.read_text()
+          s = s.replace('CalendarDays, ImagePlus, Lightbulb, Pencil, Plus, RefreshCw, Upload, X', 'CalendarDays, ImagePlus, Lightbulb, Pencil, Plus, RefreshCw, Trash2, Upload, X')
+          marker = 'async function uploadMedia(activityId: string, file: File) {\n'
+          helper = '''async function updateMediaCaption(id: string, caption: string) {
+  const form = new FormData(); form.set("caption", caption);
+  const response = await fetch(`/api/admin/activity-media?id=${encodeURIComponent(id)}`, { method: "PUT", credentials: "include", body: form });
+  const body = await response.json().catch(() => null);
+  if (!response.ok) throw new Error(body?.error || "แก้ไขคำบรรยายรูปภาพไม่สำเร็จ");
+  return body.data as ActivityMedia;
+}
+
+async function replaceMedia(id: string, file: File) {
+  const form = new FormData(); form.set("file", file);
+  const response = await fetch(`/api/admin/activity-media?id=${encodeURIComponent(id)}`, { method: "PUT", credentials: "include", body: form });
+  const body = await response.json().catch(() => null);
+  if (!response.ok) throw new Error(body?.error || "เปลี่ยนรูปภาพไม่สำเร็จ");
+  return body.data as ActivityMedia;
+}
+
+async function deleteMedia(id: string) {
+  const response = await fetch(`/api/admin/activity-media?id=${encodeURIComponent(id)}`, { method: "DELETE", credentials: "include", headers: { Accept: "application/json" } });
+  const body = await response.json().catch(() => null);
+  if (!response.ok) throw new Error(body?.error || "ลบรูปภาพไม่สำเร็จ");
+}
+
+'''
+          if marker in s and 'async function updateMediaCaption' not in s:
+              s = s.replace(marker, helper + marker, 1)
+          old = '''                {media.length > 0 && (
+                  <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
+                    {media.map((image) => <img key={image.id} src={image.public_url} alt={image.caption ?? "ภาพกิจกรรม"} className="aspect-[4/3] w-full rounded-xl object-cover" />)}
+                  </div>
+                )}
+'''
+          new = '''                {media.length > 0 && (
+                  <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+                    {media.map((image) => (
+                      <div key={image.id} className="overflow-hidden rounded-xl border border-slate-200 bg-white">
+                        <img src={image.public_url} alt={image.caption ?? "ภาพกิจกรรม"} className="aspect-[4/3] w-full object-cover" />
+                        <div className="space-y-2 border-t border-slate-100 p-2">
+                          <input defaultValue={image.caption ?? ""} aria-label="คำบรรยายรูปภาพ" placeholder="คำบรรยายรูปภาพ (ถ้ามี)" className="dashboard-control min-h-9 w-full text-xs" onBlur={async (event) => { const next = event.currentTarget.value; if (next === (image.caption ?? "")) return; try { const updated = await updateMediaCaption(image.id, next); setMedia((current) => current.map((item) => item.id === image.id ? updated : item)); toast.success("แก้ไขรูปภาพสำเร็จ"); } catch (error) { toast.error(error instanceof Error ? error.message : "แก้ไขรูปภาพไม่สำเร็จ"); } }} />
+                          <div className="flex gap-2">
+                            <label className="inline-flex min-h-9 flex-1 cursor-pointer items-center justify-center gap-1 rounded-lg border border-slate-200 px-2 text-xs font-semibold text-slate-700 hover:bg-slate-50"><Pencil className="h-3.5 w-3.5" />เปลี่ยนรูป<input type="file" accept="image/jpeg,image/png,image/webp" className="sr-only" onChange={async (event) => { const file = event.target.files?.[0]; event.target.value = ""; if (!file) return; try { const updated = await replaceMedia(image.id, file); setMedia((current) => current.map((item) => item.id === image.id ? updated : item)); toast.success("เปลี่ยนรูปภาพสำเร็จ"); void load(); } catch (error) { toast.error(error instanceof Error ? error.message : "เปลี่ยนรูปภาพไม่สำเร็จ"); } }} /></label>
+                            <button type="button" className="inline-flex min-h-9 items-center justify-center gap-1 rounded-lg border border-red-200 px-2 text-xs font-semibold text-red-600 hover:bg-red-50" onClick={async () => { if (!window.confirm("ต้องการลบรูปภาพนี้ใช่หรือไม่?")) return; try { await deleteMedia(image.id); setMedia((current) => current.filter((item) => item.id !== image.id)); toast.success("ลบรูปภาพสำเร็จ"); void load(); } catch (error) { toast.error(error instanceof Error ? error.message : "ลบรูปภาพไม่สำเร็จ"); } }}><Trash2 className="h-3.5 w-3.5" />ลบ</button>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+'''
+          if old not in s:
+              raise SystemExit('media UI marker not found')
+          s = s.replace(old, new, 1)
+          page.write_text(s)
+          PY
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add src/pages/admin/ExecutiveDashboardPage.tsx src/pages/admin/ActivitiesManagementPage.tsx functions/api/admin/activity-media.ts
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m 'fix: align dashboard card copy and manage activity images'
+          git push origin HEAD:${{ github.event.pull_request.head.ref }}
