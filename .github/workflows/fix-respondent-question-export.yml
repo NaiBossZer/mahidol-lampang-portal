@@ -1,0 +1,67 @@
+name: Fix respondent question exports
+
+on:
+  push:
+    branches:
+      - feat/move-ai-insights-to-activities
+
+permissions:
+  contents: write
+
+jobs:
+  fix:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feat/move-ai-insights-to-activities
+          fetch-depth: 1
+      - name: Rewrite report exports to respondent-question rows
+        shell: python
+        run: |
+          from pathlib import Path
+          import re
+
+          path = Path("src/pages/admin/ExecutiveDashboardPage.tsx")
+          text = path.read_text(encoding="utf-8")
+
+          old_type = 'type ReportRow = { id: string; activity: string; date: string; submittedAt: string; ageGroup: string; affiliation: string; organization: string; scores: Record<ScoreField, string>; feedback: string; channels: string };'
+          new_type = old_type + '\n' + 'type ReportDetailRow = { respondentId: string; activity: string; date: string; submittedAt: string; ageGroup: string; affiliation: string; organization: string; group: string; question: string; score: string; feedback: string; channels: string };'
+          if old_type not in text:
+              raise SystemExit("ReportRow type marker not found")
+          text = text.replace(old_type, new_type, 1)
+
+          marker = '  const exportCSV = () => {'
+          start = text.find(marker)
+          end_marker = '\n\n  if (loading) return'
+          end = text.find(end_marker, start)
+          if start < 0 or end < 0:
+              raise SystemExit("export/print block markers not found")
+
+          replacement = '''  const reportDetailRows = useMemo<ReportDetailRow[]>(() => filteredReportRows.flatMap(r => ALL_SCORE_FIELDS.map(field => ({\n    respondentId: r.id,\n    activity: r.activity,\n    date: r.date,\n    submittedAt: r.submittedAt,\n    ageGroup: r.ageGroup,\n    affiliation: r.affiliation,\n    organization: r.organization,\n    group: SCORE_GROUPS.find(g => g.fields.includes(field))?.title || "-",\n    question: SCORE_LABELS[field],\n    score: r.scores[field] || "",\n    feedback: r.feedback,\n    channels: r.channels,\n  }))), [filteredReportRows]);\n  const exportCSV = () => {\n    const headers = ["รหัสผู้ตอบ", "กิจกรรม", "วันที่กิจกรรม", "วันที่ส่งแบบประเมิน", "ช่วงอายุ", "ประเภทผู้ตอบ", "หน่วยงาน", "หมวดคำถาม", "ข้อคำถาม", "คะแนน (1-5)", "ความคิดเห็น", "ช่องทางการรับรู้"];\n    const rows = reportDetailRows.map(r => [r.respondentId, r.activity, formatDate(r.date), formatDateTime(r.submittedAt), r.ageGroup, r.affiliation, r.organization, r.group, r.question, r.score, r.feedback, r.channels]);\n    const csv = "\\uFEFF" + [headers, ...rows].map(row => row.map(csvCell).join(",")).join("\\r\\n");\n    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });\n    const url = URL.createObjectURL(blob);\n    const a = document.createElement("a");\n    a.href = url;\n    a.download = `Mahidol_Lampang_Survey_Respondent_Question_Report_${new Date().toISOString().slice(0, 10)}.csv`;\n    document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);\n  };\n  const printReport = () => {\n    const printWindow = window.open("", "_blank", "noopener,noreferrer,width=1400,height=900");\n    if (!printWindow) { window.print(); return; }\n    const headers = ["#", "รหัสผู้ตอบ", "กิจกรรม", "วันที่กิจกรรม", "วันที่ส่งแบบประเมิน", "ช่วงอายุ", "ประเภทผู้ตอบ", "หน่วยงาน", "หมวดคำถาม", "ข้อคำถาม", "คะแนน (1-5)", "ความคิดเห็น", "ช่องทางการรับรู้"];\n    const body = reportDetailRows.map((r, i) => `<tr><td>${i + 1}</td><td>${printCell(r.respondentId)}</td><td>${printCell(r.activity)}</td><td>${printCell(formatDate(r.date))}</td><td>${printCell(formatDateTime(r.submittedAt))}</td><td>${printCell(r.ageGroup)}</td><td>${printCell(r.affiliation)}</td><td>${printCell(r.organization)}</td><td>${printCell(r.group)}</td><td class="text">${printCell(r.question)}</td><td class="score">${printCell(r.score)}</td><td class="text">${printCell(r.feedback)}</td><td>${printCell(r.channels)}</td></tr>`).join("");\n    printWindow.document.write(`<!doctype html><html lang="th"><head><meta charset="utf-8"><title>Mahidol Lampang Survey — Respondent & Question</title><style>@page{size:A4 landscape;margin:10mm}*{box-sizing:border-box}body{font-family:Arial,'Noto Sans Thai',sans-serif;color:#111827;font-size:9px;margin:0}h1{font-size:16px;margin:0 0 4px}p{margin:0 0 8px;color:#64748b}.sheet{border-collapse:collapse;width:100%;table-layout:auto}th,td{border:1px solid #cbd5e1;padding:4px 5px;vertical-align:top;white-space:nowrap}th{background:#e2e8f0;font-weight:700;text-align:center}.score{text-align:center;font-weight:700}.text{white-space:normal;min-width:130px;max-width:260px}.footer{margin-top:8px;color:#64748b}@media print{th{background:#e2e8f0!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}}</style></head><body><h1>รายงานข้อมูลแบบประเมินรายบุคคลและรายข้อ — Mahidol Lampang</h1><p>${printCell(title)} • ข้อมูลจริงจาก Supabase • ${filteredReportRows.length.toLocaleString("th-TH")} ผู้ตอบ • ${reportDetailRows.length.toLocaleString("th-TH")} รายการรายข้อ • พิมพ์เมื่อ ${printCell(formatDateTime(new Date().toISOString()))}</p><table class="sheet"><thead><tr>${headers.map(h => `<th>${printCell(h)}</th>`).join("")}</tr></thead><tbody>${body || `<tr><td colspan="${headers.length}">ไม่พบข้อมูล</td></tr>`}</tbody></table></body></html>`);\n    printWindow.document.close(); printWindow.focus(); window.setTimeout(() => { printWindow.print(); printWindow.close(); }, 300);\n  };'''
+          text = text[:start] + replacement + text[end:]
+
+          table_pattern = re.compile(r'<div className="flex-1 overflow-auto bg-\[#f8fafc\] p-4"><div className="overflow-hidden rounded-xl border border-slate-200 bg-white"><table.*?</table></div></div><div className="flex items-center justify-between border-t border-slate-100 bg-white px-5 py-3 text-\[11px\] text-slate-500">.*?</div></Modal>', re.S)
+          new_table = '''<div className="flex-1 overflow-auto bg-[#f8fafc] p-4"><div className="overflow-hidden rounded-xl border border-slate-200 bg-white"><table className="min-w-[1500px] border-collapse text-[10px]"><thead className="sticky top-0 z-10"><tr className="bg-slate-50 text-slate-700">{["#", "รหัสผู้ตอบ", "กิจกรรม", "วันที่จัด", "วันที่ส่งแบบประเมิน", "ช่วงอายุ", "ประเภทผู้ตอบ", "หน่วยงาน", "หมวดคำถาม", "ข้อคำถาม", "คะแนน (1-5)", "ความคิดเห็น", "ช่องทางการรับรู้"].map(h => <th key={h} className="border-b border-slate-200 px-2.5 py-2.5 text-center font-bold whitespace-nowrap">{h}</th>)}</tr></thead><tbody>{reportDetailRows.map((r, i) => <tr key={`${r.respondentId}-${r.question}-${i}`} className="transition hover:bg-sky-50/60">{[i + 1, r.respondentId, r.activity, formatDate(r.date), formatDateTime(r.submittedAt), r.ageGroup, r.affiliation, r.organization, r.group, r.question, r.score, r.feedback, r.channels].map((value, j) => <td key={j} className={`border-b border-slate-100 px-2.5 py-2 align-top ${j === 0 || j === 10 ? "text-center font-semibold text-slate-700" : j >= 11 ? "min-w-[150px] whitespace-normal text-slate-600" : "whitespace-nowrap text-slate-600"}`}>{value || "-"}</td>)}</tr>)}{!reportDetailRows.length && <tr><td colSpan={13} className="py-12 text-center text-xs text-slate-400">ไม่พบข้อมูลตามตัวกรอง</td></tr>}</tbody></table></div></div><div className="flex items-center justify-between border-t border-slate-100 bg-white px-5 py-3 text-[11px] text-slate-500"><span>ผู้ตอบ {filteredReportRows.length.toLocaleString("th-TH")} คน • รายข้อ {reportDetailRows.length.toLocaleString("th-TH")} รายการ</span><button type="button" onClick={() => setReportsOpen(false)} className="rounded-lg bg-slate-800 px-4 py-1.5 font-bold text-white hover:bg-slate-700">ปิดหน้าต่าง</button></div></Modal>'''
+          match = table_pattern.search(text)
+          if not match:
+              raise SystemExit("report table block not found")
+          text = text[:match.start()] + new_table + text[match.end():]
+
+          text = text.replace('title="รายงานผลสัมฤทธิ์รวมทุกกิจกรรม (Executive Summary)"', 'title="รายงานข้อมูลแบบประเมินรายบุคคลและรายข้อ"', 1)
+          text = text.replace('placeholder="ค้นหากิจกรรม..."', 'placeholder="ค้นหารหัสผู้ตอบ / กิจกรรม / ข้อคำถาม..."', 1)
+          text = text.replace('disabled={!filteredReportRows.length} className="inline-flex items-center gap-1.5 rounded-lg bg-emerald-600', 'disabled={!reportDetailRows.length} className="inline-flex items-center gap-1.5 rounded-lg bg-emerald-600', 1)
+          text = text.replace('disabled={!filteredReportRows.length} className="inline-flex items-center gap-1.5 rounded-lg border', 'disabled={!reportDetailRows.length} className="inline-flex items-center gap-1.5 rounded-lg border', 1)
+
+          path.write_text(text, encoding="utf-8")
+          print("Updated", path)
+      - name: Commit fix and remove temporary workflow
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add src/pages/admin/ExecutiveDashboardPage.tsx .github/workflows/fix-respondent-question-export.yml
+          git commit -m "fix: export surveys by respondent and question" || exit 0
+          git rm .github/workflows/fix-respondent-question-export.yml
+          git commit -m "chore: remove temporary export fix workflow"
+          git push origin HEAD:feat/move-ai-insights-to-activities
