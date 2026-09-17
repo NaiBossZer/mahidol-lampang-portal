@@ -11,6 +11,7 @@ import {
 } from "@/services/api";
 import { getAdminLearningCenters, type LearningCenter } from "@/services/admin-learning-centers";
 import AIRecommendationsSidebar from "@/components/admin/AIRecommendationsSidebar";
+import AIInsightsPanel from "@/components/admin/AIInsightsPanel";
 import {
   AdminPageHeader,
   AdminButton,
@@ -293,6 +294,8 @@ export function ActivitiesManagementPage() {
           </>
         }
       />
+
+      <AIInsightsPanel />
 
       <AdminFilterBar search={q} onSearchChange={setQ} placeholder="ค้นหาชื่อกิจกรรม, slug หรือสถานที่">
         <select
