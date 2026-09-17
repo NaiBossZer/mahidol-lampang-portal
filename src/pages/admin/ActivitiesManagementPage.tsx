@@ -298,7 +298,7 @@ export function ActivitiesManagementPage() {
 
       <AIInsightsPanel />
 
-      <AdminFilterBar search={q} onSearchChange={setQ} placeholder="ค้นหาชื่อกิจกรรม, slug หรือสถานที่">
+      <AdminFilterBar search={q} onSearchChange={setQ} placeholder="ค้นหาชื่อกิจกรรม, รหัส URL หรือสถานที่">
         <select
           value={status}
           onChange={(event) => setStatus(event.target.value as typeof status)}
@@ -389,8 +389,9 @@ export function ActivitiesManagementPage() {
                 <Field label="ชื่อกิจกรรม" required>
                   <input value={form.title} onChange={(event) => setForm((current) => ({ ...current, title: event.target.value }))} className="dashboard-control mt-1 w-full" placeholder="เช่น โครงการอบรมการจัดการสิ่งแวดล้อม" autoFocus />
                 </Field>
-                <Field label="Slug">
-                  <input value={form.slug} onChange={(event) => setForm((current) => ({ ...current, slug: event.target.value }))} className="dashboard-control mt-1 w-full" placeholder="เว้นว่างได้ ระบบสร้างให้อัตโนมัติ" />
+                <Field label="รหัส URL ของกิจกรรม">
+                  <input value={form.slug} onChange={(event) => setForm((current) => ({ ...current, slug: event.target.value }))} className="dashboard-control mt-1 w-full" placeholder="เว้นว่างได้ ระบบสร้างรหัส URL ให้อัตโนมัติ" />
+                  <p className="mt-1 text-xs font-normal text-slate-400">ใช้สำหรับสร้าง URL ของหน้ากิจกรรม ไม่ใช่สถานะหรือรหัสฐานข้อมูล</p>
                 </Field>
                 <Field label="วันที่" required>
                   <input type="date" value={form.activityDate.slice(0, 10)} onChange={(event) => setForm((current) => ({ ...current, activityDate: event.target.value }))} className="dashboard-control mt-1 w-full" />
@@ -448,7 +449,7 @@ export function ActivitiesManagementPage() {
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                   <div>
                     <h3 className="text-sm font-bold text-[#002d62]">รูปภาพกิจกรรม</h3>
-                    <p className="mt-1 text-xs text-slate-500">JPEG, PNG หรือ WebP ไม่เกิน 10MB/ไฟล์ · ระบบจะใช้ไฟล์แรกเป็นรูปปกอัตโนมัติเมื่อยังไม่ได้ระบุ Featured Image URL</p>
+                    <p className="mt-1 text-xs text-slate-500">JPEG, PNG หรือ WebP ไม่เกิน 10MB/ไฟล์ · ระบบจะใช้ไฟล์แรกเป็นรูปปกอัตโนมัติเมื่อยังไม่ได้ระบุรูปภาพหน้าปกกิจกรรม</p>
                   </div>
                   <label className="inline-flex min-h-10 cursor-pointer items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 text-sm font-semibold text-[#002d62] transition-colors hover:bg-slate-50">
                     <Upload className="h-4 w-4" />เพิ่มรูป
