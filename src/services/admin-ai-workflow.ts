@@ -75,7 +75,23 @@ async function fetchJson<T>(url: string, init?: RequestInit): Promise<T> {
   return data?.data as T;
 }
 
+const MAX_ACTIVITY_DOCUMENT_SIZE = 25 * 1024 * 1024;
+const ALLOWED_ACTIVITY_DOCUMENT_TYPES = new Set([
+  "application/pdf",
+  "image/jpeg",
+  "image/png",
+  "image/webp",
+]);
+
 export async function uploadActivityDocument(activityId: string, file: File): Promise<ActivityDocument> {
+  if (file.size > MAX_ACTIVITY_DOCUMENT_SIZE) {
+    throw new Error("ไฟล์ต้องไม่เกิน 25MB");
+  }
+
+  if (file.type && !ALLOWED_ACTIVITY_DOCUMENT_TYPES.has(file.type)) {
+    throw new Error("รองรับ PDF, JPEG, PNG และ WebP");
+  }
+
   const form = new FormData();
   form.set("entityType", "activities");
   form.set("entityId", activityId);
