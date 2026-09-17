@@ -12,6 +12,7 @@ import {
 import { getAdminLearningCenters, type LearningCenter } from "@/services/admin-learning-centers";
 import AIRecommendationsSidebar from "@/components/admin/AIRecommendationsSidebar";
 import AIInsightsPanel from "@/components/admin/AIInsightsPanel";
+import GoogleDriveImagePicker from "@/components/admin/GoogleDriveImagePicker";
 import {
   AdminPageHeader,
   AdminButton,
@@ -54,9 +55,9 @@ const blankActivity: ActivityWriteInput = {
 };
 
 const statusLabel: Record<ActivityStatus, string> = {
-  draft: "Draft",
-  published: "Published",
-  archived: "Archived",
+  draft: "ร่าง",
+  published: "เผยแพร่",
+  archived: "เก็บถาวร",
 };
 
 function statusTone(status: ActivityStatus): "success" | "warning" | "neutral" {
@@ -304,9 +305,9 @@ export function ActivitiesManagementPage() {
           className="min-h-11 rounded-xl border border-slate-200 bg-white px-3 text-sm outline-none transition focus:border-[#002d62] focus:ring-4 focus:ring-[#002d62]/10"
         >
           <option value="all">ทุกสถานะ</option>
-          <option value="draft">Draft</option>
-          <option value="published">Published</option>
-          <option value="archived">Archived</option>
+          <option value="draft">ร่าง</option>
+          <option value="published">เผยแพร่</option>
+          <option value="archived">เก็บถาวร</option>
         </select>
       </AdminFilterBar>
 
@@ -407,8 +408,11 @@ export function ActivitiesManagementPage() {
                     <option value="archived">Archived</option>
                   </select>
                 </Field>
-                <Field label="Featured Image URL">
-                  <input value={form.featuredImage ?? ""} onChange={(event) => setForm((current) => ({ ...current, featuredImage: event.target.value }))} className="dashboard-control mt-1 w-full" placeholder="https://..." />
+                <Field label="รูปภาพหน้าปกกิจกรรม">
+                  <GoogleDriveImagePicker
+                    value={form.featuredImage}
+                    onChange={(url) => setForm((current) => ({ ...current, featuredImage: url }))}
+                  />
                 </Field>
               </div>
 
