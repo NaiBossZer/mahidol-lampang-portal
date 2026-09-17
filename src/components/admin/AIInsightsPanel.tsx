@@ -16,13 +16,13 @@ export default function AIInsightsPanel() {
   }, []);
 
   return (
-    <section className="rounded-xl border border-violet-200 bg-gradient-to-r from-violet-50 to-purple-50 p-4 shadow-xs">
-      <div className="mb-3 flex items-center justify-between gap-3">
-        <div className="flex items-center gap-2">
-          <Sparkles className="h-4 w-4 text-violet-600" />
-          <h2 className="text-[14px] font-bold text-violet-900">AI Insights และสมรรถนะแบบสอบถาม</h2>
+    <section className="mb-5 rounded-xl border border-violet-200 bg-gradient-to-r from-violet-50 to-purple-50 p-4 shadow-xs">
+      <div className="mb-3 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex min-w-0 items-start gap-2">
+          <Sparkles className="mt-0.5 h-4 w-4 shrink-0 text-violet-600" />
+          <h2 className="min-w-0 text-[14px] font-bold leading-5 text-violet-900">AI Insights และสมรรถนะแบบสอบถาม</h2>
         </div>
-        <span className="rounded-full bg-violet-100 px-2 py-1 text-[10px] font-medium text-violet-600">AI Studio Integration</span>
+        <span className="w-fit shrink-0 rounded-full bg-violet-100 px-2 py-1 text-[10px] font-medium text-violet-600">AI Studio Integration</span>
       </div>
       {loading ? (
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
