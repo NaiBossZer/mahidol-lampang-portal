@@ -10,7 +10,10 @@ import {
   updateActivityOutcome,
   type ActivityOutcomeMetric,
 } from "@/services/admin-activity-outcomes";
-import { generateAiPostProjectReport } from "@/services/admin-ai-workflow";
+import {
+  generateAiPostProjectReport,
+  type PostProjectReport,
+} from "@/services/admin-ai-workflow";
 
 type ActivityMedia = { id: string; public_url: string; caption?: string | null; is_post_event?: boolean; status?: string };
 
@@ -77,7 +80,7 @@ export function AIStudioOutcomeWorkspacePage() {
   const [saving, setSaving] = useState(false);
   const [aiLoading, setAiLoading] = useState(false);
   const [publishing, setPublishing] = useState(false);
-  const [report, setReport] = useState<{ summary: string; content: string; performanceResults: string; outcomesAndImpact: string; satisfactionPercent?: number; responseCount?: number } | null>(null);
+  const [report, setReport] = useState<PostProjectReport | null>(null);
   const [participantCount, setParticipantCount] = useState(0);
   const [form, setForm] = useState({ summary: "", content: "", outcome: "", impact: "", featuredImage: "" });
   const [review, setReview] = useState({ dataVerified: false, narrativeReviewed: false, mediaSelected: false, pdpaChecked: false });
