@@ -82,14 +82,27 @@ export async function uploadActivityDocument(activityId: string, file: File): Pr
   form.set("fieldKey", "documents");
   form.set("file", file);
 
-  const res = await fetch("/api/admin/media", {
-    method: "POST",
-    credentials: "include",
-    body: form,
-  });
-  const data = await res.json().catch(() => null);
-  if (!res.ok) throw new Error(data?.error || "อัปโหลดเอกสารไม่สำเร็จ");
-  return data.data as ActivityDocument;
+  const controller = new AbortController();
+  const timeout = window.setTimeout(() => controller.abort(), 60_000);
+  try {
+    const res = await fetch("/api/admin/media", {
+      method: "POST",
+      credentials: "include",
+      body: form,
+      signal: controller.signal,
+    });
+    const data = await res.json().catch(() => null);
+    if (!res.ok) throw new Error(data?.error || "อัปโหลดเอกสารไม่สำเร็จ");
+    if (!data?.data) throw new Error("อัปโหลดสำเร็จแต่ระบบไม่พบข้อมูลไฟล์");
+    return data.data as ActivityDocument;
+  } catch (error) {
+    if (error instanceof DOMException && error.name === "AbortError") {
+      throw new Error("อัปโหลดใช้เวลานานเกิน 60 วินาที กรุณาลองใหม่อีกครั้ง");
+    }
+    throw error;
+  } finally {
+    window.clearTimeout(timeout);
+  }
 }
 
 export async function getActivityDocuments(activityId: string): Promise<ActivityDocument[]> {
