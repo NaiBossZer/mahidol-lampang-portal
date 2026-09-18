@@ -143,7 +143,7 @@ function StudioModuleTabs({ active, onSelect, unreadCount }: { active: Tab; onSe
   );
 }
 
-function ControlHeader({ tab, userCount, unreadCount, loading, onRefresh }: { tab: Tab; userCount: number; unreadCount: number; loading: boolean; onRefresh: () => void }) {
+function ControlHeader({ tab, userCount, unreadCount, auditCount, loading, onRefresh }: { tab: Tab; userCount: number; unreadCount: number; auditCount: number; loading: boolean; onRefresh: () => void }) {
   const isUsers = tab === "users";
   return (
     <header className="overflow-hidden rounded-2xl bg-gradient-to-br from-[#002d62] via-[#0c2340] to-[#00152f] text-white shadow-sm">
@@ -170,8 +170,8 @@ function ControlHeader({ tab, userCount, unreadCount, loading, onRefresh }: { ta
               <p className="mt-1 text-xs font-bold text-white">Protected</p>
             </div>
             <div className="rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-[10px]">
-              <div className="flex items-center gap-1.5 text-sky-100">{isUsers ? <Users className="h-3.5 w-3.5 text-violet-300" /> : <Bell className="h-3.5 w-3.5 text-sky-300" />}{isUsers ? "Users" : "Unread"}</div>
-              <p className="mt-1 text-xs font-bold text-white">{isUsers ? userCount : tab === "audit" ? auditRows.length : unreadCount}</p>
+              <div className="flex items-center gap-1.5 text-sky-100">{isUsers ? <Users className="h-3.5 w-3.5 text-violet-300" /> : tab === "audit" ? <FileSearch className="h-3.5 w-3.5 text-emerald-300" /> : <Bell className="h-3.5 w-3.5 text-sky-300" />}{isUsers ? "Users" : tab === "audit" ? "Events" : "Unread"}</div>
+              <p className="mt-1 text-xs font-bold text-white">{isUsers ? userCount : tab === "audit" ? auditCount : unreadCount}</p>
             </div>
           </div>
         </div>
@@ -332,6 +332,7 @@ export function GovernancePage() {
           tab={tab}
           userCount={users.length}
           unreadCount={unreadCount}
+          auditCount={auditRows.length}
           loading={loading}
           onRefresh={() => void load()}
         />
