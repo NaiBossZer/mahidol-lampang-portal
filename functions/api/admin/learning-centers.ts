@@ -1,4 +1,4 @@
-import { getSupabaseUser, isAdminRole, json, supabaseConfig } from "../auth/_shared";
+import { getSupabaseUser, hasAdminPermission, isAdminRole, json, supabaseConfig } from "../auth/_shared";
 type Env = Record<string, unknown>;
 type Row = Record<string, unknown>;
 function cookieValue(request: Request, name: string) {
@@ -31,9 +31,7 @@ async function auth(request: Request, env: Env) {
   const token = cookieValue(request, "sb_access_token");
   if (!user || !isAdminRole(role) || !token)
     return { error: json({ success: false, error: "Unauthorized" }, 401) } as const;
-  if (role !== "SUPER_ADMIN" && role !== "OPERATIONS_ADMIN" && role !== "CONTENT_ADMIN")
-    return { error: json({ success: false, error: "Forbidden" }, 403) } as const;
-  return { token } as const;
+  return { token, role } as const;
 }
 export async function onRequest({ request, env }: { request: Request; env: Env }) {
   const method = request.method.toUpperCase();
@@ -41,6 +39,8 @@ export async function onRequest({ request, env }: { request: Request; env: Env }
     return json({ success: false, error: "Method Not Allowed" }, 405, { Allow: "GET, POST, PUT" });
   const a = await auth(request, env);
   if ("error" in a) return a.error;
+  const permission = method === "GET" ? "learning_centers.read" : method === "POST" ? "learning_centers.create" : "learning_centers.update";
+  if (!hasAdminPermission(a.role, permission)) return json({ success: false, error: "Forbidden" }, 403);
   try {
     const id = new URL(request.url).searchParams.get("id");
     const select =

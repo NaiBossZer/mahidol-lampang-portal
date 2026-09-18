@@ -1,6 +1,3 @@
-const ACCESS_COOKIE = "sb_access_token";
-const REFRESH_COOKIE = "sb_refresh_token";
-const MAX_AGE = 60 * 60 * 8;
 import {
   ADMIN_PERMISSIONS,
   ADMIN_ROLES,
@@ -10,6 +7,11 @@ import {
   type AdminPermission,
   type AdminRole,
 } from "../../../src/auth/permissions";
+
+
+const ACCESS_COOKIE = "sb_access_token";
+const REFRESH_COOKIE = "sb_refresh_token";
+const MAX_AGE = 60 * 60 * 8;
 
 export { ADMIN_PERMISSIONS, ADMIN_ROLES, hasAdminPermission, isAdminRole, permissionsForRole };
 export type { AdminPermission, AdminRole };

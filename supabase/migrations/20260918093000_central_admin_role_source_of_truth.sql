@@ -176,7 +176,7 @@ RETURNS TABLE (
   user_id uuid,
   email text,
   full_name text,
-  position text,
+  "position" text,
   department text,
   role text,
   active boolean,

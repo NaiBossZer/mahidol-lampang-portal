@@ -1,4 +1,4 @@
-import { getCookie, getSupabaseUser, isAdminRole, json, supabaseConfig } from "../auth/_shared";
+import { getCookie, getSupabaseUser, hasAdminPermission, isAdminRole, json, supabaseConfig } from "../auth/_shared";
 
 type Env = Record<string, unknown>;
 type Row = Record<string, unknown>;
@@ -10,7 +10,7 @@ type OutcomeInput = {
   description?: string | null;
 };
 
-const WRITE_ROLES = new Set(["SUPER_ADMIN", "CONTENT_ADMIN", "OPERATIONS_ADMIN"]);
+
 
 async function rest<T>(env: Env, token: string, path: string, init: RequestInit = {}) {
   const config = supabaseConfig(env);
@@ -63,6 +63,15 @@ export async function onRequest({ request, env }: { request: Request; env: Env }
   if ("error" in auth) return auth.error;
   const params = new URL(request.url).searchParams;
 
+  if (
+    method === "GET"
+      ? !hasAdminPermission(auth.role, "activities.read")
+      : !hasAdminPermission(auth.role, "activities.update") &&
+        !hasAdminPermission(auth.role, "survey.update")
+  ) {
+    return json({ success: false, error: "Forbidden" }, 403);
+  }
+
   try {
     if (method === "GET") {
       const activityId = params.get("activityId");
@@ -74,8 +83,6 @@ export async function onRequest({ request, env }: { request: Request; env: Env }
       const rows = await rest<Row[]>(env, auth.token, `activity_outcomes?${query.toString()}`);
       return json({ success: true, data: rows.map(normalize) });
     }
-
-    if (!WRITE_ROLES.has(auth.role)) return json({ success: false, error: "Forbidden" }, 403);
 
     if (method === "POST") {
       const input = (await request.json()) as OutcomeInput;
