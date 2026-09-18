@@ -1,5 +1,5 @@
 import { getCookie, getSupabaseUser, isAdminRole, json, supabaseConfig } from "../../auth/_shared";
-import { validateGeneratedSurvey, improveWithPathumma, type GeneratedSurvey } from "../_survey-ai";
+import { validateGeneratedSurvey, improveWithPathumma, type GeneratedSurvey } from "../../../../lib/survey-ai";
 
 type Env = Record<string, unknown>;
 const ALLOWED_ROLES = new Set(["SUPER_ADMIN", "CONTENT_ADMIN", "OPERATIONS_ADMIN"]);
