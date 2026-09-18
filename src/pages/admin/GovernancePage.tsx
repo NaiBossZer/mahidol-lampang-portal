@@ -421,7 +421,7 @@ export function GovernancePage() {
                 {!filteredAuditRows.length && <div className="p-10 text-center text-sm text-slate-500"><FileSearch className="mx-auto mb-2 h-7 w-7 text-slate-300" />ไม่พบ Audit Log ตามตัวกรอง</div>}
               </div>
             </div>
-          )}
+          ) : null}
         </div>
 
         {pendingRoleChange && (
