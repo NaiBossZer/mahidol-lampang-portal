@@ -1,4 +1,4 @@
-import { getSupabaseUser, isAdminRole, json, supabaseConfig } from "../auth/_shared";
+import { getSupabaseUser, isAdminRole, json, supabaseConfig, hasAdminPermission } from "../auth/_shared";
 type Env = Record<string, unknown>;
 function cookieValue(request: Request, name: string) {
   const part = (request.headers.get("Cookie") ?? "")
@@ -25,6 +25,8 @@ export async function onRequest({ request, env }: { request: Request; env: Env }
     const role = user?.app_metadata?.role;
     const token = cookieValue(request, "sb_access_token");
     if (!user || !isAdminRole(role) || !token)
+      return json({ success: false, error: "Unauthorized" }, 401);
+    if (!hasAdminPermission(role, "system.read"))
       return json({ success: false, error: "Unauthorized" }, 401);
     if (
       role !== "SUPER_ADMIN" &&
