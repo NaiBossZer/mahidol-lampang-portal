@@ -16,8 +16,8 @@ const navGroups: readonly NavGroup[] = [
     { to: "/admin/survey-workflow", label: "สร้างกิจกรรม & AI Survey", icon: Bot, permission: "survey.read", badge: "AI" },
   ] },
   { id: "content", label: "เนื้อหา", icon: FolderOpen, items: [{ to: "/admin/cms", label: "คลังเอกสารราชการ / CMS", icon: FolderOpen, permission: "cms.read" }] },
-  { id: "facility", label: "อาคาร & ความปลอดภัย", icon: ShieldCheck, items: [{ to: "/admin/facility-safety", label: "อาคารและความปลอดภัย", icon: ShieldCheck, permission: "facility.read" }] },
 ];
+const facilityItem: NavItem = { to: "/admin/facility-safety", label: "อาคารและความปลอดภัย", icon: ShieldCheck, permission: "facility.read" };
 const adminUtilityItems: readonly NavItem[] = [
   { to: "/admin/governance?tab=users", label: "ผู้ใช้งาน & สิทธิ์การเข้าถึง", icon: Users, permission: "system.manage" },
   { to: "/admin/notifications", label: "การแจ้งเตือน", icon: Bell, permission: "system.read" },
@@ -42,6 +42,7 @@ export function AdminAppShell({ children }: { children: ReactNode }) {
   const hasPermission = (permission: AdminPermission) => role === "SUPER_ADMIN" || permissions.includes(permission);
   const visibleOverview = useMemo(() => hasPermission(overviewItem.permission), [role, permissions]);
   const visibleGroups = useMemo(() => navGroups.map((g) => ({ ...g, items: g.items.filter((i) => hasPermission(i.permission)) })).filter((g) => g.items.length > 0), [role, permissions]);
+  const visibleFacility = useMemo(() => hasPermission(facilityItem.permission), [role, permissions]);
   const visibleUtilityItems = useMemo(() => adminUtilityItems.filter((i) => hasPermission(i.permission)), [role, permissions]);
   const isGroupOpen = (group: NavGroup) => Boolean(openGroups[group.id] ?? group.items.some((i) => isItemActive(location.pathname, i)));
   const toggleGroup = (id: string) => setOpenGroups((current) => ({ ...current, [id]: !(current[id] ?? false) }));
