@@ -1,4 +1,4 @@
-import { getSupabaseUser, isAdminRole, json, supabaseConfig } from "../auth/_shared";
+import { getSupabaseUser, isAdminRole, json, supabaseConfig, hasAdminPermission } from "../auth/_shared";
 type Env = Record<string, unknown>;
 const cookie = (r: Request) => {
   const x = (r.headers.get("Cookie") ?? "")
@@ -13,6 +13,8 @@ export async function onRequest({ request, env }: { request: Request; env: Env }
       role = u?.app_metadata?.role,
       token = cookie(request);
     if (!u || !isAdminRole(role) || !token)
+    if (!hasAdminPermission(role, "survey.read"))
+      return json({ success: false, error: "Forbidden" }, 403);
       return json({ success: false, error: "Unauthorized" }, 401);
     const id = new URL(request.url).searchParams.get("id");
     if (!id) return json({ success: false, error: "id required" }, 400);
