@@ -19,10 +19,6 @@ export async function onRequest({ request, env }: { request: Request; env: Env }
       return json({ success: false, error: "Forbidden" }, 403);
     }
 
-    if (!hasAdminPermission(role, "system.manage")) {
-      return json({ success: false, error: "Forbidden" }, 403);
-    }
-
     const { method } = request;
 
     if (method === "GET") {
