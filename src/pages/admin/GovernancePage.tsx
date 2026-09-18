@@ -1,7 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
 import {
-  Bell,
-  CheckCircle2,
   CircleUserRound,
   Clock3,
   RefreshCw,
@@ -17,7 +15,7 @@ import { toast } from "sonner";
 import { useAdminAuth } from "@/components/AdminGuard";
 import { PERMISSION_CATALOG, hasAdminPermission, permissionsForRole, type AdminRole } from "@/auth/permissions";
 
-type Tab = "users" | "notifications" | "audit";
+type Tab = "users" | "audit";
 type UserRow = {
   user_id: string;
   full_name: string;
@@ -27,13 +25,6 @@ type UserRow = {
   active: boolean;
 };
 
-type NotificationRow = {
-  id: string;
-  title: string;
-  body?: string | null;
-  created_at?: string;
-  read_at?: string | null;
-};
 
 type AuditRow = {
   id: string;
@@ -74,12 +65,6 @@ const tabs: Array<{
     icon: Users,
   },
   {
-    id: "notifications",
-    label: "การแจ้งเตือน",
-    description: "Alerts · Approvals · Operational Updates",
-    icon: Bell,
-  },
-  {
     id: "audit",
     label: "Audit Log",
     description: "Who · What · When · Before / After",
@@ -102,7 +87,7 @@ async function getJson<T>(url: string, init?: RequestInit) {
   return body.data as T;
 }
 
-function StudioModuleTabs({ active, onSelect, unreadCount }: { active: Tab; onSelect: (tab: Tab) => void; unreadCount: number }) {
+function StudioModuleTabs({ active, onSelect }: { active: Tab; onSelect: (tab: Tab) => void }) {
   return (
     <div className="rounded-2xl border border-slate-200 bg-white p-2 shadow-sm">
       <div className="flex gap-2 overflow-x-auto" role="tablist" aria-label="Admin control modules">
@@ -125,11 +110,6 @@ function StudioModuleTabs({ active, onSelect, unreadCount }: { active: Tab; onSe
               <div className="flex items-center gap-2">
                 <Icon className="h-4 w-4 shrink-0" />
                 <span className="truncate text-xs font-bold">{tab.label}</span>
-                {tab.id === "notifications" && unreadCount > 0 && (
-                  <span className="rounded-full bg-rose-500 px-1.5 py-0.5 text-[9px] font-black text-white">
-                    {unreadCount}
-                  </span>
-                )}
               </div>
               <p className={`mt-1 truncate text-[10px] ${selected ? "text-blue-100" : "text-slate-400"}`}>
                 {tab.description}
@@ -142,7 +122,7 @@ function StudioModuleTabs({ active, onSelect, unreadCount }: { active: Tab; onSe
   );
 }
 
-function ControlHeader({ tab, userCount, unreadCount, auditCount, loading, onRefresh }: { tab: Tab; userCount: number; unreadCount: number; auditCount: number; loading: boolean; onRefresh: () => void }) {
+function ControlHeader({ tab, userCount, auditCount, loading, onRefresh }: { tab: Tab; userCount: number; auditCount: number; loading: boolean; onRefresh: () => void }) {
   const isUsers = tab === "users";
   return (
     <header className="overflow-hidden rounded-2xl bg-gradient-to-br from-[#002d62] via-[#0c2340] to-[#00152f] text-white shadow-sm">
@@ -154,12 +134,12 @@ function ControlHeader({ tab, userCount, unreadCount, auditCount, loading, onRef
               AI STUDIO · CONTROL PLANE
             </div>
             <h1 className="mt-3 text-2xl font-bold tracking-tight sm:text-3xl">
-              {isUsers ? "ผู้ใช้งาน & สิทธิ์การเข้าถึง" : tab === "audit" ? "Audit Log" : "การแจ้งเตือน"}
+              {isUsers ? "ผู้ใช้งาน & สิทธิ์การเข้าถึง" : "Audit Log"}
             </h1>
             <p className="mt-2 max-w-4xl text-sm leading-6 text-blue-100">
               {isUsers
                 ? "ศูนย์ควบคุมบัญชีผู้ดูแลระบบ Role และ authorization boundary โดยใช้ interaction model เดียวกับ AI Studio"
-                : "ศูนย์ควบคุม Alerts, approvals และ operational updates ด้วย interaction model เดียวกับ AI Studio"}
+                : "บันทึก Who / What / When และ Before / After สำหรับการตรวจสอบย้อนหลัง"}
             </p>
           </div>
 
@@ -169,8 +149,8 @@ function ControlHeader({ tab, userCount, unreadCount, auditCount, loading, onRef
               <p className="mt-1 text-xs font-bold text-white">Protected</p>
             </div>
             <div className="rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-[10px]">
-              <div className="flex items-center gap-1.5 text-sky-100">{isUsers ? <Users className="h-3.5 w-3.5 text-violet-300" /> : tab === "audit" ? <FileSearch className="h-3.5 w-3.5 text-emerald-300" /> : <Bell className="h-3.5 w-3.5 text-sky-300" />}{isUsers ? "Users" : tab === "audit" ? "Events" : "Unread"}</div>
-              <p className="mt-1 text-xs font-bold text-white">{isUsers ? userCount : tab === "audit" ? auditCount : unreadCount}</p>
+              <div className="flex items-center gap-1.5 text-sky-100">{isUsers ? <Users className="h-3.5 w-3.5 text-violet-300" /> : <FileSearch className="h-3.5 w-3.5 text-emerald-300" />}{isUsers ? "Users" : "Events"}</div>
+              <p className="mt-1 text-xs font-bold text-white">{isUsers ? userCount : auditCount}</p>
             </div>
           </div>
         </div>
@@ -215,10 +195,8 @@ export function GovernancePage() {
   const [searchParams, setSearchParams] = useSearchParams();
   const requestedTab = searchParams.get("tab");
   const tab: Tab =
-    requestedTab === "notifications" ? "notifications" :
     requestedTab === "audit" ? "audit" : "users";
   const [users, setUsers] = useState<UserRow[]>([]);
-  const [notifications, setNotifications] = useState<NotificationRow[]>([]);
   const [auditRows, setAuditRows] = useState<AuditRow[]>([]);
   const [loading, setLoading] = useState(false);
   const [userSearch, setUserSearch] = useState("");
@@ -236,7 +214,6 @@ export function GovernancePage() {
     setLoading(true);
     try {
       if (tab === "users") setUsers(await getJson<UserRow[]>("/api/admin/users"));
-      else if (tab === "notifications") setNotifications(await getJson<NotificationRow[]>("/api/admin/notifications"));
       else setAuditRows(await getJson<AuditRow[]>("/api/admin/audit-trail?limit=250"));
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "โหลดข้อมูลไม่สำเร็จ");
@@ -267,19 +244,6 @@ export function GovernancePage() {
     }
   }
 
-  async function markRead(id: string) {
-    try {
-      await getJson("/api/admin/notifications", {
-        method: "PATCH",
-        body: JSON.stringify({ id }),
-      });
-      toast.success("ทำเครื่องหมายว่าอ่านแล้ว");
-      await load();
-    } catch (error) {
-      toast.error(error instanceof Error ? error.message : "อัปเดตการแจ้งเตือนไม่สำเร็จ");
-    }
-  }
-
   const auditTables = useMemo(() => Array.from(new Set(auditRows.map((row) => row.table_name))).sort(), [auditRows]);
   const auditActions = useMemo(() => Array.from(new Set(auditRows.map((row) => row.action))).sort(), [auditRows]);
   const filteredAuditRows = useMemo(() => {
@@ -294,10 +258,6 @@ export function GovernancePage() {
     });
   }, [auditRows, auditQuery, auditTable, auditAction]);
 
-  const unreadCount = useMemo(
-    () => notifications.filter((item) => !item.read_at).length,
-    [notifications],
-  );
 
   const filteredUsers = useMemo(() => {
     const query = userSearch.trim().toLocaleLowerCase();
@@ -330,7 +290,6 @@ export function GovernancePage() {
         <ControlHeader
           tab={tab}
           userCount={users.length}
-          unreadCount={unreadCount}
           auditCount={auditRows.length}
           loading={loading}
           onRefresh={() => void load()}
@@ -338,7 +297,6 @@ export function GovernancePage() {
 
         <StudioModuleTabs
           active={tab}
-          unreadCount={unreadCount}
           onSelect={(nextTab) => setSearchParams({ tab: nextTab })}
         />
 
@@ -348,13 +306,13 @@ export function GovernancePage() {
               <div>
                 <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-violet-600">Control Module</p>
                 <div className="mt-1 flex items-center gap-2">
-                  {tab === "users" ? <CircleUserRound className="h-4 w-4 text-violet-600" /> : <Bell className="h-4 w-4 text-sky-600" />}
-                  <h2 className="text-sm font-bold text-[#002d62]">{tab === "users" ? "Admin Users / RBAC" : tab === "audit" ? "Audit Log" : "Notifications Center"}</h2>
+                  {tab === "users" ? <CircleUserRound className="h-4 w-4 text-violet-600" /> : <FileSearch className="h-4 w-4 text-emerald-600" />}
+                  <h2 className="text-sm font-bold text-[#002d62]">{tab === "users" ? "Admin Users / RBAC" : "Audit Log"}</h2>
                 </div>
-                <p className="mt-1 text-[10px] text-slate-500">{tab === "users" ? "Role assignment ผ่าน authorization boundary เดิมของระบบ" : tab === "audit" ? "บันทึก Who / What / When และ Before / After สำหรับการตรวจสอบย้อนหลัง" : "ติดตาม alerts, approvals และ operational state"}</p>
+                <p className="mt-1 text-[10px] text-slate-500">{tab === "users" ? "Role assignment ผ่าน authorization boundary เดิมของระบบ" : "บันทึก Who / What / When และ Before / After สำหรับการตรวจสอบย้อนหลัง"}</p>
               </div>
               <div className={`rounded-full px-2.5 py-1 text-[10px] font-bold ${tab === "users" ? "bg-violet-50 text-violet-700" : "bg-sky-50 text-sky-700"}`}>
-                {tab === "users" ? `${users.length} users` : tab === "audit" ? `${filteredAuditRows.length} events` : `${unreadCount} unread`}
+                {tab === "users" ? `${users.length} users` : `${filteredAuditRows.length} events`}
               </div>
             </div>
           </div>
@@ -461,34 +419,6 @@ export function GovernancePage() {
                   </button>
                 ))}
                 {!filteredAuditRows.length && <div className="p-10 text-center text-sm text-slate-500"><FileSearch className="mx-auto mb-2 h-7 w-7 text-slate-300" />ไม่พบ Audit Log ตามตัวกรอง</div>}
-              </div>
-            </div>
-          ) : (
-            <div>
-              <div className="grid gap-3 border-b border-slate-100 bg-white p-4 sm:grid-cols-3 sm:p-5">
-                <div className="rounded-2xl border border-sky-100 bg-sky-50 p-4"><p className="text-[10px] font-bold uppercase tracking-[0.12em] text-sky-600">Inbox</p><p className="mt-2 text-2xl font-bold text-sky-700">{notifications.length}</p><p className="mt-1 text-[10px] text-sky-700/70">รายการแจ้งเตือน</p></div>
-                <div className="rounded-2xl border border-rose-100 bg-rose-50 p-4"><p className="text-[10px] font-bold uppercase tracking-[0.12em] text-rose-600">Attention</p><p className="mt-2 text-2xl font-bold text-rose-700">{unreadCount}</p><p className="mt-1 text-[10px] text-rose-700/70">ยังไม่ได้อ่าน</p></div>
-                <div className="rounded-2xl border border-emerald-100 bg-emerald-50 p-4"><p className="text-[10px] font-bold uppercase tracking-[0.12em] text-emerald-600">Read</p><p className="mt-2 text-2xl font-bold text-emerald-700">{notifications.filter((item) => item.read_at).length}</p><p className="mt-1 text-[10px] text-emerald-700/70">ดำเนินการแล้ว</p></div>
-              </div>
-
-              <div className="divide-y divide-slate-100">
-                {notifications.map((notification) => (
-                  <button key={notification.id} type="button" onClick={() => void markRead(notification.id)} className="flex w-full items-start gap-3 px-5 py-4 text-left transition hover:bg-slate-50 sm:px-6">
-                    <div className={`mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl ${notification.read_at ? "bg-slate-100 text-slate-400" : "bg-sky-50 text-sky-600"}`}>
-                      {notification.read_at ? <CheckCircle2 className="h-4 w-4" /> : <Bell className="h-4 w-4" />}
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <div className="flex flex-wrap items-center gap-2">
-                        <p className={`text-sm font-bold ${notification.read_at ? "text-slate-700" : "text-[#002d62]"}`}>{notification.title}</p>
-                        {!notification.read_at && <span className="rounded-full bg-rose-50 px-2 py-0.5 text-[9px] font-bold text-rose-600">ATTENTION</span>}
-                      </div>
-                      <p className="mt-1 text-xs leading-5 text-slate-500">{notification.body ?? ""}</p>
-                      {notification.created_at && <p className="mt-2 flex items-center gap-1 text-[9px] text-slate-400"><Clock3 className="h-3 w-3" />{new Date(notification.created_at).toLocaleString("th-TH")}</p>}
-                    </div>
-                    <span className="mt-1 text-[10px] font-bold text-slate-400">{notification.read_at ? "READ" : "OPEN"}</span>
-                  </button>
-                ))}
-                {!notifications.length && <div className="p-10 text-center text-sm text-slate-500">ยังไม่มีการแจ้งเตือน</div>}
               </div>
             </div>
           )}
