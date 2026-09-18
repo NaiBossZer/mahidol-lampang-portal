@@ -15,7 +15,7 @@ const navGroups: readonly NavGroup[] = [
     { to: "/admin/activities", label: "รายการกิจกรรมโครงการ", icon: Activity, permission: "activities.read" },
     { to: "/admin/survey-workflow", label: "สร้างกิจกรรม & AI Survey", icon: Bot, permission: "survey.read", badge: "AI" },
   ] },
-  { id: "content", label: "เนื้อหา", icon: FolderOpen, items: [{ to: "/admin/cms", label: "คลังเอกสารราชการ / CMS", icon: FolderOpen, permission: "cms.read" }] },
+  { id: "content", label: "เนื้อหา", icon: FolderOpen, items: [{ to: "/admin/cms", label: "เนื้อหา", icon: FolderOpen, permission: "cms.read" }] },
 ];
 const facilityItem: NavItem = { to: "/admin/facility-safety", label: "อาคารและความปลอดภัย", icon: ShieldCheck, permission: "facility.read" };
 const adminUtilityItems: readonly NavItem[] = [
