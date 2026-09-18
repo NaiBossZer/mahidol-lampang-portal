@@ -113,6 +113,16 @@ async function uploadMedia(activityId: string, file: File) {
   return body.data as ActivityMedia;
 }
 
+async function deleteMedia(id: string) {
+  const response = await fetch(`/api/admin/activity-media?id=${encodeURIComponent(id)}`, {
+    method: "DELETE",
+    credentials: "include",
+    headers: { Accept: "application/json" },
+  });
+  const body = await response.json().catch(() => null);
+  if (!response.ok) throw new Error(body?.error || "ลบรูปภาพไม่สำเร็จ");
+}
+
 function Field({ label, required, children }: { label: string; required?: boolean; children: ReactNode }) {
   return (
     <label className="block text-sm font-semibold text-slate-700">
@@ -132,12 +142,14 @@ export function ActivitiesManagementPage() {
   const [selectedCenters, setSelectedCenters] = useState<string[]>([]);
   const [organizers, setOrganizers] = useState<RelationState["organizations"]>([]);
   const [media, setMedia] = useState<ActivityMedia[]>([]);
+  const [selectedMediaIds, setSelectedMediaIds] = useState<string[]>([]);
   const [files, setFiles] = useState<File[]>([]);
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
+  const [deletingMedia, setDeletingMedia] = useState(false);
   const [recommendationActivity, setRecommendationActivity] = useState<AdminActivity | null>(null);
 
   async function load() {
@@ -172,6 +184,7 @@ export function ActivitiesManagementPage() {
     setSelectedCenters([]);
     setOrganizers([]);
     setMedia([]);
+    setSelectedMediaIds([]);
     setFiles([]);
     setOpen(true);
   }
@@ -180,11 +193,11 @@ export function ActivitiesManagementPage() {
     setEdit(activity);
     setForm({ ...activity, activityDate: activity.activityDate.slice(0, 10) });
     setFiles([]);
+    setSelectedMediaIds([]);
     setOpen(true);
     try {
       const [relation, images] = await Promise.all([getRelations(activity.id), getMedia(activity.id)]);
-      setSelectedCenters(relation.learningCenterIds ?? []);
-      setOrganizers(relation.organizations ?? []);
+      setSelectedCenters(relation.learningCenterIds ?? []);      setOrganizers(relation.organizations ?? []);
       setMedia(images);
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "โหลดข้อมูลกิจกรรมเพิ่มเติมไม่สำเร็จ");
@@ -195,10 +208,27 @@ export function ActivitiesManagementPage() {
   }
 
   function close() {
-    if (saving || uploading) return;
+    if (saving || uploading || deletingMedia) return;
     setOpen(false);
     setEdit(null);
     setFiles([]);
+    setSelectedMediaIds([]);
+  }
+
+  async function deleteSelectedMedia() {
+    if (!selectedMediaIds.length || deletingMedia) return;
+    if (!window.confirm(`ต้องการลบรูปภาพที่เลือก ${selectedMediaIds.length} รูปใช่หรือไม่?`)) return;
+    setDeletingMedia(true);
+    const ids = [...selectedMediaIds];
+    const results = await Promise.allSettled(ids.map((id) => deleteMedia(id)));
+    const failed = results.filter((result) => result.status === "rejected").length;
+    const deleted = ids.length - failed;
+    const failedIds = ids.filter((_, index) => results[index]?.status === "rejected");
+    setMedia((current) => current.filter((image) => !ids.includes(image.id) || failedIds.includes(image.id)));
+    setSelectedMediaIds(failedIds);
+    if (deleted) toast.success(`ลบรูปภาพสำเร็จ ${deleted} รูป`);
+    if (failed) toast.error(`ลบรูปภาพไม่สำเร็จ ${failed} รูป`);
+    setDeletingMedia(false);
   }
 
   async function removeActivity(activity: AdminActivity) {
@@ -284,6 +314,7 @@ export function ActivitiesManagementPage() {
       setOpen(false);
       setEdit(null);
       setFiles([]);
+      setSelectedMediaIds([]);
       if (warnings.length) {
         toast.warning(`บันทึกกิจกรรมแล้ว แต่มีรายการย่อยที่ต้องตรวจสอบ ${warnings.length} รายการ`, {
           description: warnings.join(" | "),
@@ -365,8 +396,7 @@ export function ActivitiesManagementPage() {
                       )}
                       <div className="min-w-0">
                         <p className="font-semibold text-slate-900">{activity.title}</p>
-                        <p className="mt-0.5 truncate text-xs text-slate-400">/{activity.slug}</p>
-                      </div>
+                        <p className="mt-0.5 truncate text-xs text-slate-400">/{activity.slug}</p>                      </div>
                     </div>
                   </td>
                   <td className="whitespace-nowrap px-4 py-4 text-slate-600">
@@ -480,7 +510,7 @@ export function ActivitiesManagementPage() {
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                   <div>
                     <h3 className="text-sm font-bold text-[#002d62]">รูปภาพกิจกรรม</h3>
-                    <p className="mt-1 text-xs text-slate-500">JPEG, PNG หรือ WebP ไม่เกิน 10MB/ไฟล์ · ระบบจะใช้ไฟล์แรกเป็นรูปปกอัตโนมัติเมื่อยังไม่ได้ระบุรูปภาพหน้าปกกิจกรรม</p>
+                    <p className="mt-1 text-xs text-slate-500">JPEG, PNG หรือ WebP ไม่เกิน 10MB/ไฟล์ · เลือกรูปที่ต้องการลบได้จากภาพด้านล่าง</p>
                   </div>
                   <label className="inline-flex min-h-10 cursor-pointer items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 text-sm font-semibold text-[#002d62] transition-colors hover:bg-slate-50">
                     <Upload className="h-4 w-4" />เพิ่มรูป
@@ -489,9 +519,50 @@ export function ActivitiesManagementPage() {
                 </div>
                 {files.length > 0 && <p className="mt-3 text-xs font-medium text-emerald-700">เตรียมอัปโหลด {files.length} ไฟล์เมื่อกดบันทึก</p>}
                 {media.length > 0 && (
-                  <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
-                    {media.map((image) => <img key={image.id} src={image.public_url} alt={image.caption ?? "ภาพกิจกรรม"} className="aspect-[4/3] w-full rounded-xl object-cover" />)}
-                  </div>
+                  <>
+                    <div className="mt-4 flex flex-wrap items-center justify-between gap-2">
+                      <label className="inline-flex cursor-pointer items-center gap-2 text-xs font-semibold text-slate-700">
+                        <input
+                          type="checkbox"
+                          checked={media.length > 0 && selectedMediaIds.length === media.length}
+                          onChange={(event) => setSelectedMediaIds(event.target.checked ? media.map((image) => image.id) : [])}
+                        />
+                        เลือกทั้งหมด
+                      </label>
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs text-slate-400">เลือกแล้ว {selectedMediaIds.length} รูป</span>
+                        <button
+                          type="button"
+                          disabled={!selectedMediaIds.length || deletingMedia}
+                          onClick={() => void deleteSelectedMedia()}
+                          className="inline-flex min-h-9 items-center gap-1.5 rounded-lg border border-red-200 bg-red-50 px-3 text-xs font-semibold text-red-600 transition-colors hover:bg-red-100 disabled:cursor-not-allowed disabled:opacity-50"
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                          {deletingMedia ? "กำลังลบ..." : "ลบที่เลือก"}
+                        </button>
+                      </div>
+                    </div>
+                    <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+                      {media.map((image) => {
+                        const selected = selectedMediaIds.includes(image.id);
+                        return (
+                          <label key={image.id} className={`relative block cursor-pointer overflow-hidden rounded-xl border-2 bg-white transition ${selected ? "border-red-400 ring-2 ring-red-100" : "border-slate-200 hover:border-slate-300"}`}>
+                            <img src={image.public_url} alt={image.caption ?? "ภาพกิจกรรม"} className="aspect-[4/3] w-full object-cover" />
+                            <span className="absolute left-2 top-2 rounded-md bg-white/90 p-1 shadow-sm">
+                              <input
+                                type="checkbox"
+                                checked={selected}
+                                onChange={(event) => setSelectedMediaIds((current) => event.target.checked ? [...new Set([...current, image.id])] : current.filter((id) => id !== image.id))}
+                                aria-label="เลือกรูปภาพเพื่อจัดการ"
+                              />
+                            </span>
+                            {selected && <span className="absolute right-2 top-2 rounded-full bg-red-500 p-1 text-white"><Trash2 className="h-3 w-3" /></span>}
+                            {image.caption ? <p className="truncate border-t border-slate-100 px-2 py-2 text-xs text-slate-500">{image.caption}</p> : null}
+                          </label>
+                        );
+                      })}
+                    </div>
+                  </>
                 )}
               </div>
             </div>
@@ -499,8 +570,8 @@ export function ActivitiesManagementPage() {
             <div className="flex flex-col gap-3 border-t border-slate-200 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
               <p className="text-xs text-slate-400">* ชื่อกิจกรรมและวันที่เป็นข้อมูลจำเป็น</p>
               <div className="flex justify-end gap-2">
-                <AdminButton variant="secondary" onClick={close} disabled={saving || uploading}>ยกเลิก</AdminButton>
-                <AdminButton variant="primary" onClick={() => void save()} disabled={saving || uploading}>
+                <AdminButton variant="secondary" onClick={close} disabled={saving || uploading || deletingMedia}>ยกเลิก</AdminButton>
+                <AdminButton variant="primary" onClick={() => void save()} disabled={saving || uploading || deletingMedia}>
                   {uploading ? "กำลังอัปโหลดรูป..." : saving ? "กำลังบันทึกและตรวจสอบ..." : edit ? "บันทึกการแก้ไข" : "บันทึกกิจกรรม"}
                 </AdminButton>
               </div>
