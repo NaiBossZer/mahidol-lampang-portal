@@ -212,7 +212,7 @@ function ControlHeader({ tab, userCount, unreadCount, auditCount, loading, onRef
 }
 
 export function GovernancePage() {
-  const { role } = useAdminAuth();
+  const { role, userId } = useAdminAuth();
   const [searchParams, setSearchParams] = useSearchParams();
   const requestedTab = searchParams.get("tab");
   const tab: Tab =
@@ -225,6 +225,7 @@ export function GovernancePage() {
   const [userSearch, setUserSearch] = useState("");
   const [roleFilter, setRoleFilter] = useState<"ALL" | AdminRole | "UNASSIGNED">("ALL");
   const [selectedUser, setSelectedUser] = useState<UserRow | null>(null);
+  const [pendingRoleChange, setPendingRoleChange] = useState<{ user: UserRow; role: AdminRole } | null>(null);
   const [selectedRole, setSelectedRole] = useState<AdminRole | null>(null);
   const [matrixRole, setMatrixRole] = useState<AdminRole>("SUPER_ADMIN");
   const [permissionDomain, setPermissionDomain] = useState("all");
@@ -262,6 +263,7 @@ export function GovernancePage() {
         body: JSON.stringify({ userId, role: value }),
       });
       toast.success("ปรับสิทธิ์ผู้ใช้งานแล้ว");
+      setPendingRoleChange(null);
       await load();
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "ปรับสิทธิ์ไม่สำเร็จ");
@@ -408,7 +410,16 @@ export function GovernancePage() {
                         <p className="mt-1 text-xs text-slate-500">{user.position ?? ""}{user.department ? ` · ${user.department}` : ""}</p>
                       </div>
                     </button>
-                    <select disabled={!canManage} value={user.central_role ?? ""} onChange={(event) => void setRole(user.user_id, event.target.value)} className="dashboard-control w-full max-w-sm sm:w-60">
+                    <select
+                      disabled={!canManage}
+                      value={user.central_role ?? ""}
+                      onChange={(event) => {
+                        const nextRole = event.target.value;
+                        if (!nextRole || !ROLE_OPTIONS.includes(nextRole as AdminRole)) return;
+                        setPendingRoleChange({ user, role: nextRole as AdminRole });
+                      }}
+                      className="dashboard-control w-full max-w-sm sm:w-60"
+                    >
                       <option value="">ยังไม่กำหนด</option>
                       {ROLE_OPTIONS.map((option) => <option key={option} value={option}>{option}</option>)}
                     </select>
@@ -485,6 +496,45 @@ export function GovernancePage() {
             </div>
           )}
         </div>
+
+        {pendingRoleChange && (
+          <div className="fixed inset-0 z-[90] flex items-center justify-center bg-slate-950/50 p-4" role="dialog" aria-modal="true">
+            <div className="w-full max-w-lg overflow-hidden rounded-2xl bg-white shadow-2xl">
+              <div className="border-b border-slate-100 bg-slate-50 p-5">
+                <p className="text-[10px] font-black uppercase tracking-[0.14em] text-violet-600">Confirm Role Change</p>
+                <h3 className="mt-1 text-lg font-bold text-[#002d62]">ยืนยันการเปลี่ยนสิทธิ์</h3>
+                <p className="mt-1 text-xs text-slate-500">การเปลี่ยน Role จะมีผลต่อสิทธิ์การเข้าถึงของบัญชีนี้</p>
+              </div>
+              <div className="space-y-3 p-5">
+                <div className="rounded-xl border border-slate-200 bg-white p-4">
+                  <p className="text-[9px] font-bold uppercase tracking-[0.12em] text-slate-400">ผู้ใช้งาน</p>
+                  <p className="mt-1 text-sm font-bold text-slate-800">{pendingRoleChange.user.full_name}</p>
+                  <p className="mt-1 break-all text-[10px] text-slate-400">{pendingRoleChange.user.user_id}</p>
+                </div>
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+                    <p className="text-[9px] font-bold text-slate-400">ROLE ปัจจุบัน</p>
+                    <p className="mt-1 text-xs font-bold text-slate-700">{pendingRoleChange.user.central_role ?? "ยังไม่กำหนด"}</p>
+                  </div>
+                  <div className="rounded-xl border border-violet-100 bg-violet-50 p-4">
+                    <p className="text-[9px] font-bold text-violet-600">ROLE ใหม่</p>
+                    <p className="mt-1 text-xs font-bold text-violet-800">{pendingRoleChange.role}</p>
+                  </div>
+                </div>
+                <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-xs leading-5 text-amber-900">
+                  สิทธิ์จะถูกใช้กับ API authorization หลัง Session/JWT ของผู้ใช้งานถูก refresh ตามกลไกของ Supabase Auth
+                </div>
+                {pendingRoleChange.user.user_id === userId && pendingRoleChange.role === "SUPER_ADMIN" && (
+                  <p className="text-[10px] font-semibold text-emerald-700">กำลังยืนยัน Role ของบัญชีที่คุณกำลังใช้งานอยู่</p>
+                )}
+              </div>
+              <div className="flex justify-end gap-2 border-t border-slate-100 bg-slate-50 p-4">
+                <button type="button" onClick={() => setPendingRoleChange(null)} className="rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-xs font-bold text-slate-600 hover:bg-slate-100">ยกเลิก</button>
+                <button type="button" onClick={() => void setRole(pendingRoleChange.user.user_id, pendingRoleChange.role)} className="rounded-xl bg-[#002d62] px-4 py-2.5 text-xs font-bold text-white hover:bg-[#001f43]">ยืนยันเปลี่ยน Role</button>
+              </div>
+            </div>
+          </div>
+        )}
 
         {selectedUser && (
           <div className="fixed inset-0 z-[80] flex items-center justify-center bg-slate-950/40 p-4" role="dialog" aria-modal="true">
