@@ -31,6 +31,8 @@ import {
   deleteActivityDocument,
   generateAiPostProjectReport,
   generateAiSurvey,
+  improveAiSurvey,
+  validateAiSurvey,
   getActivityDocuments,
   getPreviousAnalysis,
   getPreviousGeneratedSurvey,
@@ -108,6 +110,10 @@ export function AIStudioWorkspacePage() {
   const [postReportLoading, setPostReportLoading] = useState(false);
   const [postReport, setPostReport] = useState<PostProjectReport | null>(null);
   const [reviewChecklist, setReviewChecklist] = useState({ objectivesCovered: true, scaleStandard: true, targetAudienceMatch: true, feedbackAllowed: true });
+  const [improveInstruction, setImproveInstruction] = useState("");
+  const [improvingSurvey, setImprovingSurvey] = useState(false);
+  const [validatingSurvey, setValidatingSurvey] = useState(false);
+  const [validationResult, setValidationResult] = useState<{ valid: boolean; errors: string[]; warnings: string[] } | null>(null);
 
   const selectedActivity = useMemo(() => activities.find((x) => x.id === selectedActivityId) ?? null, [activities, selectedActivityId]);
   const checklistReady = Object.values(reviewChecklist).every(Boolean);
@@ -216,10 +222,56 @@ export function AIStudioWorkspacePage() {
     finally { setSurveyLoading(false); }
   }
 
+  function updateSurveyQuestion(sectionId: string, questionId: string, patch: Partial<GeneratedSurvey["sections"][number]["questions"][number]>) {
+    setGeneratedSurvey((current) => current ? {
+      ...current,
+      sections: current.sections.map((section) => section.id !== sectionId ? section : {
+        ...section,
+        questions: section.questions.map((question) => question.id !== questionId ? question : { ...question, ...patch }),
+      }),
+    } : current);
+    setValidationResult(null);
+  }
+
+  async function handleValidateSurvey() {
+    if (!surveyExecutionId || !generatedSurvey) return;
+    setValidatingSurvey(true);
+    try {
+      const result = await validateAiSurvey(surveyExecutionId, generatedSurvey);
+      setValidationResult(result.validation);
+      toast.success(result.validation.valid ? "Survey validation ผ่าน" : "พบรายการที่ต้องแก้ไข");
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "ตรวจสอบ Survey ไม่สำเร็จ");
+    } finally { setValidatingSurvey(false); }
+  }
+
+  async function handleImproveSurvey() {
+    if (!selectedActivityId || !surveyExecutionId || !generatedSurvey || !improveInstruction.trim()) return;
+    setImprovingSurvey(true);
+    try {
+      const result = await improveAiSurvey(selectedActivityId, surveyExecutionId, generatedSurvey, improveInstruction.trim());
+      setGeneratedSurvey(result.survey);
+      setSurveyExecutionId(result.executionId);
+      setValidationResult(result.validation);
+      setImproveInstruction("");
+      toast.success("Pathumma สร้าง Survey ฉบับปรับปรุงแล้ว ต้องตรวจสอบอีกครั้ง");
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "AI Improve ไม่สำเร็จ");
+    } finally { setImprovingSurvey(false); }
+  }
+
   async function handleConfirmSurvey() {
-    if (!surveyExecutionId || !checklistReady) return;
+    if (!surveyExecutionId || !checklistReady || !generatedSurvey) return;
     setConfirming(true);
     try {
+      if (!validationResult?.valid) {
+        const result = await validateAiSurvey(surveyExecutionId, generatedSurvey);
+        setValidationResult(result.validation);
+        if (!result.validation.valid) {
+          toast.error("กรุณาแก้ Survey ให้ผ่าน validation ก่อน Confirm");
+          return;
+        }
+      }
       const result = await confirmAiSurvey(surveyExecutionId, "approved");
       setConfirmedSurveyId(result.surveyId ?? null);
       setConfirmedOccurrenceId(result.occurrenceId ?? null);
@@ -354,7 +406,46 @@ export function AIStudioWorkspacePage() {
                 <div className="space-y-5">
                   <div className="rounded-xl border border-amber-100 bg-amber-50 p-4"><p className="text-xs font-bold text-amber-900">ADMIN approval required</p><p className="mt-1 text-[11px] leading-5 text-amber-800/80">ตรวจสอบความสอดคล้องของคำถามกับกิจกรรมก่อนส่งต่อไปยังขั้น Confirm ระบบจะบันทึก execution และ approval ตาม workflow ที่มีอยู่</p></div>
                   <div className="grid gap-3 sm:grid-cols-2">{Object.entries({ objectivesCovered: "คำถามครอบคลุมวัตถุประสงค์", scaleStandard: "มาตราส่วนและรูปแบบคำถามเป็นมาตรฐาน", targetAudienceMatch: "เหมาะกับกลุ่มเป้าหมาย", feedbackAllowed: "เปิดพื้นที่สำหรับข้อเสนอแนะ" }).map(([key, label]) => { const checked = reviewChecklist[key as keyof typeof reviewChecklist]; return <label key={key} className={`flex cursor-pointer items-start gap-3 rounded-xl border p-4 ${checked ? "border-emerald-200 bg-emerald-50/40" : "border-slate-200 bg-white"}`}><input type="checkbox" checked={checked} onChange={(e) => setReviewChecklist((prev) => ({ ...prev, [key]: e.target.checked }))} className="mt-0.5 h-4 w-4 accent-[#002d62]" /><span><span className="block text-xs font-bold text-slate-700">{label}</span><span className="mt-1 block text-[10px] text-slate-400">ADMIN review checkpoint</span></span></label>; })}</div>
-                  {generatedSurvey && <div className="rounded-xl border border-slate-200 p-4"><p className="text-xs font-bold text-slate-700">Review target</p><p className="mt-1 text-sm font-bold text-[#002d62]">{generatedSurvey.surveyTitle}</p><p className="mt-1 text-[11px] text-slate-500">{generatedSurvey.sections.reduce((sum, section) => sum + section.questions.length, 0)} questions · AI confidence {Math.round(generatedSurvey.aiConfidenceScore * 100)}%</p></div>}
+                  {generatedSurvey && <div className="space-y-4">
+                    <div className="rounded-xl border border-slate-200 p-4">
+                      <p className="text-xs font-bold text-slate-700">Review target</p>
+                      <input value={generatedSurvey.surveyTitle} onChange={(e) => setGeneratedSurvey((current) => current ? { ...current, surveyTitle: e.target.value } : current)} className="mt-2 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm font-bold text-[#002d62]" />
+                      <p className="mt-2 text-[11px] text-slate-500">{generatedSurvey.sections.reduce((sum, section) => sum + section.questions.length, 0)} questions · Provider: Pathumma</p>
+                    </div>
+                    <div className="space-y-3">
+                      {generatedSurvey.sections.map((section) => <div key={section.id} className="rounded-xl border border-slate-200">
+                        <div className="border-b border-slate-100 px-4 py-3"><p className="text-xs font-bold text-[#002d62]">{section.title}</p><p className="mt-1 text-[11px] text-slate-500">{section.description}</p></div>
+                        <div className="divide-y divide-slate-100">
+                          {section.questions.map((question, index) => <div key={question.id} className="p-4">
+                            <div className="flex gap-3">
+                              <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-lg bg-violet-50 text-[10px] font-bold text-violet-600">{index + 1}</span>
+                              <div className="min-w-0 flex-1">
+                                <textarea value={question.title} onChange={(e) => updateSurveyQuestion(section.id, question.id, { title: e.target.value })} className="w-full rounded-lg border border-slate-200 px-3 py-2 text-xs font-semibold text-slate-700" rows={2} />
+                                <div className="mt-2 flex flex-wrap items-center gap-3 text-[10px] text-slate-400">
+                                  <span>{question.questionType}</span>
+                                  <label className="inline-flex items-center gap-1"><input type="checkbox" checked={question.required !== false} onChange={(e) => updateSurveyQuestion(section.id, question.id, { required: e.target.checked })} /> required</label>
+                                </div>
+                                <p className="mt-2 text-[10px] text-slate-500">Evidence: {question.sourceCiting} · {question.sourceDocName}</p>
+                              </div>
+                            </div>
+                          </div>)}
+                        </div>
+                      </div>)}
+                    </div>
+                    <div className="rounded-xl border border-violet-100 bg-violet-50/50 p-4">
+                      <p className="text-xs font-bold text-violet-900">AI Improve</p>
+                      <p className="mt-1 text-[10px] text-violet-700/70">ตัวอย่าง: ลดคำถามซ้ำ · ปรับภาษาให้เป็นทางการ · เหมาะกับนักเรียนระดับมัธยม · ลดเหลือ 10 ข้อ</p>
+                      <div className="mt-3 flex gap-2">
+                        <input value={improveInstruction} onChange={(e) => setImproveInstruction(e.target.value)} className="min-w-0 flex-1 rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs" placeholder="คำสั่งที่ต้องการให้ Pathumma ปรับปรุง" />
+                        <button type="button" onClick={() => void handleImproveSurvey()} disabled={improvingSurvey || !improveInstruction.trim()} className="inline-flex items-center gap-1.5 rounded-lg bg-violet-600 px-3 py-2 text-xs font-bold text-white disabled:opacity-50">{improvingSurvey ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Sparkles className="h-3.5 w-3.5" />} Improve</button>
+                      </div>
+                    </div>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <button type="button" onClick={() => void handleValidateSurvey()} disabled={validatingSurvey} className="inline-flex items-center gap-2 rounded-lg border border-slate-200 px-3 py-2 text-xs font-bold text-slate-700 disabled:opacity-50">{validatingSurvey ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <ShieldCheck className="h-3.5 w-3.5" />} Validate Survey</button>
+                      {validationResult && <span className={`text-xs font-bold ${validationResult.valid ? "text-emerald-600" : "text-rose-600"}`}>{validationResult.valid ? "Validation Passed" : `Needs Fix (${validationResult.errors.length})`}</span>}
+                    </div>
+                    {validationResult?.warnings.length ? <div className="rounded-lg bg-amber-50 p-3 text-[10px] text-amber-800">{validationResult.warnings.join(" · ")}</div> : null}
+                  </div>}
                 </div>
               </StudioCard>
             )}
