@@ -17,7 +17,7 @@ const navGroups: readonly NavGroup[] = [
   ] },
 
 ];
-const facilityItem: NavItem = { to: "/admin/facility-safety", label: "อาคารและความปลอดภัย", icon: ShieldCheck, permission: "facility.read" };
+const contentItem: NavItem = { to: "/admin/cms", label: "เนื้อหา", icon: FolderOpen, permission: "cms.read" };\nconst facilityItem: NavItem = { to: "/admin/facility-safety", label: "อาคารและความปลอดภัย", icon: ShieldCheck, permission: "facility.read" };
 const adminUtilityItems: readonly NavItem[] = [
   { to: "/admin/governance?tab=users", label: "ผู้ใช้งาน & สิทธิ์การเข้าถึง", icon: Users, permission: "system.manage" },
   { to: "/admin/notifications", label: "การแจ้งเตือน", icon: Bell, permission: "system.read" },
