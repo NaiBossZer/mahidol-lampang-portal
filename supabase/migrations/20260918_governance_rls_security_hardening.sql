@@ -34,7 +34,13 @@ REVOKE EXECUTE ON FUNCTION public.is_manager() FROM anon;
 REVOKE EXECUTE ON FUNCTION public.is_central_admin() FROM anon;
 REVOKE EXECUTE ON FUNCTION public.staff_profile_for_user() FROM anon;
 REVOKE EXECUTE ON FUNCTION public.set_central_admin_role(uuid, text) FROM anon;
-REVOKE EXECUTE ON FUNCTION public.sync_central_admin_role_to_auth() FROM anon;
+DO $
+BEGIN
+  IF to_regprocedure('public.sync_central_admin_role_to_auth()') IS NOT NULL THEN
+    REVOKE EXECUTE ON FUNCTION public.sync_central_admin_role_to_auth() FROM anon;
+  END IF;
+END;
+$;
 REVOKE EXECUTE ON FUNCTION public.write_audit_log() FROM anon;
 
 -- Security regression notes:
@@ -43,3 +49,6 @@ REVOKE EXECUTE ON FUNCTION public.write_audit_log() FROM anon;
 -- 3. Existing admin read policies remain unchanged.
 -- 4. Service-role/background workers remain able to perform system writes because
 --    Supabase service_role bypasses RLS.
+
+-- The user-management RPC is intentionally callable only through authenticated server flows.
+REVOKE EXECUTE ON FUNCTION public.list_central_admin_users() FROM anon;
