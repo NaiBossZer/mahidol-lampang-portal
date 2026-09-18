@@ -16,7 +16,7 @@ import {
 import { useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
 import { useAdminAuth } from "@/components/AdminGuard";
-import { PERMISSION_CATALOG, permissionsForRole, type AdminRole } from "@/auth/permissions";
+import { PERMISSION_CATALOG, hasAdminPermission, permissionsForRole, type AdminRole } from "@/auth/permissions";
 
 type Tab = "users" | "notifications" | "audit";
 type UserRow = {
@@ -233,7 +233,7 @@ export function GovernancePage() {
   const [auditTable, setAuditTable] = useState("all");
   const [auditAction, setAuditAction] = useState("all");
   const [selectedAudit, setSelectedAudit] = useState<AuditRow | null>(null);
-  const canManage = role === "SUPER_ADMIN";
+  const canManage = hasAdminPermission(role, "system.manage");
 
   async function load() {
     setLoading(true);

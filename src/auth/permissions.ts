@@ -54,9 +54,9 @@ export const ADMIN_PERMISSIONS = [
   "survey.archive",
   "survey.audit.read",
   "ai.command.read",
-  "ai.queue.read",
-  "ai.execution.read",
-  "ai.approval.read",
+  "ai.command.queue.read",
+  "ai.command.execution.read",
+  "ai.command.approval.read",
 ] as const;
 export type AdminPermission = (typeof ADMIN_PERMISSIONS)[number];
 
@@ -129,9 +129,9 @@ export const PERMISSION_CATALOG: readonly PermissionDefinition[] = [
   permission("survey.archive", "survey", "archive", "เก็บถาวรแบบประเมิน", "เก็บถาวรแบบประเมิน"),
   permission("survey.audit.read", "survey", "audit.read", "ดูผลตรวจสอบแบบประเมิน", "ดูข้อมูล audit ของแบบประเมิน"),
   permission("ai.command.read", "ai", "command.read", "ดูคำสั่ง AI", "เข้าถึงคำสั่ง AI ที่ได้รับอนุญาต"),
-  permission("ai.queue.read", "ai", "queue.read", "ดูคิว AI", "ดูงาน AI ที่อยู่ในคิว"),
-  permission("ai.execution.read", "ai", "execution.read", "ดูประวัติการทำงาน AI", "ดู execution และผลการทำงานของ AI"),
-  permission("ai.approval.read", "ai", "approval.read", "ดูการอนุมัติ AI", "ดูรายการ AI ที่ต้องผ่านการอนุมัติ"),
+  permission("ai.command.queue.read", "ai", "queue.read", "ดูคิว AI", "ดูงาน AI ที่อยู่ในคิว"),
+  permission("ai.command.execution.read", "ai", "execution.read", "ดูประวัติการทำงาน AI", "ดู execution และผลการทำงานของ AI"),
+  permission("ai.command.approval.read", "ai", "approval.read", "ดูการอนุมัติ AI", "ดูรายการ AI ที่ต้องผ่านการอนุมัติ"),
 ];
 
 export function permissionDefinition(permission: AdminPermission): PermissionDefinition {
@@ -171,9 +171,9 @@ const CONTENT: readonly AdminPermission[] = [
   "survey.archive",
   "survey.audit.read",
   "ai.command.read",
-  "ai.queue.read",
-  "ai.execution.read",
-  "ai.approval.read",
+  "ai.command.queue.read",
+  "ai.command.execution.read",
+  "ai.command.approval.read",
 ];
 const OPERATIONS: readonly AdminPermission[] = [
   "overview.read",
@@ -195,9 +195,9 @@ const OPERATIONS: readonly AdminPermission[] = [
   "survey.archive",
   "survey.audit.read",
   "ai.command.read",
-  "ai.queue.read",
-  "ai.execution.read",
-  "ai.approval.read",
+  "ai.command.queue.read",
+  "ai.command.execution.read",
+  "ai.command.approval.read",
 ];
 const FACILITY: readonly AdminPermission[] = [
   "overview.read",
@@ -206,9 +206,9 @@ const FACILITY: readonly AdminPermission[] = [
   "survey.read",
   "survey.audit.read",
   "ai.command.read",
-  "ai.queue.read",
-  "ai.execution.read",
-  "ai.approval.read",
+  "ai.command.queue.read",
+  "ai.command.execution.read",
+  "ai.command.approval.read",
 ];
 const ROLE_PERMISSIONS: Record<AdminRole, readonly AdminPermission[]> = {
   SUPER_ADMIN: ADMIN_PERMISSIONS,
