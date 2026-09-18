@@ -29,9 +29,9 @@ export async function onRequest({ request, env }: { request: Request; env: Env }
       role = u?.app_metadata?.role,
       token = cookie(request);
     if (!u || !isAdminRole(role) || !token)
+      return json({ success: false, error: "Unauthorized" }, 401);
     if (!hasAdminPermission(role, "system.read"))
       return json({ success: false, error: "Forbidden" }, 403);
-      return json({ success: false, error: "Unauthorized" }, 401);
     const { url, key } = supabaseConfig(env);
     const headers = { apikey: key, Authorization: `Bearer ${token}`, Accept: "application/json" };
     if (request.method === "GET") {
