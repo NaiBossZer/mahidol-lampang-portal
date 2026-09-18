@@ -5,7 +5,7 @@ const cookie = (r: Request) => {
     .split(";")
     .map((v) => v.trim())
     .find((v) => v.startsWith("sb_access_token="));
-  return x ? decodeURIComponent(x.slice(17)) : null;
+  return x ? decodeURIComponent(x.slice("sb_access_token=".length)) : null;
 };
 async function rpc<T>(env: Env, token: string, functionName: string, body: unknown): Promise<T> {
   const { url, key } = supabaseConfig(env);
