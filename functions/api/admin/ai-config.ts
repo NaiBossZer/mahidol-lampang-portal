@@ -3,7 +3,7 @@
  * Cloudflare Function for managing Gemini AI configuration
  */
 
-import { getSupabaseUser, isAdminRole, json } from "../auth/_shared";
+import { getSupabaseUser, isAdminRole, json, hasAdminPermission } from "../auth/_shared";
 
 type Env = Record<string, unknown>;
 
@@ -15,12 +15,11 @@ export async function onRequest({ request, env }: { request: Request; env: Env }
     if (!user || !isAdminRole(role)) {
       return json({ success: false, error: "Unauthorized" }, 401);
     }
-
-    if (role !== "SUPER_ADMIN") {
-      return json({ success: false, error: "Forbidden: SUPER_ADMIN only" }, 403);
-    }
-
     const { method } = request;
+    const requiredPermission = method === "GET" ? "system.read" : method === "PUT" ? "system.manage" : null;
+    if (!requiredPermission || !hasAdminPermission(role, requiredPermission)) {
+      return json({ success: false, error: "Forbidden" }, 403);
+    }
 
     if (method === "GET") {
       const config = {

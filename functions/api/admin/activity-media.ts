@@ -1,11 +1,11 @@
-import { getCookie, getSupabaseUser, isAdminRole, json, supabaseConfig } from "../auth/_shared";
+import { getCookie, getSupabaseUser, hasAdminPermission, isAdminRole, json, supabaseConfig } from "../auth/_shared";
 
 type Env = Record<string, unknown>;
 type Row = Record<string, unknown>;
 const BUCKET = "activity-media";
 const MAX_FILE_SIZE = 10 * 1024 * 1024;
 const ALLOWED_TYPES = new Set(["image/jpeg", "image/png", "image/webp"]);
-const WRITE_ROLES = new Set(["SUPER_ADMIN", "CONTENT_ADMIN", "OPERATIONS_ADMIN"]);
+
 
 async function rest(env: Env, token: string, path: string, init: RequestInit = {}) {
   const config = supabaseConfig(env);
@@ -43,6 +43,8 @@ export async function onRequest({ request, env }: { request: Request; env: Env }
       return json({ success: false, error: "Unauthorized" }, 401);
     const params = new URL(request.url).searchParams;
     if (request.method === "GET") {
+      if (!hasAdminPermission(role, "activities.read"))
+        return json({ success: false, error: "Forbidden" }, 403);
       const query = new URLSearchParams({
         select:
           "id,activity_id,occurrence_id,storage_path,public_url,media_type,caption,is_post_event,display_order,status,created_at",
@@ -54,7 +56,8 @@ export async function onRequest({ request, env }: { request: Request; env: Env }
         data: await rest(env, token, `activity_media?${query.toString()}`),
       });
     }
-    if (!WRITE_ROLES.has(role)) return json({ success: false, error: "Forbidden" }, 403);
+    if (!hasAdminPermission(role, "activities.update") && !hasAdminPermission(role, "cms.update"))
+      return json({ success: false, error: "Forbidden" }, 403);
     if (request.method === "DELETE") {
       const id = params.get("id");
       if (!id) return json({ success: false, error: "id required" }, 400);

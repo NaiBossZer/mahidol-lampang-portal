@@ -52,7 +52,7 @@ export function adminIdentity(req: ApiRequest): AdminIdentity | null {
     payload.app_metadata && typeof payload.app_metadata === "object"
       ? (payload.app_metadata as Record<string, unknown>)
       : {};
-  const roleValue = appMeta.role ?? payload.role;
+  const roleValue = appMeta.role;
   return isAdminRole(roleValue)
     ? {
         id: payload.sub,

@@ -1,4 +1,4 @@
-import { getSupabaseUser, isAdminRole, json, supabaseConfig } from "../auth/_shared";
+import { getSupabaseUser, isAdminRole, json, supabaseConfig, hasAdminPermission } from "../auth/_shared";
 type Env = Record<string, unknown>;
 type Row = Record<string, unknown>;
 function cookieValue(r: Request, n: string) {
@@ -26,6 +26,8 @@ export async function onRequest({ request, env }: { request: Request; env: Env }
   const token = cookieValue(request, "sb_access_token");
   if (!u || !isAdminRole(role) || !token)
     return json({ success: false, error: "Unauthorized" }, 401);
+  if (!hasAdminPermission(role, "survey.read"))
+    return json({ success: false, error: "Forbidden" }, 403);
   try {
     const responses = await sb<Row[]>(
       env,

@@ -15,7 +15,7 @@ export interface JwtPayload {
 
 /**
  * Extract role from JWT payload
- * Checks app_metadata.role first, then falls back to payload.role
+ * Reads only app_metadata.role. The JWT top-level `role` claim is not an application RBAC role.
  * @param payload - JWT payload
  * @returns AdminRole if valid, null otherwise
  */
@@ -24,7 +24,7 @@ export function extractRole(payload: JwtPayload): AdminRole | null {
     payload.app_metadata && typeof payload.app_metadata === "object"
       ? (payload.app_metadata as Record<string, unknown>)
       : {};
-  const roleValue = appMeta.role ?? payload.role;
+  const roleValue = appMeta.role;
   return isAdminRole(roleValue) ? roleValue : null;
 }
 

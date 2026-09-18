@@ -1,4 +1,4 @@
-import { getCookie, getSupabaseUser, isAdminRole, json, supabaseConfig } from "../auth/_shared";
+import { getCookie, getSupabaseUser, hasAdminPermission, isAdminRole, json, supabaseConfig } from "../auth/_shared";
 
 type Env = Record<string, unknown>;
 type ActivityStatus = "draft" | "published" | "archived";
@@ -26,7 +26,7 @@ type DeleteActivityResult = {
   storage_paths?: unknown;
 };
 
-const WRITE_ROLES = new Set(["SUPER_ADMIN", "OPERATIONS_ADMIN"]);
+
 const ALLOWED_STATUS = new Set<ActivityStatus>(["draft", "published", "archived"]);
 const ACTIVITY_MEDIA_BUCKET = "activity-media";
 
@@ -159,8 +159,20 @@ async function authorize(request: Request, env: Env) {
   const user = await getSupabaseUser(request, env);
   const role = String(user?.app_metadata?.role ?? "");
   const accessToken = getCookie(request, "sb_access_token");
-  if (!user || !isAdminRole(role) || !accessToken) return { error: json({ success: false, error: "Unauthorized" }, 401) } as const;
-  if (!WRITE_ROLES.has(role)) return { error: json({ success: false, error: "Forbidden" }, 403) } as const;
+  if (!user || !isAdminRole(role) || !accessToken)
+    return { error: json({ success: false, error: "Unauthorized" }, 401) } as const;
+
+  const permission =
+    request.method === "GET"
+      ? "activities.read"
+      : request.method === "POST"
+        ? "activities.create"
+        : request.method === "DELETE"
+          ? "activities.archive"
+          : "activities.update";
+  if (!hasAdminPermission(role, permission))
+    return { error: json({ success: false, error: "Forbidden" }, 403) } as const;
+
   return { accessToken, role } as const;
 }
 

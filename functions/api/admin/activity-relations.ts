@@ -1,4 +1,4 @@
-import { getCookie, getSupabaseUser, isAdminRole, json, supabaseConfig } from "../auth/_shared";
+import { getCookie, getSupabaseUser, hasAdminPermission, isAdminRole, json, supabaseConfig } from "../auth/_shared";
 
 type Env = Record<string, unknown>;
 type ActivityOrganization = {
@@ -46,6 +46,8 @@ export async function onRequest({ request, env }: { request: Request; env: Env }
     if (!activityId) return json({ success: false, error: "activityId required" }, 400);
 
     if (request.method === "GET") {
+      if (!hasAdminPermission(role, "activities.read") && !hasAdminPermission(role, "partners.read"))
+        return json({ success: false, error: "Forbidden" }, 403);
       const [learningCenters, organizations] = await Promise.all([
         call(
           env,
@@ -70,7 +72,7 @@ export async function onRequest({ request, env }: { request: Request; env: Env }
       });
     }
 
-    if (!["SUPER_ADMIN", "CONTENT_ADMIN", "OPERATIONS_ADMIN"].includes(role)) {
+    if (!hasAdminPermission(role, "activities.update") && !hasAdminPermission(role, "partners.update")) {
       return json({ success: false, error: "Forbidden" }, 403);
     }
 

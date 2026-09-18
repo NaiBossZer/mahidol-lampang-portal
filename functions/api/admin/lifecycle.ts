@@ -1,11 +1,11 @@
-import { getSupabaseUser, isAdminRole, json, supabaseConfig } from "../auth/_shared";
+import { getSupabaseUser, hasAdminPermission, isAdminRole, json, supabaseConfig } from "../auth/_shared";
 type Env = Record<string, unknown>;
 const cookie = (r: Request) => {
   const x = (r.headers.get("Cookie") ?? "")
     .split(";")
     .map((v) => v.trim())
     .find((v) => v.startsWith("sb_access_token="));
-  return x ? decodeURIComponent(x.slice(17)) : null;
+  return x ? decodeURIComponent(x.slice("sb_access_token=".length)) : null;
 };
 export async function onRequest({ request, env }: { request: Request; env: Env }) {
   try {
@@ -22,14 +22,14 @@ export async function onRequest({ request, env }: { request: Request; env: Env }
       };
     const p = new URL(request.url).searchParams;
     if (request.method === "GET") {
+      if (!hasAdminPermission(role, "overview.read"))
+        return json({ success: false, error: "Forbidden" }, 403);
       const r = await fetch(
         `${url}/rest/v1/lifecycle_events?select=*&order=created_at.desc&limit=250`,
         { headers: h },
       );
       return json({ success: r.ok, data: r.ok ? await r.json() : null }, r.ok ? 200 : r.status);
     }
-    if (!["SUPER_ADMIN", "CONTENT_ADMIN", "OPERATIONS_ADMIN"].includes(String(role)))
-      return json({ success: false, error: "Forbidden" }, 403);
     if (request.method !== "PATCH")
       return json({ success: false, error: "Method Not Allowed" }, 405, { Allow: "GET, PATCH" });
     const type = p.get("type"),
@@ -47,6 +47,17 @@ export async function onRequest({ request, env }: { request: Request; env: Env }
               : null;
     if (!table || !id || !status)
       return json({ success: false, error: "type, id, status required" }, 400);
+
+    const action = status === "published" ? "publish" : status === "archived" ? "archive" : "update";
+    const permission =
+      type === "activity" || type === "occurrence"
+        ? `activities.${action}`
+        : type === "learning_center"
+          ? `learning_centers.${action}`
+          : `partners.${action}`;
+    if (!hasAdminPermission(role, permission))
+      return json({ success: false, error: "Forbidden" }, 403);
+
     const r = await fetch(`${url}/rest/v1/${table}?id=eq.${encodeURIComponent(id)}`, {
       method: "PATCH",
       headers: { ...h, Prefer: "return=representation" },

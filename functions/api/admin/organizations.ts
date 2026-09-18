@@ -1,4 +1,4 @@
-import { getSupabaseUser, isAdminRole, json, supabaseConfig } from "../auth/_shared";
+import { getSupabaseUser, hasAdminPermission, isAdminRole, json, supabaseConfig } from "../auth/_shared";
 type Env = Record<string, unknown>;
 function token(r: Request) {
   const p = (r.headers.get("Cookie") ?? "")
@@ -29,8 +29,12 @@ export async function onRequest({ request, env }: { request: Request; env: Env }
     role = u?.app_metadata?.role,
     t = token(request);
   if (!u || !isAdminRole(role) || !t) return json({ success: false, error: "Unauthorized" }, 401);
-  if (request.method !== "GET" && !["SUPER_ADMIN", "OPERATIONS_ADMIN"].includes(String(role)))
-    return json({ success: false, error: "Forbidden" }, 403);
+  const canRead = hasAdminPermission(role, "partners.read") || hasAdminPermission(role, "activities.read");
+  const canCreate = hasAdminPermission(role, "partners.create") || hasAdminPermission(role, "activities.create");
+  const canUpdate = hasAdminPermission(role, "partners.update") || hasAdminPermission(role, "activities.update");
+  if (request.method === "GET" && !canRead) return json({ success: false, error: "Forbidden" }, 403);
+  if (request.method === "POST" && !canCreate) return json({ success: false, error: "Forbidden" }, 403);
+  if (request.method === "PUT" && !canUpdate) return json({ success: false, error: "Forbidden" }, 403);
   try {
     if (request.method === "GET")
       return json({

@@ -1,11 +1,11 @@
-import { getSupabaseUser, isAdminRole, json, supabaseConfig } from "../auth/_shared";
+import { getSupabaseUser, isAdminRole, json, supabaseConfig, hasAdminPermission } from "../auth/_shared";
 type Env = Record<string, unknown>;
 const cookie = (r: Request) => {
   const x = (r.headers.get("Cookie") ?? "")
     .split(";")
     .map((v) => v.trim())
     .find((v) => v.startsWith("sb_access_token="));
-  return x ? decodeURIComponent(x.slice(17)) : null;
+  return x ? decodeURIComponent(x.slice("sb_access_token=".length)) : null;
 };
 export async function onRequest({ request, env }: { request: Request; env: Env }) {
   try {
@@ -15,6 +15,7 @@ export async function onRequest({ request, env }: { request: Request; env: Env }
     if (request.method !== "GET")
       return json({ success: false, error: "Method Not Allowed" }, 405, { Allow: "GET" });
     if (!u || !isAdminRole(role) || !t) return json({ success: false, error: "Unauthorized" }, 401);
+    if (!hasAdminPermission(role, "system.read")) return json({ success: false, error: "Forbidden" }, 403);
     const { url, key } = supabaseConfig(env);
     const r = await fetch(
       `${url}/rest/v1/system_registry?select=system_key,system_name,system_type,base_url,status,owner_domain,updated_at&order=system_name.asc`,

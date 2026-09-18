@@ -4,7 +4,7 @@
  * Delegates to the real server-side OpenAI -> governed tool pipeline.
  */
 
-import { getSupabaseUser, isAdminRole, json } from "../auth/_shared";
+import { getSupabaseUser, hasAdminPermission, isAdminRole, json } from "../auth/_shared";
 
 type Env = Record<string, unknown>;
 
@@ -21,6 +21,7 @@ export async function onRequest({ request, env }: { request: Request; env: Env }
   const role = user?.app_metadata?.role;
   const token = cookie(request);
   if (!user || !isAdminRole(role) || !token) return json({ success: false, error: "Unauthorized" }, 401);
+  if (!hasAdminPermission(role, "ai.command.read")) return json({ success: false, error: "Forbidden" }, 403);
 
   const intentResponse = await fetch(new URL("/api/admin/ai-process", request.url), {
     method: "POST",

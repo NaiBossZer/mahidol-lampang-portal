@@ -2,7 +2,12 @@ import { createContext, useContext, useEffect, useState, type ReactNode } from "
 import { Navigate, useLocation } from "react-router-dom";
 import type { AdminPermission, AdminRole } from "@/auth/permissions";
 
-type AdminAuth = { role: AdminRole; email: string | null; permissions: AdminPermission[] };
+type AdminAuth = {
+  userId: string;
+  role: AdminRole;
+  email: string | null;
+  permissions: AdminPermission[];
+};
 const AdminAuthContext = createContext<AdminAuth | null>(null);
 
 export function useAdminAuth(): AdminAuth {
@@ -26,16 +31,18 @@ export function AdminGuard({ children }: { children: ReactNode }) {
             authorized?: boolean;
             role?: AdminRole;
             permissions?: AdminPermission[];
-            user?: { email?: string | null };
+            user?: { id?: string; email?: string | null };
           };
         },
       }))
       .then(({ response, body }) => {
         if (!active) return;
-        if (response.ok && body.data?.authorized && body.data.role) {
+        const user = body.data?.user;
+        if (response.ok && body.data?.authorized && body.data.role && user?.id) {
           setAuth({
+            userId: user.id,
             role: body.data.role,
-            email: body.data.user?.email ?? null,
+            email: user.email ?? null,
             permissions: body.data.permissions ?? [],
           });
         } else setState("denied");

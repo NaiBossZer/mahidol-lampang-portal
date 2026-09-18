@@ -1,4 +1,4 @@
-import { getSupabaseUser, isAdminRole, json, supabaseConfig } from "../auth/_shared";
+import { getSupabaseUser, hasAdminPermission, isAdminRole, json, supabaseConfig } from "../auth/_shared";
 
 type Env = Record<string, unknown>;
 type Row = Record<string, unknown>;
@@ -58,9 +58,7 @@ async function authorize(request: Request, env: Env) {
   const token = cookieValue(request, "sb_access_token");
   if (!user || !isAdminRole(role) || !token)
     return { error: json({ success: false, error: "Unauthorized" }, 401) } as const;
-  if (role !== "SUPER_ADMIN" && role !== "OPERATIONS_ADMIN" && role !== "CONTENT_ADMIN")
-    return { error: json({ success: false, error: "Forbidden" }, 403) } as const;
-  return { token } as const;
+  return { token, role } as const;
 }
 
 const surveySelect =
@@ -74,6 +72,8 @@ export async function onRequest({ request, env }: { request: Request; env: Env }
     return json({ success: false, error: "Method Not Allowed" }, 405, { Allow: "GET, POST, PUT" });
   const auth = await authorize(request, env);
   if ("error" in auth) return auth.error;
+  const permission = method === "GET" ? "survey.read" : method === "POST" ? "survey.create" : "survey.update";
+  if (!hasAdminPermission(auth.role, permission)) return json({ success: false, error: "Forbidden" }, 403);
   try {
     const url = new URL(request.url);
     const surveyId = url.searchParams.get("id");

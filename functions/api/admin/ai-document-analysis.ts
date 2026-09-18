@@ -1,14 +1,13 @@
 import {
   getCookie,
   getSupabaseUser,
+  hasAdminPermission,
   isAdminRole,
   json,
   supabaseConfig,
 } from "../auth/_shared";
 
 type Env = Record<string, unknown>;
-
-const ALLOWED_ROLES = new Set(["SUPER_ADMIN", "CONTENT_ADMIN", "OPERATIONS_ADMIN"]);
 
 async function callDb<T>(env: Env, token: string, path: string, init: RequestInit = {}): Promise<T> {
   const { url, key, configured } = supabaseConfig(env);
@@ -80,7 +79,7 @@ export async function onRequest({ request, env }: { request: Request; env: Env }
   if (!user || !isAdminRole(role) || !token) {
     return json({ success: false, error: "Unauthorized" }, 401);
   }
-  if (!ALLOWED_ROLES.has(role)) {
+  if (!hasAdminPermission(role, "ai.command.read")) {
     return json({ success: false, error: "Forbidden: role lacks AI permission" }, 403);
   }
 

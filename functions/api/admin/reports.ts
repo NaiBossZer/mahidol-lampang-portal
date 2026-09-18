@@ -1,11 +1,11 @@
-import { getSupabaseUser, isAdminRole, json, supabaseConfig } from "../auth/_shared";
+import { getSupabaseUser, hasAdminPermission, isAdminRole, json, supabaseConfig } from "../auth/_shared";
 type Env = Record<string, unknown>;
 const cookie = (r: Request) => {
   const x = (r.headers.get("Cookie") ?? "")
     .split(";")
     .map((v) => v.trim())
     .find((v) => v.startsWith("sb_access_token="));
-  return x ? decodeURIComponent(x.slice(17)) : null;
+  return x ? decodeURIComponent(x.slice("sb_access_token=".length)) : null;
 };
 export async function onRequest({ request, env }: { request: Request; env: Env }) {
   try {
@@ -14,6 +14,8 @@ export async function onRequest({ request, env }: { request: Request; env: Env }
       token = cookie(request);
     if (!u || !isAdminRole(role) || !token)
       return json({ success: false, error: "Unauthorized" }, 401);
+    if (!hasAdminPermission(role, "overview.read"))
+      return json({ success: false, error: "Forbidden" }, 403);
     const { url, key } = supabaseConfig(env),
       h = { apikey: key, Authorization: `Bearer ${token}`, Accept: "application/json" };
     const [a, s, r] = await Promise.all([

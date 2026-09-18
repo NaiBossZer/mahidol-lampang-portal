@@ -7,6 +7,7 @@ import {
   getCookie,
   getSupabaseUser,
   isAdminRole,
+  hasAdminPermission,
   json,
   permissionsForRole,
   supabaseConfig,
@@ -117,6 +118,8 @@ export async function onRequest({
     if (!user || !isAdminRole(role) || !token) {
       return json({ success: false, error: "Unauthorized" }, 401);
     }
+    if (!hasAdminPermission(role, "ai.command.approval.read")) return json({ success: false, error: "Forbidden" }, 403);
+
 
     if (request.method === "GET") {
       const executions = await callSupabase<AiExecution[]>(
