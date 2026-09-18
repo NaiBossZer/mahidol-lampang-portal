@@ -264,7 +264,7 @@ export const ADMIN_FEATURES: readonly AdminFeatureDefinition[] = [
     label: "Notifications",
     area: "core",
     status: "foundation",
-    route: "/admin/governance?tab=notifications",
+    route: "/admin/notifications",
     permission: "overview.read",
   },
   {
