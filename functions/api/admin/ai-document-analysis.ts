@@ -187,7 +187,8 @@ export async function onRequest({ request, env }: { request: Request; env: Env }
     if (!apiKey) throw new Error("GEMINI_API_KEY is not configured");
 
     const sourceFile = await downloadStorageObject(env, token, storagePath);
-    const sourceMimeType = String(selectedDocument.mime_type ?? sourceFile.contentType);
+    const rawSourceMimeType = String(selectedDocument.mime_type ?? sourceFile.contentType).toLowerCase().split(";")[0].trim();
+    const sourceMimeType = rawSourceMimeType === "image/jpg" ? "image/jpeg" : rawSourceMimeType;
     if (!["application/pdf", "image/jpeg", "image/png", "image/webp"].includes(sourceMimeType)) {
       throw new Error("AI Analysis รองรับเฉพาะ PDF, JPEG, PNG และ WebP");
     }
@@ -233,7 +234,8 @@ export async function onRequest({ request, env }: { request: Request; env: Env }
               ],
             }],
             generationConfig: {
-              maxOutputTokens: 1500,
+              maxOutputTokens: Number(env.GEMINI_MAX_OUTPUT_TOKENS ?? 3000),
+              temperature: Number(env.GEMINI_TEMPERATURE ?? 0.2),
               responseMimeType: "application/json",
               responseJsonSchema: {
                 type: "object",
@@ -253,7 +255,7 @@ export async function onRequest({ request, env }: { request: Request; env: Env }
                         page: { type: "string" },
                         confidence: { type: "number" },
                       },
-                      required: ["id", "category", "categoryLabel", "title", "text", "sourceDoc", "confidence"],
+                      required: ["id", "category", "categoryLabel", "title", "text", "sourceDoc", "page", "confidence"],
                     },
                   },
                 },
@@ -263,17 +265,36 @@ export async function onRequest({ request, env }: { request: Request; env: Env }
           }),
         });
 
-        if (geminiRes.ok) {
-          const geminiData = await geminiRes.json();
-          const rawText = geminiData?.candidates?.[0]?.content?.parts?.[0]?.text;
-          if (rawText) {
-            const parsed = JSON.parse(rawText);
-            analysisSummary = parsed.summary || "";
-            extractedEntities = parsed.entities || [];
-          }
+        const geminiBody = await geminiRes.json().catch(() => null);
+        if (!geminiRes.ok) {
+          const apiMessage =
+            geminiBody?.error?.message ||
+            geminiBody?.message ||
+            `HTTP ${geminiRes.status}`;
+          throw new Error(`Gemini API ${geminiRes.status}: ${apiMessage}`);
         }
+
+        const rawText = geminiBody?.candidates?.[0]?.content?.parts?.find(
+          (part: { text?: unknown }) => typeof part?.text === "string",
+        )?.text;
+
+        if (!rawText) {
+          const finishReason = geminiBody?.candidates?.[0]?.finishReason || "UNKNOWN";
+          const blockReason = geminiBody?.promptFeedback?.blockReason || "none";
+          throw new Error(`Gemini returned no text (finishReason=${finishReason}, blockReason=${blockReason})`);
+        }
+
+        try {
+          const parsed = JSON.parse(rawText);
+          analysisSummary = typeof parsed?.summary === "string" ? parsed.summary.trim() : "";
+          extractedEntities = Array.isArray(parsed?.entities) ? parsed.entities : [];
+        } catch (parseError) {
+          throw new Error(`Gemini returned invalid JSON: ${parseError instanceof Error ? parseError.message : "parse failed"}`);
+        }
+      
       } catch (geminiError) {
-        console.warn("Gemini execution failed, falling back to deterministic extraction:", geminiError);
+        console.error("Gemini execution failed:", geminiError);
+        throw geminiError;
       }
     }
 
