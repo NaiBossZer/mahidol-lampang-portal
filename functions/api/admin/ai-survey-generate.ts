@@ -9,7 +9,7 @@ import {
   generateWithPathumma,
   validateGeneratedSurvey,
   type GeneratedSurvey,
-} from "./_survey-ai";
+} from "../../../lib/survey-ai";
 
 type Env = Record<string, unknown>;
 
