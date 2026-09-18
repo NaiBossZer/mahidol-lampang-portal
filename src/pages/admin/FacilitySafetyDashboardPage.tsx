@@ -8,6 +8,7 @@ export function FacilitySafetyDashboardPage() {
       url={FACILITY_SAFETY_URL}
       title="Facility-Safety Dashboard"
       systemLabel="อาคารและความปลอดภัย"
+      sso
     />
   );
 }
