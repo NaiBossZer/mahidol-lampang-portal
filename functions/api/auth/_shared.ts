@@ -134,6 +134,17 @@ export function permissionsForRole(role: AdminRole): AdminPermission[] {
   return [...ROLE_PERMISSIONS[role]];
 }
 
+export function hasAdminPermission(role: AdminRole | null | undefined, permission: string): boolean {
+  return Boolean(role && ROLE_PERMISSIONS[role].includes(permission as AdminPermission));
+}
+
+export function requireAdminPermission(
+  role: AdminRole | null | undefined,
+  permission: string,
+): boolean {
+  return hasAdminPermission(role, permission);
+}
+
 export function getCookie(request: Request, name: string): string | null {
   const header = request.headers.get("Cookie") ?? "";
   for (const part of header.split(";")) {
