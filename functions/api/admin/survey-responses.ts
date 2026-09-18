@@ -25,9 +25,9 @@ export async function onRequest({ request, env }: { request: Request; env: Env }
   const role = u?.app_metadata?.role;
   const token = cookieValue(request, "sb_access_token");
   if (!u || !isAdminRole(role) || !token)
-    if (!hasAdminPermission(role, "survey.read"))
-      return json({ success: false, error: "Forbidden" }, 403);
     return json({ success: false, error: "Unauthorized" }, 401);
+  if (!hasAdminPermission(role, "survey.read"))
+    return json({ success: false, error: "Forbidden" }, 403);
   try {
     const responses = await sb<Row[]>(
       env,
