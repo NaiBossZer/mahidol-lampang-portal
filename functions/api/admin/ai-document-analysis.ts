@@ -238,7 +238,7 @@ export async function onRequest({ request, env }: { request: Request; env: Env }
               ],
             }],
             generationConfig: {
-              maxOutputTokens: 1500,
+              maxOutputTokens: Number(env.GEMINI_MAX_OUTPUT_TOKENS ?? 4096),
               responseMimeType: "application/json",
               responseJsonSchema: {
                 type: "object",
@@ -290,11 +290,20 @@ export async function onRequest({ request, env }: { request: Request; env: Env }
           );
         }
 
+        const finishReason = geminiData?.candidates?.[0]?.finishReason || "unknown";
+        if (finishReason === "MAX_TOKENS") {
+          throw new Error(
+            `Gemini response was truncated by maxOutputTokens (finishReason=MAX_TOKENS). Increase GEMINI_MAX_OUTPUT_TOKENS.`,
+          );
+        }
+
         let parsed: { summary?: string; entities?: ExtractedEntity[] };
         try {
           parsed = JSON.parse(rawText) as { summary?: string; entities?: ExtractedEntity[] };
         } catch {
-          throw new Error(`Gemini returned invalid JSON: ${rawText.slice(0, 500)}`);
+          throw new Error(
+            `Gemini returned invalid JSON (finishReason=${finishReason}): ${rawText.slice(0, 500)}`,
+          );
         }
 
         analysisSummary = String(parsed.summary ?? "").trim();
