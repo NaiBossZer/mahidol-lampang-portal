@@ -16,7 +16,7 @@ const navGroups: readonly NavGroup[] = [
     { to: "/admin/survey-workflow", label: "สร้างกิจกรรม & AI Survey", icon: Bot, permission: "survey.read", badge: "AI" },
   ] },
   { id: "content", label: "เนื้อหา", icon: FolderOpen, items: [{ to: "/admin/cms", label: "คลังเอกสารราชการ / CMS", icon: FolderOpen, permission: "cms.read" }] },
-  { id: "facility", label: "อาคาร & ความปลอดภัย", icon: ShieldCheck, items: [{ to: "https://mulpfacility-safety.vercel.app", label: "อาคารและความปลอดภัย", icon: ShieldCheck, permission: "facility.read" }] },
+  { id: "facility", label: "อาคาร & ความปลอดภัย", icon: ShieldCheck, items: [{ to: "/admin/facility-safety", label: "อาคารและความปลอดภัย", icon: ShieldCheck, permission: "facility.read" }] },
 ];
 const adminUtilityItems: readonly NavItem[] = [
   { to: "/admin/governance?tab=users", label: "ผู้ใช้งาน & สิทธิ์การเข้าถึง", icon: Users, permission: "system.manage" },
@@ -28,6 +28,7 @@ const PATH_TITLE_MAP: Record<string, { group: string; title: string }> = {
   "/admin/activities": { group: "บริหารกิจกรรม & Survey", title: "รายการกิจกรรมโครงการ" },
   "/admin/survey-workflow": { group: "บริหารกิจกรรม & Survey", title: "สร้างกิจกรรม & AI Survey" },
   "/admin/cms": { group: "เนื้อหา", title: "คลังเอกสารราชการ / CMS" },
+  "/admin/facility-safety": { group: "อาคาร & ความปลอดภัย", title: "Facility-Safety Dashboard" },
   "/admin/ai-studio-workspace": { group: "AI Studio", title: "AI Studio Unified Workspace" },
   "/admin/governance": { group: "ผู้ดูแลระบบ", title: "ผู้ใช้งาน & สิทธิ์การเข้าถึง" },
   "/admin/notifications": { group: "ผู้ดูแลระบบ", title: "การแจ้งเตือน" },
