@@ -15,6 +15,7 @@ export async function onRequest({ request, env }: { request: Request; env: Env }
       role = u?.app_metadata?.role,
       t = cookie(request);
     if (!u || !isAdminRole(role) || !t) return json({ success: false, error: "Unauthorized" }, 401);
+    if (!hasAdminPermission(role, "ai.execution.read")) return json({ success: false, error: "Forbidden" }, 403);
     const { url, key } = supabaseConfig(env);
     const r = await fetch(
       `${url}/rest/v1/ai_executions?select=id,intent,status,risk_level,created_at,started_at,completed_at,error,tool_id&order=created_at.desc&limit=250`,
