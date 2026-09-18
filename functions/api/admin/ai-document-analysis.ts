@@ -115,6 +115,7 @@ export async function onRequest({ request, env }: { request: Request; env: Env }
   }
 
   // POST: Execute AI Document Analysis
+  let executionId = "";
   try {
     const body = (await request.json()) as { activityId?: string; documentId?: string; retry?: boolean };
     const activityId = body.activityId?.trim();
@@ -179,7 +180,7 @@ export async function onRequest({ request, env }: { request: Request; env: Env }
         started_at: startedAt,
       }),
     });
-    const executionId = String(execInsert?.[0]?.id ?? crypto.randomUUID());
+    executionId = String(execInsert?.[0]?.id ?? crypto.randomUUID());
 
     // 5. Download the actual source file and send its bytes to Gemini.
     // A successful document_analysis must be based on the uploaded file content.
@@ -187,9 +188,13 @@ export async function onRequest({ request, env }: { request: Request; env: Env }
     if (!apiKey) throw new Error("GEMINI_API_KEY is not configured");
 
     const sourceFile = await downloadStorageObject(env, token, storagePath);
-    const sourceMimeType = String(selectedDocument.mime_type ?? sourceFile.contentType);
+    const rawSourceMimeType = String(selectedDocument.mime_type ?? sourceFile.contentType)
+      .toLowerCase()
+      .split(";")[0]
+      .trim();
+    const sourceMimeType = rawSourceMimeType === "image/jpg" ? "image/jpeg" : rawSourceMimeType;
     if (!["application/pdf", "image/jpeg", "image/png", "image/webp"].includes(sourceMimeType)) {
-      throw new Error("AI Analysis รองรับเฉพาะ PDF, JPEG, PNG และ WebP");
+      throw new Error(`AI Analysis รองรับเฉพาะ PDF, JPEG, PNG และ WebP (ได้รับ ${sourceMimeType || "unknown"})`);
     }
     const sourceBase64 = bytesToBase64(sourceFile.bytes);
     let extractedEntities: ExtractedEntity[] = [];
@@ -263,22 +268,48 @@ export async function onRequest({ request, env }: { request: Request; env: Env }
           }),
         });
 
-        if (geminiRes.ok) {
-          const geminiData = await geminiRes.json();
-          const rawText = geminiData?.candidates?.[0]?.content?.parts?.[0]?.text;
-          if (rawText) {
-            const parsed = JSON.parse(rawText);
-            analysisSummary = parsed.summary || "";
-            extractedEntities = parsed.entities || [];
-          }
+        const geminiData = await geminiRes.json().catch(() => null);
+
+        if (!geminiRes.ok) {
+          const apiMessage =
+            geminiData?.error?.message ||
+            geminiData?.message ||
+            `HTTP ${geminiRes.status}`;
+          throw new Error(`Gemini API ${geminiRes.status}: ${apiMessage}`);
+        }
+
+        const rawText = geminiData?.candidates?.[0]?.content?.parts?.find(
+          (part: { text?: unknown }) => typeof part?.text === "string",
+        )?.text;
+
+        if (!rawText) {
+          const finishReason = geminiData?.candidates?.[0]?.finishReason || "unknown";
+          const blockReason = geminiData?.promptFeedback?.blockReason || "none";
+          throw new Error(
+            `Gemini returned no analysis text (finishReason=${finishReason}, blockReason=${blockReason})`,
+          );
+        }
+
+        let parsed: { summary?: string; entities?: ExtractedEntity[] };
+        try {
+          parsed = JSON.parse(rawText) as { summary?: string; entities?: ExtractedEntity[] };
+        } catch {
+          throw new Error(`Gemini returned invalid JSON: ${rawText.slice(0, 500)}`);
+        }
+
+        analysisSummary = String(parsed.summary ?? "").trim();
+        extractedEntities = Array.isArray(parsed.entities) ? parsed.entities : [];
+
+        if (!analysisSummary || !extractedEntities.length) {
+          throw new Error(
+            `Gemini returned incomplete analysis (summary=${Boolean(analysisSummary)}, entities=${extractedEntities.length})`,
+          );
         }
       } catch (geminiError) {
-        console.warn("Gemini execution failed, falling back to deterministic extraction:", geminiError);
+        const message = geminiError instanceof Error ? geminiError.message : String(geminiError);
+        console.error("Gemini execution failed:", geminiError);
+        throw new Error(message);
       }
-    }
-
-    if (!extractedEntities.length || !analysisSummary) {
-      throw new Error("Gemini ไม่ได้คืนผลวิเคราะห์จากเนื้อหาเอกสาร");
     }
 
     const completedAt = new Date().toISOString();
@@ -323,10 +354,23 @@ export async function onRequest({ request, env }: { request: Request; env: Env }
       },
     });
   } catch (error) {
+    const message = error instanceof Error ? error.message : "AI Document Analysis failed";
     console.error("/api/admin/ai-document-analysis error:", error);
-    return json(
-      { success: false, error: error instanceof Error ? error.message : "AI Document Analysis failed" },
-      500,
-    );
+
+    if (executionId) {
+      await callDb(env, token, `ai_executions?id=eq.${encodeURIComponent(executionId)}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          status: "failed",
+          completed_at: new Date().toISOString(),
+          error: message,
+        }),
+      }).catch((patchError) => {
+        console.error("Failed to persist AI execution failure:", patchError);
+      });
+    }
+
+    return json({ success: false, error: message, executionId: executionId || undefined }, 500);
   }
 }
