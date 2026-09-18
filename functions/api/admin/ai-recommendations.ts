@@ -3,7 +3,7 @@
  * Generates AI-powered recommendations for survey optimization, participant engagement, and timing
  */
 
-import { getSupabaseUser, isAdminRole, json, supabaseConfig } from "../auth/_shared";
+import { getSupabaseUser, hasAdminPermission, isAdminRole, json, supabaseConfig } from "../auth/_shared";
 
 type Env = Record<string, unknown>;
 
@@ -208,6 +208,7 @@ export async function onRequest({ request, env }: { request: Request; env: Env }
     const role = user?.app_metadata?.role;
     const token = cookie(request);
     if (!user || !isAdminRole(role) || !token) return json({ success: false, error: "Unauthorized" }, 401);
+    if (!hasAdminPermission(role, "ai.command.read")) return json({ success: false, error: "Forbidden" }, 403);
 
     if (request.method === "POST") {
       const body = (await request.json()) as {

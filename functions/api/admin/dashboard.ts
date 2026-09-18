@@ -1,4 +1,4 @@
-import { getSupabaseUser, isAdminRole, json, supabaseConfig } from "../auth/_shared";
+import { getSupabaseUser, hasAdminPermission, isAdminRole, json, supabaseConfig } from "../auth/_shared";
 
 type Env = Record<string, unknown>;
 type RestParams = Record<string, string>;
@@ -71,6 +71,7 @@ export async function onRequestGet({ request, env }: { request: Request; env: En
   const user = await getSupabaseUser(request, env);
   const role = user?.app_metadata?.role;
   if (!user || !isAdminRole(role)) return json({ success: false, error: "Forbidden" }, 403);
+  if (!hasAdminPermission(role, "overview.read")) return json({ success: false, error: "Forbidden" }, 403);
   const accessToken = cookieValue(request, "sb_access_token");
   if (!accessToken) return json({ success: false, error: "Unauthorized" }, 401);
 

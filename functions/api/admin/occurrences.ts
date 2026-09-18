@@ -1,4 +1,4 @@
-import { getSupabaseUser, isAdminRole, json, supabaseConfig } from "../auth/_shared";
+import { getSupabaseUser, hasAdminPermission, isAdminRole, json, supabaseConfig } from "../auth/_shared";
 
 type Env = Record<string, unknown>;
 type Status = "draft" | "scheduled" | "ongoing" | "completed" | "cancelled" | "archived";
@@ -47,8 +47,7 @@ async function auth(request: Request, env: Env) {
   const role = user?.app_metadata?.role;
   const token = cookieValue(request, "sb_access_token");
   if (!user || !isAdminRole(role) || !token) return null;
-  if (role !== "SUPER_ADMIN" && role !== "OPERATIONS_ADMIN") return null;
-  return token;
+  return { token, role };
 }
 const select =
   "id,activity_id,occurrence_no,start_at,end_at,status,cancellation_reason,participant_count,location_type,location_detail,created_at,updated_at";
@@ -66,9 +65,20 @@ function toRow(input: Input) {
   };
 }
 export async function onRequest({ request, env }: { request: Request; env: Env }) {
-  const token = await auth(request, env);
-  if (!token) return json({ success: false, error: "Forbidden" }, 403);
+  const authContext = await auth(request, env);
+  if (!authContext) return json({ success: false, error: "Forbidden" }, 403);
   const method = request.method.toUpperCase();
+  const permission =
+    method === "GET"
+      ? "activities.read"
+      : method === "POST"
+        ? "activities.create"
+        : method === "DELETE"
+          ? "activities.archive"
+          : "activities.update";
+  if (!hasAdminPermission(authContext.role, permission))
+    return json({ success: false, error: "Forbidden" }, 403);
+  const token = authContext.token;
   try {
     const url = new URL(request.url);
     const id = url.searchParams.get("id");
