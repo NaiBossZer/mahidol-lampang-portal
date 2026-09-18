@@ -7,6 +7,7 @@ import {
   getCookie,
   getSupabaseUser,
   isAdminRole,
+  hasAdminPermission,
   json,
   permissionsForRole,
   supabaseConfig,
