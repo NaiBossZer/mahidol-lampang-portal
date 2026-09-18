@@ -10,7 +10,7 @@ type Env = Record<string, unknown>;
 const cookie = (request: Request): string | null => {
   const cookies = (request.headers.get("Cookie") ?? "").split(";").map((v) => v.trim());
   const found = cookies.find((v) => v.startsWith("sb_access_token="));
-  return found ? decodeURIComponent(found.slice(17)) : null;
+  return found ? decodeURIComponent(found.slice("sb_access_token=".length)) : null;
 };
 
 export async function onRequest({ request, env }: { request: Request; env: Env }) {
@@ -35,11 +35,11 @@ export async function onRequest({ request, env }: { request: Request; env: Env }
 
     // Fetch active executions with execution plans
     const response = await fetch(
-      `${url}/rest/v1/ai_executions?status=in.(queued,running,awaiting_approval)&select=id,intent,status,risk_level,created_at,started_at,execution_plan,steps,tool_id&order=created_at.desc&limit=100`,
+      url + "/rest/v1/ai_executions?status=in.(queued,running,awaiting_approval)&select=id,intent,status,risk_level,created_at,started_at,execution_plan,steps,tool_id&order=created_at.desc&limit=100",
       {
         headers: {
           apikey: key,
-          Authorization: `Bearer ${token}`,
+          Authorization: "Bearer " + token,
           Accept: "application/json",
         },
       },
@@ -56,11 +56,11 @@ export async function onRequest({ request, env }: { request: Request; env: Env }
 
       if (toolIds) {
         const toolsResponse = await fetch(
-          `${url}/rest/v1/ai_tools?id=in.(${toolIds})&select=id,tool_key,name,description,domain,risk_level`,
+          url + "/rest/v1/ai_tools?id=in.(" + toolIds + ")&select=id,tool_key,name,description,domain,risk_level",
           {
             headers: {
               apikey: key,
-              Authorization: `Bearer ${token}`,
+              Authorization: "Bearer " + token,
               Accept: "application/json",
             },
           },
