@@ -3,7 +3,7 @@
  * Server-side pipeline: natural language -> Gemini -> governed tool -> execution/approval.
  */
 
-import { getCookie, getSupabaseUser, isAdminRole, json, permissionsForRole, supabaseConfig } from "../auth/_shared";
+import { getCookie, getSupabaseUser, isAdminRole, json, permissionsForRole, supabaseConfig, hasAdminPermission } from "../auth/_shared";
 
 type Env = Record<string, unknown>;
 type RiskLevel = "low" | "medium" | "high" | "critical";
@@ -236,6 +236,7 @@ export async function onRequest({ request, env }: { request: Request; env: Env }
     const role = user?.app_metadata?.role;
     const token = getCookie(request, "sb_access_token");
     if (!user || !isAdminRole(role) || !token) return json({ success: false, error: "Unauthorized" }, 401);
+    if (!hasAdminPermission(role, "ai.command.read")) return json({ success: false, error: "Forbidden" }, 403);
 
     const body = (await request.json()) as { intent?: string; context?: Record<string, unknown> };
     const intent = body.intent?.trim();
