@@ -20,7 +20,17 @@ async function rpc<T>(env: Env, token: string, functionName: string, body: unkno
     body: JSON.stringify(body),
   });
   const b = await r.json().catch(() => null);
-  if (!r.ok) throw new Error(`Admin users RPC ${r.status}`);
+  if (!r.ok) {
+    const detail =
+      typeof b?.message === "string"
+        ? b.message
+        : typeof b?.error_description === "string"
+          ? b.error_description
+          : typeof b?.error === "string"
+            ? b.error
+            : JSON.stringify(b);
+    throw new Error(`Admin users RPC ${r.status}: ${detail?.slice(0, 300) || "request failed"}`);
+  }
   return b as T;
 }
 export async function onRequest({ request, env }: { request: Request; env: Env }) {
