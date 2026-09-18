@@ -28,7 +28,7 @@ export function AIWorkQueuePage() {
     approval = data.filter((x) => x.status === "awaiting_approval").length,
     needs = data.filter((x) => x.status === "queued").length;
   return (
-    <AIAccessGuard permission="ai.queue.read">
+    <AIAccessGuard permission="ai.command.queue.read">
       <section className="min-h-[calc(100vh-4rem)] bg-[#f8f9ff] px-4 py-5 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-[1280px]">
           <div className="flex items-end justify-between gap-4">
