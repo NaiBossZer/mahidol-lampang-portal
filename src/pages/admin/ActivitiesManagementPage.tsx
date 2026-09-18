@@ -1,8 +1,9 @@
 import { useEffect, useMemo, useState, type ReactNode } from "react";
-import { CalendarDays, ImagePlus, Lightbulb, Pencil, Plus, RefreshCw, Upload, X } from "lucide-react";
+import { CalendarDays, ImagePlus, Lightbulb, Pencil, Plus, RefreshCw, Trash2, Upload, X } from "lucide-react";
 import { toast } from "sonner";
 import {
   createActivity,
+  deleteActivity,
   getAdminActivities,
   updateActivity,
   type ActivityStatus,
@@ -12,6 +13,7 @@ import {
 import { getAdminLearningCenters, type LearningCenter } from "@/services/admin-learning-centers";
 import AIRecommendationsSidebar from "@/components/admin/AIRecommendationsSidebar";
 import AIInsightsPanel from "@/components/admin/AIInsightsPanel";
+import GoogleDriveImagePicker from "@/components/admin/GoogleDriveImagePicker";
 import {
   AdminPageHeader,
   AdminButton,
@@ -54,9 +56,9 @@ const blankActivity: ActivityWriteInput = {
 };
 
 const statusLabel: Record<ActivityStatus, string> = {
-  draft: "Draft",
-  published: "Published",
-  archived: "Archived",
+  draft: "ร่าง",
+  published: "เผยแพร่",
+  archived: "เก็บถาวร",
 };
 
 function statusTone(status: ActivityStatus): "success" | "warning" | "neutral" {
@@ -134,6 +136,7 @@ export function ActivitiesManagementPage() {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
   const [recommendationActivity, setRecommendationActivity] = useState<AdminActivity | null>(null);
 
@@ -198,6 +201,26 @@ export function ActivitiesManagementPage() {
     setFiles([]);
   }
 
+  async function removeActivity(activity: AdminActivity) {
+    if (deletingId) return;
+    const confirmed = window.confirm(
+      `ยืนยันการลบกิจกรรม\n\n"${activity.title}"\n\nการดำเนินการนี้เป็นการลบถาวร ไม่ใช่การเก็บถาวร และจะลบข้อมูล/สื่อที่เกี่ยวข้องด้วย\n\nต้องการดำเนินการต่อหรือไม่?`,
+    );
+    if (!confirmed) return;
+
+    setDeletingId(activity.id);
+    try {
+      await deleteActivity(activity.id);
+      setActivities((current) => current.filter((item) => item.id !== activity.id));
+      if (edit?.id === activity.id) close();
+      toast.success("ลบกิจกรรมถาวรสำเร็จ");
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "ลบกิจกรรมไม่สำเร็จ");
+    } finally {
+      setDeletingId(null);
+    }
+  }
+
   async function save() {
     const title = form.title.trim();
     const activityDate = form.activityDate.slice(0, 10);
@@ -224,7 +247,6 @@ export function ActivitiesManagementPage() {
       const activity = saved as AdminActivity;
       if (!activity?.id) throw new Error("ไม่พบรหัสกิจกรรมหลังบันทึก");
 
-      // Relations are auxiliary to the core activity row. For a new activity with no relations, skip the RPC.
       if (edit || selectedCenters.length || organizers.length) {
         try {
           await saveRelations(activity.id, {
@@ -297,16 +319,16 @@ export function ActivitiesManagementPage() {
 
       <AIInsightsPanel />
 
-      <AdminFilterBar search={q} onSearchChange={setQ} placeholder="ค้นหาชื่อกิจกรรม, slug หรือสถานที่">
+      <AdminFilterBar search={q} onSearchChange={setQ} placeholder="ค้นหาชื่อกิจกรรม, รหัส URL หรือสถานที่">
         <select
           value={status}
           onChange={(event) => setStatus(event.target.value as typeof status)}
           className="min-h-11 rounded-xl border border-slate-200 bg-white px-3 text-sm outline-none transition focus:border-[#002d62] focus:ring-4 focus:ring-[#002d62]/10"
         >
           <option value="all">ทุกสถานะ</option>
-          <option value="draft">Draft</option>
-          <option value="published">Published</option>
-          <option value="archived">Archived</option>
+          <option value="draft">ร่าง</option>
+          <option value="published">เผยแพร่</option>
+          <option value="archived">เก็บถาวร</option>
         </select>
       </AdminFilterBar>
 
@@ -359,6 +381,16 @@ export function ActivitiesManagementPage() {
                         <Lightbulb className="h-3.5 w-3.5 text-amber-500" /><span className="hidden sm:inline">AI Advice</span>
                       </button>
                       <AdminButton variant="secondary" icon={<Pencil className="h-3.5 w-3.5" />} onClick={() => void openEdit(activity)} className="min-h-9 px-3 text-xs">แก้ไข</AdminButton>
+                      <AdminButton
+                        variant="danger"
+                        icon={<Trash2 className="h-3.5 w-3.5" />}
+                        onClick={() => void removeActivity(activity)}
+                        disabled={deletingId === activity.id || !!deletingId}
+                        className="min-h-9 px-3 text-xs"
+                        title="ลบกิจกรรมถาวร"
+                      >
+                        {deletingId === activity.id ? "กำลังลบ..." : "ลบ"}
+                      </AdminButton>
                     </div>
                   </td>
                 </AdminTableRow>
@@ -388,8 +420,9 @@ export function ActivitiesManagementPage() {
                 <Field label="ชื่อกิจกรรม" required>
                   <input value={form.title} onChange={(event) => setForm((current) => ({ ...current, title: event.target.value }))} className="dashboard-control mt-1 w-full" placeholder="เช่น โครงการอบรมการจัดการสิ่งแวดล้อม" autoFocus />
                 </Field>
-                <Field label="Slug">
-                  <input value={form.slug} onChange={(event) => setForm((current) => ({ ...current, slug: event.target.value }))} className="dashboard-control mt-1 w-full" placeholder="เว้นว่างได้ ระบบสร้างให้อัตโนมัติ" />
+                <Field label="รหัส URL ของกิจกรรม">
+                  <input value={form.slug} onChange={(event) => setForm((current) => ({ ...current, slug: event.target.value }))} className="dashboard-control mt-1 w-full" placeholder="เว้นว่างได้ ระบบสร้างรหัส URL ให้อัตโนมัติ" />
+                  <p className="mt-1 text-xs font-normal text-slate-400">ใช้สำหรับสร้าง URL ของหน้ากิจกรรม ไม่ใช่สถานะหรือรหัสฐานข้อมูล</p>
                 </Field>
                 <Field label="วันที่" required>
                   <input type="date" value={form.activityDate.slice(0, 10)} onChange={(event) => setForm((current) => ({ ...current, activityDate: event.target.value }))} className="dashboard-control mt-1 w-full" />
@@ -402,13 +435,16 @@ export function ActivitiesManagementPage() {
                 </Field>
                 <Field label="สถานะ">
                   <select value={form.status} onChange={(event) => setForm((current) => ({ ...current, status: event.target.value as ActivityStatus }))} className="dashboard-control mt-1 w-full">
-                    <option value="draft">Draft</option>
-                    <option value="published">Published</option>
-                    <option value="archived">Archived</option>
+                    <option value="draft">ร่าง</option>
+                    <option value="published">เผยแพร่</option>
+                    <option value="archived">เก็บถาวร</option>
                   </select>
                 </Field>
-                <Field label="Featured Image URL">
-                  <input value={form.featuredImage ?? ""} onChange={(event) => setForm((current) => ({ ...current, featuredImage: event.target.value }))} className="dashboard-control mt-1 w-full" placeholder="https://..." />
+                <Field label="รูปภาพหน้าปกกิจกรรม">
+                  <GoogleDriveImagePicker
+                    value={form.featuredImage}
+                    onChange={(url) => setForm((current) => ({ ...current, featuredImage: url }))}
+                  />
                 </Field>
               </div>
 
@@ -444,7 +480,7 @@ export function ActivitiesManagementPage() {
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                   <div>
                     <h3 className="text-sm font-bold text-[#002d62]">รูปภาพกิจกรรม</h3>
-                    <p className="mt-1 text-xs text-slate-500">JPEG, PNG หรือ WebP ไม่เกิน 10MB/ไฟล์ · ระบบจะใช้ไฟล์แรกเป็นรูปปกอัตโนมัติเมื่อยังไม่ได้ระบุ Featured Image URL</p>
+                    <p className="mt-1 text-xs text-slate-500">JPEG, PNG หรือ WebP ไม่เกิน 10MB/ไฟล์ · ระบบจะใช้ไฟล์แรกเป็นรูปปกอัตโนมัติเมื่อยังไม่ได้ระบุรูปภาพหน้าปกกิจกรรม</p>
                   </div>
                   <label className="inline-flex min-h-10 cursor-pointer items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 text-sm font-semibold text-[#002d62] transition-colors hover:bg-slate-50">
                     <Upload className="h-4 w-4" />เพิ่มรูป

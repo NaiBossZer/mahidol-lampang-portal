@@ -89,7 +89,32 @@ async function storage(env: Env, token: string, path: string, init: RequestInit 
     ...init,
     headers: { apikey: config.key, Authorization: `Bearer ${token}`, ...(init.headers ?? {}) },
   });
-  if (!response.ok) throw new Error(`Storage ${response.status}`);
+  if (!response.ok) {
+    const body = await response.text().catch(() => "");
+    throw new Error(`Storage ${response.status}${body ? `: ${body.slice(0, 300)}` : ""}`);
+  }
+}
+
+async function removeStorageObject(env: Env, token: string, path: string) {
+  const config = supabaseConfig(env);
+  if (!config.configured) throw new Error("Supabase is not configured");
+  const response = await fetch(`${config.url}/storage/v1/object/${BUCKET}/remove`, {
+    method: "POST",
+    headers: {
+      apikey: config.key,
+      Authorization: `Bearer ${token}`,
+      Accept: "application/json",
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ prefixes: [path] }),
+  });
+  if (response.ok) return;
+
+  const body = await response.text().catch(() => "");
+  // DELETE is intentionally idempotent: if the Storage object is already gone,
+  // the metadata row should still be removable instead of returning HTTP 500.
+  if (response.status === 400 || response.status === 404) return;
+  throw new Error(`Storage remove ${response.status}${body ? `: ${body.slice(0, 300)}` : ""}`);
 }
 
 export async function onRequest({ request, env }: { request: Request; env: Env }) {
@@ -202,7 +227,7 @@ export async function onRequest({ request, env }: { request: Request; env: Env }
       const fieldKey = String(row.field_key ?? "");
       if (!contractField(entityType, fieldKey) || !canWrite(role, entityType, false))
         return json({ success: false, error: "Forbidden" }, 403);
-      await storage(env, token, String(row.storage_path), { method: "DELETE" });
+      await removeStorageObject(env, token, String(row.storage_path));
       await rest(env, token, `portal_media_assets?id=eq.${id}`, { method: "DELETE" });
       return json({ success: true, data: { id } });
     }

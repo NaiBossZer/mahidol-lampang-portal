@@ -20,9 +20,15 @@ type ActivityInput = {
   status?: ActivityStatus;
 };
 type ActivityRow = Record<string, unknown>;
+type DeleteActivityResult = {
+  deleted?: boolean;
+  activity_id?: string;
+  storage_paths?: unknown;
+};
 
 const WRITE_ROLES = new Set(["SUPER_ADMIN", "OPERATIONS_ADMIN"]);
 const ALLOWED_STATUS = new Set<ActivityStatus>(["draft", "published", "archived"]);
+const ACTIVITY_MEDIA_BUCKET = "activity-media";
 
 async function supabaseRequest<T>(env: Env, accessToken: string, path: string, init: RequestInit = {}) {
   const { url, key, configured } = supabaseConfig(env);
@@ -48,6 +54,32 @@ async function supabaseRequest<T>(env: Env, accessToken: string, path: string, i
     throw error;
   }
   return body as T;
+}
+
+async function deleteActivityMediaObjects(env: Env, accessToken: string, paths: string[]) {
+  const { url, key, configured } = supabaseConfig(env);
+  if (!configured) throw new Error("Supabase is not configured");
+  const failures: string[] = [];
+
+  for (const path of paths) {
+    try {
+      const response = await fetch(
+        `${url}/storage/v1/object/${ACTIVITY_MEDIA_BUCKET}/${path}`,
+        {
+          method: "DELETE",
+          headers: {
+            apikey: key,
+            Authorization: `Bearer ${accessToken}`,
+          },
+        },
+      );
+      if (!response.ok) failures.push(path);
+    } catch {
+      failures.push(path);
+    }
+  }
+
+  return failures;
 }
 
 function normalizeActivityDate(value: unknown) {
@@ -136,6 +168,8 @@ function friendlyError(error: unknown) {
   const value = error as { code?: string; message?: string } | null;
   if (value?.code === "23505") return "Slug นี้ถูกใช้งานแล้ว กรุณาเปลี่ยน Slug หรือเว้นว่างเพื่อให้ระบบสร้างให้อัตโนมัติ";
   if (value?.code === "23503") return "ข้อมูลที่เชื่อมโยงไม่ถูกต้องหรือไม่พบรายการอ้างอิง";
+  if (String(value?.message ?? "").includes("ACTIVITY_NOT_FOUND")) return "ไม่พบกิจกรรม";
+  if (String(value?.message ?? "").includes("FORBIDDEN")) return "ไม่มีสิทธิ์ลบกิจกรรม";
   return error instanceof Error ? error.message : "ไม่สามารถดำเนินการกับกิจกรรมได้";
 }
 
@@ -209,13 +243,25 @@ export async function onRequest({ request, env }: { request: Request; env: Env }
       return json({ success: true, data: toActivity(rows[0]) });
     }
 
-    const rows = await supabaseRequest<ActivityRow[]>(env, auth.accessToken, `activities?id=eq.${encodeURIComponent(id)}`, {
-      method: "PATCH",
-      headers: { Prefer: "return=representation" },
-      body: JSON.stringify({ status: "archived" }),
+    const result = await supabaseRequest<DeleteActivityResult>(env, auth.accessToken, "rpc/admin_delete_activity", {
+      method: "POST",
+      body: JSON.stringify({ p_activity_id: id }),
     });
-    if (!rows[0]) return json({ success: false, error: "ไม่พบกิจกรรม" }, 404);
-    return json({ success: true, data: toActivity(rows[0]) });
+
+    const storagePaths = Array.isArray(result?.storage_paths)
+      ? result.storage_paths.filter((path): path is string => typeof path === "string" && path.trim().length > 0)
+      : [];
+    const cleanupFailures = await deleteActivityMediaObjects(env, auth.accessToken, storagePaths);
+
+    return json({
+      success: true,
+      data: {
+        id,
+        deleted: result?.deleted === true,
+        storageDeleted: storagePaths.length - cleanupFailures.length,
+        storageCleanupFailed: cleanupFailures,
+      },
+    });
   } catch (error) {
     console.error(`/api/admin/activities ${method}`, error);
     return json({ success: false, error: friendlyError(error) }, 500);

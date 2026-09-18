@@ -75,21 +75,50 @@ async function fetchJson<T>(url: string, init?: RequestInit): Promise<T> {
   return data?.data as T;
 }
 
+const MAX_ACTIVITY_DOCUMENT_SIZE = 25 * 1024 * 1024;
+const ALLOWED_ACTIVITY_DOCUMENT_TYPES = new Set([
+  "application/pdf",
+  "image/jpeg",
+  "image/png",
+  "image/webp",
+]);
+
 export async function uploadActivityDocument(activityId: string, file: File): Promise<ActivityDocument> {
+  if (file.size > MAX_ACTIVITY_DOCUMENT_SIZE) {
+    throw new Error("ไฟล์ต้องไม่เกิน 25MB");
+  }
+
+  if (file.type && !ALLOWED_ACTIVITY_DOCUMENT_TYPES.has(file.type)) {
+    throw new Error("รองรับ PDF, JPEG, PNG และ WebP");
+  }
+
   const form = new FormData();
   form.set("entityType", "activities");
   form.set("entityId", activityId);
   form.set("fieldKey", "documents");
   form.set("file", file);
 
-  const res = await fetch("/api/admin/media", {
-    method: "POST",
-    credentials: "include",
-    body: form,
-  });
-  const data = await res.json().catch(() => null);
-  if (!res.ok) throw new Error(data?.error || "อัปโหลดเอกสารไม่สำเร็จ");
-  return data.data as ActivityDocument;
+  const controller = new AbortController();
+  const timeout = window.setTimeout(() => controller.abort(), 60_000);
+  try {
+    const res = await fetch("/api/admin/media", {
+      method: "POST",
+      credentials: "include",
+      body: form,
+      signal: controller.signal,
+    });
+    const data = await res.json().catch(() => null);
+    if (!res.ok) throw new Error(data?.error || "อัปโหลดเอกสารไม่สำเร็จ");
+    if (!data?.data) throw new Error("อัปโหลดสำเร็จแต่ระบบไม่พบข้อมูลไฟล์");
+    return data.data as ActivityDocument;
+  } catch (error) {
+    if (error instanceof DOMException && error.name === "AbortError") {
+      throw new Error("อัปโหลดใช้เวลานานเกิน 60 วินาที กรุณาลองใหม่อีกครั้ง");
+    }
+    throw error;
+  } finally {
+    window.clearTimeout(timeout);
+  }
 }
 
 export async function getActivityDocuments(activityId: string): Promise<ActivityDocument[]> {
