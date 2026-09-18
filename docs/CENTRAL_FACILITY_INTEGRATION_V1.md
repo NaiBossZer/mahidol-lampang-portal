@@ -4,7 +4,13 @@
 
 `NaiBossZer/Facility-Safety` remains the canonical owner of Facility & Safety operational data. The Mahidol Lampang Portal is the central administrative entry point.
 
-The shared Supabase project is the integration boundary. Facility data is not copied into Portal CMS tables.
+The shared Supabase project is the integration boundary. Facility data is not copied into Portal CMS tables. The Portal launches the separately deployed Facility-Safety application; it does not render a second Facility module.
+
+## Production application
+
+- Repository: `NaiBossZer/Facility-Safety`
+- Production URL: `https://mulpfacility-safety.vercel.app`
+- Portal menu item `อาคาร & ความปลอดภัย` opens the canonical Facility-Safety application in a new tab.
 
 ## Central access flow
 
@@ -51,4 +57,4 @@ Facility's existing operational roles (`staff`, `inspector`, `section_head`, `fi
 
 The central Supabase project currently contains the Facility domain tables and one active `staff_profiles` record. The existing Facility admin profile has been bridged to `SUPER_ADMIN` and its Auth metadata is synchronized.
 
-This document describes the integration contract; production completion still requires portal build/deploy verification and authenticated end-to-end inspection smoke tests.
+This document describes the integration contract. Portal integration is intentionally a launcher boundary: operational Facility UI/data remains owned by Facility-Safety, while the Portal controls menu visibility with `facility.read`. Auth and RLS remain enforced by the Facility-Safety application and shared Supabase project.
