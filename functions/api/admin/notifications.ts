@@ -18,7 +18,7 @@ export async function onRequest({ request, env }: { request: Request; env: Env }
       headers = { apikey: key, Authorization: `Bearer ${token}`, Accept: "application/json" };
     if (request.method === "GET") {
       const r = await fetch(
-        `${url}/rest/v1/admin_notifications?select=id,kind,title,body,link,read_at,created_at&recipient_user_id=eq.${u.id}&order=created_at.desc&limit=100`,
+        `${url}/rest/v1/admin_notifications?select=id,kind,title,body,link,is_read,created_at&recipient_user_id=eq.${u.id}&order=created_at.desc&limit=100`,
         { headers },
       );
       return json({ success: r.ok, data: r.ok ? await r.json() : [] }, r.ok ? 200 : r.status);
@@ -35,7 +35,7 @@ export async function onRequest({ request, env }: { request: Request; env: Env }
             "Content-Type": "application/json",
             Prefer: "return=representation",
           },
-          body: JSON.stringify({ read_at: new Date().toISOString() }),
+          body: JSON.stringify({ is_read: true }),
         },
       );
       return json({ success: r.ok, data: r.ok ? await r.json() : null }, r.ok ? 200 : r.status);
