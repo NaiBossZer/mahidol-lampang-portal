@@ -13,9 +13,9 @@ export async function onRequest({ request, env }: { request: Request; env: Env }
       role = u?.app_metadata?.role,
       token = cookie(request);
     if (!u || !isAdminRole(role) || !token)
+      return json({ success: false, error: "Unauthorized" }, 401);
     if (!hasAdminPermission(role, "survey.read"))
       return json({ success: false, error: "Forbidden" }, 403);
-      return json({ success: false, error: "Unauthorized" }, 401);
     const id = new URL(request.url).searchParams.get("id");
     if (!id) return json({ success: false, error: "id required" }, 400);
     const { url, key } = supabaseConfig(env),
