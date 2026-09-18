@@ -33,7 +33,7 @@ export function AIHistoryPage() {
     void load();
   }, []);
   return (
-    <AIAccessGuard permission="ai.execution.read">
+    <AIAccessGuard permission="ai.command.execution.read">
       <section className="min-h-[calc(100vh-4rem)] bg-slate-50 px-4 py-6 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-5xl">
           <div className="flex items-center justify-between">
