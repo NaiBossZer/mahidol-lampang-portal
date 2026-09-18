@@ -15,6 +15,7 @@ export async function onRequest({ request, env }: { request: Request; env: Env }
     if (request.method !== "GET")
       return json({ success: false, error: "Method Not Allowed" }, 405, { Allow: "GET" });
     if (!u || !isAdminRole(role) || !t) return json({ success: false, error: "Unauthorized" }, 401);
+    if (!hasAdminPermission(role, "system.read")) return json({ success: false, error: "Forbidden" }, 403);
     const { url, key } = supabaseConfig(env);
     const r = await fetch(
       `${url}/rest/v1/system_registry?select=system_key,system_name,system_type,base_url,status,owner_domain,updated_at&order=system_name.asc`,
