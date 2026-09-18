@@ -11,13 +11,14 @@ import {
   Sparkles,
   Users,
   X,
+  FileSearch,
 } from "lucide-react";
 import { useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
 import { useAdminAuth } from "@/components/AdminGuard";
 import { PERMISSION_CATALOG, permissionsForRole, type AdminRole } from "@/auth/permissions";
 
-type Tab = "users" | "notifications";
+type Tab = "users" | "notifications" | "audit";
 type UserRow = {
   user_id: string;
   full_name: string;
@@ -33,6 +34,18 @@ type NotificationRow = {
   body?: string | null;
   created_at?: string;
   read_at?: string | null;
+};
+
+type AuditRow = {
+  id: string;
+  actor_id?: string | null;
+  action: string;
+  table_name: string;
+  record_id?: string | null;
+  old_data?: unknown;
+  new_data?: unknown;
+  ip_hint?: string | null;
+  created_at: string;
 };
 
 const ROLE_OPTIONS = [
@@ -66,6 +79,12 @@ const tabs: Array<{
     label: "การแจ้งเตือน",
     description: "Alerts · Approvals · Operational Updates",
     icon: Bell,
+  },
+  {
+    id: "audit",
+    label: "Audit Log",
+    description: "Who · What · When · Before / After",
+    icon: FileSearch,
   },
 ];
 
@@ -136,7 +155,7 @@ function ControlHeader({ tab, userCount, unreadCount, loading, onRefresh }: { ta
               AI STUDIO · CONTROL PLANE
             </div>
             <h1 className="mt-3 text-2xl font-bold tracking-tight sm:text-3xl">
-              {isUsers ? "ผู้ใช้งาน & สิทธิ์การเข้าถึง" : "การแจ้งเตือน"}
+              {isUsers ? "ผู้ใช้งาน & สิทธิ์การเข้าถึง" : tab === "audit" ? "Audit Log" : "การแจ้งเตือน"}
             </h1>
             <p className="mt-2 max-w-4xl text-sm leading-6 text-blue-100">
               {isUsers
@@ -152,7 +171,7 @@ function ControlHeader({ tab, userCount, unreadCount, loading, onRefresh }: { ta
             </div>
             <div className="rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-[10px]">
               <div className="flex items-center gap-1.5 text-sky-100">{isUsers ? <Users className="h-3.5 w-3.5 text-violet-300" /> : <Bell className="h-3.5 w-3.5 text-sky-300" />}{isUsers ? "Users" : "Unread"}</div>
-              <p className="mt-1 text-xs font-bold text-white">{isUsers ? userCount : unreadCount}</p>
+              <p className="mt-1 text-xs font-bold text-white">{isUsers ? userCount : tab === "audit" ? auditRows.length : unreadCount}</p>
             </div>
           </div>
         </div>
@@ -196,9 +215,12 @@ export function GovernancePage() {
   const { role } = useAdminAuth();
   const [searchParams, setSearchParams] = useSearchParams();
   const requestedTab = searchParams.get("tab");
-  const tab: Tab = requestedTab === "notifications" ? "notifications" : "users";
+  const tab: Tab =
+    requestedTab === "notifications" ? "notifications" :
+    requestedTab === "audit" ? "audit" : "users";
   const [users, setUsers] = useState<UserRow[]>([]);
   const [notifications, setNotifications] = useState<NotificationRow[]>([]);
+  const [auditRows, setAuditRows] = useState<AuditRow[]>([]);
   const [loading, setLoading] = useState(false);
   const [userSearch, setUserSearch] = useState("");
   const [roleFilter, setRoleFilter] = useState<"ALL" | AdminRole | "UNASSIGNED">("ALL");
@@ -206,13 +228,18 @@ export function GovernancePage() {
   const [selectedRole, setSelectedRole] = useState<AdminRole | null>(null);
   const [matrixRole, setMatrixRole] = useState<AdminRole>("SUPER_ADMIN");
   const [permissionDomain, setPermissionDomain] = useState("all");
+  const [auditQuery, setAuditQuery] = useState("");
+  const [auditTable, setAuditTable] = useState("all");
+  const [auditAction, setAuditAction] = useState("all");
+  const [selectedAudit, setSelectedAudit] = useState<AuditRow | null>(null);
   const canManage = role === "SUPER_ADMIN";
 
   async function load() {
     setLoading(true);
     try {
       if (tab === "users") setUsers(await getJson<UserRow[]>("/api/admin/users"));
-      else setNotifications(await getJson<NotificationRow[]>("/api/admin/notifications"));
+      else if (tab === "notifications") setNotifications(await getJson<NotificationRow[]>("/api/admin/notifications"));
+      else setAuditRows(await getJson<AuditRow[]>("/api/admin/audit-trail?limit=250"));
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "โหลดข้อมูลไม่สำเร็จ");
     } finally {
@@ -253,6 +280,20 @@ export function GovernancePage() {
       toast.error(error instanceof Error ? error.message : "อัปเดตการแจ้งเตือนไม่สำเร็จ");
     }
   }
+
+  const auditTables = useMemo(() => Array.from(new Set(auditRows.map((row) => row.table_name))).sort(), [auditRows]);
+  const auditActions = useMemo(() => Array.from(new Set(auditRows.map((row) => row.action))).sort(), [auditRows]);
+  const filteredAuditRows = useMemo(() => {
+    const q = auditQuery.trim().toLocaleLowerCase();
+    return auditRows.filter((row) => {
+      const matchesQuery = !q || [row.action, row.table_name, row.record_id, row.actor_id]
+        .filter(Boolean)
+        .some((value) => String(value).toLocaleLowerCase().includes(q));
+      return matchesQuery &&
+        (auditTable === "all" || row.table_name === auditTable) &&
+        (auditAction === "all" || row.action === auditAction);
+    });
+  }, [auditRows, auditQuery, auditTable, auditAction]);
 
   const unreadCount = useMemo(
     () => notifications.filter((item) => !item.read_at).length,
@@ -308,12 +349,12 @@ export function GovernancePage() {
                 <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-violet-600">Control Module</p>
                 <div className="mt-1 flex items-center gap-2">
                   {tab === "users" ? <CircleUserRound className="h-4 w-4 text-violet-600" /> : <Bell className="h-4 w-4 text-sky-600" />}
-                  <h2 className="text-sm font-bold text-[#002d62]">{tab === "users" ? "Admin Users / RBAC" : "Notifications Center"}</h2>
+                  <h2 className="text-sm font-bold text-[#002d62]">{tab === "users" ? "Admin Users / RBAC" : tab === "audit" ? "Audit Log" : "Notifications Center"}</h2>
                 </div>
-                <p className="mt-1 text-[10px] text-slate-500">{tab === "users" ? "Role assignment ผ่าน authorization boundary เดิมของระบบ" : "ติดตาม alerts, approvals และ operational state"}</p>
+                <p className="mt-1 text-[10px] text-slate-500">{tab === "users" ? "Role assignment ผ่าน authorization boundary เดิมของระบบ" : tab === "audit" ? "บันทึก Who / What / When และ Before / After สำหรับการตรวจสอบย้อนหลัง" : "ติดตาม alerts, approvals และ operational state"}</p>
               </div>
               <div className={`rounded-full px-2.5 py-1 text-[10px] font-bold ${tab === "users" ? "bg-violet-50 text-violet-700" : "bg-sky-50 text-sky-700"}`}>
-                {tab === "users" ? `${users.length} users` : `${unreadCount} unread`}
+                {tab === "users" ? `${users.length} users` : tab === "audit" ? `${filteredAuditRows.length} events` : `${unreadCount} unread`}
               </div>
             </div>
           </div>
@@ -373,6 +414,44 @@ export function GovernancePage() {
                   </div>
                 ))}
                 {!filteredUsers.length && <div className="p-10 text-center text-sm text-slate-500">{users.length ? "ไม่พบผู้ใช้งานตามตัวกรอง" : "ยังไม่มีข้อมูลผู้ใช้งาน"}</div>}
+              </div>
+            </div>
+          ) : tab === "audit" ? (
+            <div>
+              <div className="grid gap-3 border-b border-slate-100 bg-white p-4 sm:grid-cols-4 sm:p-5">
+                <div className="rounded-2xl border border-emerald-100 bg-emerald-50 p-4"><p className="text-[10px] font-bold uppercase tracking-[0.12em] text-emerald-600">Events</p><p className="mt-2 text-2xl font-bold text-emerald-700">{auditRows.length}</p><p className="mt-1 text-[10px] text-emerald-700/70">รายการ Audit Log</p></div>
+                <div className="rounded-2xl border border-sky-100 bg-sky-50 p-4"><p className="text-[10px] font-bold uppercase tracking-[0.12em] text-sky-600">Tables</p><p className="mt-2 text-2xl font-bold text-sky-700">{auditTables.length}</p><p className="mt-1 text-[10px] text-sky-700/70">ตารางที่มีการบันทึก</p></div>
+                <div className="rounded-2xl border border-violet-100 bg-violet-50 p-4"><p className="text-[10px] font-bold uppercase tracking-[0.12em] text-violet-600">Actions</p><p className="mt-2 text-2xl font-bold text-violet-700">{auditActions.length}</p><p className="mt-1 text-[10px] text-violet-700/70">ประเภทการเปลี่ยนแปลง</p></div>
+                <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4"><p className="text-[10px] font-bold uppercase tracking-[0.12em] text-slate-500">Filtered</p><p className="mt-2 text-2xl font-bold text-slate-700">{filteredAuditRows.length}</p><p className="mt-1 text-[10px] text-slate-500">รายการที่แสดง</p></div>
+              </div>
+              <div className="border-b border-slate-100 bg-slate-50 p-4 sm:p-5">
+                <div className="grid gap-3 lg:grid-cols-[1fr_220px_180px]">
+                  <label className="relative">
+                    <span className="sr-only">ค้นหา Audit Log</span>
+                    <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+                    <input value={auditQuery} onChange={(event) => setAuditQuery(event.target.value)} placeholder="ค้นหา Action, Table, Record ID หรือ Actor ID" className="dashboard-control w-full pl-10" />
+                  </label>
+                  <select value={auditTable} onChange={(event) => setAuditTable(event.target.value)} className="dashboard-control">
+                    <option value="all">ทุก Table</option>
+                    {auditTables.map((item) => <option key={item} value={item}>{item}</option>)}
+                  </select>
+                  <select value={auditAction} onChange={(event) => setAuditAction(event.target.value)} className="dashboard-control">
+                    <option value="all">ทุก Action</option>
+                    {auditActions.map((item) => <option key={item} value={item}>{item}</option>)}
+                  </select>
+                </div>
+              </div>
+              <div className="border-b border-slate-100 px-5 py-3 text-[10px] font-semibold text-slate-500 sm:px-6">แสดง {filteredAuditRows.length} จาก {auditRows.length} events · อ่านอย่างเดียว</div>
+              <div className="divide-y divide-slate-100">
+                {filteredAuditRows.map((row) => (
+                  <button key={row.id} type="button" onClick={() => setSelectedAudit(row)} className="grid w-full gap-3 px-5 py-4 text-left transition hover:bg-slate-50 lg:grid-cols-[180px_120px_1fr_220px] lg:items-center sm:px-6">
+                    <span className="flex items-center gap-1.5 text-[10px] text-slate-500"><Clock3 className="h-3 w-3 shrink-0" />{new Date(row.created_at).toLocaleString("th-TH")}</span>
+                    <span className="w-fit rounded-full bg-emerald-50 px-2 py-1 text-[9px] font-black text-emerald-700">{row.action}</span>
+                    <span className="min-w-0"><span className="block truncate text-xs font-bold text-slate-800">{row.table_name}</span><span className="mt-0.5 block truncate font-mono text-[9px] text-slate-400">{row.record_id ?? "record ไม่ระบุ"}</span></span>
+                    <span className="truncate font-mono text-[9px] text-slate-400">{row.actor_id ?? "system"}</span>
+                  </button>
+                ))}
+                {!filteredAuditRows.length && <div className="p-10 text-center text-sm text-slate-500"><FileSearch className="mx-auto mb-2 h-7 w-7 text-slate-300" />ไม่พบ Audit Log ตามตัวกรอง</div>}
               </div>
             </div>
           ) : (
@@ -446,6 +525,22 @@ export function GovernancePage() {
                   </div>
                 ))}
               </div>
+            </div>
+          </div>
+        )}
+
+        {selectedAudit && (
+          <div className="fixed inset-0 z-[80] flex items-center justify-center bg-slate-950/40 p-4" role="dialog" aria-modal="true">
+            <div className="w-full max-w-3xl overflow-hidden rounded-2xl bg-white shadow-2xl">
+              <div className="flex items-start justify-between border-b border-slate-100 p-5">
+                <div><p className="text-[10px] font-black uppercase tracking-[0.14em] text-emerald-600">Audit Event</p><h3 className="mt-1 text-lg font-bold text-[#002d62]">{selectedAudit.action} · {selectedAudit.table_name}</h3><p className="mt-1 text-xs text-slate-500">{new Date(selectedAudit.created_at).toLocaleString("th-TH")} · Actor: {selectedAudit.actor_id ?? "system"}</p></div>
+                <button type="button" onClick={() => setSelectedAudit(null)} className="rounded-lg p-2 text-slate-400 hover:bg-slate-100" aria-label="ปิด"><X className="h-4 w-4" /></button>
+              </div>
+              <div className="grid gap-4 p-5 lg:grid-cols-2">
+                <div className="overflow-hidden rounded-xl border border-amber-100 bg-amber-50/40"><div className="border-b border-amber-100 px-3 py-2 text-[10px] font-black text-amber-700">BEFORE · old_data</div><pre className="max-h-72 overflow-auto p-3 text-[9px] leading-4 text-slate-700">{selectedAudit.old_data ? JSON.stringify(selectedAudit.old_data, null, 2) : "ไม่มีข้อมูลก่อนการเปลี่ยนแปลง"}</pre></div>
+                <div className="overflow-hidden rounded-xl border border-emerald-100 bg-emerald-50/40"><div className="border-b border-emerald-100 px-3 py-2 text-[10px] font-black text-emerald-700">AFTER · new_data</div><pre className="max-h-72 overflow-auto p-3 text-[9px] leading-4 text-slate-700">{selectedAudit.new_data ? JSON.stringify(selectedAudit.new_data, null, 2) : "ไม่มีข้อมูลหลังการเปลี่ยนแปลง"}</pre></div>
+              </div>
+              <div className="grid gap-3 border-t border-slate-100 bg-slate-50 p-5 sm:grid-cols-2"><div><p className="text-[9px] font-bold text-slate-400">RECORD ID</p><p className="mt-1 break-all font-mono text-[10px] text-slate-700">{selectedAudit.record_id ?? "—"}</p></div><div><p className="text-[9px] font-bold text-slate-400">IP HINT</p><p className="mt-1 break-all font-mono text-[10px] text-slate-700">{selectedAudit.ip_hint ?? "—"}</p></div></div>
             </div>
           </div>
         )}
