@@ -58,16 +58,45 @@ export async function onRequest({ request, env }: { request: Request; env: Env }
     if (request.method === "DELETE") {
       const id = params.get("id");
       if (!id) return json({ success: false, error: "id required" }, 400);
+
       const rows = (await rest(
         env,
         token,
-        `activity_media?id=eq.${id}&select=id,storage_path`,
+        `activity_media?id=eq.${encodeURIComponent(id)}&select=id,activity_id,storage_path,public_url`,
       )) as Row[];
       const row = rows[0];
       if (!row) return json({ success: false, error: "ไม่พบรูปภาพ" }, 404);
+
+      const activityId = String(row.activity_id);
+      const publicUrl = String(row.public_url ?? "");
+      const activityRows = (await rest(
+        env,
+        token,
+        `activities?id=eq.${encodeURIComponent(activityId)}&select=id,featured_image`,
+      )) as Row[];
+      const activity = activityRows[0];
+
       await storage(env, token, String(row.storage_path), { method: "DELETE" });
-      await rest(env, token, `activity_media?id=eq.${id}`, { method: "DELETE" });
-      return json({ success: true, data: { id } });
+      await rest(env, token, `activity_media?id=eq.${encodeURIComponent(id)}`, { method: "DELETE" });
+
+      if (activity && String(activity.featured_image ?? "") === publicUrl) {
+        const remaining = (await rest(
+          env,
+          token,
+          `activity_media?activity_id=eq.${encodeURIComponent(activityId)}&select=public_url,display_order,created_at&order=display_order.asc,created_at.desc&limit=1`,
+        )) as Row[];
+        const nextFeaturedImage = String(remaining[0]?.public_url ?? "");
+        await rest(env, token, `activities?id=eq.${encodeURIComponent(activityId)}`, {
+          method: "PATCH",
+          headers: { Prefer: "return=minimal" },
+          body: JSON.stringify({ featured_image: nextFeaturedImage }),
+        });
+      }
+
+      return json({
+        success: true,
+        data: { id, featuredImageUpdated: Boolean(activity && String(activity.featured_image ?? "") === publicUrl) },
+      });
     }
     if (request.method !== "POST")
       return json({ success: false, error: "Method Not Allowed" }, 405, {
