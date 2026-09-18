@@ -5,13 +5,16 @@ import {
   CircleUserRound,
   Clock3,
   RefreshCw,
+  Search,
   ShieldCheck,
   Sparkles,
   Users,
+  X,
 } from "lucide-react";
 import { useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
 import { useAdminAuth } from "@/components/AdminGuard";
+import { PERMISSION_CATALOG, permissionsForRole, type AdminRole } from "@/auth/permissions";
 
 type Tab = "users" | "notifications";
 type UserRow = {
@@ -37,6 +40,13 @@ const ROLE_OPTIONS = [
   "OPERATIONS_ADMIN",
   "FACILITY_ADMIN",
 ] as const;
+
+const ROLE_META: Record<AdminRole, { label: string; description: string }> = {
+  SUPER_ADMIN: { label: "ผู้ดูแลระบบสูงสุด", description: "ควบคุมระบบและสิทธิ์ผู้ดูแลทั้งหมด" },
+  CONTENT_ADMIN: { label: "ผู้ดูแลเนื้อหา", description: "จัดการ CMS และเนื้อหาสาธารณะ" },
+  OPERATIONS_ADMIN: { label: "ผู้ดูแลปฏิบัติการ", description: "จัดการกิจกรรม ศูนย์การเรียนรู้ และแบบประเมิน" },
+  FACILITY_ADMIN: { label: "ผู้ดูแลอาคารและความปลอดภัย", description: "จัดการอาคาร สถานที่ และความปลอดภัย" },
+};
 
 const tabs: Array<{
   id: Tab;
@@ -189,6 +199,10 @@ export function GovernancePage() {
   const [users, setUsers] = useState<UserRow[]>([]);
   const [notifications, setNotifications] = useState<NotificationRow[]>([]);
   const [loading, setLoading] = useState(false);
+  const [userSearch, setUserSearch] = useState("");
+  const [roleFilter, setRoleFilter] = useState<"ALL" | AdminRole | "UNASSIGNED">("ALL");
+  const [selectedUser, setSelectedUser] = useState<UserRow | null>(null);
+  const [selectedRole, setSelectedRole] = useState<AdminRole | null>(null);
   const canManage = role === "SUPER_ADMIN";
 
   async function load() {
@@ -241,6 +255,22 @@ export function GovernancePage() {
     () => notifications.filter((item) => !item.read_at).length,
     [notifications],
   );
+
+  const filteredUsers = useMemo(() => {
+    const query = userSearch.trim().toLocaleLowerCase();
+    return users.filter((user) => {
+      const matchesSearch = !query || [user.full_name, user.position, user.department, user.user_id]
+        .filter(Boolean)
+        .some((value) => String(value).toLocaleLowerCase().includes(query));
+      const matchesRole =
+        roleFilter === "ALL"
+          ? true
+          : roleFilter === "UNASSIGNED"
+            ? !user.central_role
+            : user.central_role === roleFilter;
+      return matchesSearch && matchesRole;
+    });
+  }, [users, userSearch, roleFilter]);
 
   const roleSummary = useMemo(() => {
     const summary = new Map<string, number>();
@@ -299,23 +329,47 @@ export function GovernancePage() {
                 <div className="rounded-2xl border border-sky-100 bg-sky-50 p-4"><p className="text-[10px] font-bold uppercase tracking-[0.12em] text-sky-600">Admin Control</p><p className="mt-2 text-sm font-bold text-sky-700">{canManage ? "SUPER_ADMIN" : "READ ONLY"}</p><p className="mt-1 text-[10px] text-sky-700/70">สิทธิ์การเปลี่ยน Role</p></div>
               </div>
 
+              <div className="border-b border-slate-100 bg-slate-50 p-4 sm:p-5">
+                <div className="flex flex-col gap-3 lg:flex-row">
+                  <label className="relative flex-1">
+                    <span className="sr-only">ค้นหาผู้ใช้งาน</span>
+                    <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+                    <input value={userSearch} onChange={(event) => setUserSearch(event.target.value)} placeholder="ค้นหาชื่อ ตำแหน่ง หน่วยงาน หรือ User ID" className="w-full rounded-xl border border-slate-200 bg-white py-2.5 pl-9 pr-3 text-xs text-slate-700 outline-none focus:ring-2 focus:ring-violet-200" />
+                  </label>
+                  <select value={roleFilter} onChange={(event) => setRoleFilter(event.target.value as typeof roleFilter)} className="dashboard-control w-full lg:w-64">
+                    <option value="ALL">ทุก Role</option>
+                    {ROLE_OPTIONS.map((option) => <option key={option} value={option}>{ROLE_META[option].label}</option>)}
+                    <option value="UNASSIGNED">ยังไม่กำหนด Role</option>
+                  </select>
+                </div>
+              </div>
+              <div className="grid gap-3 border-b border-slate-100 p-4 sm:grid-cols-2 lg:grid-cols-4 sm:p-5">
+                {ROLE_OPTIONS.map((option) => (
+                  <button key={option} type="button" onClick={() => setSelectedRole(option)} className="rounded-2xl border border-slate-200 bg-white p-4 text-left transition hover:border-violet-200 hover:bg-violet-50/40">
+                    <p className="text-[10px] font-black tracking-[0.08em] text-violet-600">{option}</p>
+                    <p className="mt-1 text-xs font-bold text-slate-800">{ROLE_META[option].label}</p>
+                    <p className="mt-2 text-[10px] leading-4 text-slate-500">{ROLE_META[option].description}</p>
+                  </button>
+                ))}
+              </div>
+              <div className="border-b border-slate-100 px-5 py-3 text-[10px] font-semibold text-slate-500 sm:px-6">แสดง {filteredUsers.length} จาก {users.length} ผู้ใช้งาน</div>
               <div className="divide-y divide-slate-100">
-                {users.map((user) => (
+                {filteredUsers.map((user) => (
                   <div key={user.user_id} className="flex flex-col gap-4 px-5 py-4 transition hover:bg-slate-50/70 sm:flex-row sm:items-center sm:justify-between sm:px-6">
-                    <div className="flex min-w-0 items-center gap-3">
+                    <button type="button" onClick={() => setSelectedUser(user)} className="flex min-w-0 flex-1 items-center gap-3 text-left">
                       <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-violet-50 text-violet-600"><CircleUserRound className="h-5 w-5" /></div>
                       <div className="min-w-0">
                         <div className="flex flex-wrap items-center gap-2"><p className="truncate text-sm font-bold text-slate-900">{user.full_name}</p>{user.active && <span className="rounded-full bg-emerald-50 px-2 py-0.5 text-[9px] font-bold text-emerald-700">ACTIVE</span>}</div>
                         <p className="mt-1 text-xs text-slate-500">{user.position ?? ""}{user.department ? ` · ${user.department}` : ""}</p>
                       </div>
-                    </div>
+                    </button>
                     <select disabled={!canManage} value={user.central_role ?? ""} onChange={(event) => void setRole(user.user_id, event.target.value)} className="dashboard-control w-full max-w-sm sm:w-60">
                       <option value="">ยังไม่กำหนด</option>
                       {ROLE_OPTIONS.map((option) => <option key={option} value={option}>{option}</option>)}
                     </select>
                   </div>
                 ))}
-                {!users.length && <div className="p-10 text-center text-sm text-slate-500">ยังไม่มีข้อมูลผู้ใช้งาน</div>}
+                {!filteredUsers.length && <div className="p-10 text-center text-sm text-slate-500">{users.length ? "ไม่พบผู้ใช้งานตามตัวกรอง" : "ยังไม่มีข้อมูลผู้ใช้งาน"}</div>}
               </div>
             </div>
           ) : (
@@ -348,6 +402,30 @@ export function GovernancePage() {
             </div>
           )}
         </div>
+
+        {selectedUser && (
+          <div className="fixed inset-0 z-[80] flex items-center justify-center bg-slate-950/40 p-4" role="dialog" aria-modal="true">
+            <div className="w-full max-w-xl overflow-hidden rounded-2xl bg-white shadow-2xl">
+              <div className="flex items-start justify-between border-b border-slate-100 p-5">
+                <div><p className="text-[10px] font-black uppercase tracking-[0.14em] text-violet-600">User Detail</p><h3 className="mt-1 text-lg font-bold text-[#002d62]">{selectedUser.full_name}</h3><p className="mt-1 text-xs text-slate-500">{selectedUser.position ?? "ไม่ระบุตำแหน่ง"}{selectedUser.department ? " · " + selectedUser.department : ""}</p></div>
+                <button type="button" onClick={() => setSelectedUser(null)} className="rounded-lg p-2 text-slate-400 hover:bg-slate-100" aria-label="ปิด"><X className="h-4 w-4" /></button>
+              </div>
+              <div className="space-y-4 p-5">
+                <div className="grid gap-3 sm:grid-cols-2"><div className="rounded-xl bg-slate-50 p-3"><p className="text-[9px] font-bold text-slate-400">USER ID</p><p className="mt-1 break-all text-[11px] font-semibold text-slate-700">{selectedUser.user_id}</p></div><div className="rounded-xl bg-slate-50 p-3"><p className="text-[9px] font-bold text-slate-400">STATUS</p><p className="mt-1 text-[11px] font-semibold text-emerald-700">{selectedUser.active ? "พร้อมใช้งาน" : "ปิดใช้งาน"}</p></div></div>
+                <div className="rounded-xl border border-violet-100 bg-violet-50/50 p-4"><p className="text-[9px] font-black text-violet-600">CENTRAL ROLE</p><p className="mt-1 text-sm font-bold text-[#002d62]">{selectedUser.central_role ? ROLE_META[selectedUser.central_role as AdminRole].label : "ยังไม่กำหนด Role"}</p></div>
+                {selectedUser.central_role && <div><p className="mb-2 text-[10px] font-bold text-slate-500">สิทธิ์ปัจจุบัน</p><div className="max-h-52 space-y-1 overflow-auto rounded-xl border border-slate-200 p-3">{permissionsForRole(selectedUser.central_role as AdminRole).map((item) => <div key={item} className="flex justify-between gap-3 py-1 text-[10px]"><span className="font-semibold text-slate-700">{item}</span><span className="text-right text-slate-400">{PERMISSION_CATALOG.find((d) => d.key === item)?.label}</span></div>)}</div></div>}
+              </div>
+            </div>
+          </div>
+        )}
+        {selectedRole && (
+          <div className="fixed inset-0 z-[80] flex items-center justify-center bg-slate-950/40 p-4" role="dialog" aria-modal="true">
+            <div className="w-full max-w-2xl overflow-hidden rounded-2xl bg-white shadow-2xl">
+              <div className="flex items-start justify-between border-b border-slate-100 p-5"><div><p className="text-[10px] font-black uppercase tracking-[0.14em] text-violet-600">Role Profile</p><h3 className="mt-1 text-lg font-bold text-[#002d62]">{ROLE_META[selectedRole].label}</h3><p className="mt-1 text-xs text-slate-500">{ROLE_META[selectedRole].description}</p></div><button type="button" onClick={() => setSelectedRole(null)} className="rounded-lg p-2 text-slate-400 hover:bg-slate-100" aria-label="ปิด"><X className="h-4 w-4" /></button></div>
+              <div className="max-h-[60vh] space-y-2 overflow-auto p-5">{permissionsForRole(selectedRole).map((item) => { const d = PERMISSION_CATALOG.find((entry) => entry.key === item); return <div key={item} className="rounded-xl border border-slate-100 bg-slate-50 p-3"><p className="text-[10px] font-bold text-slate-800">{d?.label ?? item}</p><p className="mt-1 text-[9px] text-slate-400">{item} · {d?.description ?? ""}</p></div>; })}</div>
+            </div>
+          </div>
+        )}
 
         <div className="flex flex-col gap-2 rounded-2xl border border-slate-200 bg-white p-4 text-[11px] text-slate-500 shadow-sm sm:flex-row sm:items-center sm:justify-between">
           <span><strong className="text-slate-700">AI Studio Control Plane</strong> · ทุก action สำคัญผ่านสิทธิ์และ verification ก่อน commit</span>
