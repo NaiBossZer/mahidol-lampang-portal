@@ -197,7 +197,8 @@ export function ActivitiesManagementPage() {
     setOpen(true);
     try {
       const [relation, images] = await Promise.all([getRelations(activity.id), getMedia(activity.id)]);
-      setSelectedCenters(relation.learningCenterIds ?? []);      setOrganizers(relation.organizations ?? []);
+      setSelectedCenters(relation.learningCenterIds ?? []);
+      setOrganizers(relation.organizations ?? []);
       setMedia(images);
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "โหลดข้อมูลกิจกรรมเพิ่มเติมไม่สำเร็จ");
@@ -396,7 +397,8 @@ export function ActivitiesManagementPage() {
                       )}
                       <div className="min-w-0">
                         <p className="font-semibold text-slate-900">{activity.title}</p>
-                        <p className="mt-0.5 truncate text-xs text-slate-400">/{activity.slug}</p>                      </div>
+                        <p className="mt-0.5 truncate text-xs text-slate-400">/{activity.slug}</p>
+                      </div>
                     </div>
                   </td>
                   <td className="whitespace-nowrap px-4 py-4 text-slate-600">
