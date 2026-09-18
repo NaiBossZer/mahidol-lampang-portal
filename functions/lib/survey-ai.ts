@@ -95,6 +95,12 @@ export function validateGeneratedSurvey(value: unknown): SurveyValidation {
       if (typeof question.required !== "boolean") {
         errors.push(`Section ${sectionIndex + 1} ข้อ ${questionIndex + 1}: required ต้องเป็น boolean`);
       }
+      if (typeof question.sourceCiting !== "string" || !question.sourceCiting.trim()) {
+        errors.push(`Section ${sectionIndex + 1} ข้อ ${questionIndex + 1}: ต้องมี sourceCiting`);
+      }
+      if (typeof question.sourceDocName !== "string" || !question.sourceDocName.trim()) {
+        errors.push(`Section ${sectionIndex + 1} ข้อ ${questionIndex + 1}: ต้องมี sourceDocName`);
+      }
 
       const normalized = text.replace(/\\s+/g, " ").toLocaleLowerCase("th-TH");
       if (normalized && seenQuestions.has(normalized)) {
@@ -113,6 +119,8 @@ export function validateGeneratedSurvey(value: unknown): SurveyValidation {
       if (type === "single_choice") {
         if (!Array.isArray(question.options) || question.options.length < 2) {
           errors.push(`Section ${sectionIndex + 1} ข้อ ${questionIndex + 1}: single_choice ต้องมี options อย่างน้อย 2 รายการ`);
+        } else if (question.options.some((option) => !option || typeof option !== "object" || typeof (option as Record<string, unknown>).label !== "string" || !(option as Record<string, unknown>).label.trim())) {
+          errors.push(`Section ${sectionIndex + 1} ข้อ ${questionIndex + 1}: options ต้องมี label ทุกตัวเลือก`);
         }
       }
     }
