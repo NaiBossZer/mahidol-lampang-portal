@@ -1,4 +1,4 @@
-import { getSupabaseUser, isAdminRole, json, supabaseConfig } from "../auth/_shared";
+import { getSupabaseUser, hasAdminPermission, isAdminRole, json, supabaseConfig } from "../auth/_shared";
 type Env = Record<string, unknown>;
 const cookie = (r: Request) => {
   const x = (r.headers.get("Cookie") ?? "")
@@ -7,59 +7,6 @@ const cookie = (r: Request) => {
     .find((v) => v.startsWith("sb_access_token="));
   return x ? decodeURIComponent(x.slice(17)) : null;
 };
-const ROLE_PERMS: Record<string, Set<string>> = {
-  SUPER_ADMIN: new Set(["*"]),
-  CONTENT_ADMIN: new Set([
-    "overview.read",
-    "activities.read",
-    "activities.create",
-    "activities.update",
-    "survey.read",
-    "survey.create",
-    "survey.update",
-    "survey.audit.read",
-    "learning_centers.read",
-    "learning_centers.create",
-    "learning_centers.update",
-    "cms.read",
-    "cms.create",
-    "cms.update",
-    "ai.command.read",
-    "ai.queue.read",
-    "ai.execution.read",
-    "ai.approval.read",
-  ]),
-  OPERATIONS_ADMIN: new Set([
-    "overview.read",
-    "activities.read",
-    "activities.create",
-    "activities.update",
-    "survey.read",
-    "survey.create",
-    "survey.update",
-    "survey.audit.read",
-    "learning_centers.read",
-    "learning_centers.create",
-    "learning_centers.update",
-    "ai.command.read",
-    "ai.queue.read",
-    "ai.execution.read",
-    "ai.approval.read",
-  ]),
-  FACILITY_ADMIN: new Set([
-    "overview.read",
-    "facility.read",
-    "survey.read",
-    "survey.audit.read",
-    "ai.command.read",
-    "ai.queue.read",
-    "ai.execution.read",
-    "ai.approval.read",
-  ]),
-};
-function allowed(role: string, permission: string) {
-  return ROLE_PERMS[role]?.has("*") || ROLE_PERMS[role]?.has(permission);
-}
 async function call(env: Env, token: string, path: string, init: RequestInit = {}) {
   const { url, key } = supabaseConfig(env);
   const r = await fetch(`${url}/rest/v1/${path}`, {
@@ -82,6 +29,8 @@ export async function onRequest({ request, env }: { request: Request; env: Env }
       token = cookie(request);
     if (!u || !isAdminRole(role) || !token)
       return json({ success: false, error: "Unauthorized" }, 401);
+    if (!hasAdminPermission(role, "ai.command.read"))
+      return json({ success: false, error: "Forbidden" }, 403);
     if (request.method === "GET")
       return json({
         success: true,
@@ -102,7 +51,7 @@ export async function onRequest({ request, env }: { request: Request; env: Env }
     );
     const tool = tools?.[0];
     if (!tool) return json({ success: false, error: "AI tool not found or disabled" }, 404);
-    if (tool.permission && !allowed(role, String(tool.permission)))
+    if (tool.permission && !hasAdminPermission(role, String(tool.permission)))
       return json({ success: false, error: "Forbidden: insufficient AI tool permission" }, 403);
     const needsApproval = tool.risk_level !== "low";
     const exec = await call(env, token, "ai_executions", {

@@ -3,7 +3,7 @@
  * Executes a previously created, governed AI execution.
  */
 
-import { getSupabaseUser, isAdminRole, json, permissionsForRole, supabaseConfig } from "../auth/_shared";
+import { getSupabaseUser, hasAdminPermission, isAdminRole, json, permissionsForRole, supabaseConfig } from "../auth/_shared";
 
 type Env = Record<string, unknown>;
 type Tool = {
@@ -104,6 +104,7 @@ export async function onRequest({ request, env }: { request: Request; env: Env }
     const role = user?.app_metadata?.role;
     const token = getToken(request);
     if (!user || !isAdminRole(role) || !token) return json({ success: false, error: "Unauthorized" }, 401);
+    if (!hasAdminPermission(role, "ai.command.execution.read")) return json({ success: false, error: "Forbidden" }, 403);
 
     const url = new URL(request.url);
     const pathParts = url.pathname.split("/").filter(Boolean);

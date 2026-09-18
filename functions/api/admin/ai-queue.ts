@@ -27,7 +27,7 @@ export async function onRequest({ request, env }: { request: Request; env: Env }
 
     if (!user || !isAdminRole(role) || !token)
       return json({ success: false, error: "Unauthorized" }, 401);
-    if (!hasAdminPermission(role, "ai.queue.read")) {
+    if (!hasAdminPermission(role, "ai.command.queue.read")) {
       return json({ success: false, error: "Forbidden" }, 403);
     }
 

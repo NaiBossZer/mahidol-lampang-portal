@@ -15,11 +15,11 @@ export async function onRequest({ request, env }: { request: Request; env: Env }
     if (!user || !isAdminRole(role)) {
       return json({ success: false, error: "Unauthorized" }, 401);
     }
-    if (!hasAdminPermission(role, "system.manage")) {
+    const { method } = request;
+    const requiredPermission = method === "GET" ? "system.read" : method === "PUT" ? "system.manage" : null;
+    if (!requiredPermission || !hasAdminPermission(role, requiredPermission)) {
       return json({ success: false, error: "Forbidden" }, 403);
     }
-
-    const { method } = request;
 
     if (method === "GET") {
       const config = {

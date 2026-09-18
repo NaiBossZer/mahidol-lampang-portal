@@ -118,7 +118,7 @@ export async function onRequest({
     if (!user || !isAdminRole(role) || !token) {
       return json({ success: false, error: "Unauthorized" }, 401);
     }
-    if (!hasAdminPermission(role, "ai.approval.read")) return json({ success: false, error: "Forbidden" }, 403);
+    if (!hasAdminPermission(role, "ai.command.approval.read")) return json({ success: false, error: "Forbidden" }, 403);
 
 
     if (request.method === "GET") {
