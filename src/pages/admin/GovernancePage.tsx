@@ -6,7 +6,6 @@ import {
   Clock3,
   RefreshCw,
   Search,
-  Check,
   ShieldCheck,
   Sparkles,
   Users,
@@ -227,8 +226,6 @@ export function GovernancePage() {
   const [selectedUser, setSelectedUser] = useState<UserRow | null>(null);
   const [pendingRoleChange, setPendingRoleChange] = useState<{ user: UserRow; role: AdminRole } | null>(null);
   const [selectedRole, setSelectedRole] = useState<AdminRole | null>(null);
-  const [matrixRole, setMatrixRole] = useState<AdminRole>("SUPER_ADMIN");
-  const [permissionDomain, setPermissionDomain] = useState("all");
   const [auditQuery, setAuditQuery] = useState("");
   const [auditTable, setAuditTable] = useState("all");
   const [auditAction, setAuditAction] = useState("all");
@@ -551,7 +548,7 @@ export function GovernancePage() {
             </div>
           </div>
         )}
-        {tab === "users" && (
+        {false && tab === "users" && (
           <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
             <div className="border-b border-slate-100 bg-slate-50 px-5 py-4 sm:px-6">
               <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-violet-600">Permission Matrix</p>
