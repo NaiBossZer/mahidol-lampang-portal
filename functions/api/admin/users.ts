@@ -26,11 +26,11 @@ async function rpc(env: Env, token: string, body: unknown) {
 export async function onRequest({ request, env }: { request: Request; env: Env }) {
   try {
     const u = await getSupabaseUser(request, env),
-      role = u?.app_metadata?.role,
+      actorRole = u?.app_metadata?.role,
       token = cookie(request);
-    if (!u || !isAdminRole(role) || !token)
+    if (!u || !isAdminRole(actorRole) || !token)
       return json({ success: false, error: "Unauthorized" }, 401);
-    if (!hasAdminPermission(role, "system.read"))
+    if (!hasAdminPermission(actorRole, "system.read"))
       return json({ success: false, error: "Forbidden" }, 403);
     const { url, key } = supabaseConfig(env);
     const headers = { apikey: key, Authorization: `Bearer ${token}`, Accept: "application/json" };
@@ -42,10 +42,23 @@ export async function onRequest({ request, env }: { request: Request; env: Env }
       return json({ success: r.ok, data: r.ok ? await r.json() : null }, r.ok ? 200 : r.status);
     }
     if (request.method === "PATCH") {
-      if (!hasAdminPermission(role, "system.manage")) return json({ success: false, error: "Forbidden" }, 403);
-      const body = (await request.json()) as { userId?: string; role?: string };
-      if (!body.userId || !body.role)
+      if (!hasAdminPermission(actorRole, "system.manage"))
+        return json({ success: false, error: "Forbidden" }, 403);
+
+      const body = (await request.json()) as { userId?: string; role?: unknown };
+      if (!body.userId || typeof body.role !== "string")
         return json({ success: false, error: "userId and role required" }, 400);
+      if (!isAdminRole(body.role))
+        return json({ success: false, error: "Invalid central admin role" }, 400);
+
+      // Never allow an administrator to remove their own last SUPER_ADMIN boundary
+      // through the role-management UI/API. This prevents accidental self-lockout.
+      if (body.userId === u.id && body.role !== "SUPER_ADMIN")
+        return json(
+          { success: false, error: "You cannot downgrade your own SUPER_ADMIN account from the active session." },
+          409,
+        );
+
       return json({
         success: true,
         data: await rpc(env, token, { target_user_id: body.userId, new_role: body.role }),
