@@ -1,4 +1,4 @@
-import { getSupabaseUser, isAdminRole, json, supabaseConfig } from "../auth/_shared";
+import { getSupabaseUser, isAdminRole, json, supabaseConfig, hasAdminPermission } from "../auth/_shared";
 type Env = Record<string, unknown>;
 const cookie = (r: Request) => {
   const x = (r.headers.get("Cookie") ?? "")
@@ -29,6 +29,8 @@ export async function onRequest({ request, env }: { request: Request; env: Env }
       role = u?.app_metadata?.role,
       token = cookie(request);
     if (!u || !isAdminRole(role) || !token)
+    if (!hasAdminPermission(role, "system.read"))
+      return json({ success: false, error: "Forbidden" }, 403);
       return json({ success: false, error: "Unauthorized" }, 401);
     const { url, key } = supabaseConfig(env);
     const headers = { apikey: key, Authorization: `Bearer ${token}`, Accept: "application/json" };
@@ -40,7 +42,7 @@ export async function onRequest({ request, env }: { request: Request; env: Env }
       return json({ success: r.ok, data: r.ok ? await r.json() : null }, r.ok ? 200 : r.status);
     }
     if (request.method === "PATCH") {
-      if (role !== "SUPER_ADMIN") return json({ success: false, error: "Forbidden" }, 403);
+      if (!hasAdminPermission(role, "system.manage")) return json({ success: false, error: "Forbidden" }, 403);
       const body = (await request.json()) as { userId?: string; role?: string };
       if (!body.userId || !body.role)
         return json({ success: false, error: "userId and role required" }, 400);
