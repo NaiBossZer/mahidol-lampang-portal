@@ -18,6 +18,7 @@ export type GeneratedQuestion = {
   sourceCiting: string;
   sourceDocName: string;
   required?: boolean;
+  options?: Array<{ label: string; value?: string }>;
 };
 
 export type GeneratedSurveySection = {
@@ -31,9 +32,10 @@ export type GeneratedSurvey = {
   id: string;
   activityId: string;
   surveyTitle: string;
+  welcomeText?: string;
   generatedDate: string;
   scaleType: string;
-  aiConfidenceScore: number;
+  aiConfidenceScore?: number;
   status: "ready_for_review";
   sections: GeneratedSurveySection[];
 };
@@ -183,6 +185,34 @@ export async function getPreviousGeneratedSurvey(activityId: string): Promise<{
   survey?: GeneratedSurvey | null;
 } | null> {
   return fetchJson(`/api/admin/ai-survey-generate?activityId=${encodeURIComponent(activityId)}`);
+}
+
+export async function validateAiSurvey(
+  executionId: string,
+  survey: GeneratedSurvey,
+): Promise<{ survey: GeneratedSurvey; validation: { valid: boolean; errors: string[]; warnings: string[] } }> {
+  return fetchJson("/api/admin/survey-ai/validate", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ executionId, survey }),
+  });
+}
+
+export async function improveAiSurvey(
+  activityId: string,
+  executionId: string,
+  survey: GeneratedSurvey,
+  instruction: string,
+): Promise<{
+  executionId: string;
+  survey: GeneratedSurvey;
+  validation: { valid: boolean; errors: string[]; warnings: string[] };
+}> {
+  return fetchJson("/api/admin/survey-ai/improve", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ activityId, executionId, survey, instruction }),
+  });
 }
 
 export async function confirmAiSurvey(
