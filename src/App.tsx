@@ -35,7 +35,6 @@ const GovernancePage = lazy(() => import("./pages/admin/GovernancePage").then((m
 const NotificationsPage = lazy(() => import("./pages/admin/NotificationsPage").then((m) => ({ default: m.NotificationsPage })));
 const SystemSettingsPage = lazy(() => import("./pages/admin/SystemSettingsPage").then((m) => ({ default: m.SystemSettingsPage })));
 const CmsPage = lazy(() => import("./pages/admin/CmsPage").then((m) => ({ default: m.CmsPage })));
-const FacilitySafetyAdminPage = lazy(() => import("./pages/admin/FacilitySafetyAdminPage").then((m) => ({ default: m.FacilitySafetyAdminPage })));
 const AIWorkspacePage = lazy(() => import("./pages/admin/AIWorkspacePage").then((m) => ({ default: m.AIWorkspacePage })));
 const PostProjectWorkflowPage = lazy(() => import("./pages/admin/PostProjectWorkflowPage").then((m) => ({ default: m.PostProjectWorkflowPage })));
 const StorefrontPage = lazy(() => import("./pages/store/StorefrontPage").then((m) => ({ default: m.StorefrontPage })));
