@@ -15,6 +15,9 @@ export async function onRequest({ request, env }: { request: Request; env: Env }
     if (!user || !isAdminRole(role)) {
       return json({ success: false, error: "Unauthorized" }, 401);
     }
+    if (!hasAdminPermission(role, "system.manage")) {
+      return json({ success: false, error: "Forbidden" }, 403);
+    }
 
     if (!hasAdminPermission(role, "system.manage")) {
       return json({ success: false, error: "Forbidden" }, 403);
