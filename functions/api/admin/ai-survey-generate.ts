@@ -385,10 +385,10 @@ export async function onRequest({ request, env }: { request: Request; env: Env }
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        recipient_role: "OPERATIONS_ADMIN",
+        recipient_user_id: user.id,
+        kind: "ai_survey_review",
         title: "AI สร้างแบบสอบถามพร้อมให้ตรวจสอบ",
-        message: `กิจกรรม "${title}" มีแบบสอบถามที่ AI สร้างเสร็จแล้ว รอ ADMIN ตรวจสอบและยืนยัน`,
-        type: "approval_needed",
+        body: `กิจกรรม "${title}" มีแบบสอบถามที่ AI สร้างเสร็จแล้ว รอ ADMIN ตรวจสอบและยืนยัน`,
         link: `/admin/ai?tab=approval`,
       }),
     }).catch(() => undefined);

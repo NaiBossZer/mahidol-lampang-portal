@@ -50,7 +50,7 @@ export function AIApprovalPage() {
     }
   }
   return (
-    <AIAccessGuard permission="ai.approval.read">
+    <AIAccessGuard permission="ai.command.approval.read">
       <section className="min-h-[calc(100vh-4rem)] bg-[#f8f9ff] px-4 py-5 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-5xl">
           <div className="flex items-end justify-between">

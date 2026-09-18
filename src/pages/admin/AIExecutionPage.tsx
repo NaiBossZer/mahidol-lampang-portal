@@ -33,7 +33,7 @@ export function AIExecutionPage() {
   }, []);
   const x = data[0];
   return (
-    <AIAccessGuard permission="ai.execution.read">
+    <AIAccessGuard permission="ai.command.execution.read">
       <section className="min-h-[calc(100vh-4rem)] bg-[#f8f9ff] px-4 py-5 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-[1280px]">
           <div className="flex items-end justify-between">

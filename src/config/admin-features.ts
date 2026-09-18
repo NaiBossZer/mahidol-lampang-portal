@@ -139,7 +139,7 @@ export const ADMIN_FEATURES: readonly AdminFeatureDefinition[] = [
     area: "ai",
     status: "foundation",
     route: "/admin/ai/work-queue",
-    permission: "ai.queue.read",
+    permission: "ai.command.queue.read",
   },
   {
     id: "ai-execution",
@@ -147,7 +147,7 @@ export const ADMIN_FEATURES: readonly AdminFeatureDefinition[] = [
     area: "ai",
     status: "foundation",
     route: "/admin/ai/execution",
-    permission: "ai.execution.read",
+    permission: "ai.command.execution.read",
   },
   {
     id: "ai-approval",
@@ -155,7 +155,7 @@ export const ADMIN_FEATURES: readonly AdminFeatureDefinition[] = [
     area: "ai",
     status: "foundation",
     route: "/admin/ai/approval",
-    permission: "ai.approval.read",
+    permission: "ai.command.approval.read",
   },
   {
     id: "ai-history",
@@ -163,7 +163,7 @@ export const ADMIN_FEATURES: readonly AdminFeatureDefinition[] = [
     area: "ai",
     status: "foundation",
     route: "/admin/ai/history",
-    permission: "ai.execution.read",
+    permission: "ai.command.execution.read",
   },
   {
     id: "ai-activity-agent",
@@ -264,7 +264,7 @@ export const ADMIN_FEATURES: readonly AdminFeatureDefinition[] = [
     label: "Notifications",
     area: "core",
     status: "foundation",
-    route: "/admin/governance?tab=notifications",
+    route: "/admin/notifications",
     permission: "overview.read",
   },
   {
