@@ -6,6 +6,7 @@ import {
   Clock3,
   RefreshCw,
   Search,
+  Check,
   ShieldCheck,
   Sparkles,
   Users,
@@ -203,6 +204,8 @@ export function GovernancePage() {
   const [roleFilter, setRoleFilter] = useState<"ALL" | AdminRole | "UNASSIGNED">("ALL");
   const [selectedUser, setSelectedUser] = useState<UserRow | null>(null);
   const [selectedRole, setSelectedRole] = useState<AdminRole | null>(null);
+  const [matrixRole, setMatrixRole] = useState<AdminRole>("SUPER_ADMIN");
+  const [permissionDomain, setPermissionDomain] = useState("all");
   const canManage = role === "SUPER_ADMIN";
 
   async function load() {
@@ -418,6 +421,35 @@ export function GovernancePage() {
             </div>
           </div>
         )}
+        {tab === "users" && (
+          <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+            <div className="border-b border-slate-100 bg-slate-50 px-5 py-4 sm:px-6">
+              <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-violet-600">Permission Matrix</p>
+              <div className="mt-1 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+                <div><h2 className="text-sm font-bold text-[#002d62]">Role / Permission Matrix</h2><p className="mt-1 text-[10px] text-slate-500">สิทธิ์ตาม Role จาก Canonical Permission Catalog · Read-only governance view</p></div>
+                <div className="flex flex-wrap gap-2">
+                  {ROLE_OPTIONS.map((option) => <button key={option} type="button" onClick={() => setMatrixRole(option)} className={`rounded-xl px-3 py-2 text-[10px] font-bold transition ${matrixRole === option ? "bg-[#002d62] text-white" : "bg-white text-slate-600 ring-1 ring-slate-200 hover:bg-slate-50"}`}>{option}</button>)}
+                  <select value={permissionDomain} onChange={(event) => setPermissionDomain(event.target.value)} className="dashboard-control"><option value="all">ทุก Domain</option>{Array.from(new Set(PERMISSION_CATALOG.map((item) => item.domain))).map((domain) => <option key={domain} value={domain}>{domain}</option>)}</select>
+                </div>
+              </div>
+            </div>
+            <div className="border-b border-slate-100 bg-white px-5 py-3 text-[10px] text-slate-500">Role: <span className="font-bold text-slate-700">{ROLE_META[matrixRole].label}</span> · {permissionsForRole(matrixRole).length} permissions</div>
+            <div className="max-h-[520px] overflow-auto">
+              <div className="min-w-[720px]">
+                {Array.from(new Set(PERMISSION_CATALOG.map((item) => item.domain))).filter((domain) => permissionDomain === "all" || domain === permissionDomain).map((domain) => (
+                  <div key={domain} className="border-b border-slate-100 last:border-0">
+                    <div className="sticky top-0 z-10 border-b border-slate-100 bg-slate-50 px-5 py-2 text-[10px] font-black uppercase tracking-[0.12em] text-slate-500">{domain}</div>
+                    {PERMISSION_CATALOG.filter((item) => item.domain === domain).map((definition) => {
+                      const enabled = permissionsForRole(matrixRole).includes(definition.key);
+                      return <div key={definition.key} className="grid grid-cols-[48px_1fr_160px] items-center gap-3 px-5 py-3 hover:bg-slate-50/70"><span className={`flex h-6 w-6 items-center justify-center rounded-full ${enabled ? "bg-emerald-100 text-emerald-700" : "bg-slate-100 text-slate-300"}`}>{enabled ? <Check className="h-3.5 w-3.5" /> : "—"}</span><div><p className="text-[11px] font-bold text-slate-700">{definition.label}</p><p className="mt-0.5 text-[9px] text-slate-400">{definition.key} · {definition.description}</p></div><span className={`rounded-full px-2 py-1 text-center text-[9px] font-bold ${enabled ? "bg-emerald-50 text-emerald-700" : "bg-slate-100 text-slate-400"}`}>{enabled ? "Granted" : "Not granted"}</span></div>;
+                    })}
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
         {selectedRole && (
           <div className="fixed inset-0 z-[80] flex items-center justify-center bg-slate-950/40 p-4" role="dialog" aria-modal="true">
             <div className="w-full max-w-2xl overflow-hidden rounded-2xl bg-white shadow-2xl">
