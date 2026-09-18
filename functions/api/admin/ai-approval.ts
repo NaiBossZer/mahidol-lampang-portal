@@ -379,8 +379,9 @@ export async function onRequest({
               ),
               required: Boolean(question.required ?? true),
               order_index: orderIndex,
-              scale_min: 1,
-              scale_max: 5,
+              options: Array.isArray(question.options) ? question.options : [],
+              scale_min: Number(question.scaleMin ?? 1),
+              scale_max: Number(question.scaleMax ?? 5),
               active: true,
             }),
           });
