@@ -1,51 +1,18 @@
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import {
   Activity,
-  Bell,
   Bot,
   FileText,
-  Group,
-  Settings,
   ShieldCheck,
   Sparkles,
   Workflow,
 } from "lucide-react";
 import { AIStudioWorkspacePage } from "./AIStudioWorkspacePage";
 import { AIStudioOutcomeWorkspacePage } from "./AIStudioOutcomeWorkspacePage";
-import { AIWorkspacePage } from "./AIWorkspacePage";
-import { CmsPage } from "./CmsPage";
-import { OrganizationsManagementPage } from "./OrganizationsManagementPage";
-import { GovernancePage } from "./GovernancePage";
-import { SystemSettingsPage } from "./SystemSettingsPage";
-import { useAdminAuth } from "@/components/AdminGuard";
-import type { AdminPermission } from "@/auth/permissions";
 import { AI_STUDIO_WORKFLOW_STEPS } from "@/features/ai-studio/activityWorkflow";
 import { OUTCOME_STEP_IDS } from "@/features/ai-studio/outcomeWorkflow";
 
-type ModuleId =
-  | "workflow"
-  | "documents"
-  | "assistant"
-  | "access"
-  | "notifications"
-  | "settings";
-
 const steps = AI_STUDIO_WORKFLOW_STEPS;
-
-const modules: Array<{
-  id: ModuleId;
-  label: string;
-  description: string;
-  icon: typeof Bot;
-  permission: AdminPermission;
-}> = [
-  { id: "workflow", label: "9-Step Workflow", description: "Activity → Outcome → Publish", icon: Workflow, permission: "ai.command.read" },
-  { id: "documents", label: "คลังเอกสารราชการ", description: "Official Documents Repository", icon: FileText, permission: "cms.read" },
-  { id: "assistant", label: "AI Assistant Studio", description: "Command · Queue · Execution · Approval", icon: Bot, permission: "ai.command.read" },
-  { id: "access", label: "ผู้ใช้งาน & สิทธิ์", description: "Users · Organizations · Access", icon: Group, permission: "overview.read" },
-  { id: "notifications", label: "การแจ้งเตือน", description: "Governance · Notifications", icon: Bell, permission: "system.read" },
-  { id: "settings", label: "ตั้งค่าระบบ", description: "System Configuration", icon: Settings, permission: "system.read" },
-];
 
 function StepRail({ active, onSelect }: { active: number; onSelect: (step: number) => void }) {
   return (
@@ -76,38 +43,14 @@ function StepRail({ active, onSelect }: { active: number; onSelect: (step: numbe
   );
 }
 
-function ModuleCard({ active, onSelect, items }: { active: ModuleId; onSelect: (id: ModuleId) => void; items: typeof modules }) {
-  return (
-    <div className="rounded-2xl border border-slate-200 bg-white p-2 shadow-sm">
-      <div className="flex gap-2 overflow-x-auto" role="tablist" aria-label="AI Studio functions">
-        {items.map((module) => {
-          const Icon = module.icon;
-          const selected = module.id === active;
-          return (
-            <button key={module.id} type="button" role="tab" aria-selected={selected} onClick={() => onSelect(module.id)} className={`min-w-[180px] rounded-xl px-3 py-2.5 text-left transition ${selected ? "bg-[#002d62] text-white shadow-sm" : "text-slate-600 hover:bg-slate-50"}`}>
-              <div className="flex items-center gap-2"><Icon className="h-4 w-4 shrink-0" /><span className="truncate text-xs font-bold">{module.label}</span></div>
-              <p className={`mt-1 truncate text-[10px] ${selected ? "text-blue-100" : "text-slate-400"}`}>{module.description}</p>
-            </button>
-          );
-        })}
-      </div>
-    </div>
-  );
-}
-
 export function AIStudioUnifiedWorkspacePage() {
-  const { role, permissions } = useAdminAuth();
-  const [module, setModule] = useState<ModuleId>("workflow");
   const [activeStep, setActiveStep] = useState(1);
-
-  const visibleModules = useMemo(() => modules.filter((item) => role === "SUPER_ADMIN" || permissions.includes(item.permission)), [role, permissions]);
-  const activeModule = visibleModules.some((item) => item.id === module) ? module : (visibleModules[0]?.id ?? "workflow");
 
   function selectStep(step: number) {
     setActiveStep(step);
-    setModule("workflow");
   }
 
+  const steps = AI_STUDIO_WORKFLOW_STEPS;
   const currentStep = steps[activeStep - 1];
   const outcomePhase = activeStep >= OUTCOME_STEP_IDS.capture;
 
@@ -120,7 +63,7 @@ export function AIStudioUnifiedWorkspacePage() {
               <div>
                 <div className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3 py-1 text-[10px] font-bold tracking-[0.16em] text-sky-100"><Sparkles className="h-3.5 w-3.5 text-sky-300" /> AI STUDIO · CONTROL PLANE</div>
                 <h1 className="mt-3 text-2xl font-bold tracking-tight sm:text-3xl">AI Studio Workspace</h1>
-                <p className="mt-2 max-w-4xl text-sm leading-6 text-blue-100">ศูนย์กลางเดียวสำหรับ Workflow 9 ขั้นตอน พร้อมคลังเอกสารราชการ, AI Assistant, สิทธิ์การเข้าถึง, การแจ้งเตือน และการตั้งค่าระบบ</p>
+                <p className="mt-2 max-w-4xl text-sm leading-6 text-blue-100">ศูนย์กลางสำหรับ Workflow 9 ขั้นตอน ตั้งแต่ Activity ถึง Outcome และ Publish</p>
               </div>
               <div className="grid grid-cols-2 gap-2 text-[10px] sm:flex sm:flex-wrap">
                 <span className="rounded-xl border border-white/10 bg-white/5 px-3 py-2"><ShieldCheck className="mr-1 inline h-3.5 w-3.5 text-emerald-300" />Governance</span>
@@ -133,10 +76,8 @@ export function AIStudioUnifiedWorkspacePage() {
           </div>
         </header>
 
-        {visibleModules.length > 0 && <ModuleCard active={activeModule} onSelect={setModule} items={visibleModules} />}
-
         <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-          {activeModule === "workflow" && currentStep && (
+          {currentStep && (
             <div className="border-b border-slate-100 bg-slate-50 px-5 py-3 sm:px-6">
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <div><p className="text-xs font-bold text-[#002d62]">Step {activeStep} / 9 · {currentStep.title}</p><p className="mt-0.5 text-[10px] text-slate-500">{currentStep.subtitle} · AI proposes · ADMIN verifies · System commits</p></div>
@@ -145,13 +86,8 @@ export function AIStudioUnifiedWorkspacePage() {
             </div>
           )}
 
-          {activeModule === "workflow" && activeStep <= 5 && <AIStudioWorkspacePage />}
-          {activeModule === "workflow" && activeStep >= 6 && <AIStudioOutcomeWorkspacePage />}
-          {activeModule === "documents" && <CmsPage />}
-          {activeModule === "assistant" && <AIWorkspacePage />}
-          {activeModule === "access" && <OrganizationsManagementPage />}
-          {activeModule === "notifications" && <GovernancePage />}
-          {activeModule === "settings" && <SystemSettingsPage />}
+          {activeStep <= 5 && <AIStudioWorkspacePage />}
+          {activeStep >= 6 && <AIStudioOutcomeWorkspacePage />}
         </div>
 
         <div className="flex flex-col gap-2 rounded-2xl border border-slate-200 bg-white p-4 text-[11px] text-slate-500 shadow-sm sm:flex-row sm:items-center sm:justify-between">
