@@ -14,6 +14,7 @@ const navGroups: readonly NavGroup[] = [
   { id: "activities", label: "บริหารกิจกรรม & Survey", icon: Activity, items: [
     { to: "/admin/activities", label: "รายการกิจกรรมโครงการ", icon: Activity, permission: "activities.read" },
     { to: "/admin/survey-workflow", label: "สร้างกิจกรรม & AI Survey", icon: Bot, permission: "survey.read", badge: "AI" },
+    { to: "/admin/surveys", label: "แบบประเมิน", icon: FileText, permission: "survey.read" },
   ] },
 
 ];
