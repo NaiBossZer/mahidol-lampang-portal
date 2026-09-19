@@ -17,6 +17,7 @@ const LoginPage = lazy(() => import("./pages/admin/LoginPage").then((m) => ({ de
 const AdminPage = lazy(() => import("./pages/admin/AdminPage").then((m) => ({ default: m.AdminPage })));
 const DashboardPage = lazy(() => import("./pages/admin/ExecutiveDashboardPage").then((m) => ({ default: m.ExecutiveDashboardPage })));
 const ActivitiesManagementPage = lazy(() => import("./pages/admin/ActivitiesManagementPage").then((m) => ({ default: m.ActivitiesManagementPage })));
+const ActivityDetailAdminPage = lazy(() => import("./pages/admin/ActivityDetailAdminPage").then((m) => ({ default: m.ActivityDetailAdminPage })));
 const ActivitySurveyStudioPage = lazy(() => import("./pages/admin/ActivitySurveyStudioPage").then((m) => ({ default: m.ActivitySurveyStudioPage })));
 const ActivityOccurrencesPage = lazy(() => import("./pages/admin/ActivityOccurrencesPage").then((m) => ({ default: m.ActivityOccurrencesPage })));
 const ActivityMediaPage = lazy(() => import("./pages/admin/ActivityMediaPage").then((m) => ({ default: m.ActivityMediaPage })));
