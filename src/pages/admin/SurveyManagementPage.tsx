@@ -363,6 +363,48 @@ export function SurveyManagementPage() {
                   </div>
                 </div>
               </div>
+              <div className="border-t border-slate-100 px-5 py-3">
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <label className="block">
+                    <span className="mb-1 block text-xs font-semibold text-slate-600">เปิดรับ</span>
+                    <input
+                      type="datetime-local"
+                      value={selected.open_at ? selected.open_at.slice(0, 16) : ""}
+                      onChange={(event) => {
+                        const value = event.target.value;
+                        void updateAdminSurvey(selected.id, {
+                          openAt: value ? new Date(value).toISOString() : null,
+                        })
+                          .then((updated) => {
+                            setSelected({ ...selected, ...updated });
+                            setSurveys((items) => items.map((item) => (item.id === selected.id ? { ...item, ...updated } : item)));
+                          })
+                          .catch((e) => toast.error(e instanceof Error ? e.message : "บันทึกเวลาเปิดไม่สำเร็จ"));
+                      }}
+                      className="h-10 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm"
+                    />
+                  </label>
+                  <label className="block">
+                    <span className="mb-1 block text-xs font-semibold text-slate-600">ปิดรับ</span>
+                    <input
+                      type="datetime-local"
+                      value={selected.close_at ? selected.close_at.slice(0, 16) : ""}
+                      onChange={(event) => {
+                        const value = event.target.value;
+                        void updateAdminSurvey(selected.id, {
+                          closeAt: value ? new Date(value).toISOString() : null,
+                        })
+                          .then((updated) => {
+                            setSelected({ ...selected, ...updated });
+                            setSurveys((items) => items.map((item) => (item.id === selected.id ? { ...item, ...updated } : item)));
+                          })
+                          .catch((e) => toast.error(e instanceof Error ? e.message : "บันทึกเวลาปิดไม่สำเร็จ"));
+                      }}
+                      className="h-10 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm"
+                    />
+                  </label>
+                </div>
+              </div>
 
               <div className="p-5">
                 <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
