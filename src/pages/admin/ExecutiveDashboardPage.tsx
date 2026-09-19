@@ -379,74 +379,105 @@ export function ExecutiveDashboardPage() {
     printWindow.document.write(
       '<!doctype html><html lang="th"><head><meta charset="utf-8"><title>รายงานผลการดำเนินงานและแบบประเมินความพึงพอใจ</title>' +
         '<style>' +
-        '@page{size:A4 portrait;margin:12mm 12mm 14mm}' +
+        '@page{size:A4 portrait;margin:10mm 11mm 12mm}' +
         '*{box-sizing:border-box;-webkit-print-color-adjust:exact;print-color-adjust:exact}' +
-        'html,body,.report,.report *{font-family:"TH Sarabun New","TH Sarabun New PSK",THSarabunNew,sans-serif !important}' +
-        'body{color:#111111;font-size:16px;line-height:1.35;margin:0;background:#fff}' +
-        '.report{width:100%}.header{display:flex;align-items:center;gap:16px;padding-bottom:12px;border-bottom:2px solid #111111}' +
-        '.logo{width:62px;height:62px;object-fit:contain;filter:grayscale(1) contrast(1.05);flex:0 0 auto}.header-copy{min-width:0}.eyebrow{font-size:10px;font-weight:700;color:#111111;margin-bottom:2px}.report-title{font-size:20px;font-weight:800;line-height:1.25;margin:0}.project-title{font-size:12px;font-weight:700;color:#333333;margin-top:4px}.org{font-size:10px;color:#555555;margin-top:2px}' +
-        '.section{margin-top:12px}.section-title{font-size:14px;font-weight:800;color:#111111;margin:0 0 7px;padding-bottom:4px;border-bottom:1px solid #cfcfcf}' +
-        '.meta-line{font-size:15px;color:#444444;margin:0 0 8px}.meta-line strong{color:#111111}.meta-line span{display:inline-block;margin-right:18px}.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:7px}.kpi{border:1px solid #cfcfcf;border-radius:8px;padding:8px 9px;background:#fafafa}.kpi-label{font-size:9px;color:#555555}.kpi-value{font-size:17px;font-weight:800;color:#111111;margin-top:1px}.kpi-unit{font-size:9px;color:#555555;font-weight:500}.narratives{margin-top:8px;display:grid;grid-template-columns:1fr 1fr;gap:8px}.narrative{border-left:3px solid #111111;background:#fafafa;border:1px solid #d6d6d6;border-left-width:3px;border-radius:7px;padding:8px 10px}.narrative.impact{border-left-color:#333333}.narrative strong{font-size:9px;color:#111111}.narrative p{margin:3px 0 0;font-size:10px;white-space:pre-line;color:#333333}' +
-        '.grid-2{display:grid;grid-template-columns:1.18fr .82fr;gap:10px}.panel{border:1px solid #cfcfcf;border-radius:8px;padding:9px}.rating-row{margin-bottom:9px}.rating-row:last-child{margin-bottom:0}.rating-head{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:10px;color:#333333}.rating-head strong{font-size:10px;color:#111111;white-space:nowrap}.bar-track{height:8px;margin-top:4px;background:#e5e5e5;border-radius:999px;overflow:hidden}.bar-fill{height:100%;background:#111111;border-radius:999px}.subhead{font-size:9px;font-weight:800;color:#111111;margin:0 0 5px;text-transform:none}.stat-group + .stat-group{margin-top:10px}.stat-line{display:flex;justify-content:space-between;gap:8px;padding:3px 0;border-bottom:1px dotted #d0d0d0;font-size:9.5px}.stat-line:last-child{border-bottom:0}.stat-line strong{white-space:nowrap}.stat-line small{color:#555555;font-weight:500}.empty{font-size:9px;color:#777777;padding:7px 0}' +
-        '.comments-photos{display:grid;grid-template-columns:1fr 1fr;gap:10px}.comment-item{display:grid;grid-template-columns:22px 1fr;gap:7px;padding:7px 0;border-bottom:1px solid #eeeeee}.comment-number{width:20px;height:20px;border-radius:50%;background:#eeeeee;color:#111111;font-weight:800;font-size:9px;display:flex;align-items:center;justify-content:center}.comment-item p{margin:0;font-size:9.7px;color:#333333;line-height:1.55}.comment-item small{display:block;margin-top:2px;font-size:8px;color:#777777}.photos{display:grid;grid-template-columns:1fr 1fr;gap:7px}.photo-card{margin:0}.photo-card img{display:block;width:100%;height:122px;object-fit:cover;border-radius:7px;border:1px solid #cfcfcf;background:#fafafa}.photo-card figcaption{font-size:8.5px;color:#555555;margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.photo-empty{height:122px;border:1px dashed #c8c8c8;border-radius:7px;display:flex;align-items:center;justify-content:center;color:#777777;font-size:9px}' +
-        '.filter-note{margin-top:7px;color:#555555;font-size:12px}.footer{margin-top:12px;padding-top:6px;border-top:1px solid #cfcfcf;display:flex;justify-content:space-between;gap:10px;color:#777777;font-size:8px}' +
-        '.audit-section{margin-top:12px}.audit-table{width:100%;border-collapse:collapse;font-size:13px}.audit-table th,.audit-table td{border:1px solid #bdbdbd;padding:5px 7px;text-align:left}.audit-table th{background:#eeeeee;font-weight:800}.audit-check{text-align:center!important;width:42px}.signature-grid{display:grid;grid-template-columns:1fr 1fr;gap:36px;margin-top:18px}.signature-box{text-align:center;font-size:13px;color:#333}.signature-line{height:26px;border-bottom:1px solid #333;margin:0 22px 4px}.seal-placeholder{display:inline-flex;align-items:center;justify-content:center;width:58px;height:58px;border:1px solid #999;border-radius:50%;font-size:9px;color:#777;margin-top:5px}.reference-section{break-inside:avoid;page-break-inside:avoid}.reference-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:7px}.reference-grid>div{border:1px solid #d0d0d0;padding:6px 8px;background:#fafafa}.reference-grid span{display:block;font-size:11px;color:#555}.reference-grid strong{display:block;margin-top:2px;font-size:13px;word-break:break-word}.reference-note{font-size:13px;color:#555;margin:6px 0 0}.report table{width:100%;border-collapse:collapse;font-size:13px}.report table th,.report table td{border:1px solid #c8c8c8;padding:4px 5px;vertical-align:top}.report table th{background:#eeeeee;font-weight:800}.report table tbody tr:nth-child(even){background:#fafafa}.report table .score{text-align:right}.report table .text{white-space:pre-line}.avoid-break{break-inside:avoid;page-break-inside:avoid}@media print{body{background:#fff}.section,.panel,.comments-photos,.grid-2,.audit-section{break-inside:avoid;page-break-inside:avoid}}' +
+        'html,body,.report,.report *{font-family:"TH Sarabun New","TH Sarabun New PSK",THSarabunNew,sans-serif!important}' +
+        'body{margin:0;background:#fff;color:#111;font-size:15px;line-height:1.28}' +
+        '.report{width:100%}.header{display:grid;grid-template-columns:76px 1fr;gap:14px;align-items:center;padding-bottom:8px;border-bottom:2px solid #111}' +
+        '.logo{width:66px;height:66px;object-fit:contain}.header-copy{text-align:right}.eyebrow{font-size:14px;font-weight:700;color:#222}.report-title{font-size:24px;line-height:1.05;font-weight:800;margin:0}.project-title{font-size:18px;font-weight:700;margin-top:3px}.org{font-size:14px;color:#444;margin-top:1px}' +
+        '.section{margin-top:8px}.section-title{font-size:18px;line-height:1.1;font-weight:800;margin:0 0 5px;padding-bottom:3px;border-bottom:1px solid #222}.meta-line{font-size:14px;margin:0 0 5px;color:#222}.meta-line span{display:inline-block;margin-right:16px}.meta-line strong{font-weight:800}' +
+        '.kpis{display:grid;grid-template-columns:repeat(4,1fr);border:1px solid #888}.kpi{padding:5px 7px;text-align:center;border-right:1px solid #aaa;background:#fff}.kpi:last-child{border-right:0}.kpi-label{font-size:13px;color:#444}.kpi-value{font-size:20px;font-weight:800;line-height:1.05}.kpi-unit{font-size:13px;font-weight:500}' +
+        '.narratives{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:6px}.narrative{border:1px solid #aaa;border-left:3px solid #111;padding:5px 8px}.narrative strong{font-size:14px}.narrative p{font-size:13px;margin:1px 0 0;line-height:1.25;white-space:pre-line}.filter-note{font-size:12px;color:#555;margin-top:3px}' +
+        '.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:8px}.panel{border:1px solid #aaa;padding:6px}.rating-row{margin-bottom:6px}.rating-head{display:flex;justify-content:space-between;gap:6px;font-size:14px}.rating-head strong{font-size:14px}.bar-track{height:7px;background:#e5e5e5;margin-top:2px}.bar-fill{height:100%;background:#222}.subhead{font-size:14px;font-weight:800;margin-bottom:2px}.stat-line{display:flex;justify-content:space-between;border-bottom:1px dotted #bbb;padding:2px 0;font-size:13px}.stat-line small{font-size:11px;color:#555}.empty{font-size:13px;color:#777;padding:4px 0}' +
+        '.comments-photos{display:grid;grid-template-columns:1fr 1fr;gap:8px}.comment-item{display:grid;grid-template-columns:22px 1fr;gap:6px;padding:4px 0;border-bottom:1px solid #ddd}.comment-number{width:19px;height:19px;border:1px solid #333;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:11px}.comment-item p{margin:0;font-size:13px;line-height:1.3}.comment-item small{font-size:11px;color:#555}.photos{display:grid;grid-template-columns:1fr 1fr;gap:6px}.photo-card{margin:0}.photo-card img{width:100%;height:92px;object-fit:cover;border:1px solid #aaa;display:block}.photo-card figcaption{font-size:11px;margin-top:2px;text-align:center;color:#444}.photo-empty{height:92px;border:1px dashed #aaa;display:flex;align-items:center;justify-content:center;font-size:12px;color:#777}' +
+        '.bottom-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}.reference-grid{display:grid;grid-template-columns:1fr 1fr;gap:4px}.reference-grid>div{border:1px solid #bbb;padding:4px 6px}.reference-grid span{display:block;font-size:11px;color:#555}.reference-grid strong{display:block;font-size:13px;word-break:break-word}.reference-note{font-size:12px;color:#555;margin:3px 0 0}.report table{width:100%;border-collapse:collapse;font-size:11px}.report table th,.report table td{border:1px solid #aaa;padding:3px 4px;vertical-align:top}.report table th{background:#eee;font-weight:800}.report table tbody tr:nth-child(even){background:#fafafa}.report table .score{text-align:right}.report table .text{white-space:pre-line}' +
+        '.audit-table{width:100%;border-collapse:collapse;font-size:12px}.audit-table th,.audit-table td{border:1px solid #aaa;padding:3px 5px}.audit-table th{background:#eee}.audit-check{text-align:center!important;width:38px}.signature-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-top:8px}.signature-box{text-align:center;font-size:12px}.signature-line{height:17px;border-bottom:1px solid #333;margin:0 18px 2px}.seal-placeholder{display:inline-flex;width:40px;height:40px;border:1px solid #888;border-radius:50%;align-items:center;justify-content:center;font-size:8px;color:#666;margin-top:3px}.footer{margin-top:7px;padding-top:4px;border-top:1px solid #999;display:flex;justify-content:space-between;font-size:11px;color:#555}.avoid-break{break-inside:avoid;page-break-inside:avoid}@media print{.section,.panel,.comments-photos,.grid-2,.bottom-grid{break-inside:avoid;page-break-inside:avoid}}' +
         '</style></head><body><div class="report">' +
         '<header class="header"><img class="logo" src="' +
         printCell(logoUrl) +
-        '" alt="มหาวิทยาลัยมหิดล"><div class="header-copy"><div class="eyebrow">งานพันธกิจเพื่อสังคม</div><h1 class="report-title">รายงานผลการดำเนินงานและแบบประเมินความพึงพอใจ</h1><div class="project-title">' +
+        '" alt="งานพันธกิจเพื่อสังคม"><div class="header-copy"><div class="eyebrow">งานพันธกิจเพื่อสังคม</div><h1 class="report-title">รายงานผลการดำเนินงานและแบบประเมินความพึงพอใจ</h1><div class="project-title">' +
         printCell(reportActivity.title) +
         '</div><div class="org">คณะสิ่งแวดล้อมและทรัพยากรศาสตร์ มหาวิทยาลัยมหิดล</div></div></header>' +
-        '<div class="section avoid-break"><h2 class="section-title">1. ข้อมูลทั่วไปและสรุปผลการดำเนินงาน</h2>' +
-        '<p class="meta-line"><span><strong>วันที่จัด:</strong> ' +
+
+        '<div class="section avoid-break"><h2 class="section-title">1. ข้อมูลทั่วไปและสรุปผลการดำเนินงาน</h2><p class="meta-line"><span><strong>วันที่จัด:</strong> ' +
         printCell(reportDate) +
         '</span><span><strong>สถานที่:</strong> ' +
         printCell(reportLocation) +
         '</span><span><strong>สถานะ:</strong> ' +
         printCell(reportStatus) +
-        '</span></p>' +
-        '<div class="kpis"><div class="kpi"><div class="kpi-label">ผู้เข้าร่วม</div><div class="kpi-value">' +
+        '</span></p><div class="kpis"><div class="kpi"><div class="kpi-label">ผู้เข้าร่วม</div><div class="kpi-value">' +
         formatNumber(participants) +
         ' <span class="kpi-unit">คน</span></div></div><div class="kpi"><div class="kpi-label">ผู้ตอบประเมิน</div><div class="kpi-value">' +
         formatNumber(responseCount) +
         ' <span class="kpi-unit">คน</span></div></div><div class="kpi"><div class="kpi-label">อัตราตอบกลับ</div><div class="kpi-value">' +
-        (responseRate === null ? "-" : Math.min(100, responseRate).toFixed(1) + '%') +
+        (responseRate === null ? "-" : Math.min(100, responseRate).toFixed(1) + "%") +
         '</div></div><div class="kpi"><div class="kpi-label">คะแนนเฉลี่ยรวม</div><div class="kpi-value">' +
         (overall === null ? "-" : overall.toFixed(2) + ' <span class="kpi-unit">/ 5.00</span>') +
-        '</div></div></div>' +
-        '<div class="narratives">' +
+        '</div></div></div><div class="narratives">' +
         summaryBlock +
         impactBlock +
-        "</div>" +
+        '</div>' +
         filterNote +
         '</div>' +
+
         '<div class="section avoid-break"><div class="grid-2"><div class="panel"><h2 class="section-title">2. ผลการประเมินความพึงพอใจ</h2>' +
         (ratingRows || '<div class="empty">ไม่พบข้อมูลคะแนน</div>') +
         '</div><div class="panel"><h2 class="section-title">3. ข้อมูลผู้ตอบแบบประเมิน (N = ' +
         formatNumber(responseCount) +
-        ')</h2><div class="stat-group"><div class="subhead">กลุ่มอายุ</div>' +
+        ')</h2><div class="subhead">กลุ่มอายุ</div>' +
         ageRows +
-        '</div><div class="stat-group"><div class="subhead">ประเภทผู้ตอบ</div>' +
+        '<div class="subhead" style="margin-top:5px">ประเภทผู้ตอบ</div>' +
         affiliationRows +
-        '</div></div></div></div>' +
+        '</div></div></div>' +
+
         '<div class="section avoid-break"><div class="comments-photos"><div class="panel"><h2 class="section-title">4. ข้อเสนอแนะที่สำคัญ (Top 3)</h2>' +
         commentRows +
         '</div><div class="panel"><h2 class="section-title">5. ภาพประกอบกิจกรรมหลัก</h2><div class="photos">' +
         photoRows +
         '</div></div></div></div>' +
-        '<div class="section audit-section avoid-break"><h2 class="section-title">สรุปผลการตรวจสอบ (Audit)</h2>' +
-        '<table class="audit-table"><thead><tr><th>รายการตรวจสอบ</th><th class="audit-check">ผ่าน</th><th class="audit-check">ไม่ผ่าน</th></tr></thead><tbody>' +
-        '<tr><td>ความถูกต้องของข้อมูลกิจกรรม</td><td class="audit-check">✓</td><td class="audit-check"></td></tr>' +
-        '<tr><td>ความครบถ้วนของแบบประเมิน</td><td class="audit-check">✓</td><td class="audit-check"></td></tr>' +
-        '<tr><td>การจัดเก็บหลักฐาน/ภาพกิจกรรม</td><td class="audit-check">✓</td><td class="audit-check"></td></tr>' +
-        '<tr><td>การปฏิบัติตามระเบียบ/ข้อกำหนด</td><td class="audit-check">✓</td><td class="audit-check"></td></tr>' +
-        '</tbody></table>' +
-        '<div class="signature-grid"><div class="signature-box"><div class="signature-line"></div><div>ผู้รายงาน</div><div>วันที่ ................................</div></div>' +
-        '<div class="signature-box"><div class="signature-line"></div><div>ผู้ตรวจสอบ</div><div>วันที่ ................................</div><div class="seal-placeholder">ตราประทับ</div></div></div></div>' +
-        referenceBlock +
-        '<footer class="footer"><span>รายงานรายกิจกรรม • ข้อมูลจาก Dashboard ปัจจุบัน</span><span>พิมพ์เมื่อ: ' +
+
+        '<div class="section avoid-break"><h2 class="section-title">6. ข้อมูลอ้างอิงและข้อมูลรายบุคคล</h2><div class="bottom-grid"><div class="panel"><div class="reference-grid"><div><span>Activity ID</span><strong>' +
+        printCell(reportActivity.id) +
+        '</strong></div><div><span>จำนวนครั้งที่จัด</span><strong>' +
+        formatNumber(reportOccurrences.length) +
+        ' ครั้ง</strong></div><div><span>ผู้ตอบแบบประเมิน</span><strong>' +
+        formatNumber(responseCount) +
+        ' คน</strong></div><div><span>ภาพประกอบ</span><strong>' +
+        formatNumber(photoItems.length) +
+        ' ภาพ</strong></div></div><p class="reference-note">' +
+        (includeReferenceData ? (includeRespondentDetails ? "แนบข้อมูลรายบุคคลตามกิจกรรมที่เลือก" : "แนบเฉพาะข้อมูลอ้างอิงระดับกิจกรรม") : "ไม่ได้เลือกแนบข้อมูลอ้างอิง") +
+        '</p></div><div class="panel">' +
+        (includeRespondentDetails
+          ? '<div style="font-weight:800;font-size:14px;margin-bottom:3px">ข้อมูลรายบุคคล (N = ' +
+            formatNumber(respondentDetailRows.length) +
+            ')</div><table><thead><tr><th>รหัสผู้ตอบ</th><th>ช่วงอายุ</th><th>ประเภท</th><th>หน่วยงาน</th><th class="score">คะแนน</th></tr></thead><tbody>' +
+            (respondentDetailRows.length
+              ? respondentDetailRows
+                  .map(
+                    row =>
+                      '<tr><td>' +
+                      printCell(row.id) +
+                      '</td><td>' +
+                      printCell(row.ageGroup) +
+                      '</td><td>' +
+                      printCell(row.affiliation) +
+                      '</td><td>' +
+                      printCell(row.organization) +
+                      '</td><td class="score">' +
+                      (row.averageScore === null ? "-" : row.averageScore.toFixed(2)) +
+                      '</td></tr>',
+                  )
+                  .join("")
+              : '<tr><td colspan="5">ไม่พบข้อมูลรายบุคคล</td></tr>') +
+            '</tbody></table>'
+          : '<div class="empty">ไม่ได้เลือก “รวมข้อมูลรายบุคคล”<br>สามารถเปิดตัวเลือกนี้จากหน้ารายงานรายกิจกรรม</div>') +
+        '</div></div></div>' +
+
+        '<div class="section avoid-break"><h2 class="section-title">7. การตรวจสอบและรับรองรายงาน (Audit)</h2><table class="audit-table"><thead><tr><th>รายการตรวจสอบ</th><th class="audit-check">ผ่าน</th><th class="audit-check">ไม่ผ่าน</th></tr></thead><tbody><tr><td>ความถูกต้องของข้อมูลกิจกรรม</td><td class="audit-check">✓</td><td class="audit-check"></td></tr><tr><td>ความครบถ้วนของแบบประเมิน</td><td class="audit-check">✓</td><td class="audit-check"></td></tr><tr><td>การจัดเก็บหลักฐาน/ภาพกิจกรรม</td><td class="audit-check">✓</td><td class="audit-check"></td></tr><tr><td>การปฏิบัติตามระเบียบ/ข้อกำหนด</td><td class="audit-check">✓</td><td class="audit-check"></td></tr></tbody></table><div class="signature-grid"><div class="signature-box"><div class="signature-line"></div><div>ผู้รายงาน</div><div>วันที่ ................................</div></div><div class="signature-box"><div class="signature-line"></div><div>ผู้ตรวจสอบ</div><div>วันที่ ................................</div><div class="seal-placeholder">ตราประทับ</div></div></div></div>' +
+
+        '<footer class="footer"><span>รหัสเอกสาร: ACTIVITY-REPORT • รายงานรายกิจกรรม</span><span>พิมพ์เมื่อ: ' +
         printCell(generatedAt) +
-        '</span></footer></div></body></html>',
+        ' • หน้า 1/1</span></footer></div></body></html>',
     );
     printWindow.document.close();
     printWindow.focus();
