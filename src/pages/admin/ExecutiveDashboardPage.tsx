@@ -485,11 +485,7 @@ export function ExecutiveDashboardPage() {
         photoRows +
         '</div></div></div>' +
 
-        '<div class="section avoid-break"><div class="comments-photos"><div class="panel"><h2 class="section-title">4. ข้อเสนอแนะที่สำคัญ (Top 3)</h2>' + commentRows +
-        '</div><div class="panel"><h2 class="section-title">5. ภาพประกอบกิจกรรมหลัก</h2><div class="photos">' + photoRows +
-        '</div></div></div></div>' +
-        '<footer class="footer"><span>งานพันธกิจเพื่อสังคม • คณะสิ่งแวดล้อมและทรัพยากรศาสตร์ • มหาวิทยาลัยมหิดล</span><span>พิมพ์เมื่อ: ' +
-        printCell(generatedAt) + ' • หน้า 1/1</span></footer></div></body></html>','<footer class="footer"><span>รหัสเอกสาร: ACTIVITY-REPORT • รายงานรายกิจกรรม</span><span>พิมพ์เมื่อ: ' +
+        '<footer class="footer"><span>รหัสเอกสาร: ACTIVITY-REPORT • รายงานรายกิจกรรม</span><span>พิมพ์เมื่อ: ' +
         printCell(generatedAt) +
         ' • หน้า 1/1</span></footer></div></body></html>',
     );
