@@ -10,6 +10,8 @@ type DashboardActivityRow = {
   status?: string | null;
   participant_count?: number | null;
   participants?: string | number | null;
+  summary?: string | null;
+  impact?: string | null;
   featured_image?: string | null;
 };
 type DashboardMediaRow = {
@@ -63,6 +65,8 @@ function toDashboardActivity(row: DashboardActivityRow, featuredImage: string) {
     category: row.category ?? null,
     status: String(row.status ?? "draft"),
     participants: participantCount,
+    summary: row.summary ?? null,
+    impact: row.impact ?? null,
     featured_image: featuredImage,
   };
 }
@@ -88,7 +92,7 @@ export async function onRequestGet({ request, env }: { request: Request; env: En
       activityMedia,
     ] = await Promise.all([
       supabaseUserRest<DashboardActivityRow[]>(env, accessToken, "activities", {
-        select: "id,title,activity_date,category,status,participant_count,participants,featured_image",
+        select: "id,title,activity_date,category,status,participant_count,participants,summary,impact,featured_image",
         order: "activity_date.desc",
       }),
       supabaseUserRest(env, accessToken, "activity_occurrences", {
