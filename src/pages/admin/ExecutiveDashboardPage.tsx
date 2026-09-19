@@ -398,17 +398,6 @@ export function ExecutiveDashboardPage() {
           .join("")
       : '<div class="photo-empty">ไม่มีภาพประกอบกิจกรรม</div>';
 
-    const summaryBlock = reportSummary
-      ? '<div class="narrative"><strong>สรุปสาระสำคัญ (Executive Summary)</strong><p>' +
-        printCell(reportSummary) +
-        "</p></div>"
-      : "";
-    const impactBlock = reportImpact
-      ? '<div class="narrative impact"><strong>ผลกระทบ (Impact)</strong><p>' +
-        printCell(reportImpact) +
-        "</p></div>"
-      : "";
-
     const filterNote =
       period === "ALL"
         ? ""
@@ -461,10 +450,7 @@ export function ExecutiveDashboardPage() {
         (responseRate === null ? "-" : Math.min(100, responseRate).toFixed(1) + "%") +
         '</div></div><div class="kpi"><div class="kpi-label">คะแนนเฉลี่ยรวม</div><div class="kpi-value">' +
         (overall === null ? "-" : overall.toFixed(2) + ' <span class="kpi-unit">/ 5.00</span>') +
-        '</div></div></div><div class="narratives">' +
-        summaryBlock +
-        impactBlock +
-        '</div><div class="activity-details"><div class="activity-details-title">รายละเอียดกิจกรรม (Activity Details)</div><div class="activity-details-grid">' +
+        '</div></div></div><div class="activity-details"><div class="activity-details-title">รายละเอียดกิจกรรม (Activity Details)</div><div class="activity-details-grid">' +
         reportActivityDetails.map(item => '<div class="activity-detail-card"><strong>' + printCell(item.title) + '</strong><p>' + printCell(item.value || "-") + '</p></div>').join("") +
         '</div></div>' +
         filterNote +
