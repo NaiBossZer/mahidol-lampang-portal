@@ -1,5 +1,5 @@
 import { useMemo, useState, type ReactNode } from "react";
-import { Activity, BarChart3, Bell, Bot, ChevronDown, ExternalLink, FolderOpen, LogOut, Menu, Search, ShieldCheck, Sparkles, Users, X } from "lucide-react";
+import { Activity, BarChart3, Bell, Bot, ChevronDown, ExternalLink, FileText, FolderOpen, LogOut, Menu, Search, ShieldCheck, Sparkles, Users, X } from "lucide-react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { useAdminAuth } from "../AdminGuard";
