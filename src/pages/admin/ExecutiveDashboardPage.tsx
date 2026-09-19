@@ -136,7 +136,7 @@ export function ExecutiveDashboardPage() {
   const printReport = () => {
     if (!selectedActivity) return;
 
-    const printWindow = window.open("", "_blank", "noopener,noreferrer,width=1200,height=900");
+    const printWindow = window.open("", "_blank", "width=1200,height=900");
     if (!printWindow) {
       window.print();
       return;
