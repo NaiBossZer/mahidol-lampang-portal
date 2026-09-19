@@ -71,6 +71,10 @@ export type DashboardActivity = {
   status: string;
   participants?: string | number | null;
   summary?: string | null;
+  content?: string | null;
+  objective?: string | null;
+  process?: string | null;
+  outcome?: string | null;
   impact?: string | null;
   featured_image?: string | null;
 };
