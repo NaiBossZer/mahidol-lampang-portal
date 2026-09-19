@@ -70,7 +70,8 @@ export function ExecutiveDashboardPage() {
   const occurrencePool = useMemo(() => (data?.occurrences ?? []).filter(x => !["cancelled", "archived"].includes(x.status) && matchesDate(x.start_at, period, year, quarter, month, from, to)), [data, period, year, quarter, month, from, to]);
   const activities = useMemo(() => (data?.activities ?? []).filter(a => occurrencePool.some(o => o.activity_id === a.id)), [data, occurrencePool]);
   const activityIds = useMemo(() => new Set((activity === "ALL" ? activities : activities.filter(a => a.id === activity)).map(a => a.id)), [activities, activity]);
-  useEffect(() => { if (activity !== "ALL" && !activityIds.has(activity)) setActivity("ALL"); }, [activity, activityIds]);\n  useEffect(() => { setReportSummaryDraft(selectedActivity?.summary?.trim() || ""); setReportImpactDraft(selectedActivity?.impact?.trim() || ""); }, [selectedActivity?.id, selectedActivity?.summary, selectedActivity?.impact]);
+  useEffect(() => { if (activity !== "ALL" && !activityIds.has(activity)) setActivity("ALL"); }, [activity, activityIds]);
+  useEffect(() => { setReportSummaryDraft(selectedActivity?.summary?.trim() || ""); setReportImpactDraft(selectedActivity?.impact?.trim() || ""); }, [selectedActivity?.id, selectedActivity?.summary, selectedActivity?.impact]);
   const occurrences = useMemo(() => occurrencePool.filter(o => activityIds.has(o.activity_id)), [occurrencePool, activityIds]);
   const responses = useMemo(() => { const ids = new Set(occurrences.map(o => o.id)); return (data?.responses ?? []).filter(r => r.occurrence_id ? ids.has(r.occurrence_id) : activityIds.has(r.activity_id)); }, [data, occurrences, activityIds]);
   const selectedActivity = activity === "ALL" ? undefined : data?.activities.find(a => a.id === activity);
@@ -598,7 +599,15 @@ function ActivityReportModal({
         </div>
       </div>
 
-      {selectedActivity && (\n        <div className="grid gap-3 border-b border-slate-100 bg-white p-4 md:grid-cols-2">\n          <label className="flex flex-col gap-1.5"><span className="text-[11px] font-bold text-slate-700">สรุปสาระสำคัญ (Executive Summary)</span><textarea value={reportSummaryDraft} onChange={e => onReportSummaryDraftChange(e.target.value)} rows={4} placeholder="แก้ไขข้อความสรุปสำหรับรายงานฉบับนี้..." className="w-full resize-y rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs leading-6 text-slate-700 outline-none focus:border-[#123B6D] focus:ring-1 focus:ring-[#123B6D]" /></label>\n          <label className="flex flex-col gap-1.5"><span className="text-[11px] font-bold text-slate-700">ผลกระทบ (Impact)</span><textarea value={reportImpactDraft} onChange={e => onReportImpactDraftChange(e.target.value)} rows={4} placeholder="แก้ไขข้อความผลกระทบสำหรับรายงานฉบับนี้..." className="w-full resize-y rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs leading-6 text-slate-700 outline-none focus:border-[#123B6D] focus:ring-1 focus:ring-[#123B6D]" /></label>\n          <p className="text-[10px] text-slate-400 md:col-span-2">ข้อความที่แก้ไขใช้เฉพาะรายงานที่กำลังส่งออก และยังไม่แก้ไขข้อมูลกิจกรรมต้นฉบับในระบบ</p>\n        </div>\n      )}\n\n      <div className="flex flex-wrap items-end justify-between gap-3 border-b border-slate-100 bg-white p-4">
+      {selectedActivity && (
+        <div className="grid gap-3 border-b border-slate-100 bg-white p-4 md:grid-cols-2">
+          <label className="flex flex-col gap-1.5"><span className="text-[11px] font-bold text-slate-700">สรุปสาระสำคัญ (Executive Summary)</span><textarea value={reportSummaryDraft} onChange={e => onReportSummaryDraftChange(e.target.value)} rows={4} placeholder="แก้ไขข้อความสรุปสำหรับรายงานฉบับนี้..." className="w-full resize-y rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs leading-6 text-slate-700 outline-none focus:border-[#123B6D] focus:ring-1 focus:ring-[#123B6D]" /></label>
+          <label className="flex flex-col gap-1.5"><span className="text-[11px] font-bold text-slate-700">ผลกระทบ (Impact)</span><textarea value={reportImpactDraft} onChange={e => onReportImpactDraftChange(e.target.value)} rows={4} placeholder="แก้ไขข้อความผลกระทบสำหรับรายงานฉบับนี้..." className="w-full resize-y rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs leading-6 text-slate-700 outline-none focus:border-[#123B6D] focus:ring-1 focus:ring-[#123B6D]" /></label>
+          <p className="text-[10px] text-slate-400 md:col-span-2">ข้อความที่แก้ไขใช้เฉพาะรายงานที่กำลังส่งออก และยังไม่แก้ไขข้อมูลกิจกรรมต้นฉบับในระบบ</p>
+        </div>
+      )}
+
+      <div className="flex flex-wrap items-end justify-between gap-3 border-b border-slate-100 bg-white p-4">
         <div className="flex w-full flex-wrap items-end gap-2.5 lg:flex-1">
           <label className="flex min-w-[260px] flex-1 flex-col gap-1">
             <span className="text-[10px] font-bold uppercase tracking-wide text-slate-500">
