@@ -598,14 +598,6 @@ function ActivityReportModal({
         </div>
       </div>
 
-      {selectedActivity && (
-        <div className="grid gap-3 border-b border-slate-100 bg-white p-4 md:grid-cols-2">
-          <label className="flex flex-col gap-1.5"><span className="text-[11px] font-bold text-slate-700">สรุปสาระสำคัญ (Executive Summary)</span><textarea value={reportSummaryDraft} onChange={e => onReportSummaryDraftChange(e.target.value)} rows={4} placeholder="แก้ไขข้อความสรุปสำหรับรายงานฉบับนี้..." className="w-full resize-y rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs leading-6 text-slate-700 outline-none focus:border-[#123B6D] focus:ring-1 focus:ring-[#123B6D]" /></label>
-          <label className="flex flex-col gap-1.5"><span className="text-[11px] font-bold text-slate-700">ผลกระทบ (Impact)</span><textarea value={reportImpactDraft} onChange={e => onReportImpactDraftChange(e.target.value)} rows={4} placeholder="แก้ไขข้อความผลกระทบสำหรับรายงานฉบับนี้..." className="w-full resize-y rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs leading-6 text-slate-700 outline-none focus:border-[#123B6D] focus:ring-1 focus:ring-[#123B6D]" /></label>
-          <p className="text-[10px] text-slate-400 md:col-span-2">ข้อความที่แก้ไขใช้เฉพาะรายงานที่กำลังส่งออก และยังไม่แก้ไขข้อมูลกิจกรรมต้นฉบับในระบบ</p>
-        </div>
-      )}
-
       <div className="flex flex-wrap items-end justify-between gap-3 border-b border-slate-100 bg-white p-4">
         <div className="flex w-full flex-wrap items-end gap-2.5 lg:flex-1">
           <label className="flex min-w-[260px] flex-1 flex-col gap-1">
