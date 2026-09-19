@@ -1,6 +1,8 @@
 import { useState } from "react";
 import {
   Activity,
+  Bot,
+  FileText,
   ShieldCheck,
   Sparkles,
   Workflow,
@@ -46,6 +48,7 @@ export function AIStudioUnifiedWorkspacePage() {
     setActiveStep(step);
   }
 
+  const steps = AI_STUDIO_WORKFLOW_STEPS;
   const currentStep = steps[activeStep - 1];
   const outcomePhase = activeStep >= OUTCOME_STEP_IDS.capture;
 
