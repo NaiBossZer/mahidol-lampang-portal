@@ -104,7 +104,11 @@ check("CMS projects API exists", existsSync(resolve(root, "api/admin/projects.ts
 check("CMS centers API exists", existsSync(resolve(root, "api/admin/learning-centers.ts")));
 check("CMS partners API exists", existsSync(resolve(root, "api/admin/partners.ts")));
 check("public CMS home API exists", existsSync(resolve(root, "api/cms/home.ts")));
-check("CMS page exists", existsSync(resolve(root, "src/pages/admin/CmsPage.tsx")));
+check(
+  "official documents repository exists",
+  existsSync(resolve(root, "src/pages/admin/OfficialDocumentsRepositoryPage.tsx")),
+);
+check("legacy CMS page removed", !existsSync(resolve(root, "src/pages/admin/CmsPage.tsx")));
 check(
   "CMS auth boundary reused",
   readFileSync(resolve(root, "api/admin/_cms.ts"), "utf8").includes("requirePermission"),

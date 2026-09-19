@@ -272,6 +272,7 @@ export function SurveyManagementPage() {
                 <tr>
                   <th className="px-5 py-3 text-left">แบบประเมิน</th>
                   <th className="px-4 py-3 text-center">คำถาม</th>
+                  <th className="px-4 py-3 text-center">สถานะ</th>
                   <th className="px-4 py-3 text-center">โหมด</th>
                 </tr>
               </AdminTableHeader>
@@ -293,9 +294,12 @@ export function SurveyManagementPage() {
                       </td>
                       <td className="px-4 py-4 text-center font-semibold text-slate-700">{survey.questions.length}</td>
                       <td className="px-4 py-4 text-center">
-                        <AdminStatusBadge
-                          tone={survey.anonymous ? "neutral" : "success"}
-                        >
+                        <AdminStatusBadge tone={survey.enabled ? "success" : "neutral"}>
+                          {survey.enabled ? "Published" : "Disabled"}
+                        </AdminStatusBadge>
+                      </td>
+                      <td className="px-4 py-4 text-center">
+                        <AdminStatusBadge tone={survey.anonymous ? "neutral" : "success"}>
                           {survey.anonymous ? "Anonymous" : "Identified"}
                         </AdminStatusBadge>
                       </td>
@@ -323,19 +327,82 @@ export function SurveyManagementPage() {
                         : "ไม่พบรอบกิจกรรม"}
                     </p>
                   </div>
-                  <AdminButton
-                    variant="secondary"
-                    onClick={() =>
-                      void updateAdminSurvey(selected.id, { anonymous: !selected.anonymous })
-                        .then((updated) => {
-                          setSelected({ ...selected, ...updated });
-                          setSurveys((items) => items.map((item) => (item.id === selected.id ? { ...item, ...updated } : item)));
+                  <div className="flex items-center gap-2">
+                    <AdminStatusBadge tone={selected.enabled ? "success" : "neutral"}>
+                      {selected.enabled ? "Published" : "Disabled"}
+                    </AdminStatusBadge>
+                    <AdminButton
+                      variant={selected.enabled ? "secondary" : "primary"}
+                      onClick={() =>
+                        void updateAdminSurvey(selected.id, { enabled: !selected.enabled })
+                          .then((updated) => {
+                            setSelected({ ...selected, ...updated });
+                            setSurveys((items) =>
+                              items.map((item) => (item.id === selected.id ? { ...item, ...updated } : item)),
+                            );
+                            toast.success(updated.enabled ? "เผยแพร่แบบประเมินแล้ว" : "ปิดการเผยแพร่แล้ว");
+                          })
+                          .catch((e) => toast.error(e instanceof Error ? e.message : "บันทึกสถานะไม่สำเร็จ"))
+                      }
+                    >
+                      {selected.enabled ? "ปิดการเผยแพร่" : "เผยแพร่"}
+                    </AdminButton>
+                    <AdminButton
+                      variant="secondary"
+                      onClick={() =>
+                        void updateAdminSurvey(selected.id, { anonymous: !selected.anonymous })
+                          .then((updated) => {
+                            setSelected({ ...selected, ...updated });
+                            setSurveys((items) => items.map((item) => (item.id === selected.id ? { ...item, ...updated } : item)));
+                          })
+                          .catch((e) => toast.error(e instanceof Error ? e.message : "บันทึกไม่สำเร็จ"))
+                      }
+                    >
+                      {selected.anonymous ? "Anonymous" : "Identified"}
+                    </AdminButton>
+                  </div>
+                </div>
+              </div>
+              <div className="border-t border-slate-100 px-5 py-3">
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <label className="block">
+                    <span className="mb-1 block text-xs font-semibold text-slate-600">เปิดรับ</span>
+                    <input
+                      type="datetime-local"
+                      value={selected.open_at ? selected.open_at.slice(0, 16) : ""}
+                      onChange={(event) => {
+                        const value = event.target.value;
+                        void updateAdminSurvey(selected.id, {
+                          open_at: value ? new Date(value).toISOString() : null,
                         })
-                        .catch((e) => toast.error(e instanceof Error ? e.message : "บันทึกไม่สำเร็จ"))
-                    }
-                  >
-                    {selected.anonymous ? "Anonymous" : "Identified"}
-                  </AdminButton>
+                          .then((updated) => {
+                            setSelected({ ...selected, ...updated });
+                            setSurveys((items) => items.map((item) => (item.id === selected.id ? { ...item, ...updated } : item)));
+                          })
+                          .catch((e) => toast.error(e instanceof Error ? e.message : "บันทึกเวลาเปิดไม่สำเร็จ"));
+                      }}
+                      className="h-10 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm"
+                    />
+                  </label>
+                  <label className="block">
+                    <span className="mb-1 block text-xs font-semibold text-slate-600">ปิดรับ</span>
+                    <input
+                      type="datetime-local"
+                      value={selected.close_at ? selected.close_at.slice(0, 16) : ""}
+                      onChange={(event) => {
+                        const value = event.target.value;
+                        void updateAdminSurvey(selected.id, {
+                          close_at: value ? new Date(value).toISOString() : null,
+                        })
+                          .then((updated) => {
+                            setSelected({ ...selected, ...updated });
+                            setSurveys((items) => items.map((item) => (item.id === selected.id ? { ...item, ...updated } : item)));
+                          })
+                          .catch((e) => toast.error(e instanceof Error ? e.message : "บันทึกเวลาปิดไม่สำเร็จ"));
+                      }}
+                      className="h-10 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm"
+                    />
+                  </label>
                 </div>
               </div>
 
@@ -368,6 +435,57 @@ export function SurveyManagementPage() {
                       บันทึกคำถาม
                     </AdminButton>
                   </div>
+                  <div className="mt-3 grid gap-3 md:grid-cols-3">
+                    <label className="block">
+                      <span className="mb-1 block text-xs font-semibold text-slate-600">Section key</span>
+                      <input
+                        value={String(draft.section_key ?? "general")}
+                        onChange={(event) => setDraft((current) => ({ ...current, section_key: event.target.value }))}
+                        placeholder="general / opening / learning"
+                        className="h-10 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm outline-none transition focus:border-[#002d62] focus:ring-4 focus:ring-[#002d62]/10"
+                      />
+                    </label>
+                    <label className="block">
+                      <span className="mb-1 block text-xs font-semibold text-slate-600">Rating scale</span>
+                      <div className="flex gap-2">
+                        <input
+                          type="number"
+                          min={1}
+                          value={Number(draft.scale_min ?? 1)}
+                          onChange={(event) => setDraft((current) => ({ ...current, scale_min: Number(event.target.value) }))}
+                          className="h-10 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm"
+                          aria-label="Rating scale minimum"
+                        />
+                        <input
+                          type="number"
+                          min={2}
+                          value={Number(draft.scale_max ?? 5)}
+                          onChange={(event) => setDraft((current) => ({ ...current, scale_max: Number(event.target.value) }))}
+                          className="h-10 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm"
+                          aria-label="Rating scale maximum"
+                        />
+                      </div>
+                    </label>
+                    <label className="block">
+                      <span className="mb-1 block text-xs font-semibold text-slate-600">Choice options</span>
+                      <input
+                        value={Array.isArray(draft.options) ? draft.options.join(", ") : ""}
+                        onChange={(event) =>
+                          setDraft((current) => ({
+                            ...current,
+                            options: event.target.value
+                              .split(",")
+                              .map((item) => item.trim())
+                              .filter(Boolean),
+                          }))
+                        }
+                        placeholder="ตัวเลือก A, ตัวเลือก B"
+                        className="h-10 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm"
+                        disabled={!["single_choice", "multi_choice"].includes(String(draft.question_type))}
+                      />
+                    </label>
+                  </div>
+
                   <label className="mt-3 inline-flex items-center gap-2 text-xs font-medium text-slate-600">
                     <input
                       type="checkbox"
