@@ -290,6 +290,48 @@ export function ExecutiveDashboardPage() {
       )
       .join("");
 
+    const detailedScoreRows = SCORE_GROUPS
+      .map(group => {
+        const items = group.items.length
+          ? group.items
+              .map(
+                item =>
+                  '<div class="detail-score-row"><div class="detail-score-head"><span>' +
+                  printCell(item.label) +
+                  '</span><strong>' +
+                  item.value.toFixed(2) +
+                  '</strong></div><div class="bar-track"><div class="bar-fill" style="width:' +
+                  Math.min(100, item.value / 5 * 100).toFixed(1) +
+                  '%"></div></div><small>ผู้ตอบ ' +
+                  formatNumber(item.respondentCount) +
+                  ' คน</small></div>',
+              )
+              .join("")
+          : '<div class="empty">ไม่พบข้อมูล</div>';
+        const groupValue = average(group.items.map(item => item.value));
+        return '<div class="score-group-card"><div class="score-group-title"><span>' +
+          printCell(group.title) +
+          '</span><strong>' +
+          (groupValue === null ? "-" : groupValue.toFixed(2) + " / 5") +
+          '</strong></div>' +
+          items +
+          '</div>';
+      })
+      .join("");
+
+    const scoreDistributionRows = scoreDistribution
+      .map(
+        item =>
+          '<div class="dist-row"><span>' +
+          item.value +
+          ' ดาว</span><div class="dist-track"><div class="dist-fill" style="width:' +
+          item.percent.toFixed(1) +
+          '%"></div></div><strong>' +
+          item.percent.toFixed(0) +
+          '%</strong></div>',
+      )
+      .join("");
+
     const ageRows = ageDistribution.length
       ? ageDistribution
           .map(
@@ -388,7 +430,7 @@ export function ExecutiveDashboardPage() {
         '.section{margin-top:8px}.section-title{font-size:18px;line-height:1.1;font-weight:800;margin:0 0 5px;padding-bottom:3px;border-bottom:1px solid #222}.meta-line{font-size:14px;margin:0 0 5px;color:#222}.meta-line span{display:inline-block;margin-right:16px}.meta-line strong{font-weight:800}' +
         '.kpis{display:grid;grid-template-columns:repeat(4,1fr);border:1px solid #888}.kpi{padding:5px 7px;text-align:center;border-right:1px solid #aaa;background:#fff}.kpi:last-child{border-right:0}.kpi-label{font-size:13px;color:#444}.kpi-value{font-size:20px;font-weight:800;line-height:1.05}.kpi-unit{font-size:13px;font-weight:500}' +
         '.narratives{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:6px}.narrative{border:1px solid #aaa;border-left:3px solid #111;padding:5px 8px}.narrative strong{font-size:14px}.narrative p{font-size:13px;margin:1px 0 0;line-height:1.25;white-space:pre-line}.filter-note{font-size:12px;color:#555;margin-top:3px}' +
-        '.grid-2{display:grid;grid-template-columns:1.15fr .85fr;gap:8px}.panel{border:1px solid #aaa;padding:6px}.rating-row{margin-bottom:6px}.rating-head{display:flex;justify-content:space-between;gap:6px;font-size:14px}.rating-head strong{font-size:14px}.bar-track{height:7px;background:#e5e5e5;margin-top:2px}.bar-fill{height:100%;background:#222}.subhead{font-size:14px;font-weight:800;margin-bottom:2px}.stat-line{display:flex;justify-content:space-between;border-bottom:1px dotted #bbb;padding:2px 0;font-size:13px}.stat-line small{font-size:11px;color:#555}.empty{font-size:13px;color:#777;padding:4px 0}.chart-row{display:grid;grid-template-columns:72px 1fr 48px;align-items:center;gap:5px;margin-bottom:5px;font-size:12px}.chart-label{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.chart-track{height:9px;background:#e8e8e8;border-radius:2px;overflow:hidden}.chart-fill{height:100%;background:#222}.chart-value{text-align:right;font-weight:800}.mini-donut{display:grid;grid-template-columns:92px 1fr;gap:8px;align-items:center}.donut{width:82px;height:82px;border-radius:50%;background:conic-gradient(#222 0 42%,#777 42% 80%,#bbb 80% 100%);position:relative}.donut:after{content:"";position:absolute;inset:18px;border-radius:50%;background:#fff}.legend-item{display:flex;justify-content:space-between;gap:5px;border-bottom:1px dotted #bbb;padding:2px 0;font-size:12px}.comments-photos{display:grid;grid-template-columns:1fr 1.1fr;gap:8px}' +
+        '.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:8px}.panel{border:1px solid #aaa;padding:6px}.evaluation-overview{display:grid;grid-template-columns:115px 1.7fr 1fr;gap:8px;border:1px solid #aaa;padding:7px}.evaluation-score{display:flex;flex-direction:column;align-items:center;justify-content:center;border-right:1px solid #ccc;padding-right:8px}.evaluation-score span{font-size:12px;color:#555}.evaluation-score strong{font-size:31px;line-height:1;font-weight:800}.evaluation-score small{font-size:12px}.evaluation-note>strong,.evaluation-distribution>strong{font-size:13px;display:block;margin-bottom:3px}.rating-compact .rating-row{margin-bottom:4px}.rating-compact .rating-head{font-size:12px}.rating-compact .rating-head strong{font-size:12px}.rating-compact .bar-track{height:6px}.dist-row{display:grid;grid-template-columns:38px 1fr 30px;gap:5px;align-items:center;font-size:11px;margin-bottom:3px}.dist-track{height:6px;background:#e8e8e8}.dist-fill{height:100%;background:#555}.dist-row strong{text-align:right}.score-detail-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-top:7px}.score-group-card{border:1px solid #aaa;padding:6px}.score-group-title{display:flex;justify-content:space-between;gap:6px;border-bottom:1px solid #bbb;padding-bottom:3px;margin-bottom:4px;font-size:14px;font-weight:800}.score-group-title strong{font-size:13px}.detail-score-row{margin-bottom:4px}.detail-score-head{display:flex;justify-content:space-between;font-size:12px;gap:5px}.detail-score-head strong{font-size:12px}.detail-score-row .bar-track{height:6px}.detail-score-row small{display:block;font-size:9px;color:#666;margin-top:1px}.rating-row{margin-bottom:6px}.rating-head{display:flex;justify-content:space-between;gap:6px;font-size:14px}.rating-head strong{font-size:14px}.bar-track{height:7px;background:#e5e5e5;margin-top:2px}.bar-fill{height:100%;background:#222}.subhead{font-size:14px;font-weight:800;margin-bottom:2px}.stat-line{display:flex;justify-content:space-between;border-bottom:1px dotted #bbb;padding:2px 0;font-size:13px}.stat-line small{font-size:11px;color:#555}.empty{font-size:13px;color:#777;padding:4px 0}.chart-row{display:grid;grid-template-columns:72px 1fr 48px;align-items:center;gap:5px;margin-bottom:5px;font-size:12px}.chart-label{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.chart-track{height:9px;background:#e8e8e8;border-radius:2px;overflow:hidden}.chart-fill{height:100%;background:#222}.chart-value{text-align:right;font-weight:800}.mini-donut{display:grid;grid-template-columns:92px 1fr;gap:8px;align-items:center}.donut{width:82px;height:82px;border-radius:50%;background:conic-gradient(#222 0 42%,#777 42% 80%,#bbb 80% 100%);position:relative}.donut:after{content:"";position:absolute;inset:18px;border-radius:50%;background:#fff}.legend-item{display:flex;justify-content:space-between;gap:5px;border-bottom:1px dotted #bbb;padding:2px 0;font-size:12px}.comments-photos{display:grid;grid-template-columns:1fr 1.1fr;gap:8px}' +
         '.comments-photos{display:grid;grid-template-columns:1fr 1fr;gap:8px}.comment-item{display:grid;grid-template-columns:22px 1fr;gap:6px;padding:4px 0;border-bottom:1px solid #ddd}.comment-number{width:19px;height:19px;border:1px solid #333;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:11px}.comment-item p{margin:0;font-size:13px;line-height:1.3}.comment-item small{font-size:11px;color:#555}.photos{display:grid;grid-template-columns:1fr 1fr;gap:6px}.photo-card{margin:0}.photo-card img{width:100%;height:92px;object-fit:cover;border:1px solid #aaa;display:block}.photo-card figcaption{font-size:11px;margin-top:2px;text-align:center;color:#444}.photo-empty{height:92px;border:1px dashed #aaa;display:flex;align-items:center;justify-content:center;font-size:12px;color:#777}' +
         '.bottom-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}.reference-grid{display:grid;grid-template-columns:1fr 1fr;gap:4px}.reference-grid>div{border:1px solid #bbb;padding:4px 6px}.reference-grid span{display:block;font-size:11px;color:#555}.reference-grid strong{display:block;font-size:13px;word-break:break-word}.reference-note{font-size:12px;color:#555;margin:3px 0 0}.report table{width:100%;border-collapse:collapse;font-size:11px}.report table th,.report table td{border:1px solid #aaa;padding:3px 4px;vertical-align:top}.report table th{background:#eee;font-weight:800}.report table tbody tr:nth-child(even){background:#fafafa}.report table .score{text-align:right}.report table .text{white-space:pre-line}' +
         '.audit-table{width:100%;border-collapse:collapse;font-size:12px}.audit-table th,.audit-table td{border:1px solid #aaa;padding:3px 5px}.audit-table th{background:#eee}.audit-check{text-align:center!important;width:38px}.signature-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-top:8px}.signature-box{text-align:center;font-size:12px}.signature-line{height:17px;border-bottom:1px solid #333;margin:0 18px 2px}.seal-placeholder{display:inline-flex;width:40px;height:40px;border:1px solid #888;border-radius:50%;align-items:center;justify-content:center;font-size:8px;color:#666;margin-top:3px}.footer{margin-top:7px;padding-top:4px;border-top:1px solid #999;display:flex;justify-content:space-between;font-size:11px;color:#555}.avoid-break{break-inside:avoid;page-break-inside:avoid}@media print{.section,.panel,.comments-photos,.grid-2,.bottom-grid{break-inside:avoid;page-break-inside:avoid}}' +
@@ -420,15 +462,29 @@ export function ExecutiveDashboardPage() {
         filterNote +
         '</div>' +
 
-        '<div class="section avoid-break"><div class="grid-2"><div class="panel"><h2 class="section-title">2. ผลการประเมินความพึงพอใจ</h2>' +
-        '<div style="font-size:12px;color:#555">คะแนนเฉลี่ยรวม</div><div style="font-size:25px;font-weight:800;line-height:1">' +
-        (overall === null ? "-" : overall.toFixed(2) + ' <span style="font-size:13px;font-weight:500">/ 5.00</span>') +
-        '</div><div style="margin-top:5px">' + (ratingRows || '<div class="empty">ไม่พบข้อมูลคะแนน</div>') +
-        '</div></div><div class="panel"><h2 class="section-title">3. ข้อมูลผู้ตอบแบบประเมิน</h2>' +
-        '<div class="mini-donut"><div class="donut"></div><div>' +
-        (ageDistribution.length ? ageDistribution.slice(0,4).map(item => '<div class="legend-item"><span>' + printCell(item.label) + '</span><strong>' + formatNumber(item.count) + ' (' + item.percentage.toFixed(0) + '%)</strong></div>').join("") : '<div class="empty">ไม่พบข้อมูลช่วงอายุ</div>') +
-        '</div></div><div class="subhead" style="margin-top:6px">ประเภทผู้ตอบ</div>' + affiliationRows +
+        '<div class="section avoid-break"><h2 class="section-title">2. ผลการประเมินความพึงพอใจ</h2>' +
+        '<div class="evaluation-overview"><div class="evaluation-score"><span>คะแนนเฉลี่ยรวม</span><strong>' +
+        (overall === null ? "-" : overall.toFixed(2)) +
+        '</strong><small>/ 5.00</small></div><div class="evaluation-note"><strong>ผลการประเมินรายด้าน</strong><div class="rating-compact">' +
+        ratingRows +
+        '</div></div><div class="evaluation-distribution"><strong>การกระจายคะแนน</strong>' +
+        scoreDistributionRows +
+        '</div></div>' +
+        '<div class="score-detail-grid">' +
+        detailedScoreRows +
+        '</div></div>' +
+
+        '<div class="section avoid-break"><div class="grid-2"><div class="panel"><h2 class="section-title">3. ข้อมูลผู้ตอบแบบประเมิน</h2>' +
+        '<div class="subhead">ช่วงอายุ</div>' + ageRows +
+        '<div class="subhead" style="margin-top:5px">ประเภทผู้ตอบ</div>' + affiliationRows +
+        '</div><div class="panel"><h2 class="section-title">4. ข้อเสนอแนะที่สำคัญ (Top 3)</h2>' +
+        commentRows +
         '</div></div></div>' +
+
+        '<div class="section avoid-break"><div class="panel"><h2 class="section-title">5. ภาพประกอบกิจกรรมหลัก</h2><div class="photos">' +
+        photoRows +
+        '</div></div></div>' +
+
         '<div class="section avoid-break"><div class="comments-photos"><div class="panel"><h2 class="section-title">4. ข้อเสนอแนะที่สำคัญ (Top 3)</h2>' + commentRows +
         '</div><div class="panel"><h2 class="section-title">5. ภาพประกอบกิจกรรมหลัก</h2><div class="photos">' + photoRows +
         '</div></div></div></div>' +
