@@ -300,7 +300,7 @@ export function SurveyManagementPage() {
           ) : filteredSurveys.length === 0 ? (
             <AdminEmptyState
               title={surveys.length ? "ไม่พบแบบประเมินตามคำค้น" : "ยังไม่มีแบบประเมิน"}
-              description={surveys.length ? "ลองเปลี่ยนคำค้นหาหรือเลือกรอบกิจกรรมใหม่" : "เลือกรอบกิจกรรมด้านบนแล้วสร้างแบบประเมินได้ทันที"}
+              description={surveys.length ? "ลองเปลี่ยนคำค้นหาหรือเลือกกิจกรรมใหม่" : "เลือกกิจกรรมด้านบนแล้วสร้างแบบประเมินได้ทันที"}
             />
           ) : (
             <AdminTable minWidth="620px" className="mt-0 rounded-none border-0 shadow-none">
