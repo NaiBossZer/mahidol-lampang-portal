@@ -12,6 +12,8 @@ import { AIStudioOutcomeWorkspacePage } from "./AIStudioOutcomeWorkspacePage";
 import { AI_STUDIO_WORKFLOW_STEPS } from "@/features/ai-studio/activityWorkflow";
 import { OUTCOME_STEP_IDS } from "@/features/ai-studio/outcomeWorkflow";
 
+const steps = AI_STUDIO_WORKFLOW_STEPS;
+
 function StepRail({ active, onSelect }: { active: number; onSelect: (step: number) => void }) {
   return (
     <div className="rounded-2xl border border-white/10 bg-white/5 p-3 sm:p-4">
