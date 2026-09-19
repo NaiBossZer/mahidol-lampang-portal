@@ -373,7 +373,7 @@ export function SurveyManagementPage() {
                       onChange={(event) => {
                         const value = event.target.value;
                         void updateAdminSurvey(selected.id, {
-                          openAt: value ? new Date(value).toISOString() : null,
+                          open_at: value ? new Date(value).toISOString() : null,
                         })
                           .then((updated) => {
                             setSelected({ ...selected, ...updated });
@@ -392,7 +392,7 @@ export function SurveyManagementPage() {
                       onChange={(event) => {
                         const value = event.target.value;
                         void updateAdminSurvey(selected.id, {
-                          closeAt: value ? new Date(value).toISOString() : null,
+                          close_at: value ? new Date(value).toISOString() : null,
                         })
                           .then((updated) => {
                             setSelected({ ...selected, ...updated });
