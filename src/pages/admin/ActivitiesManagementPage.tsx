@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState, type ReactNode } from "react";
-import { CalendarDays, Eye, ImagePlus, Lightbulb, Pencil, Plus, RefreshCw, Trash2, Upload, X } from "lucide-react";
+import { CalendarDays, ImagePlus, Lightbulb, Pencil, Plus, RefreshCw, Trash2, Upload, X } from "lucide-react";
 import { toast } from "sonner";
-import { Link } from "react-router-dom";
 import {
   createActivity,
   deleteActivity,
@@ -416,9 +415,6 @@ export function ActivitiesManagementPage() {
                   <td className="px-4 py-4 text-center"><AdminStatusBadge tone={statusTone(activity.status)}>{statusLabel[activity.status]}</AdminStatusBadge></td>
                   <td className="px-5 py-4 text-right">
                     <div className="flex items-center justify-end gap-2">
-                      <Link to={"/admin/activities/" + activity.id} className="inline-flex min-h-9 items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-2.5 text-xs font-semibold text-slate-700 transition-colors hover:bg-slate-50" title="ดูรายละเอียดกิจกรรม">
-                        <Eye className="h-3.5 w-3.5" /><span className="hidden sm:inline">รายละเอียด</span>
-                      </Link>
                       <button type="button" onClick={() => setRecommendationActivity(activity)} className="inline-flex min-h-9 items-center gap-1.5 rounded-lg border border-violet-200 bg-violet-50 px-2.5 text-xs font-semibold text-violet-700 transition-colors hover:bg-violet-100" title="ดูคำแนะนำจาก AI">
                         <Lightbulb className="h-3.5 w-3.5 text-amber-500" /><span className="hidden sm:inline">AI Advice</span>
                       </button>
