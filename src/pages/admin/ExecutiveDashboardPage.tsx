@@ -422,7 +422,7 @@ export function ExecutiveDashboardPage() {
         '<style>' +
         '@page{size:A4 portrait;margin:10mm 11mm 12mm}' +
         '*{box-sizing:border-box;-webkit-print-color-adjust:exact;print-color-adjust:exact}' +
-        'html,body,.report,.report *{font-family:"TH Sarabun New","TH Sarabun New PSK",THSarabunNew,sans-serif!important}' +
+        'html,body,.report,.report *{font-family:"TH Sarabun New","TH Sarabun New PSK",THSarabunNew,sans-serif!important}.report *{border-color:#111!important}' +
         'body{margin:0;background:#fff;color:#111;font-size:15px;line-height:1.28}' +
         '.report{width:100%}.header{display:grid;grid-template-columns:minmax(270px,1fr) minmax(420px,1.35fr);gap:20px;align-items:center;padding:3px 0 9px;border-bottom:3px solid #123B6D}' +
         '.header-brand{display:flex;align-items:center;gap:12px;min-width:0}.logo{width:66px;height:66px;object-fit:contain;flex:0 0 auto}.brand-copy{text-align:left}.eyebrow{font-size:17px;font-weight:800;line-height:1.05;color:#111}.brand-sub{font-size:14px;font-weight:600;line-height:1.15;color:#333;margin-top:2px}.header-copy{text-align:right}.report-title{font-size:24px;line-height:1.08;font-weight:800;margin:0}.project-title{font-size:14px;font-weight:600;line-height:1.15;margin-top:4px}.org{display:none}' +
