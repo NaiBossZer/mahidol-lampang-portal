@@ -29,7 +29,6 @@ const PATH_TITLE_MAP: Record<string, { group: string; title: string }> = {
   "/admin/activities": { group: "บริหารกิจกรรม & Survey", title: "รายการกิจกรรมโครงการ" },
   "/admin/survey-workflow": { group: "บริหารกิจกรรม & Survey", title: "สร้างกิจกรรม & AI Survey" },
   "/admin/cms": { group: "คลังเอกสารราชการ", title: "คลังเอกสารราชการ" },
-  "/admin/cms/content": { group: "เนื้อหา", title: "Central Content Management" },
   "/admin/facility-safety": { group: "อาคาร & ความปลอดภัย", title: "Facility-Safety Dashboard" },
   "/admin/ai-studio-workspace": { group: "AI Studio", title: "AI Studio Unified Workspace" },
   "/admin/governance": { group: "ผู้ดูแลระบบ", title: "ผู้ใช้งาน & สิทธิ์การเข้าถึง" },
