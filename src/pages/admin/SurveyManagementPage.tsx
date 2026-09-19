@@ -42,6 +42,8 @@ export function SurveyManagementPage() {
   const [selected, setSelected] = useState<AdminSurvey | null>(null);
   const [draft, setDraft] = useState<Partial<SurveyQuestion>>(emptyDraft);
   const [search, setSearch] = useState("");
+  const [activityFilter, setActivityFilter] = useState("");
+  const [activityTitles, setActivityTitles] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(true);
 
   async function load() {
@@ -53,22 +55,41 @@ export function SurveyManagementPage() {
           headers: { Accept: "application/json" },
         })
       ).json();
+      const activities = Array.isArray(body.data) ? body.data.slice(0, 50) : [];
+      const titles: Record<string, string> = {};
       const all: ActivityOccurrence[] = [];
-      for (const activity of (body.data ?? []).slice(0, 50)) {
+      for (const activity of activities) {
+        const activityId = String(activity.id);
+        titles[activityId] = String(activity.title ?? "");
         all.push(
-          ...(await getAdminOccurrences(String(activity.id))).filter(
+          ...(await getAdminOccurrences(activityId)).filter(
             (x) => !["cancelled", "archived"].includes(x.status),
           ),
         );
       }
+      setActivityTitles(titles);
       setOccurrences(all);
 
       const loaded = await getAdminSurveys();
       setSurveys(loaded);
+      const requestedActivityId =
+        new URLSearchParams(window.location.search).get("activity") ??
+        new URLSearchParams(window.location.search).get("activityId") ??
+        "";
+      if (requestedActivityId) setActivityFilter(requestedActivityId);
       if (selected) {
         setSelected(loaded.find((x) => x.id === selected.id) ?? null);
+      } else if (requestedActivityId) {
+        const matched = loaded.find((survey) =>
+          all.some(
+            (occurrence) =>
+              occurrence.id === survey.occurrence_id &&
+              occurrence.activity_id === requestedActivityId,
+          ),
+        );
+        setSelected(matched ?? null);
       } else {
-        setSelected(loaded[0] ?? null);
+        setSelected(null);
       }
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "โหลดข้อมูลไม่สำเร็จ");
@@ -83,17 +104,19 @@ export function SurveyManagementPage() {
 
   const filteredSurveys = useMemo(() => {
     const needle = search.trim().toLowerCase();
-    if (!needle) return surveys;
     return surveys.filter((survey) => {
       const occurrence = occurrences.find((item) => item.id === survey.occurrence_id);
+      if (activityFilter && occurrence?.activity_id !== activityFilter) return false;
+      const activityTitle = occurrence ? activityTitles[occurrence.activity_id] ?? "" : "";
       const occurrenceLabel = occurrence
         ? `ครั้งที่ ${occurrence.occurrence_no} ${new Date(occurrence.start_at).toLocaleDateString("th-TH")}`
         : "";
-      return `${occurrenceLabel} ${survey.anonymous ? "anonymous" : "identified"} ${survey.questions.length}`
-        .toLowerCase()
-        .includes(needle);
+      const searchText =
+        `${activityTitle} ${occurrenceLabel} ${survey.id} ${survey.anonymous ? "anonymous" : "identified"} ${survey.questions.length}`
+          .toLowerCase();
+      return !needle || searchText.includes(needle);
     });
-  }, [occurrences, search, surveys]);
+  }, [activityFilter, activityTitles, occurrences, search, surveys]);
 
   function resetDraft() {
     setDraft({ ...emptyDraft });
@@ -226,25 +249,50 @@ export function SurveyManagementPage() {
           onChange={setSearch}
           placeholder="ค้นหารอบกิจกรรมหรือรูปแบบแบบประเมิน"
         />
-        <div className="flex min-w-[260px] flex-1 items-center gap-2 lg:max-w-xl">
-          <label className="min-w-0 flex-1">
-            <span className="sr-only">เลือกรอบกิจกรรมสำหรับสร้างแบบประเมิน</span>
+        <div className="grid min-w-[260px] flex-1 gap-2 lg:grid-cols-2 xl:max-w-3xl">
+          <label>
+            <span className="mb-1 block text-xs font-semibold text-slate-600">กิจกรรมที่ต้องการแก้</span>
             <select
-              value={occurrenceId}
-              onChange={(event) => setOccurrenceId(event.target.value)}
+              value={activityFilter}
+              onChange={(event) => {
+                setActivityFilter(event.target.value);
+                setSelected(null);
+                resetDraft();
+              }}
               className="h-11 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm outline-none transition focus:border-[#002d62] focus:ring-4 focus:ring-[#002d62]/10"
             >
-              <option value="">เลือกรอบกิจกรรม</option>
-              {occurrences.map((occurrence) => (
-                <option key={occurrence.id} value={occurrence.id}>
-                  ครั้งที่ {occurrence.occurrence_no} · {new Date(occurrence.start_at).toLocaleDateString("th-TH")}
-                </option>
-              ))}
+              <option value="">ทุกกิจกรรม</option>
+              {Object.entries(activityTitles)
+                .sort(([, a], [, b]) => a.localeCompare(b, "th"))
+                .map(([id, title]) => (
+                  <option key={id} value={id}>
+                    {title || id}
+                  </option>
+                ))}
             </select>
           </label>
-          <AdminButton variant="primary" icon={<Plus className="h-4 w-4" />} onClick={() => void createSurvey()} disabled={!occurrenceId}>
-            สร้างแบบประเมิน
-          </AdminButton>
+          <div className="flex items-end gap-2">
+            <label className="min-w-0 flex-1">
+              <span className="mb-1 block text-xs font-semibold text-slate-600">รอบกิจกรรมสำหรับสร้างแบบประเมิน</span>
+              <select
+                value={occurrenceId}
+                onChange={(event) => setOccurrenceId(event.target.value)}
+                className="h-11 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm outline-none transition focus:border-[#002d62] focus:ring-4 focus:ring-[#002d62]/10"
+              >
+                <option value="">เลือกรอบกิจกรรม</option>
+                {occurrences
+                  .filter((occurrence) => !activityFilter || occurrence.activity_id === activityFilter)
+                  .map((occurrence) => (
+                    <option key={occurrence.id} value={occurrence.id}>
+                      {activityTitles[occurrence.activity_id] || occurrence.activity_id} · ครั้งที่ {occurrence.occurrence_no}
+                    </option>
+                  ))}
+              </select>
+            </label>
+            <AdminButton variant="primary" icon={<Plus className="h-4 w-4" />} onClick={() => void createSurvey()} disabled={!occurrenceId}>
+              สร้างแบบประเมิน
+            </AdminButton>
+          </div>
         </div>
       </AdminFilterBar>
 
@@ -285,10 +333,15 @@ export function SurveyManagementPage() {
                       <td className="px-5 py-4">
                         <button type="button" onClick={() => selectSurvey(survey)} className="w-full text-left">
                           <p className={`font-semibold ${active ? "text-[#002d62]" : "text-slate-900"}`}>
-                            แบบประเมิน{occurrence ? ` · ครั้งที่ ${occurrence.occurrence_no}` : ""}
+                            {occurrence ? activityTitles[occurrence.activity_id] || occurrence.activity_id : "ไม่พบกิจกรรม"}
                           </p>
                           <p className="mt-1 text-xs text-slate-500">
-                            {occurrence ? new Date(occurrence.start_at).toLocaleString("th-TH") : "ไม่พบรอบกิจกรรม"}
+                            {occurrence
+                              ? `ครั้งที่ ${occurrence.occurrence_no} · ${new Date(occurrence.start_at).toLocaleString("th-TH")}`
+                              : "ไม่พบรอบกิจกรรม"}
+                          </p>
+                          <p className="mt-1 font-mono text-[10px] text-slate-400">
+                            Survey ID: {survey.id}
                           </p>
                         </button>
                       </td>
@@ -319,13 +372,20 @@ export function SurveyManagementPage() {
                   <div className="min-w-0">
                     <p className="text-xs font-semibold uppercase tracking-[0.14em] text-violet-600">QUESTION BUILDER</p>
                     <h2 className="mt-1 text-lg font-bold text-[#002d62]">
-                      แบบประเมิน{selectedOccurrence ? ` · ครั้งที่ ${selectedOccurrence.occurrence_no}` : ""}
+                      {selectedOccurrence
+                        ? activityTitles[selectedOccurrence.activity_id] || selectedOccurrence.activity_id
+                        : "แบบประเมิน"}
                     </h2>
                     <p className="mt-1 text-xs text-slate-500">
                       {selectedOccurrence
-                        ? new Date(selectedOccurrence.start_at).toLocaleString("th-TH")
+                        ? `ครั้งที่ ${selectedOccurrence.occurrence_no} · ${new Date(selectedOccurrence.start_at).toLocaleString("th-TH")}`
                         : "ไม่พบรอบกิจกรรม"}
                     </p>
+                    {selectedOccurrence && (
+                      <p className="mt-1 font-mono text-[10px] text-slate-400">
+                        Activity: {selectedOccurrence.activity_id} · Survey: {selected?.id}
+                      </p>
+                    )}
                   </div>
                   <div className="flex items-center gap-2">
                     <AdminStatusBadge tone={selected.enabled ? "success" : "neutral"}>
@@ -524,6 +584,9 @@ export function SurveyManagementPage() {
                               <span className="mt-1 block text-xs text-slate-500">
                                 {question.question_type} · {question.required ? "จำเป็น" : "ไม่จำเป็น"}
                                 {question.question_type === "rating" ? ` · ${question.scale_min}–${question.scale_max}` : ""}
+                              </span>
+                              <span className="mt-1 block font-mono text-[10px] text-slate-400">
+                                Question ID: {question.id}
                               </span>
                             </span>
                           </button>
