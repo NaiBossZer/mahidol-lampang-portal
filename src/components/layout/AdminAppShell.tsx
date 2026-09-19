@@ -17,7 +17,7 @@ const navGroups: readonly NavGroup[] = [
   ] },
 
 ];
-const contentItem: NavItem = { to: "/admin/cms", label: "เนื้อหา", icon: FolderOpen, permission: "cms.read" };
+const contentItem: NavItem = { to: "/admin/cms", label: "คลังเอกสารราชการ", icon: FolderOpen, permission: "cms.read" };
 const facilityItem: NavItem = { to: "/admin/facility-safety", label: "อาคารและความปลอดภัย", icon: ShieldCheck, permission: "facility.read" };
 const adminUtilityItems: readonly NavItem[] = [
   { to: "/admin/governance?tab=users", label: "ผู้ใช้งาน & สิทธิ์การเข้าถึง", icon: Users, permission: "system.manage" },
@@ -28,7 +28,8 @@ const PATH_TITLE_MAP: Record<string, { group: string; title: string }> = {
   "/admin": { group: "ระบบหลังบ้าน", title: "Central Admin" },
   "/admin/activities": { group: "บริหารกิจกรรม & Survey", title: "รายการกิจกรรมโครงการ" },
   "/admin/survey-workflow": { group: "บริหารกิจกรรม & Survey", title: "สร้างกิจกรรม & AI Survey" },
-  "/admin/cms": { group: "เนื้อหา", title: "คลังเอกสารราชการ / CMS" },
+  "/admin/cms": { group: "คลังเอกสารราชการ", title: "คลังเอกสารราชการ" },
+  "/admin/cms/content": { group: "เนื้อหา", title: "Central Content Management" },
   "/admin/facility-safety": { group: "อาคาร & ความปลอดภัย", title: "Facility-Safety Dashboard" },
   "/admin/ai-studio-workspace": { group: "AI Studio", title: "AI Studio Unified Workspace" },
   "/admin/governance": { group: "ผู้ดูแลระบบ", title: "ผู้ใช้งาน & สิทธิ์การเข้าถึง" },
