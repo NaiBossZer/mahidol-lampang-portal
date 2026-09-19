@@ -38,7 +38,6 @@ const emptyDraft: Partial<SurveyQuestion> = {
 export function SurveyManagementPage() {
   const [occurrences, setOccurrences] = useState<ActivityOccurrence[]>([]);
   const [surveys, setSurveys] = useState<AdminSurvey[]>([]);
-  const [occurrenceId, setOccurrenceId] = useState("");
   const [selected, setSelected] = useState<AdminSurvey | null>(null);
   const [draft, setDraft] = useState<Partial<SurveyQuestion>>(emptyDraft);
   const [search, setSearch] = useState("");
@@ -108,9 +107,6 @@ export function SurveyManagementPage() {
       const occurrence = occurrences.find((item) => item.id === survey.occurrence_id);
       if (activityFilter && occurrence?.activity_id !== activityFilter) return false;
       const activityTitle = occurrence ? activityTitles[occurrence.activity_id] ?? "" : "";
-      const occurrenceLabel = occurrence
-        ? `ครั้งที่ ${occurrence.occurrence_no} ${new Date(occurrence.start_at).toLocaleDateString("th-TH")}`
-        : "";
       const searchText =
         `${activityTitle} ${occurrenceLabel} ${survey.id} ${survey.anonymous ? "anonymous" : "identified"} ${survey.questions.length}`
           .toLowerCase();
@@ -128,13 +124,20 @@ export function SurveyManagementPage() {
   }
 
   async function createSurvey() {
-    if (!occurrenceId) {
-      toast.error("กรุณาเลือกรอบกิจกรรม");
+    if (!activityFilter) {
+      toast.error("กรุณาเลือกกิจกรรม");
+      return;
+    }
+    const occurrence = occurrences
+      .filter((item) => item.activity_id === activityFilter && !["cancelled", "archived"].includes(item.status))
+      .sort((a, b) => a.occurrence_no - b.occurrence_no)[0];
+    if (!occurrence) {
+      toast.error("กิจกรรมนี้ยังไม่มีข้อมูลสำหรับสร้างแบบประเมิน");
       return;
     }
     try {
       const created = await createAdminSurvey({
-        occurrenceId,
+        occurrenceId: occurrence.id,
         enabled: true,
         anonymous: false,
         openAt: null,
@@ -144,12 +147,11 @@ export function SurveyManagementPage() {
       setSurveys((items) => [created, ...items]);
       setSelected(created);
       resetDraft();
-      toast.success("สร้างแบบสอบถามแล้ว");
+      toast.success("สร้างแบบประเมินแล้ว");
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "สร้างแบบสอบถามไม่สำเร็จ");
     }
   }
-
   async function saveQuestion() {
     if (!selected || !String(draft.question_text ?? "").trim()) {
       toast.error("กรุณาระบุคำถาม");
@@ -247,11 +249,11 @@ export function SurveyManagementPage() {
         <AdminSearchInput
           value={search}
           onChange={setSearch}
-          placeholder="ค้นหารอบกิจกรรมหรือรูปแบบแบบประเมิน"
+          placeholder="ค้นหาชื่อกิจกรรมหรือแบบประเมิน"
         />
-        <div className="grid min-w-[260px] flex-1 gap-2 lg:grid-cols-2 xl:max-w-3xl">
-          <label>
-            <span className="mb-1 block text-xs font-semibold text-slate-600">กิจกรรมที่ต้องการแก้</span>
+        <div className="flex min-w-[260px] flex-1 items-end gap-2 xl:max-w-3xl">
+          <label className="min-w-0 flex-1">
+            <span className="mb-1 block text-xs font-semibold text-slate-600">กิจกรรม</span>
             <select
               value={activityFilter}
               onChange={(event) => {
@@ -261,7 +263,7 @@ export function SurveyManagementPage() {
               }}
               className="h-11 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm outline-none transition focus:border-[#002d62] focus:ring-4 focus:ring-[#002d62]/10"
             >
-              <option value="">ทุกกิจกรรม</option>
+              <option value="">เลือกกิจกรรม</option>
               {Object.entries(activityTitles)
                 .sort(([, a], [, b]) => a.localeCompare(b, "th"))
                 .map(([id, title]) => (
@@ -271,28 +273,14 @@ export function SurveyManagementPage() {
                 ))}
             </select>
           </label>
-          <div className="flex items-end gap-2">
-            <label className="min-w-0 flex-1">
-              <span className="mb-1 block text-xs font-semibold text-slate-600">รอบกิจกรรมสำหรับสร้างแบบประเมิน</span>
-              <select
-                value={occurrenceId}
-                onChange={(event) => setOccurrenceId(event.target.value)}
-                className="h-11 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm outline-none transition focus:border-[#002d62] focus:ring-4 focus:ring-[#002d62]/10"
-              >
-                <option value="">เลือกรอบกิจกรรม</option>
-                {occurrences
-                  .filter((occurrence) => !activityFilter || occurrence.activity_id === activityFilter)
-                  .map((occurrence) => (
-                    <option key={occurrence.id} value={occurrence.id}>
-                      {activityTitles[occurrence.activity_id] || occurrence.activity_id} · ครั้งที่ {occurrence.occurrence_no}
-                    </option>
-                  ))}
-              </select>
-            </label>
-            <AdminButton variant="primary" icon={<Plus className="h-4 w-4" />} onClick={() => void createSurvey()} disabled={!occurrenceId}>
-              สร้างแบบประเมิน
-            </AdminButton>
-          </div>
+          <AdminButton
+            variant="primary"
+            icon={<Plus className="h-4 w-4" />}
+            onClick={() => void createSurvey()}
+            disabled={!activityFilter}
+          >
+            สร้างแบบประเมิน
+          </AdminButton>
         </div>
       </AdminFilterBar>
 
@@ -335,52 +323,7 @@ export function SurveyManagementPage() {
                           <p className={`font-semibold ${active ? "text-[#002d62]" : "text-slate-900"}`}>
                             {occurrence ? activityTitles[occurrence.activity_id] || occurrence.activity_id : "ไม่พบกิจกรรม"}
                           </p>
-                          <p className="mt-1 text-xs text-slate-500">
-                            {occurrence
-                              ? `ครั้งที่ ${occurrence.occurrence_no} · ${new Date(occurrence.start_at).toLocaleString("th-TH")}`
-                              : "ไม่พบรอบกิจกรรม"}
-                          </p>
-                          <p className="mt-1 font-mono text-[10px] text-slate-400">
-                            Survey ID: {survey.id}
-                          </p>
-                        </button>
-                      </td>
-                      <td className="px-4 py-4 text-center font-semibold text-slate-700">{survey.questions.length}</td>
-                      <td className="px-4 py-4 text-center">
-                        <AdminStatusBadge tone={survey.enabled ? "success" : "neutral"}>
-                          {survey.enabled ? "Published" : "Disabled"}
-                        </AdminStatusBadge>
-                      </td>
-                      <td className="px-4 py-4 text-center">
-                        <AdminStatusBadge tone={survey.anonymous ? "neutral" : "success"}>
-                          {survey.anonymous ? "Anonymous" : "Identified"}
-                        </AdminStatusBadge>
-                      </td>
-                    </AdminTableRow>
-                  );
-                })}
-              </tbody>
-            </AdminTable>
-          )}
-        </AdminCard>
-
-        <AdminCard className="overflow-hidden">
-          {selected ? (
-            <>
-              <div className="border-b border-slate-200 px-5 py-4">
-                <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                  <div className="min-w-0">
-                    <p className="text-xs font-semibold uppercase tracking-[0.14em] text-violet-600">QUESTION BUILDER</p>
-                    <h2 className="mt-1 text-lg font-bold text-[#002d62]">
-                      {selectedOccurrence
-                        ? activityTitles[selectedOccurrence.activity_id] || selectedOccurrence.activity_id
-                        : "แบบประเมิน"}
-                    </h2>
-                    <p className="mt-1 text-xs text-slate-500">
-                      {selectedOccurrence
-                        ? `ครั้งที่ ${selectedOccurrence.occurrence_no} · ${new Date(selectedOccurrence.start_at).toLocaleString("th-TH")}`
-                        : "ไม่พบรอบกิจกรรม"}
-                    </p>
+                          <p className="mt-1 text-xs text-slate-500">แบบประเมินของกิจกรรมที่เลือก</p>
                     {selectedOccurrence && (
                       <p className="mt-1 font-mono text-[10px] text-slate-400">
                         Activity: {selectedOccurrence.activity_id} · Survey: {selected?.id}
