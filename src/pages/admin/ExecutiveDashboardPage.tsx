@@ -290,7 +290,7 @@ export function ExecutiveDashboardPage() {
       )
       .join("");
 
-    const detailedScoreRows = SCORE_GROUPS
+    const detailedScoreRows = scoreGroups
       .map(group => {
         const items = group.items.length
           ? group.items
