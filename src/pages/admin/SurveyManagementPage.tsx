@@ -108,7 +108,7 @@ export function SurveyManagementPage() {
       if (activityFilter && occurrence?.activity_id !== activityFilter) return false;
       const activityTitle = occurrence ? activityTitles[occurrence.activity_id] ?? "" : "";
       const searchText =
-        `${activityTitle} ${occurrenceLabel} ${survey.id} ${survey.anonymous ? "anonymous" : "identified"} ${survey.questions.length}`
+        `${activityTitle} ${survey.id} ${survey.anonymous ? "anonymous" : "identified"} ${survey.questions.length}`
           .toLowerCase();
       return !needle || searchText.includes(needle);
     });
@@ -128,13 +128,20 @@ export function SurveyManagementPage() {
       toast.error("กรุณาเลือกกิจกรรม");
       return;
     }
+
     const occurrence = occurrences
-      .filter((item) => item.activity_id === activityFilter && !["cancelled", "archived"].includes(item.status))
+      .filter(
+        (item) =>
+          item.activity_id === activityFilter &&
+          !["cancelled", "archived"].includes(item.status),
+      )
       .sort((a, b) => a.occurrence_no - b.occurrence_no)[0];
+
     if (!occurrence) {
       toast.error("กิจกรรมนี้ยังไม่มีข้อมูลสำหรับสร้างแบบประเมิน");
       return;
     }
+
     try {
       const created = await createAdminSurvey({
         occurrenceId: occurrence.id,
@@ -149,9 +156,10 @@ export function SurveyManagementPage() {
       resetDraft();
       toast.success("สร้างแบบประเมินแล้ว");
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "สร้างแบบสอบถามไม่สำเร็จ");
+      toast.error(e instanceof Error ? e.message : "สร้างแบบประเมินไม่สำเร็จ");
     }
   }
+
   async function saveQuestion() {
     if (!selected || !String(draft.question_text ?? "").trim()) {
       toast.error("กรุณาระบุคำถาม");
@@ -300,7 +308,7 @@ export function SurveyManagementPage() {
           ) : filteredSurveys.length === 0 ? (
             <AdminEmptyState
               title={surveys.length ? "ไม่พบแบบประเมินตามคำค้น" : "ยังไม่มีแบบประเมิน"}
-              description={surveys.length ? "ลองเปลี่ยนคำค้นหาหรือเลือกกิจกรรมใหม่" : "เลือกกิจกรรมด้านบนแล้วสร้างแบบประเมินได้ทันที"}
+              description={surveys.length ? "ลองเปลี่ยนคำค้นหาหรือเลือกรอบกิจกรรมใหม่" : "เลือกรอบกิจกรรมด้านบนแล้วสร้างแบบประเมินได้ทันที"}
             />
           ) : (
             <AdminTable minWidth="620px" className="mt-0 rounded-none border-0 shadow-none">
@@ -324,6 +332,43 @@ export function SurveyManagementPage() {
                             {occurrence ? activityTitles[occurrence.activity_id] || occurrence.activity_id : "ไม่พบกิจกรรม"}
                           </p>
                           <p className="mt-1 text-xs text-slate-500">แบบประเมินของกิจกรรมที่เลือก</p>
+                          <p className="mt-1 font-mono text-[10px] text-slate-400">
+                            Survey ID: {survey.id}
+                          </p>
+                        </button>
+                      </td>
+                      <td className="px-4 py-4 text-center font-semibold text-slate-700">{survey.questions.length}</td>
+                      <td className="px-4 py-4 text-center">
+                        <AdminStatusBadge tone={survey.enabled ? "success" : "neutral"}>
+                          {survey.enabled ? "Published" : "Disabled"}
+                        </AdminStatusBadge>
+                      </td>
+                      <td className="px-4 py-4 text-center">
+                        <AdminStatusBadge tone={survey.anonymous ? "neutral" : "success"}>
+                          {survey.anonymous ? "Anonymous" : "Identified"}
+                        </AdminStatusBadge>
+                      </td>
+                    </AdminTableRow>
+                  );
+                })}
+              </tbody>
+            </AdminTable>
+          )}
+        </AdminCard>
+
+        <AdminCard className="overflow-hidden">
+          {selected ? (
+            <>
+              <div className="border-b border-slate-200 px-5 py-4">
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                  <div className="min-w-0">
+                    <p className="text-xs font-semibold uppercase tracking-[0.14em] text-violet-600">QUESTION BUILDER</p>
+                    <h2 className="mt-1 text-lg font-bold text-[#002d62]">
+                      {selectedOccurrence
+                        ? activityTitles[selectedOccurrence.activity_id] || selectedOccurrence.activity_id
+                        : "แบบประเมิน"}
+                    </h2>
+                    <p className="mt-1 text-xs text-slate-500">แบบประเมินของกิจกรรมที่เลือก</p>
                     {selectedOccurrence && (
                       <p className="mt-1 font-mono text-[10px] text-slate-400">
                         Activity: {selectedOccurrence.activity_id} · Survey: {selected?.id}
