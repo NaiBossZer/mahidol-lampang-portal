@@ -511,6 +511,8 @@ export function ExecutiveDashboardPage() {
         setReportSearch("");
         setIncludeReferenceData(false);
         setIncludeRespondentDetails(false);
+        setReportSummaryDraft("");
+        setReportImpactDraft("");
       }}
       activity={activity}
       onActivityChange={setActivity}
@@ -529,6 +531,10 @@ export function ExecutiveDashboardPage() {
       }}
       includeRespondentDetails={includeRespondentDetails}
       onIncludeRespondentDetailsChange={setIncludeRespondentDetails}
+      reportSummaryDraft={reportSummaryDraft}
+      onReportSummaryDraftChange={setReportSummaryDraft}
+      reportImpactDraft={reportImpactDraft}
+      onReportImpactDraftChange={setReportImpactDraft}
     />
     {descriptionActivity && <Modal title="คำอธิบายกิจกรรม" onClose={() => setDescriptionActivity(null)}><div className="flex-1 overflow-y-auto bg-[#fafafa]"><div className="border-b border-slate-100 bg-white px-5 py-5"><div className="flex items-start gap-3"><div className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-sky-50 text-sky-600"><Eye className="h-5 w-5" /></div><div className="min-w-0 flex-1"><div className="flex flex-wrap items-center gap-2"><span className="rounded-full bg-sky-50 px-2 py-1 text-[10px] font-bold text-sky-700">ตรวจข้อมูลกิจกรรม</span><span className="text-[10px] text-slate-400">{formatDate(descriptionActivity.activity_date)}</span></div><h3 className="mt-2 text-lg font-black leading-snug tracking-tight text-slate-900">{descriptionActivity.title}</h3>{descriptionActivity.location && <p className="mt-1 text-xs text-slate-500">{descriptionActivity.location}</p>}</div></div></div><div className="space-y-3.5 p-5"><section className="rounded-xl border border-slate-200 bg-white p-4 shadow-xs"><div className="flex items-center justify-between gap-3"><h4 className="text-sm font-bold text-slate-900">คำอธิบายกิจกรรม</h4><span className="text-[10px] font-medium text-slate-400">Summary</span></div><div className={`mt-3 rounded-lg px-3.5 py-3 ${descriptionActivity.summary?.trim() ? "bg-slate-50" : "border border-dashed border-slate-200 bg-white"}`}><p className={`whitespace-pre-line text-[13px] leading-7 ${descriptionActivity.summary?.trim() ? "text-slate-700" : "text-slate-400"}`}>{descriptionActivity.summary?.trim() || "ยังไม่มีคำอธิบายกิจกรรม"}</p></div></section><section className="rounded-xl border border-slate-200 bg-white p-4 shadow-xs"><div className="flex items-center justify-between gap-3"><h4 className="text-sm font-bold text-slate-900">รายละเอียดกิจกรรม</h4><span className="text-[10px] font-medium text-slate-400">Content</span></div><div className={`mt-3 rounded-lg px-3.5 py-3 ${descriptionActivity.content?.trim() ? "bg-slate-50" : "border border-dashed border-slate-200 bg-white"}`}><p className={`whitespace-pre-line text-[13px] leading-7 ${descriptionActivity.content?.trim() ? "text-slate-700" : "text-slate-400"}`}>{descriptionActivity.content?.trim() || "ยังไม่มีรายละเอียดกิจกรรม"}</p></div></section></div></div></Modal>}
     {commentsOpen && <Modal title={`ความคิดเห็นและข้อเสนอแนะทั้งหมด • ${comments.length} ความคิดเห็น`} onClose={() => setCommentsOpen(false)}><CommentsContent comments={comments} /></Modal>}
@@ -557,6 +563,10 @@ type ActivityReportModalProps = {
   onIncludeReferenceDataChange: (value: boolean) => void;
   includeRespondentDetails: boolean;
   onIncludeRespondentDetailsChange: (value: boolean) => void;
+  reportSummaryDraft: string;
+  onReportSummaryDraftChange: (value: string) => void;
+  reportImpactDraft: string;
+  onReportImpactDraftChange: (value: string) => void;
 };
 
 function ActivityReportModal({
@@ -576,6 +586,10 @@ function ActivityReportModal({
   onIncludeReferenceDataChange,
   includeRespondentDetails,
   onIncludeRespondentDetailsChange,
+  reportSummaryDraft,
+  onReportSummaryDraftChange,
+  reportImpactDraft,
+  onReportImpactDraftChange,
 }: ActivityReportModalProps) {
   if (!open) return null;
 
