@@ -70,11 +70,11 @@ export function ExecutiveDashboardPage() {
   const occurrencePool = useMemo(() => (data?.occurrences ?? []).filter(x => !["cancelled", "archived"].includes(x.status) && matchesDate(x.start_at, period, year, quarter, month, from, to)), [data, period, year, quarter, month, from, to]);
   const activities = useMemo(() => (data?.activities ?? []).filter(a => occurrencePool.some(o => o.activity_id === a.id)), [data, occurrencePool]);
   const activityIds = useMemo(() => new Set((activity === "ALL" ? activities : activities.filter(a => a.id === activity)).map(a => a.id)), [activities, activity]);
+  const selectedActivity = activity === "ALL" ? undefined : data?.activities.find(a => a.id === activity);
   useEffect(() => { if (activity !== "ALL" && !activityIds.has(activity)) setActivity("ALL"); }, [activity, activityIds]);
   useEffect(() => { setReportSummaryDraft(selectedActivity?.summary?.trim() || ""); setReportImpactDraft(selectedActivity?.impact?.trim() || ""); }, [selectedActivity?.id, selectedActivity?.summary, selectedActivity?.impact]);
   const occurrences = useMemo(() => occurrencePool.filter(o => activityIds.has(o.activity_id)), [occurrencePool, activityIds]);
   const responses = useMemo(() => { const ids = new Set(occurrences.map(o => o.id)); return (data?.responses ?? []).filter(r => r.occurrence_id ? ids.has(r.occurrence_id) : activityIds.has(r.activity_id)); }, [data, occurrences, activityIds]);
-  const selectedActivity = activity === "ALL" ? undefined : data?.activities.find(a => a.id === activity);
   const participants = occurrences.reduce((s, o) => s + Math.max(0, Number(o.participant_count || 0)), 0); const responseCount = responses.length; const pending = Math.max(0, participants - responseCount); const responseRate = participants ? responseCount / participants * 100 : null;
   const questionScores = useMemo<ScoreItem[]>(() => ALL_SCORE_FIELDS.flatMap(field => { const values = responses.map(r => score(r[field])).filter((x): x is number => x !== null); const value = average(values); return value === null ? [] : [{ field, label: SCORE_LABELS[field], value, respondentCount: values.length }]; }), [responses]);
   const scoreGroups = useMemo(() => SCORE_GROUPS.map(g => ({ ...g, items: g.fields.map(f => questionScores.find(x => x.field === f)).filter((x): x is ScoreItem => Boolean(x)) })).filter(g => g.items.length), [questionScores]);
