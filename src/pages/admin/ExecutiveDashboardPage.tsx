@@ -61,7 +61,7 @@ function KpiCard({ icon, label, value, suffix, onClick, iconClass }: { icon: Rea
 export function ExecutiveDashboardPage() {
   const [data, setData] = useState<AdminDashboardData | null>(null); const [loading, setLoading] = useState(true); const [refreshing, setRefreshing] = useState(false); const [error, setError] = useState("");
   const [activity, setActivity] = useState("ALL"); const [period, setPeriod] = useState<Period>("ALL"); const [year, setYear] = useState("ALL"); const [quarter, setQuarter] = useState(""); const [month, setMonth] = useState(""); const [from, setFrom] = useState(""); const [to, setTo] = useState("");
-  const [dimension, setDimension] = useState<Dimension>("age_group"); const [reportsOpen, setReportsOpen] = useState(false); const [commentsOpen, setCommentsOpen] = useState(false); const [kpiMetric, setKpiMetric] = useState<string | null>(null); const [descriptionActivity, setDescriptionActivity] = useState<AdminDashboardData["activities"][number] | null>(null); const [galleryOpen, setGalleryOpen] = useState(false); const [galleryIndex, setGalleryIndex] = useState(0); const [reportSearch, setReportSearch] = useState(""); const [loadedAt, setLoadedAt] = useState<string | null>(null);
+  const [dimension, setDimension] = useState<Dimension>("age_group"); const [reportsOpen, setReportsOpen] = useState(false); const [commentsOpen, setCommentsOpen] = useState(false); const [kpiMetric, setKpiMetric] = useState<string | null>(null); const [descriptionActivity, setDescriptionActivity] = useState<AdminDashboardData["activities"][number] | null>(null); const [galleryOpen, setGalleryOpen] = useState(false); const [galleryIndex, setGalleryIndex] = useState(0); const [reportSearch, setReportSearch] = useState(""); const [includeReferenceData, setIncludeReferenceData] = useState(false); const [includeRespondentDetails, setIncludeRespondentDetails] = useState(false); const [loadedAt, setLoadedAt] = useState<string | null>(null);
   const load = async (silent = false) => { silent ? setRefreshing(true) : setLoading(true); setError(""); try { setData(await getAdminDashboardData()); setLoadedAt(new Date().toISOString()); } catch (e) { setError(e instanceof Error ? e.message : "ไม่สามารถโหลด Dashboard ได้"); } finally { setLoading(false); setRefreshing(false); } };
   useEffect(() => { void load(); }, []);
   const years = useMemo(() => [...new Set((data?.occurrences ?? []).map(x => new Date(x.start_at).getFullYear()))].filter(Number.isFinite).sort((a, b) => b - a), [data]);
@@ -107,6 +107,24 @@ export function ExecutiveDashboardPage() {
     feedback: r.feedback,
     channels: r.channels,
   }))), [filteredReportRows]);
+
+  const respondentDetailRows = useMemo(() => {
+    return reportRows.map(row => {
+      const scores = ALL_SCORE_FIELDS.map(field => score(row.scores[field])).filter((value): value is number => value !== null);
+      return {
+        id: row.id,
+        activity: row.activity,
+        date: row.date,
+        submittedAt: row.submittedAt,
+        ageGroup: row.ageGroup,
+        affiliation: row.affiliation,
+        organization: row.organization,
+        averageScore: scores.length ? average(scores) : null,
+        feedback: row.feedback,
+        channels: row.channels,
+      };
+    });
+  }, [reportRows]);
 
   const exportCSV = () => {
     const headers = ["รหัสผู้ตอบ", "กิจกรรม", "วันที่กิจกรรม", "วันที่ส่งแบบประเมิน", "ช่วงอายุ", "ประเภทผู้ตอบ", "หน่วยงาน", "หมวดคำถาม", "ข้อคำถาม", "คะแนน (1-5)", "ความคิดเห็น", "ช่องทางการรับรู้"];
@@ -198,6 +216,62 @@ export function ExecutiveDashboardPage() {
       .slice(0, 3);
 
     const photoItems = photos.filter(item => item.image).slice(0, 2);
+    const respondentReferenceRows = includeRespondentDetails
+      ? respondentDetailRows
+          .map(
+            row =>
+              '<tr><td>' +
+              printCell(row.id) +
+              '</td><td>' +
+              printCell(formatDate(row.date)) +
+              '</td><td>' +
+              printCell(formatDateTime(row.submittedAt)) +
+              '</td><td>' +
+              printCell(row.ageGroup) +
+              '</td><td>' +
+              printCell(row.affiliation) +
+              '</td><td>' +
+              printCell(row.organization) +
+              '</td><td class="score">' +
+              (row.averageScore === null ? '-' : row.averageScore.toFixed(2)) +
+              '</td><td class="text">' +
+              printCell(row.feedback) +
+              '</td></tr>',
+          )
+          .join('')
+      : '';
+
+    const referenceBlock = includeReferenceData
+      ? '<div class="section reference-section"><h2 class="section-title">6. ข้อมูลอ้างอิง</h2>' +
+        '<div class="reference-grid">' +
+        '<div><span>Activity ID</span><strong>' +
+        printCell(reportActivity.id) +
+        '</strong></div>' +
+        '<div><span>จำนวนครั้งที่จัด</span><strong>' +
+        formatNumber(reportOccurrences.length) +
+        ' ครั้ง</strong></div>' +
+        '<div><span>ผู้ตอบแบบประเมิน</span><strong>' +
+        formatNumber(responseCount) +
+        ' คน</strong></div>' +
+        '<div><span>ภาพประกอบ</span><strong>' +
+        formatNumber(photoItems.length) +
+        ' ภาพ</strong></div>' +
+        '</div>' +
+        '<p class="reference-note">' +
+        (includeRespondentDetails
+          ? 'แนบข้อมูลรายบุคคลตามตัวเลือกที่ผู้จัดทำรายงานกำหนด'
+          : 'รายงานฉบับนี้แนบเฉพาะข้อมูลอ้างอิงระดับกิจกรรม และไม่รวมข้อมูลรายบุคคล') +
+        '</p></div>' +
+        (includeRespondentDetails
+          ? '<div class="section reference-section"><h2 class="section-title">ภาคผนวก: ข้อมูลรายบุคคล</h2><p class="reference-note">จำนวน ' +
+            formatNumber(respondentDetailRows.length) +
+            ' คน • แสดงข้อมูลตามกิจกรรมที่เลือก</p><table><thead><tr><th>รหัสผู้ตอบ</th><th>วันที่กิจกรรม</th><th>วันที่ส่ง</th><th>ช่วงอายุ</th><th>ประเภทผู้ตอบ</th><th>หน่วยงาน</th><th class="score">คะแนนเฉลี่ย</th><th>ความคิดเห็น</th></tr></thead><tbody>' +
+            (respondentReferenceRows || '<tr><td colspan="8">ไม่พบข้อมูลรายบุคคล</td></tr>') +
+            '</tbody></table></div>'
+          : '')
+      : '';
+
+
     const logoUrl = new URL("/mahidol-logo.png", window.location.origin).href;
 
     const ratingRows = groupSummary
@@ -359,6 +433,7 @@ export function ExecutiveDashboardPage() {
         '</div><div class="panel"><h2 class="section-title">5. ภาพประกอบกิจกรรมหลัก</h2><div class="photos">' +
         photoRows +
         '</div></div></div></div>' +
+        referenceBlock +
         '<footer class="footer"><span>รายงานรายกิจกรรม • ข้อมูลจาก Dashboard ปัจจุบัน</span><span>พิมพ์เมื่อ: ' +
         printCell(generatedAt) +
         '</span></footer></div></body></html>',
@@ -381,7 +456,12 @@ export function ExecutiveDashboardPage() {
     <div>
     <ActivityReportModal
       open={reportsOpen}
-      onClose={() => { setReportsOpen(false); setReportSearch(""); }}
+      onClose={() => {
+        setReportsOpen(false);
+        setReportSearch("");
+        setIncludeReferenceData(false);
+        setIncludeRespondentDetails(false);
+      }}
       activity={activity}
       onActivityChange={setActivity}
       activities={activities}
@@ -392,6 +472,13 @@ export function ExecutiveDashboardPage() {
       onExportCSV={exportCSV}
       reportDetailRows={reportDetailRows}
       filteredReportRows={filteredReportRows}
+      includeReferenceData={includeReferenceData}
+      onIncludeReferenceDataChange={value => {
+        setIncludeReferenceData(value);
+        if (!value) setIncludeRespondentDetails(false);
+      }}
+      includeRespondentDetails={includeRespondentDetails}
+      onIncludeRespondentDetailsChange={setIncludeRespondentDetails}
     />
     {descriptionActivity && <Modal title="คำอธิบายกิจกรรม" onClose={() => setDescriptionActivity(null)}><div className="flex-1 overflow-y-auto bg-[#f8fafc]"><div className="border-b border-slate-100 bg-white px-5 py-5"><div className="flex items-start gap-3"><div className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-sky-50 text-sky-600"><Eye className="h-5 w-5" /></div><div className="min-w-0 flex-1"><div className="flex flex-wrap items-center gap-2"><span className="rounded-full bg-sky-50 px-2 py-1 text-[10px] font-bold text-sky-700">ตรวจข้อมูลกิจกรรม</span><span className="text-[10px] text-slate-400">{formatDate(descriptionActivity.activity_date)}</span></div><h3 className="mt-2 text-lg font-black leading-snug tracking-tight text-slate-900">{descriptionActivity.title}</h3>{descriptionActivity.location && <p className="mt-1 text-xs text-slate-500">{descriptionActivity.location}</p>}</div></div></div><div className="space-y-3.5 p-5"><section className="rounded-xl border border-slate-200 bg-white p-4 shadow-xs"><div className="flex items-center justify-between gap-3"><h4 className="text-sm font-bold text-slate-900">คำอธิบายกิจกรรม</h4><span className="text-[10px] font-medium text-slate-400">Summary</span></div><div className={`mt-3 rounded-lg px-3.5 py-3 ${descriptionActivity.summary?.trim() ? "bg-slate-50" : "border border-dashed border-slate-200 bg-white"}`}><p className={`whitespace-pre-line text-[13px] leading-7 ${descriptionActivity.summary?.trim() ? "text-slate-700" : "text-slate-400"}`}>{descriptionActivity.summary?.trim() || "ยังไม่มีคำอธิบายกิจกรรม"}</p></div></section><section className="rounded-xl border border-slate-200 bg-white p-4 shadow-xs"><div className="flex items-center justify-between gap-3"><h4 className="text-sm font-bold text-slate-900">รายละเอียดกิจกรรม</h4><span className="text-[10px] font-medium text-slate-400">Content</span></div><div className={`mt-3 rounded-lg px-3.5 py-3 ${descriptionActivity.content?.trim() ? "bg-slate-50" : "border border-dashed border-slate-200 bg-white"}`}><p className={`whitespace-pre-line text-[13px] leading-7 ${descriptionActivity.content?.trim() ? "text-slate-700" : "text-slate-400"}`}>{descriptionActivity.content?.trim() || "ยังไม่มีรายละเอียดกิจกรรม"}</p></div></section></div></div></Modal>}
     {commentsOpen && <Modal title={`ความคิดเห็นและข้อเสนอแนะทั้งหมด • ${comments.length} ความคิดเห็น`} onClose={() => setCommentsOpen(false)}><CommentsContent comments={comments} /></Modal>}
@@ -416,6 +503,10 @@ type ActivityReportModalProps = {
   onExportCSV: () => void;
   reportDetailRows: ReportDetailRow[];
   filteredReportRows: ReportRow[];
+  includeReferenceData: boolean;
+  onIncludeReferenceDataChange: (value: boolean) => void;
+  includeRespondentDetails: boolean;
+  onIncludeRespondentDetailsChange: (value: boolean) => void;
 };
 
 function ActivityReportModal({
@@ -431,6 +522,10 @@ function ActivityReportModal({
   onExportCSV,
   reportDetailRows,
   filteredReportRows,
+  includeReferenceData,
+  onIncludeReferenceDataChange,
+  includeRespondentDetails,
+  onIncludeRespondentDetailsChange,
 }: ActivityReportModalProps) {
   if (!open) return null;
 
@@ -486,6 +581,34 @@ function ActivityReportModal({
               className="h-9 w-full rounded-lg border border-slate-200 bg-slate-50 pl-8 pr-3 text-xs outline-none transition focus:bg-white focus:ring-1 focus:ring-sky-500"
             />
           </div>
+        </div>
+
+        <div className="flex w-full flex-wrap items-center gap-3 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2.5 text-[10px]">
+          <label className="inline-flex cursor-pointer items-center gap-2 font-bold text-slate-700">
+            <input
+              type="checkbox"
+              checked={includeReferenceData}
+              onChange={e => onIncludeReferenceDataChange(e.target.checked)}
+              className="h-4 w-4 rounded border-slate-300 text-sky-600 focus:ring-sky-500"
+            />
+            <span>แนบข้อมูลอ้างอิง</span>
+          </label>
+          <span className="h-4 w-px bg-slate-200" />
+          <label className={`inline-flex items-center gap-2 ${includeReferenceData ? "cursor-pointer text-slate-700" : "cursor-not-allowed text-slate-400"}`}>
+            <input
+              type="checkbox"
+              checked={includeRespondentDetails}
+              disabled={!includeReferenceData}
+              onChange={e => onIncludeRespondentDetailsChange(e.target.checked)}
+              className="h-4 w-4 rounded border-slate-300 text-sky-600 focus:ring-sky-500 disabled:opacity-50"
+            />
+            <span>รวมข้อมูลรายบุคคล</span>
+          </label>
+          <span className="text-slate-400">
+            {includeRespondentDetails
+              ? "แนบข้อมูลผู้ตอบเป็นรายคนในภาคผนวก"
+              : "ไม่แนบข้อมูลรายคน"}
+          </span>
         </div>
 
         <div className="flex flex-wrap gap-2">
