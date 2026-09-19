@@ -272,6 +272,7 @@ export function SurveyManagementPage() {
                 <tr>
                   <th className="px-5 py-3 text-left">แบบประเมิน</th>
                   <th className="px-4 py-3 text-center">คำถาม</th>
+                  <th className="px-4 py-3 text-center">สถานะ</th>
                   <th className="px-4 py-3 text-center">โหมด</th>
                 </tr>
               </AdminTableHeader>
@@ -293,9 +294,12 @@ export function SurveyManagementPage() {
                       </td>
                       <td className="px-4 py-4 text-center font-semibold text-slate-700">{survey.questions.length}</td>
                       <td className="px-4 py-4 text-center">
-                        <AdminStatusBadge
-                          tone={survey.anonymous ? "neutral" : "success"}
-                        >
+                        <AdminStatusBadge tone={survey.enabled ? "success" : "neutral"}>
+                          {survey.enabled ? "Published" : "Disabled"}
+                        </AdminStatusBadge>
+                      </td>
+                      <td className="px-4 py-4 text-center">
+                        <AdminStatusBadge tone={survey.anonymous ? "neutral" : "success"}>
                           {survey.anonymous ? "Anonymous" : "Identified"}
                         </AdminStatusBadge>
                       </td>
@@ -323,19 +327,40 @@ export function SurveyManagementPage() {
                         : "ไม่พบรอบกิจกรรม"}
                     </p>
                   </div>
-                  <AdminButton
-                    variant="secondary"
-                    onClick={() =>
-                      void updateAdminSurvey(selected.id, { anonymous: !selected.anonymous })
-                        .then((updated) => {
-                          setSelected({ ...selected, ...updated });
-                          setSurveys((items) => items.map((item) => (item.id === selected.id ? { ...item, ...updated } : item)));
-                        })
-                        .catch((e) => toast.error(e instanceof Error ? e.message : "บันทึกไม่สำเร็จ"))
-                    }
-                  >
-                    {selected.anonymous ? "Anonymous" : "Identified"}
-                  </AdminButton>
+                  <div className="flex items-center gap-2">
+                    <AdminStatusBadge tone={selected.enabled ? "success" : "neutral"}>
+                      {selected.enabled ? "Published" : "Disabled"}
+                    </AdminStatusBadge>
+                    <AdminButton
+                      variant={selected.enabled ? "secondary" : "primary"}
+                      onClick={() =>
+                        void updateAdminSurvey(selected.id, { enabled: !selected.enabled })
+                          .then((updated) => {
+                            setSelected({ ...selected, ...updated });
+                            setSurveys((items) =>
+                              items.map((item) => (item.id === selected.id ? { ...item, ...updated } : item)),
+                            );
+                            toast.success(updated.enabled ? "เผยแพร่แบบประเมินแล้ว" : "ปิดการเผยแพร่แล้ว");
+                          })
+                          .catch((e) => toast.error(e instanceof Error ? e.message : "บันทึกสถานะไม่สำเร็จ"))
+                      }
+                    >
+                      {selected.enabled ? "ปิดการเผยแพร่" : "เผยแพร่"}
+                    </AdminButton>
+                    <AdminButton
+                      variant="secondary"
+                      onClick={() =>
+                        void updateAdminSurvey(selected.id, { anonymous: !selected.anonymous })
+                          .then((updated) => {
+                            setSelected({ ...selected, ...updated });
+                            setSurveys((items) => items.map((item) => (item.id === selected.id ? { ...item, ...updated } : item)));
+                          })
+                          .catch((e) => toast.error(e instanceof Error ? e.message : "บันทึกไม่สำเร็จ"))
+                      }
+                    >
+                      {selected.anonymous ? "Anonymous" : "Identified"}
+                    </AdminButton>
+                  </div>
                 </div>
               </div>
 
