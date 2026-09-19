@@ -116,30 +116,258 @@ export function ExecutiveDashboardPage() {
     a.href = url; a.download = `Mahidol_Lampang_Survey_Respondent_Question_Report_${new Date().toISOString().slice(0, 10)}.csv`; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
   };
   const printReport = () => {
-    const printWindow = window.open("", "_blank", "noopener,noreferrer,width=1400,height=900"); if (!printWindow) { window.print(); return; }
+    if (!selectedActivity) return;
+
+    const printWindow = window.open("", "_blank", "noopener,noreferrer,width=1200,height=900");
+    if (!printWindow) {
+      window.print();
+      return;
+    }
+
     const generatedAt = formatDateTime(new Date().toISOString());
-    const filterLabel = period === "ALL" ? "ทุกช่วงเวลา" : period === "YEAR" ? `ปี ${year === "ALL" ? "ทั้งหมด" : Number(year) + 543}` : period === "QUARTER" ? `ไตรมาส ${quarter || "ทั้งหมด"}` : period === "MONTH" ? `เดือน ${month || "ทั้งหมด"}` : `${from || "-"} ถึง ${to || "-"}`;
-    const scoreRows = scoreGroups.flatMap(g => g.items.map(item => `<tr><td>${printCell(g.title)}</td><td>${printCell(item.label)}</td><td class="score">${item.value.toFixed(2)}</td><td class="score">${formatNumber(item.respondentCount)}</td></tr>`)).join("");
-    const channelRows = channelDistribution.map(c => { const pct = channelTotal ? c.count / channelTotal * 100 : 0; return `<tr><td>${printCell(c.label)}</td><td class="score">${formatNumber(c.count)}</td><td class="score">${pct.toFixed(1)}%</td></tr>`; }).join("");
-    const demographicRows = respondentDistribution.map(x => `<tr><td>${printCell(x.label)}</td><td class="score">${formatNumber(x.count)}</td><td class="score">${x.percentage.toFixed(1)}%</td></tr>`).join("");
-    const commentRows = comments.slice(0, 12).map((x, i) => `<tr><td class="score">${i + 1}</td><td class="text">${printCell(x)}</td></tr>`).join("");
-    const detailRows = reportDetailRows.map((r, i) => `<tr><td>${i + 1}</td><td>${printCell(r.respondentId)}</td><td>${printCell(r.activity)}</td><td>${printCell(formatDate(r.date))}</td><td>${printCell(r.ageGroup)}</td><td>${printCell(r.affiliation)}</td><td>${printCell(r.organization)}</td><td>${printCell(r.group)}</td><td class="text">${printCell(r.question)}</td><td class="score">${printCell(r.score)}</td><td class="text">${printCell(r.feedback)}</td></tr>`).join("");
-    printWindow.document.write(`<!doctype html><html lang="th"><head><meta charset="utf-8"><title>รายงานผลการดำเนินงานและแบบประเมิน — Mahidol Lampang</title><style>
-      @page{size:A4 portrait;margin:14mm 13mm 16mm}*{box-sizing:border-box}body{font-family:Arial,'Noto Sans Thai',sans-serif;color:#172033;font-size:10px;line-height:1.55;margin:0}
-      .cover{border-bottom:3px solid #0f4c81;padding-bottom:12px;margin-bottom:16px}.brand{font-size:10px;font-weight:700;color:#0f4c81}.title{font-size:21px;font-weight:800;line-height:1.3;margin:5px 0}.subtitle{font-size:11px;color:#64748b}.meta{display:grid;grid-template-columns:1fr 1fr;gap:6px 18px;margin-top:12px;padding:10px 12px;background:#f5f8fc;border:1px solid #dbe4ef;border-radius:8px}.meta b{color:#172033}
-      h2{font-size:14px;margin:18px 0 8px;border-left:4px solid #0f4c81;padding-left:8px}table{border-collapse:collapse;width:100%;margin:6px 0 12px}th,td{border:1px solid #d7dee8;padding:5px 6px;vertical-align:top}th{background:#eef3f8;text-align:left;font-weight:700}.score{text-align:center;white-space:nowrap}.text{white-space:normal;min-width:140px}.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:7px}.kpi{border:1px solid #dbe4ef;border-radius:8px;padding:9px;background:#fff}.kpi span{display:block;color:#64748b;font-size:9px}.kpi b{display:block;font-size:17px;margin-top:2px}.note{font-size:9px;color:#64748b}.page-break{break-before:page}.footer{margin-top:18px;padding-top:7px;border-top:1px solid #d7dee8;font-size:8px;color:#94a3b8}@media print{tr{break-inside:avoid}.cover{break-inside:avoid}}
-    </style></head><body>
-      <div class="cover"><div class="brand">งานพันธกิจเพื่อสังคม • คณะสิ่งแวดล้อมและทรัพยากรศาสตร์ มหาวิทยาลัยมหิดล</div><div class="title">รายงานผลการดำเนินงานและแบบประเมินความพึงพอใจ</div><div class="subtitle">${printCell(title)}</div><div class="meta"><div><b>กิจกรรม:</b> ${printCell(title)}</div><div><b>ช่วงรายงาน:</b> ${printCell(filterLabel)}</div><div><b>ผู้เข้าร่วม:</b> ${formatNumber(participants)} คน</div><div><b>ผู้ตอบแบบประเมิน:</b> ${formatNumber(responseCount)} คน</div><div><b>อัตราการตอบกลับ:</b> ${responseRate === null ? "-" : Math.min(100,responseRate).toFixed(1) + "%"}</div><div><b>คะแนนเฉลี่ยรวม:</b> ${overall === null ? "-" : overall.toFixed(2) + " / 5.00"}</div><div><b>ระดับผลการประเมิน:</b> ${printCell(level)}</div><div><b>จัดทำเมื่อ:</b> ${printCell(generatedAt)}</div></div></div>
-      <h2>1. สรุปผลสำหรับผู้บริหาร</h2><div class="kpis"><div class="kpi"><span>ผู้เข้าร่วมกิจกรรม</span><b>${formatNumber(participants)}</b></div><div class="kpi"><span>ผู้ตอบแบบประเมิน</span><b>${formatNumber(responseCount)}</b></div><div class="kpi"><span>อัตราการตอบกลับ</span><b>${responseRate === null ? "-" : Math.min(100,responseRate).toFixed(1)+"%"}</b></div><div class="kpi"><span>คะแนนเฉลี่ย</span><b>${overall === null ? "-" : overall.toFixed(2)+" / 5.00"}</b></div></div>
-      <table><thead><tr><th>ประเด็น</th><th>รายละเอียด</th></tr></thead><tbody><tr><td>คะแนนสูงสุด</td><td>${printCell(highest?.label || "-")} — ${highest ? highest.value.toFixed(2) + " / 5.00" : "-"}</td></tr><tr><td>ประเด็นที่ควรติดตาม</td><td>${printCell(lowest?.label || "-")} — ${lowest ? lowest.value.toFixed(2) + " / 5.00" : "-"}</td></tr></tbody></table>
-      <h2>2. ผลคะแนนรายประเด็น</h2><table><thead><tr><th>หมวด</th><th>ประเด็นประเมิน</th><th class="score">คะแนนเฉลี่ย</th><th class="score">จำนวนคำตอบ</th></tr></thead><tbody>${scoreRows || '<tr><td colspan="4">ไม่พบข้อมูลคะแนน</td></tr>'}</tbody></table>
-      <h2>3. ข้อมูลผู้ตอบแบบประเมิน</h2><table><thead><tr><th>กลุ่ม</th><th class="score">จำนวน</th><th class="score">ร้อยละ</th></tr></thead><tbody>${demographicRows || '<tr><td colspan="3">ไม่พบข้อมูล</td></tr>'}</tbody></table>
-      <h2>4. ช่องทางการรับรู้กิจกรรม</h2><table><thead><tr><th>ช่องทาง</th><th class="score">จำนวนการเลือก</th><th class="score">ร้อยละ</th></tr></thead><tbody>${channelRows || '<tr><td colspan="3">ไม่พบข้อมูล</td></tr>'}</tbody></table>
-      <div class="page-break"></div><h2>5. ความคิดเห็นและข้อเสนอแนะจากผู้ตอบ</h2><table><thead><tr><th class="score">#</th><th>ความคิดเห็น</th></tr></thead><tbody>${commentRows || '<tr><td colspan="2">ไม่มีความคิดเห็น</td></tr>'}</tbody></table>
-      <div class="page-break"></div><h2>6. ภาคผนวก: ข้อมูลผลประเมินรายข้อ</h2><p class="note">แสดงข้อมูลตามตัวกรองปัจจุบัน จำนวน ${formatNumber(reportDetailRows.length)} รายการ</p><table><thead><tr><th>#</th><th>รหัสผู้ตอบ</th><th>กิจกรรม</th><th>วันที่จัด</th><th>ช่วงอายุ</th><th>ประเภทผู้ตอบ</th><th>หน่วยงาน</th><th>หมวด</th><th>ข้อคำถาม</th><th>คะแนน</th><th>ความคิดเห็น</th></tr></thead><tbody>${detailRows || '<tr><td colspan="11">ไม่พบข้อมูลตามตัวกรอง</td></tr>'}</tbody></table>
-      <div class="footer">รายงานนี้สร้างจากข้อมูล Dashboard ปัจจุบันของระบบ • ข้อมูล ณ ${printCell(generatedAt)}</div>
-    </body></html>`);
-    printWindow.document.close(); printWindow.focus(); window.setTimeout(() => { printWindow.print(); }, 300);
+    const reportActivity = selectedActivity;
+    const reportOccurrences = occurrences
+      .filter(item => item.activity_id === reportActivity.id)
+      .sort((a, b) => new Date(a.start_at).getTime() - new Date(b.start_at).getTime());
+
+    const dateLabels = [...new Set(reportOccurrences.map(item => formatDate(item.start_at)).filter(Boolean))];
+    const locationLabels = [
+      ...new Set(
+        reportOccurrences
+          .map(item => item.location_detail?.trim())
+          .filter((value): value is string => Boolean(value)),
+      ),
+    ];
+    const statusLabels: Record<string, string> = {
+      completed: "เสร็จสิ้น",
+      ongoing: "กำลังดำเนินงาน",
+      scheduled: "กำหนดการ",
+      draft: "ร่าง",
+      cancelled: "ยกเลิก",
+      archived: "เก็บถาวร",
+      published: "เผยแพร่",
+    };
+    const statusValues = [
+      ...new Set(
+        reportOccurrences.map(item => statusLabels[item.status] || item.status).filter(Boolean),
+      ),
+    ];
+    const reportDate = dateLabels.length === 1 ? dateLabels[0] : dateLabels.length > 1 ? "จัดหลายครั้ง" : formatDate(reportActivity.activity_date);
+    const reportLocation = locationLabels.length === 1 ? locationLabels[0] : locationLabels.length > 1 ? locationLabels.join(" • ") : "-";
+    const reportStatus = statusValues.length === 1 ? statusValues[0] : statusValues.length > 1 ? "หลายสถานะ" : (statusLabels[reportActivity.status] || reportActivity.status || "-");
+    const reportSummary = reportActivity.summary?.trim() || "";
+    const reportImpact = reportActivity.impact?.trim() || "";
+
+    const groupSummary = scoreGroups
+      .map(group => {
+        const value = average(group.items.map(item => item.value));
+        return value === null ? null : { title: group.title, value };
+      })
+      .filter((item): item is { title: string; value: number } => Boolean(item));
+
+    const buildDistribution = (values: string[]) => {
+      const counts = new Map<string, number>();
+      values.forEach(value => {
+        const normalized = value.trim();
+        if (normalized) counts.set(normalized, (counts.get(normalized) || 0) + 1);
+      });
+      return [...counts.entries()]
+        .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0], "th"))
+        .slice(0, 6)
+        .map(([label, count]) => ({
+          label,
+          count,
+          percentage: responseCount ? count / responseCount * 100 : 0,
+        }));
+    };
+
+    const ageDistribution = buildDistribution(
+      responses.map(response => response.age_group || "").filter(Boolean),
+    );
+    const affiliationDistribution = buildDistribution(
+      responses.map(response => response.affiliation || "").filter(Boolean),
+    );
+
+    const commentCounts = new Map<string, number>();
+    comments.forEach(comment => {
+      const normalized = comment.trim();
+      if (normalized) commentCounts.set(normalized, (commentCounts.get(normalized) || 0) + 1);
+    });
+    const topComments = [...commentCounts.entries()]
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 3);
+
+    const photoItems = photos.filter(item => item.image).slice(0, 2);
+    const logoUrl = new URL("/mahidol-logo.png", window.location.origin).href;
+
+    const ratingRows = groupSummary
+      .map(
+        group =>
+          '<div class="rating-row">' +
+          '<div class="rating-head"><span>' +
+          printCell(group.title) +
+          '</span><strong>' +
+          group.value.toFixed(2) +
+          ' / 5.00</strong></div>' +
+          '<div class="bar-track"><div class="bar-fill" style="width:' +
+          Math.min(100, group.value / 5 * 100).toFixed(1) +
+          '%"></div></div>' +
+          '</div>',
+      )
+      .join("");
+
+    const ageRows = ageDistribution.length
+      ? ageDistribution
+          .map(
+            item =>
+              '<div class="stat-line"><span>' +
+              printCell(item.label) +
+              '</span><strong>' +
+              formatNumber(item.count) +
+              ' คน <small>(' +
+              item.percentage.toFixed(0) +
+              '%)</small></strong></div>',
+          )
+          .join("")
+      : '<div class="empty">ไม่พบข้อมูลช่วงอายุ</div>';
+
+    const affiliationRows = affiliationDistribution.length
+      ? affiliationDistribution
+          .map(
+            item =>
+              '<div class="stat-line"><span>' +
+              printCell(item.label) +
+              '</span><strong>' +
+              formatNumber(item.count) +
+              ' คน <small>(' +
+              item.percentage.toFixed(0) +
+              '%)</small></strong></div>',
+          )
+          .join("")
+      : '<div class="empty">ไม่พบข้อมูลประเภทผู้ตอบ</div>';
+
+    const commentRows = topComments.length
+      ? topComments
+          .map(
+            ([comment, count], index) =>
+              '<div class="comment-item"><div class="comment-number">' +
+              (index + 1) +
+              '</div><div><p>“' +
+              printCell(comment) +
+              '”</p>' +
+              (count > 1 ? '<small>พบข้อความนี้ ' + formatNumber(count) + " ครั้ง</small>" : "") +
+              "</div></div>",
+          )
+          .join("")
+      : '<div class="empty">ไม่มีข้อเสนอแนะจากผู้ตอบแบบประเมิน</div>';
+
+    const photoRows = photoItems.length
+      ? photoItems
+          .map(
+            photo =>
+              '<figure class="photo-card"><img src="' +
+              printCell(photo.image) +
+              '" alt="' +
+              printCell(photo.title) +
+              '"><figcaption>' +
+              printCell(photo.title) +
+              "</figcaption></figure>",
+          )
+          .join("")
+      : '<div class="photo-empty">ไม่มีภาพประกอบกิจกรรม</div>';
+
+    const summaryBlock = reportSummary
+      ? '<div class="narrative"><strong>สรุปสาระสำคัญ</strong><p>' +
+        printCell(reportSummary) +
+        "</p></div>"
+      : "";
+    const impactBlock = reportImpact
+      ? '<div class="narrative impact"><strong>Impact</strong><p>' +
+        printCell(reportImpact) +
+        "</p></div>"
+      : "";
+
+    const filterNote =
+      period === "ALL"
+        ? ""
+        : '<div class="filter-note">ตัวกรองช่วงเวลา: ' +
+          printCell(
+            period === "YEAR"
+              ? "ปี " + (year === "ALL" ? "ทั้งหมด" : Number(year) + 543)
+              : period === "QUARTER"
+                ? "ไตรมาส " + (quarter || "ทั้งหมด")
+                : period === "MONTH"
+                  ? "เดือน " + (month || "ทั้งหมด")
+                  : (from || "-") + " ถึง " + (to || "-"),
+          ) +
+          "</div>";
+
+    printWindow.document.write(
+      '<!doctype html><html lang="th"><head><meta charset="utf-8"><title>รายงานผลการดำเนินงานและแบบประเมินความพึงพอใจ</title>' +
+        '<style>' +
+        '@page{size:A4 portrait;margin:12mm 12mm 14mm}' +
+        '*{box-sizing:border-box;-webkit-print-color-adjust:exact;print-color-adjust:exact}' +
+        'body{font-family:Arial,"Noto Sans Thai",Tahoma,sans-serif;color:#172033;font-size:10.5px;line-height:1.55;margin:0;background:#fff}' +
+        '.report{width:100%}.header{display:flex;align-items:center;gap:16px;padding-bottom:12px;border-bottom:2px solid #0f4c81}' +
+        '.logo{width:62px;height:62px;object-fit:contain;flex:0 0 auto}.header-copy{min-width:0}.eyebrow{font-size:10px;font-weight:700;color:#0f4c81;margin-bottom:2px}.report-title{font-size:20px;font-weight:800;line-height:1.25;margin:0}.project-title{font-size:12px;font-weight:700;color:#334155;margin-top:4px}.org{font-size:10px;color:#64748b;margin-top:2px}' +
+        '.section{margin-top:12px}.section-title{font-size:14px;font-weight:800;color:#0f4c81;margin:0 0 7px;padding-bottom:4px;border-bottom:1px solid #dbe4ef}' +
+        '.meta-line{font-size:10px;color:#475569;margin:0 0 8px}.meta-line strong{color:#172033}.meta-line span{display:inline-block;margin-right:18px}.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:7px}.kpi{border:1px solid #dbe4ef;border-radius:8px;padding:8px 9px;background:#f8fafc}.kpi-label{font-size:9px;color:#64748b}.kpi-value{font-size:17px;font-weight:800;color:#172033;margin-top:1px}.kpi-unit{font-size:9px;color:#64748b;font-weight:500}.narratives{margin-top:8px;display:grid;grid-template-columns:1fr 1fr;gap:8px}.narrative{border-left:3px solid #0f4c81;background:#f8fafc;border:1px solid #e2e8f0;border-left-width:3px;border-radius:7px;padding:8px 10px}.narrative.impact{border-left-color:#0e7490}.narrative strong{font-size:9px;color:#0f4c81}.narrative p{margin:3px 0 0;font-size:10px;white-space:pre-line;color:#334155}' +
+        '.grid-2{display:grid;grid-template-columns:1.18fr .82fr;gap:10px}.panel{border:1px solid #dbe4ef;border-radius:8px;padding:9px}.rating-row{margin-bottom:9px}.rating-row:last-child{margin-bottom:0}.rating-head{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:10px;color:#334155}.rating-head strong{font-size:10px;color:#172033;white-space:nowrap}.bar-track{height:8px;margin-top:4px;background:#e9eef5;border-radius:999px;overflow:hidden}.bar-fill{height:100%;background:#0f4c81;border-radius:999px}.subhead{font-size:9px;font-weight:800;color:#0f4c81;margin:0 0 5px;text-transform:none}.stat-group + .stat-group{margin-top:10px}.stat-line{display:flex;justify-content:space-between;gap:8px;padding:3px 0;border-bottom:1px dotted #d9e1ea;font-size:9.5px}.stat-line:last-child{border-bottom:0}.stat-line strong{white-space:nowrap}.stat-line small{color:#64748b;font-weight:500}.empty{font-size:9px;color:#94a3b8;padding:7px 0}' +
+        '.comments-photos{display:grid;grid-template-columns:1fr 1fr;gap:10px}.comment-item{display:grid;grid-template-columns:22px 1fr;gap:7px;padding:7px 0;border-bottom:1px solid #edf1f5}.comment-number{width:20px;height:20px;border-radius:50%;background:#eaf2f8;color:#0f4c81;font-weight:800;font-size:9px;display:flex;align-items:center;justify-content:center}.comment-item p{margin:0;font-size:9.7px;color:#334155;line-height:1.55}.comment-item small{display:block;margin-top:2px;font-size:8px;color:#94a3b8}.photos{display:grid;grid-template-columns:1fr 1fr;gap:7px}.photo-card{margin:0}.photo-card img{display:block;width:100%;height:122px;object-fit:cover;border-radius:7px;border:1px solid #dbe4ef;background:#f8fafc}.photo-card figcaption{font-size:8.5px;color:#64748b;margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.photo-empty{height:122px;border:1px dashed #cbd5e1;border-radius:7px;display:flex;align-items:center;justify-content:center;color:#94a3b8;font-size:9px}' +
+        '.filter-note{margin-top:7px;color:#64748b;font-size:8.5px}.footer{margin-top:12px;padding-top:6px;border-top:1px solid #dbe4ef;display:flex;justify-content:space-between;gap:10px;color:#94a3b8;font-size:8px}' +
+        '.avoid-break{break-inside:avoid;page-break-inside:avoid}@media print{body{background:#fff}.section,.panel,.comments-photos,.grid-2{break-inside:avoid;page-break-inside:avoid}}' +
+        '</style></head><body><div class="report">' +
+        '<header class="header"><img class="logo" src="' +
+        printCell(logoUrl) +
+        '" alt="มหาวิทยาลัยมหิดล"><div class="header-copy"><div class="eyebrow">งานพันธกิจเพื่อสังคม</div><h1 class="report-title">รายงานผลการดำเนินงานและแบบประเมินความพึงพอใจ</h1><div class="project-title">' +
+        printCell(reportActivity.title) +
+        '</div><div class="org">คณะสิ่งแวดล้อมและทรัพยากรศาสตร์ มหาวิทยาลัยมหิดล</div></div></header>' +
+        '<div class="section avoid-break"><h2 class="section-title">1. ข้อมูลทั่วไปและสรุปผลการดำเนินงาน</h2>' +
+        '<p class="meta-line"><span><strong>วันที่จัด:</strong> ' +
+        printCell(reportDate) +
+        '</span><span><strong>สถานที่:</strong> ' +
+        printCell(reportLocation) +
+        '</span><span><strong>สถานะ:</strong> ' +
+        printCell(reportStatus) +
+        '</span></p>' +
+        '<div class="kpis"><div class="kpi"><div class="kpi-label">ผู้เข้าร่วม</div><div class="kpi-value">' +
+        formatNumber(participants) +
+        ' <span class="kpi-unit">คน</span></div></div><div class="kpi"><div class="kpi-label">ผู้ตอบประเมิน</div><div class="kpi-value">' +
+        formatNumber(responseCount) +
+        ' <span class="kpi-unit">คน</span></div></div><div class="kpi"><div class="kpi-label">อัตราตอบกลับ</div><div class="kpi-value">' +
+        (responseRate === null ? "-" : Math.min(100, responseRate).toFixed(1) + '%') +
+        '</div></div><div class="kpi"><div class="kpi-label">คะแนนเฉลี่ยรวม</div><div class="kpi-value">' +
+        (overall === null ? "-" : overall.toFixed(2) + ' <span class="kpi-unit">/ 5.00</span>') +
+        '</div></div></div>' +
+        '<div class="narratives">' +
+        summaryBlock +
+        impactBlock +
+        "</div>" +
+        filterNote +
+        '</div>' +
+        '<div class="section avoid-break"><div class="grid-2"><div class="panel"><h2 class="section-title">2. ผลการประเมินความพึงพอใจ</h2>' +
+        (ratingRows || '<div class="empty">ไม่พบข้อมูลคะแนน</div>') +
+        '</div><div class="panel"><h2 class="section-title">3. ข้อมูลผู้ตอบแบบประเมิน (N = ' +
+        formatNumber(responseCount) +
+        ')</h2><div class="stat-group"><div class="subhead">กลุ่มอายุ</div>' +
+        ageRows +
+        '</div><div class="stat-group"><div class="subhead">ประเภทผู้ตอบ</div>' +
+        affiliationRows +
+        '</div></div></div></div>' +
+        '<div class="section avoid-break"><div class="comments-photos"><div class="panel"><h2 class="section-title">4. ข้อเสนอแนะที่สำคัญ (Top 3)</h2>' +
+        commentRows +
+        '</div><div class="panel"><h2 class="section-title">5. ภาพประกอบกิจกรรมหลัก</h2><div class="photos">' +
+        photoRows +
+        '</div></div></div></div>' +
+        '<footer class="footer"><span>รายงานรายกิจกรรม • ข้อมูลจาก Dashboard ปัจจุบัน</span><span>พิมพ์เมื่อ: ' +
+        printCell(generatedAt) +
+        '</span></footer></div></body></html>',
+    );
+    printWindow.document.close();
+    printWindow.focus();
+    window.setTimeout(() => {
+      printWindow.print();
+    }, 400);
   };
   if (loading) return <div className="grid min-h-[calc(100dvh-4rem)] place-items-center text-sm font-semibold text-slate-500">กำลังโหลดผลการดำเนินงาน...</div>;
   if (error) return <div className="grid min-h-[calc(100dvh-4rem)] place-items-center px-4"><div className="w-full max-w-md rounded-xl border border-rose-200 bg-rose-50 p-8 text-center"><p className="font-bold text-rose-800">ไม่สามารถโหลด Dashboard ได้</p><p className="mt-2 text-sm text-rose-600">{error}</p><button type="button" onClick={() => void load()} className="mt-4 rounded-lg bg-sky-600 px-4 py-2 text-sm font-bold text-white">ลองใหม่</button></div></div>;
