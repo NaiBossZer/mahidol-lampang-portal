@@ -61,7 +61,7 @@ function KpiCard({ icon, label, value, suffix, onClick, iconClass }: { icon: Rea
 export function ExecutiveDashboardPage() {
   const [data, setData] = useState<AdminDashboardData | null>(null); const [loading, setLoading] = useState(true); const [refreshing, setRefreshing] = useState(false); const [error, setError] = useState("");
   const [activity, setActivity] = useState("ALL"); const [period, setPeriod] = useState<Period>("ALL"); const [year, setYear] = useState("ALL"); const [quarter, setQuarter] = useState(""); const [month, setMonth] = useState(""); const [from, setFrom] = useState(""); const [to, setTo] = useState("");
-  const [dimension, setDimension] = useState<Dimension>("age_group"); const [reportsOpen, setReportsOpen] = useState(false); const [reportSummaryDraft, setReportSummaryDraft] = useState(""); const [reportImpactDraft, setReportImpactDraft] = useState(""); const [commentsOpen, setCommentsOpen] = useState(false); const [kpiMetric, setKpiMetric] = useState<string | null>(null); const [descriptionActivity, setDescriptionActivity] = useState<AdminDashboardData["activities"][number] | null>(null); const [galleryOpen, setGalleryOpen] = useState(false); const [galleryIndex, setGalleryIndex] = useState(0); const [reportSearch, setReportSearch] = useState(""); const [includeReferenceData, setIncludeReferenceData] = useState(false); const [includeRespondentDetails, setIncludeRespondentDetails] = useState(false); const [loadedAt, setLoadedAt] = useState<string | null>(null);
+  const [dimension, setDimension] = useState<Dimension>("age_group"); const [reportsOpen, setReportsOpen] = useState(false); const [commentsOpen, setCommentsOpen] = useState(false); const [kpiMetric, setKpiMetric] = useState<string | null>(null); const [descriptionActivity, setDescriptionActivity] = useState<AdminDashboardData["activities"][number] | null>(null); const [galleryOpen, setGalleryOpen] = useState(false); const [galleryIndex, setGalleryIndex] = useState(0); const [reportSearch, setReportSearch] = useState(""); const [includeReferenceData, setIncludeReferenceData] = useState(false); const [includeRespondentDetails, setIncludeRespondentDetails] = useState(false); const [loadedAt, setLoadedAt] = useState<string | null>(null);
   const load = async (silent = false) => { silent ? setRefreshing(true) : setLoading(true); setError(""); try { setData(await getAdminDashboardData()); setLoadedAt(new Date().toISOString()); } catch (e) { setError(e instanceof Error ? e.message : "ไม่สามารถโหลด Dashboard ได้"); } finally { setLoading(false); setRefreshing(false); } };
   useEffect(() => { void load(); }, []);
   const years = useMemo(() => [...new Set((data?.occurrences ?? []).map(x => new Date(x.start_at).getFullYear()))].filter(Number.isFinite).sort((a, b) => b - a), [data]);
@@ -72,7 +72,6 @@ export function ExecutiveDashboardPage() {
   const activityIds = useMemo(() => new Set((activity === "ALL" ? activities : activities.filter(a => a.id === activity)).map(a => a.id)), [activities, activity]);
   const selectedActivity = activity === "ALL" ? undefined : data?.activities.find(a => a.id === activity);
   useEffect(() => { if (activity !== "ALL" && !activityIds.has(activity)) setActivity("ALL"); }, [activity, activityIds]);
-  useEffect(() => { setReportSummaryDraft(selectedActivity?.summary?.trim() || ""); setReportImpactDraft(selectedActivity?.impact?.trim() || ""); }, [selectedActivity?.id, selectedActivity?.summary, selectedActivity?.impact]);
   const occurrences = useMemo(() => occurrencePool.filter(o => activityIds.has(o.activity_id)), [occurrencePool, activityIds]);
   const responses = useMemo(() => { const ids = new Set(occurrences.map(o => o.id)); return (data?.responses ?? []).filter(r => r.occurrence_id ? ids.has(r.occurrence_id) : activityIds.has(r.activity_id)); }, [data, occurrences, activityIds]);
   const participants = occurrences.reduce((s, o) => s + Math.max(0, Number(o.participant_count || 0)), 0); const responseCount = responses.length; const pending = Math.max(0, participants - responseCount); const responseRate = participants ? responseCount / participants * 100 : null;
@@ -174,8 +173,8 @@ export function ExecutiveDashboardPage() {
     const reportDate = dateLabels.length === 1 ? dateLabels[0] : dateLabels.length > 1 ? "จัดหลายครั้ง" : formatDate(reportActivity.activity_date);
     const reportLocation = locationLabels.length === 1 ? locationLabels[0] : locationLabels.length > 1 ? locationLabels.join(" • ") : "-";
     const reportStatus = statusValues.length === 1 ? statusValues[0] : statusValues.length > 1 ? "หลายสถานะ" : (statusLabels[reportActivity.status] || reportActivity.status || "-");
-    const reportSummary = reportSummaryDraft.trim();
-    const reportImpact = reportImpactDraft.trim();
+    const reportSummary = selectedActivity?.summary?.trim() || "";
+    const reportImpact = selectedActivity?.impact?.trim() || "";
 
     const groupSummary = scoreGroups
       .map(group => {
@@ -511,8 +510,6 @@ export function ExecutiveDashboardPage() {
         setReportSearch("");
         setIncludeReferenceData(false);
         setIncludeRespondentDetails(false);
-        setReportSummaryDraft("");
-        setReportImpactDraft("");
       }}
       activity={activity}
       onActivityChange={setActivity}
@@ -531,10 +528,6 @@ export function ExecutiveDashboardPage() {
       }}
       includeRespondentDetails={includeRespondentDetails}
       onIncludeRespondentDetailsChange={setIncludeRespondentDetails}
-      reportSummaryDraft={reportSummaryDraft}
-      onReportSummaryDraftChange={setReportSummaryDraft}
-      reportImpactDraft={reportImpactDraft}
-      onReportImpactDraftChange={setReportImpactDraft}
     />
     {descriptionActivity && <Modal title="คำอธิบายกิจกรรม" onClose={() => setDescriptionActivity(null)}><div className="flex-1 overflow-y-auto bg-[#fafafa]"><div className="border-b border-slate-100 bg-white px-5 py-5"><div className="flex items-start gap-3"><div className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-sky-50 text-sky-600"><Eye className="h-5 w-5" /></div><div className="min-w-0 flex-1"><div className="flex flex-wrap items-center gap-2"><span className="rounded-full bg-sky-50 px-2 py-1 text-[10px] font-bold text-sky-700">ตรวจข้อมูลกิจกรรม</span><span className="text-[10px] text-slate-400">{formatDate(descriptionActivity.activity_date)}</span></div><h3 className="mt-2 text-lg font-black leading-snug tracking-tight text-slate-900">{descriptionActivity.title}</h3>{descriptionActivity.location && <p className="mt-1 text-xs text-slate-500">{descriptionActivity.location}</p>}</div></div></div><div className="space-y-3.5 p-5"><section className="rounded-xl border border-slate-200 bg-white p-4 shadow-xs"><div className="flex items-center justify-between gap-3"><h4 className="text-sm font-bold text-slate-900">คำอธิบายกิจกรรม</h4><span className="text-[10px] font-medium text-slate-400">Summary</span></div><div className={`mt-3 rounded-lg px-3.5 py-3 ${descriptionActivity.summary?.trim() ? "bg-slate-50" : "border border-dashed border-slate-200 bg-white"}`}><p className={`whitespace-pre-line text-[13px] leading-7 ${descriptionActivity.summary?.trim() ? "text-slate-700" : "text-slate-400"}`}>{descriptionActivity.summary?.trim() || "ยังไม่มีคำอธิบายกิจกรรม"}</p></div></section><section className="rounded-xl border border-slate-200 bg-white p-4 shadow-xs"><div className="flex items-center justify-between gap-3"><h4 className="text-sm font-bold text-slate-900">รายละเอียดกิจกรรม</h4><span className="text-[10px] font-medium text-slate-400">Content</span></div><div className={`mt-3 rounded-lg px-3.5 py-3 ${descriptionActivity.content?.trim() ? "bg-slate-50" : "border border-dashed border-slate-200 bg-white"}`}><p className={`whitespace-pre-line text-[13px] leading-7 ${descriptionActivity.content?.trim() ? "text-slate-700" : "text-slate-400"}`}>{descriptionActivity.content?.trim() || "ยังไม่มีรายละเอียดกิจกรรม"}</p></div></section></div></div></Modal>}
     {commentsOpen && <Modal title={`ความคิดเห็นและข้อเสนอแนะทั้งหมด • ${comments.length} ความคิดเห็น`} onClose={() => setCommentsOpen(false)}><CommentsContent comments={comments} /></Modal>}
@@ -563,10 +556,6 @@ type ActivityReportModalProps = {
   onIncludeReferenceDataChange: (value: boolean) => void;
   includeRespondentDetails: boolean;
   onIncludeRespondentDetailsChange: (value: boolean) => void;
-  reportSummaryDraft: string;
-  onReportSummaryDraftChange: (value: string) => void;
-  reportImpactDraft: string;
-  onReportImpactDraftChange: (value: string) => void;
 };
 
 function ActivityReportModal({
@@ -586,10 +575,6 @@ function ActivityReportModal({
   onIncludeReferenceDataChange,
   includeRespondentDetails,
   onIncludeRespondentDetailsChange,
-  reportSummaryDraft,
-  onReportSummaryDraftChange,
-  reportImpactDraft,
-  onReportImpactDraftChange,
 }: ActivityReportModalProps) {
   if (!open) return null;
 
