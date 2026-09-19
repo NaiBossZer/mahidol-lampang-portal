@@ -70,6 +70,8 @@ export type DashboardActivity = {
   category?: string | null;
   status: string;
   participants?: string | number | null;
+  summary?: string | null;
+  impact?: string | null;
   featured_image?: string | null;
 };
 export type DashboardOccurrence = {
