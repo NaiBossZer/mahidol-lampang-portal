@@ -235,7 +235,13 @@ export function ActivitiesManagementPage() {
   async function removeActivity(activity: AdminActivity) {
     if (deletingId) return;
     const confirmed = window.confirm(
-      `ยืนยันการลบกิจกรรม\n\n"${activity.title}"\n\nการดำเนินการนี้เป็นการลบถาวร ไม่ใช่การเก็บถาวร และจะลบข้อมูล/สื่อที่เกี่ยวข้องด้วย\n\nต้องการดำเนินการต่อหรือไม่?`,
+      `ยืนยันการลบกิจกรรม
+
+"${activity.title}"
+
+การดำเนินการนี้เป็นการลบถาวร ไม่ใช่การเก็บถาวร และจะลบข้อมูล/สื่อที่เกี่ยวข้องด้วย
+
+ต้องการดำเนินการต่อหรือไม่?`,
     );
     if (!confirmed) return;
 
