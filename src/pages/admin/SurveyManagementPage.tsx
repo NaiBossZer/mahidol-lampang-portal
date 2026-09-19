@@ -393,6 +393,57 @@ export function SurveyManagementPage() {
                       บันทึกคำถาม
                     </AdminButton>
                   </div>
+                  <div className="mt-3 grid gap-3 md:grid-cols-3">
+                    <label className="block">
+                      <span className="mb-1 block text-xs font-semibold text-slate-600">Section key</span>
+                      <input
+                        value={String(draft.section_key ?? "general")}
+                        onChange={(event) => setDraft((current) => ({ ...current, section_key: event.target.value }))}
+                        placeholder="general / opening / learning"
+                        className="h-10 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm outline-none transition focus:border-[#002d62] focus:ring-4 focus:ring-[#002d62]/10"
+                      />
+                    </label>
+                    <label className="block">
+                      <span className="mb-1 block text-xs font-semibold text-slate-600">Rating scale</span>
+                      <div className="flex gap-2">
+                        <input
+                          type="number"
+                          min={1}
+                          value={Number(draft.scale_min ?? 1)}
+                          onChange={(event) => setDraft((current) => ({ ...current, scale_min: Number(event.target.value) }))}
+                          className="h-10 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm"
+                          aria-label="Rating scale minimum"
+                        />
+                        <input
+                          type="number"
+                          min={2}
+                          value={Number(draft.scale_max ?? 5)}
+                          onChange={(event) => setDraft((current) => ({ ...current, scale_max: Number(event.target.value) }))}
+                          className="h-10 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm"
+                          aria-label="Rating scale maximum"
+                        />
+                      </div>
+                    </label>
+                    <label className="block">
+                      <span className="mb-1 block text-xs font-semibold text-slate-600">Choice options</span>
+                      <input
+                        value={Array.isArray(draft.options) ? draft.options.join(", ") : ""}
+                        onChange={(event) =>
+                          setDraft((current) => ({
+                            ...current,
+                            options: event.target.value
+                              .split(",")
+                              .map((item) => item.trim())
+                              .filter(Boolean),
+                          }))
+                        }
+                        placeholder="ตัวเลือก A, ตัวเลือก B"
+                        className="h-10 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm"
+                        disabled={!["single_choice", "multi_choice"].includes(String(draft.question_type))}
+                      />
+                    </label>
+                  </div>
+
                   <label className="mt-3 inline-flex items-center gap-2 text-xs font-medium text-slate-600">
                     <input
                       type="checkbox"
