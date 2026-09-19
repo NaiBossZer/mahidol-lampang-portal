@@ -1,6 +1,7 @@
-import { useEffect, useMemo, useState, type ReactNode } from "react";
-import { CalendarDays, ImagePlus, Lightbulb, Pencil, Plus, RefreshCw, Trash2, Upload, X } from "lucide-react";
+<Link to={"/admin/activities/" + activity.id} className="inline-flex min-h-9 items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-2.5 text-xs font-semibold text-slate-700 transition-colors hover:bg-slate-50" title="ดูรายละเอียดกิจกรรม">\n                        <Eye className="h-3.5 w-3.5" /><span className="hidden sm:inline">รายละเอียด</span>\n                      </Link>\n                      import { useEffect, useMemo, useState, type ReactNode } from "react";
+import { CalendarDays, Eye, ImagePlus, Lightbulb, Pencil, Plus, RefreshCw, Trash2, Upload, X } from "lucide-react";
 import { toast } from "sonner";
+import { Link } from "react-router-dom";
 import {
   createActivity,
   deleteActivity,
