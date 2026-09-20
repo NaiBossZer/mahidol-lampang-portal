@@ -292,6 +292,10 @@
   }
   .admin-modern-shell > div {
     margin-left: var(--admin-sidebar-width);
+    transition: margin-left 300ms ease-in-out;
+  }
+  .admin-modern-shell.admin-sidebar-collapsed > div {
+    margin-left: 0;
   }
   .admin-modern-shell > aside > div:first-child > div:first-child {
     height: 76px;
