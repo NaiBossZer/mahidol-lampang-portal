@@ -22,7 +22,25 @@ export type AdminSurvey = {
   questions: SurveyQuestion[];
 };
 
-async function request<T>(input: RequestInfo, init?: RequestInit): Promise<T> {
+let refreshPromise: Promise<boolean> | null = null;
+
+async function refreshSession() {
+  if (!refreshPromise) {
+    refreshPromise = fetch("/api/auth/refresh", {
+      method: "POST",
+      credentials: "include",
+      cache: "no-store",
+    })
+      .then((response) => response.ok)
+      .catch(() => false)
+      .finally(() => {
+        refreshPromise = null;
+      });
+  }
+  return refreshPromise;
+}
+
+async function request<T>(input: RequestInfo, init?: RequestInit, retried = false): Promise<T> {
   const r = await fetch(input, {
     ...init,
     credentials: "include",
@@ -33,6 +51,10 @@ async function request<T>(input: RequestInfo, init?: RequestInit): Promise<T> {
     },
   });
   const b = await r.json().catch(() => null);
+
+  if (r.status === 401 && !retried && (await refreshSession()))
+    return request<T>(input, init, true);
+
   if (!r.ok) throw new Error(b?.error || "ไม่สามารถเชื่อมต่อระบบแบบสอบถามได้");
   return b?.data as T;
 }
