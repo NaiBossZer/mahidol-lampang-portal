@@ -10,6 +10,30 @@ type AdminAuth = {
 };
 const AdminAuthContext = createContext<AdminAuth | null>(null);
 
+async function fetchSession() {
+  let response = await fetch("/api/auth/me", { credentials: "include", cache: "no-store" });
+
+  if (response.status === 401) {
+    const refresh = await fetch("/api/auth/refresh", {
+      method: "POST",
+      credentials: "include",
+      cache: "no-store",
+    });
+    if (refresh.ok)
+      response = await fetch("/api/auth/me", { credentials: "include", cache: "no-store" });
+  }
+
+  const body = (await response.json().catch(() => ({}))) as {
+    data?: {
+      authorized?: boolean;
+      role?: AdminRole;
+      permissions?: AdminPermission[];
+      user?: { id?: string; email?: string | null };
+    };
+  };
+  return { response, body };
+}
+
 export function useAdminAuth(): AdminAuth {
   const value = useContext(AdminAuthContext);
   if (!value) throw new Error("useAdminAuth must be used inside AdminGuard");
@@ -23,18 +47,7 @@ export function AdminGuard({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     let active = true;
-    fetch("/api/auth/me", { credentials: "include" })
-      .then(async (response) => ({
-        response,
-        body: (await response.json()) as {
-          data?: {
-            authorized?: boolean;
-            role?: AdminRole;
-            permissions?: AdminPermission[];
-            user?: { id?: string; email?: string | null };
-          };
-        },
-      }))
+    fetchSession()
       .then(({ response, body }) => {
         if (!active) return;
         const user = body.data?.user;
