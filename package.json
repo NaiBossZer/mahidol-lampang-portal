@@ -13,7 +13,8 @@
     "typecheck": "tsc --noEmit",
     "format": "prettier --write .",
     "smoke": "node scripts/smoke-test.mjs",
-    "cms:gate": "node scripts/cms-gate.mjs"
+    "cms:gate": "node scripts/cms-gate.mjs",
+    "test:analytics": "node --experimental-strip-types scripts/test-executive-analytics.mjs"
   },
   "dependencies": {
     "@google/model-viewer": "^4.3.1",

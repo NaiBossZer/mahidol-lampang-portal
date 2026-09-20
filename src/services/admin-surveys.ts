@@ -1,3 +1,6 @@
+import { getAdminOccurrences, type ActivityOccurrence } from "./admin-occurrences";
+import { getAdminActivities } from "./api";
+
 export type SurveyQuestion = {
   id: string;
   survey_id: string;
@@ -20,6 +23,12 @@ export type AdminSurvey = {
   close_at: string | null;
   welcome_text: string | null;
   questions: SurveyQuestion[];
+};
+
+export type SurveyWorkspaceData = {
+  surveys: AdminSurvey[];
+  occurrences: ActivityOccurrence[];
+  activityTitles: Record<string, string>;
 };
 
 async function request<T>(input: RequestInfo, init?: RequestInit): Promise<T> {
@@ -100,3 +109,28 @@ export const updateAdminQuestion = (input: SurveyQuestion) =>
       },
     }),
   });
+
+export async function getSurveyWorkspaceData(): Promise<SurveyWorkspaceData> {
+  const [activities, allOccurrences, loadedSurveys] = await Promise.all([
+    getAdminActivities().catch(() => []),
+    getAdminOccurrences().catch(() => []),
+    getAdminSurveys().catch(() => []),
+  ]);
+
+  const activityTitles: Record<string, string> = {};
+  for (const act of activities) {
+    if (act.id) {
+      activityTitles[String(act.id)] = String(act.title ?? "");
+    }
+  }
+
+  const occurrences = (Array.isArray(allOccurrences) ? allOccurrences : []).filter(
+    (x) => !["cancelled", "archived"].includes(x.status),
+  );
+
+  return {
+    surveys: Array.isArray(loadedSurveys) ? loadedSurveys : [],
+    occurrences,
+    activityTitles,
+  };
+}
