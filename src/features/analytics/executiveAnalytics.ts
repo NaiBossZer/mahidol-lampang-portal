@@ -31,6 +31,30 @@ export type ScoreItem = {
   respondentCount: number;
 };
 
+export function getSurveyScoreLabelOverrides(
+  surveyQuestions: AdminDashboardData["surveyQuestions"],
+  surveyId: string | null,
+): Partial<Record<ScoreField, string>> {
+  if (!surveyId) return {};
+
+  const ratingQuestions = surveyQuestions
+    .filter(
+      (question) =>
+        question.survey_id === surveyId &&
+        question.active &&
+        question.question_type === "rating",
+    )
+    .sort((a, b) => a.order_index - b.order_index);
+
+  const overrides: Partial<Record<ScoreField, string>> = {};
+  ratingQuestions.slice(0, ALL_SCORE_FIELDS.length).forEach((question, index) => {
+    const text = question.question_text.trim();
+    if (text) overrides[ALL_SCORE_FIELDS[index]] = text;
+  });
+
+  return overrides;
+}
+
 export type ScoreGroup = {
   key: string;
   title: string;
@@ -239,6 +263,7 @@ export function computeExecutiveMetrics(
   responses: AdminDashboardData["responses"],
   dimension: Dimension,
   organizations: AdminDashboardData["organizations"],
+  scoreLabelOverrides: Partial<Record<ScoreField, string>> = {},
 ): ExecutiveMetrics {
   const participants = occurrences.reduce(
     (s, o) => s + Math.max(0, Number(o.participant_count || 0)),
@@ -255,14 +280,22 @@ export function computeExecutiveMetrics(
     const value = computeAverage(values);
     return value === null
       ? []
-      : [{ field, label: SCORE_LABELS[field], value, respondentCount: values.length }];
-  });
+      : [
+          {
+            field,
+            label: scoreLabelOverrides[field] ?? SCORE_LABELS[field],
+            value,
+            respondentCount: values.length,
+          },
+        ];
+  }).sort((a, b) => b.value - a.value);
 
   const scoreGroups: ScoreGroup[] = SCORE_GROUPS_DEF.map((g) => ({
     ...g,
     items: g.fields
       .map((f) => questionScores.find((x) => x.field === f))
-      .filter((x): x is ScoreItem => Boolean(x)),
+      .filter((x): x is ScoreItem => Boolean(x))
+      .sort((a, b) => b.value - a.value),
   })).filter((g) => g.items.length > 0);
 
   const overallScore = computeAverage(

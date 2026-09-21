@@ -5,6 +5,7 @@ import {
   getRatingLevel,
   computeExecutiveMetrics,
   generateReportCsvContent,
+  getSurveyScoreLabelOverrides,
   ALL_SCORE_FIELDS,
 } from "../src/features/analytics/executiveAnalytics.ts";
 
@@ -103,6 +104,91 @@ const mockResponses = [
     channels: "WEBSITE",
   },
 ];
+
+const liveLabelOverrides = getSurveyScoreLabelOverrides(
+  [
+    {
+      id: "q-1",
+      survey_id: "survey-1",
+      section_key: "opening",
+      question_type: "rating",
+      question_text: "ความเหมาะสมของสถานที่จัดงาน",
+      order_index: 1,
+      active: true,
+    },
+    {
+      id: "q-2",
+      survey_id: "survey-1",
+      section_key: "opening",
+      question_type: "rating",
+      question_text: "ความเหมาะสมของกำหนดการและระยะเวลาการจัดงาน",
+      order_index: 2,
+      active: true,
+    },
+    {
+      id: "q-3",
+      survey_id: "survey-1",
+      section_key: "learning_room",
+      question_type: "rating",
+      question_text: "ความน่าสนใจของห้องการเรียนรู้และนิทรรศการ",
+      order_index: 6,
+      active: true,
+    },
+    {
+      id: "q-4",
+      survey_id: "survey-1",
+      section_key: "outcomes",
+      question_type: "rating",
+      question_text: "ท่านมีความสนใจเข้าร่วมกิจกรรมหรือกลับมาใช้ห้องการเรียนรู้อีกในอนาคต",
+      order_index: 14,
+      active: true,
+    },
+  ],
+  "survey-1",
+);
+assert.equal(
+  liveLabelOverrides.p2_location,
+  "ความเหมาะสมของสถานที่จัดงาน",
+  "part 1 wording must use the full questionnaire text",
+);
+assert.equal(
+  liveLabelOverrides.p2_schedule,
+  "ความเหมาะสมของกำหนดการและระยะเวลาการจัดงาน",
+  "part 1 schedule wording must use the full questionnaire text",
+);
+assert.equal(
+  liveLabelOverrides.p3_interest,
+  "ความน่าสนใจของห้องการเรียนรู้และนิทรรศการ",
+  "part 2 wording must use the full questionnaire text",
+);
+assert.equal(
+  liveLabelOverrides.p4_future_return,
+  "ท่านมีความสนใจเข้าร่วมกิจกรรมหรือกลับมาใช้ห้องการเรียนรู้อีกในอนาคต",
+  "part 3 wording must use the full questionnaire text",
+);
+
+const rankedMetrics = computeExecutiveMetrics(
+  mockOccurrences,
+  mockResponses,
+  "age_group",
+  [],
+  liveLabelOverrides,
+);
+assert.equal(
+  rankedMetrics.scoreGroups.length,
+  3,
+  "dashboard must preserve the three survey parts",
+);
+assert.equal(
+  rankedMetrics.scoreGroups.every(
+    (group) =>
+      group.items.every(
+        (item, index, items) => index === 0 || items[index - 1].value >= item.value,
+      ),
+  ),
+  true,
+  "scores must be sorted highest-to-lowest within each survey part",
+);
 
 const metrics = computeExecutiveMetrics(mockOccurrences, mockResponses, "age_group", []);
 
