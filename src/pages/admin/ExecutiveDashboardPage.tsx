@@ -426,14 +426,26 @@ export function ExecutiveDashboardPage() {
   }, [data, occurrences, activityIds]);
 
   const selectedSurveyId = useMemo(() => {
-    if (activity === "ALL" || !responses.length) return null;
-    const counts = new Map<string, number>();
+    if (activity === "ALL") return null;
+
+    const responseCounts = new Map<string, number>();
     for (const response of responses) {
       if (!response.survey_id) continue;
-      counts.set(response.survey_id, (counts.get(response.survey_id) ?? 0) + 1);
+      responseCounts.set(
+        response.survey_id,
+        (responseCounts.get(response.survey_id) ?? 0) + 1,
+      );
     }
-    return [...counts.entries()].sort((a, b) => b[1] - a[1])[0]?.[0] ?? null;
-  }, [activity, responses]);
+
+    const occurrenceIds = new Set(occurrences.map((occurrence) => occurrence.id));
+    const candidateSurveyIds = (data?.surveys ?? [])
+      .filter((survey) => survey.enabled && occurrenceIds.has(survey.occurrence_id))
+      .map((survey) => survey.id);
+
+    return [...new Set(candidateSurveyIds)].sort(
+      (a, b) => (responseCounts.get(b) ?? 0) - (responseCounts.get(a) ?? 0),
+    )[0] ?? null;
+  }, [activity, data?.surveys, occurrences, responses]);
 
   const scoreLabelOverrides = useMemo(
     () =>
@@ -1300,7 +1312,7 @@ export function ExecutiveDashboardPage() {
             </div>
           </section>
         )}
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-5">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
           <KpiCard
             icon={<Users className="h-5 w-5" />}
             label="ผู้เข้าร่วมกิจกรรม"
