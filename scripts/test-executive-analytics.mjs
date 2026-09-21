@@ -132,10 +132,19 @@ assert.equal(
   "dashboard must use the questionnaire wording when provided",
 );
 assert.equal(
-  rankedMetrics.questionScores[0].value >=
-    rankedMetrics.questionScores[rankedMetrics.questionScores.length - 1].value,
+  rankedMetrics.scoreGroups.length,
+  3,
+  "dashboard must preserve the three survey parts",
+);
+assert.equal(
+  rankedMetrics.scoreGroups.every(
+    (group) =>
+      group.items.every(
+        (item, index, items) => index === 0 || items[index - 1].value >= item.value,
+      ),
+  ),
   true,
-  "question scores must be sorted from highest to lowest",
+  "scores must be sorted highest-to-lowest within each survey part",
 );
 
 const metrics = computeExecutiveMetrics(mockOccurrences, mockResponses, "age_group", []);
