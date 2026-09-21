@@ -633,6 +633,8 @@ export function ActivitiesManagementPage() {
                         );
                       })}
                     </div>
+                  </>
+                )}
               </div>
             </div>
 
