@@ -168,6 +168,7 @@ export async function onRequestGet({ request, env }: { request: Request; env: En
         learningCenters: centers,
         organizations,
         surveys,
+        surveyQuestions,
         responses,
         activityLearningCenters: activityCenters,
         activityOrganizers,
