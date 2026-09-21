@@ -143,6 +143,7 @@ export async function onRequest({
       executionId?: string;
       decision?: "approved" | "rejected";
       reason?: string;
+      survey?: Record<string, unknown> | null;
     };
 
     const executionId = body.executionId?.trim();
@@ -238,10 +239,19 @@ export async function onRequest({
       const input = execution.input ?? {};
       const output = execution.output ?? {};
       const survey =
-        output.survey && typeof output.survey === "object"
-          ? (output.survey as Record<string, unknown>)
-          : {};
+        body.survey && typeof body.survey === "object"
+          ? body.survey
+          : output.survey && typeof output.survey === "object"
+            ? (output.survey as Record<string, unknown>)
+            : {};
       const activityId = String(input.activityId ?? "").trim();
+      const surveyTitle = String(survey.surveyTitle ?? "").trim();
+      if (!surveyTitle) {
+        return json(
+          { success: false, error: "surveyTitle missing from reviewed survey" },
+          400,
+        );
+      }
 
       if (!activityId) {
         return json(
@@ -315,13 +325,10 @@ export async function onRequest({
             },
             body: JSON.stringify({
               occurrence_id: occurrenceId,
+              title: surveyTitle,
               enabled: true,
               anonymous: true,
-              welcome_text: String(
-                survey.welcomeText ??
-                  survey.surveyTitle ??
-                  "แบบประเมินความพึงพอใจและผลสัมฤทธิ์",
-              ),
+              welcome_text: survey.welcomeText ? String(survey.welcomeText) : null,
             }),
           },
         );
@@ -334,6 +341,20 @@ export async function onRequest({
           500,
         );
       }
+
+      await callSupabase(
+        env,
+        token,
+        `occurrence_surveys?id=eq.${encodeURIComponent(surveyId)}`,
+        {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+            Prefer: "return=minimal",
+          },
+          body: JSON.stringify({ title: surveyTitle }),
+        },
+      );
 
       const currentQuestions = await callSupabase<Array<{ order_index: number | null }>>(
         env,
@@ -399,6 +420,7 @@ export async function onRequest({
         completed_at: completedAt,
         output: {
           ...output,
+          survey,
           surveyId,
           occurrenceId,
           attachedAt: completedAt,

@@ -44,6 +44,8 @@ export function SurveyManagementPage() {
   const [activityFilter, setActivityFilter] = useState("");
   const [activityTitles, setActivityTitles] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(true);
+  const [surveyTitleDraft, setSurveyTitleDraft] = useState("");
+  const [surveyTitleSaving, setSurveyTitleSaving] = useState(false);
 
   async function load() {
     setLoading(true);
@@ -82,6 +84,10 @@ export function SurveyManagementPage() {
   useEffect(() => {
     void load();
   }, []);
+
+  useEffect(() => {
+    setSurveyTitleDraft(selected?.title ?? "");
+  }, [selected?.id, selected?.title]);
 
   const filteredSurveys = useMemo(() => {
     const needle = search.trim().toLowerCase();
@@ -125,6 +131,7 @@ export function SurveyManagementPage() {
     try {
       const created = await createAdminSurvey({
         occurrenceId: occurrence.id,
+        title: activityTitles[activityFilter]?.trim() || "แบบประเมินกิจกรรม",
         enabled: true,
         anonymous: false,
         openAt: null,
@@ -137,6 +144,30 @@ export function SurveyManagementPage() {
       toast.success("สร้างแบบประเมินแล้ว");
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "สร้างแบบประเมินไม่สำเร็จ");
+    }
+  }
+
+  async function saveSurveyTitle() {
+    if (!selected) return;
+    const title = surveyTitleDraft.trim();
+    if (!title) {
+      toast.error("กรุณาระบุชื่อแบบประเมิน");
+      return;
+    }
+
+    setSurveyTitleSaving(true);
+    try {
+      const updated = await updateAdminSurvey(selected.id, { title });
+      setSelected({ ...selected, ...updated });
+      setSurveys((items) =>
+        items.map((item) => (item.id === selected.id ? { ...item, ...updated } : item)),
+      );
+      setSurveyTitleDraft(updated.title ?? title);
+      toast.success("บันทึกชื่อแบบประเมินแล้ว");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "บันทึกชื่อแบบประเมินไม่สำเร็จ");
+    } finally {
+      setSurveyTitleSaving(false);
     }
   }
 
@@ -328,12 +359,15 @@ export function SurveyManagementPage() {
                           <p
                             className={`font-semibold ${active ? "text-[#002d62]" : "text-slate-900"}`}
                           >
+                            {survey.title ||
+                              (occurrence
+                                ? activityTitles[occurrence.activity_id] || occurrence.activity_id
+                                : "แบบประเมิน")}
+                          </p>
+                          <p className="mt-1 text-xs text-slate-500">
                             {occurrence
                               ? activityTitles[occurrence.activity_id] || occurrence.activity_id
                               : "ไม่พบกิจกรรม"}
-                          </p>
-                          <p className="mt-1 text-xs text-slate-500">
-                            แบบประเมินของกิจกรรมที่เลือก
                           </p>
                           <p className="mt-1 font-mono text-[10px] text-slate-400">
                             Survey ID: {survey.id}
@@ -370,13 +404,36 @@ export function SurveyManagementPage() {
                     <p className="text-xs font-semibold uppercase tracking-[0.14em] text-violet-600">
                       QUESTION BUILDER
                     </p>
-                    <h2 className="mt-1 text-lg font-bold text-[#002d62]">
+                    <p className="mt-1 text-xs font-semibold text-slate-500">
                       {selectedOccurrence
                         ? activityTitles[selectedOccurrence.activity_id] ||
                           selectedOccurrence.activity_id
-                        : "แบบประเมิน"}
-                    </h2>
-                    <p className="mt-1 text-xs text-slate-500">แบบประเมินของกิจกรรมที่เลือก</p>
+                        : "ไม่พบกิจกรรม"}
+                    </p>
+                    <div className="mt-2 flex flex-col gap-2 sm:flex-row sm:items-end">
+                      <label className="min-w-0 flex-1">
+                        <span className="mb-1 block text-xs font-semibold text-slate-600">
+                          ชื่อแบบประเมิน
+                        </span>
+                        <input
+                          value={surveyTitleDraft}
+                          onChange={(event) => setSurveyTitleDraft(event.target.value)}
+                          className="h-11 w-full rounded-xl border border-slate-200 bg-white px-3 text-base font-bold text-[#002d62] outline-none transition focus:border-[#002d62] focus:ring-4 focus:ring-[#002d62]/10"
+                          placeholder="ระบุชื่อแบบประเมิน"
+                        />
+                      </label>
+                      <AdminButton
+                        variant="secondary"
+                        icon={<Save className="h-4 w-4" />}
+                        onClick={() => void saveSurveyTitle()}
+                        disabled={surveyTitleSaving || !surveyTitleDraft.trim()}
+                      >
+                        {surveyTitleSaving ? "กำลังบันทึก..." : "บันทึกชื่อ"}
+                      </AdminButton>
+                    </div>
+                    <p className="mt-1 text-xs text-slate-500">
+                      ชื่อนี้จะถูกส่งไปยังระบบแบบประเมิน (RAC) โดยไม่เปลี่ยนชื่อกิจกรรม
+                    </p>
                     {selectedOccurrence && (
                       <p className="mt-1 font-mono text-[10px] text-slate-400">
                         Activity: {selectedOccurrence.activity_id} · Survey: {selected?.id}

@@ -31,6 +31,7 @@ export type GeneratedSurvey = {
   id: string;
   activityId: string;
   surveyTitle: string;
+  welcomeText?: string;
   generatedDate: string;
   scaleType: string;
   aiConfidenceScore: number;
@@ -189,6 +190,7 @@ export async function confirmAiSurvey(
   executionId: string,
   decision: "approved" | "rejected",
   reason?: string,
+  survey?: GeneratedSurvey | null,
 ): Promise<{
   surveyId?: string;
   occurrenceId?: string;
@@ -201,7 +203,7 @@ export async function confirmAiSurvey(
       "Content-Type": "application/json",
       Accept: "application/json",
     },
-    body: JSON.stringify({ executionId, decision, reason }),
+    body: JSON.stringify({ executionId, decision, reason, survey }),
   });
   const data = await res.json().catch(() => null);
   if (!res.ok) throw new Error(data?.error || "ยืนยันผลไม่สำเร็จ");

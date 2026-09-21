@@ -4,6 +4,7 @@ type Env = Record<string, unknown>;
 type Row = Record<string, unknown>;
 type SurveyInput = {
   occurrenceId?: string;
+  title?: string | null;
   enabled?: boolean;
   anonymous?: boolean;
   openAt?: string | null;
@@ -62,7 +63,7 @@ async function authorize(request: Request, env: Env) {
 }
 
 const surveySelect =
-  "id,occurrence_id,enabled,anonymous,open_at,close_at,welcome_text,created_at,updated_at";
+  "id,occurrence_id,title,enabled,anonymous,open_at,close_at,welcome_text,created_at,updated_at";
 const questionSelect =
   "id,survey_id,section_key,question_text,question_type,required,order_index,options,scale_min,scale_max,active,created_at,updated_at";
 
@@ -155,6 +156,7 @@ export async function onRequest({ request, env }: { request: Request; env: Env }
         );
       const row = {
         occurrence_id: body.occurrenceId,
+        title: body.title?.trim() || "แบบประเมินกิจกรรม",
         enabled: body.enabled !== false,
         anonymous: body.anonymous === true,
         open_at: body.openAt ?? null,
@@ -170,13 +172,18 @@ export async function onRequest({ request, env }: { request: Request; env: Env }
     }
 
     if (!surveyId) return json({ success: false, error: "ต้องระบุ survey id" }, 400);
-    const row = {
+    const row: Record<string, unknown> = {
       enabled: body.enabled,
       anonymous: body.anonymous,
       open_at: body.openAt ?? null,
       close_at: body.closeAt ?? null,
       welcome_text: body.welcomeText ?? null,
     };
+    if (body.title !== undefined) {
+      const title = body.title?.trim();
+      if (!title) return json({ success: false, error: "ชื่อแบบประเมินห้ามว่าง" }, 400);
+      row.title = title;
+    }
     const rows = await sb<Row[]>(
       env,
       auth.token,
