@@ -128,6 +128,21 @@ const mockAnswers = [
   { id: "ans-8", response_id: "resp-2", question_id: "q-outcome", answer_number: 4 },
 ];
 
+const selectedActivityMetrics = computeExecutiveMetrics(
+  mockActivities.filter((activity) => activity.id === "act-1"),
+  mockResponses,
+  mockQuestions,
+  mockAnswers,
+  "age_group",
+  [],
+  "survey-1",
+);
+assert.equal(
+  selectedActivityMetrics.participants,
+  120,
+  "selected dashboard activity must use only that activity's participant_count",
+);
+
 const metrics = computeExecutiveMetrics(
   mockActivities,
   mockResponses,
