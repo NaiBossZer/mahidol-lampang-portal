@@ -6,6 +6,7 @@ import {
   computeExecutiveMetrics,
   generateReportCsvContent,
   getSurveyScoreLabelOverrides,
+  selectDashboardSurveyId,
   ALL_SCORE_FIELDS,
 } from "../src/features/analytics/executiveAnalytics.ts";
 
@@ -104,6 +105,70 @@ const mockResponses = [
     channels: "WEBSITE",
   },
 ];
+
+const selectedAllSurveyId = selectDashboardSurveyId(
+  [
+    {
+      id: "survey-short",
+      occurrence_id: "occ-old",
+      enabled: true,
+      anonymous: true,
+    },
+    {
+      id: "survey-detailed",
+      occurrence_id: "occ-new",
+      enabled: true,
+      anonymous: true,
+    },
+  ],
+  [
+    ...Array.from({ length: 14 }, (_, index) => ({
+      id: `short-${index + 1}`,
+      survey_id: "survey-short",
+      section_key: "legacy",
+      question_type: "rating",
+      question_text: "สั้น",
+      order_index: index + 1,
+      active: true,
+    })),
+    ...Array.from({ length: 14 }, (_, index) => ({
+      id: `detailed-${index + 1}`,
+      survey_id: "survey-detailed",
+      section_key: "legacy",
+      question_type: "rating",
+      question_text: "คำถามฉบับเต็มสำหรับการประเมินรายละเอียดรายข้อ".repeat(2),
+      order_index: index + 1,
+      active: true,
+    })),
+  ],
+  [
+    {
+      id: "occ-old",
+      activity_id: "activity-old",
+      occurrence_no: 1,
+      start_at: "2026-08-21T00:00:00Z",
+      end_at: null,
+      status: "completed",
+      participant_count: 10,
+    },
+    {
+      id: "occ-new",
+      activity_id: "activity-new",
+      occurrence_no: 1,
+      start_at: "2026-09-15T00:00:00Z",
+      end_at: null,
+      status: "completed",
+      participant_count: 10,
+    },
+  ],
+  [],
+  "ALL",
+);
+assert.equal(
+  selectedAllSurveyId,
+  "survey-detailed",
+  "ALL dashboard must use the survey with the most complete live question wording",
+);
 
 const liveLabelOverrides = getSurveyScoreLabelOverrides(
   [
