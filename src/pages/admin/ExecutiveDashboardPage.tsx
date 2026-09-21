@@ -549,15 +549,7 @@ export function ExecutiveDashboardPage() {
 
   const photos = useMemo(() => {
     if (activity !== "ALL") {
-      const media = (data?.activityMedia ?? [])
-        .filter((x) => x.activity_id === activity)
-        .sort((a, b) => a.display_order - b.display_order)
-        .map((x) => ({
-          id: x.id,
-          image: x.public_url,
-          title: x.caption || selectedActivity?.title || "กิจกรรม",
-        }));
-      return [
+      const candidates = [
         ...(selectedActivity?.featured_image
           ? [
               {
@@ -567,9 +559,27 @@ export function ExecutiveDashboardPage() {
               },
             ]
           : []),
-        ...media,
-      ].slice(0, 12);
+        ...(data?.activityMedia ?? [])
+          .filter((x) => x.activity_id === activity)
+          .sort((a, b) => a.display_order - b.display_order)
+          .map((x) => ({
+            id: x.id,
+            image: x.public_url,
+            title: x.caption || selectedActivity?.title || "กิจกรรม",
+          })),
+      ];
+
+      const seen = new Set<string>();
+      return candidates
+        .filter((photo) => {
+          const key = photo.image.trim();
+          if (!key || seen.has(key)) return false;
+          seen.add(key);
+          return true;
+        })
+        .slice(0, 12);
     }
+
     return (data?.activities ?? [])
       .filter((x) => x.featured_image)
       .slice(0, 12)
