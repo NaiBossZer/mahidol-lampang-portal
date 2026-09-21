@@ -26,7 +26,6 @@ import {
   type Period,
   type Dimension,
   type ResponseWithChannels,
-  type ScoreItem,
   type ReportRow,
   type ReportDetailRow,
   CHART_COLORS,
