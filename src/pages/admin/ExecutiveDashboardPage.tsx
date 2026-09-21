@@ -615,8 +615,8 @@ export function ExecutiveDashboardPage() {
   };
 
   const reportDetailRows = useMemo(
-    () => buildReportDetailRows(filteredReportRows),
-    [filteredReportRows],
+    () => buildReportDetailRows(filteredReportRows, scoreLabelOverrides),
+    [filteredReportRows, scoreLabelOverrides],
   );
 
   const respondentDetailRows = useMemo(() => buildRespondentDetailRows(reportRows), [reportRows]);
