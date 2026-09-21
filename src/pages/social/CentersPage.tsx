@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { MapPin, ArrowUpRight, BookOpen } from "lucide-react";
+import { Link as RouterLink } from "react-router-dom";
 import { PublicAppShell } from "@/components/layout/PublicAppShell";
 import { PublicPageHeader } from "@/components/layout/PublicPageHeader";
 import { getSystemUrl } from "@/services/systemRegistry";
