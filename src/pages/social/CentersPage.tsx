@@ -70,7 +70,7 @@ export function CentersPage() {
                   <MapPin className="h-4 w-4" />
                   {center.location}
                 </p>
-                {"href" in center ? (
+                {center.href ? (
                   <RouterLink
                     to={center.href}
                     className="mt-5 inline-flex min-h-11 items-center gap-1 text-sm font-bold text-[#1677A8] hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-[#1677A8] focus-visible:ring-offset-2"
