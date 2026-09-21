@@ -37,9 +37,16 @@ console.log("PASS: Rating level bands verified");
 const mockActivities = [
   {
     id: "act-1",
-    title: "โครงการทดสอบ",
+    title: "กิจกรรมห้องการเรียนรู้ครั่ง",
     activity_date: "2026-03-01",
-    participants: 120,
+    participants: 60,
+    status: "completed",
+  },
+  {
+    id: "act-2",
+    title: "กิจกรรมโรงเรียนชุมชนบ้านทุ่ง",
+    activity_date: "2026-03-15",
+    participants: 60,
     status: "completed",
   },
 ];
@@ -139,8 +146,14 @@ const selectedActivityMetrics = computeExecutiveMetrics(
 );
 assert.equal(
   selectedActivityMetrics.participants,
-  120,
+  60,
   "selected dashboard activity must use only that activity's participant_count",
+);
+
+assert.equal(
+  metrics.participants,
+  120,
+  "all-activities dashboard must sum participant_count across both activities",
 );
 
 const metrics = computeExecutiveMetrics(
