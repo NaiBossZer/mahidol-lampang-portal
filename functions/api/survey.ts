@@ -74,13 +74,13 @@ export async function onRequest({ request, env }: { request: Request; env: Env }
       return json({ success: false, error: "แบบสอบถามยังไม่เปิด" }, 409);
     if (survey.close_at && now > Date.parse(String(survey.close_at)))
       return json({ success: false, error: "แบบสอบถามปิดรับคำตอบแล้ว" }, 409);
-    const occurrenceId = body.occurrenceId || String(survey.occurrence_id);
+    const occurrenceId = String(survey.occurrence_id);
     const occurrences = await sb<Row[]>(
       env,
       `activity_occurrences?id=eq.${encodeURIComponent(occurrenceId)}&status=neq.cancelled&status=neq.archived&select=id,activity_id`,
     );
     if (!occurrences[0]) return json({ success: false, error: "รอบกิจกรรมไม่พร้อมรับคำตอบ" }, 409);
-    const activityId = body.activityId || String(occurrences[0].activity_id);
+    const activityId = String(occurrences[0].activity_id);
     const responseRows = await sb<Row[]>(env, "survey_responses", {
       method: "POST",
       headers: { Prefer: "return=representation" },
