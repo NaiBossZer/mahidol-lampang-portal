@@ -35,6 +35,16 @@ assert.equal(getRatingLevel(2.0), "ควรปรับปรุง", "< 2.5 is
 console.log("PASS: Rating level bands verified");
 
 // 4. Executive metrics computation with domain data
+const mockActivities = [
+  {
+    id: "act-1",
+    title: "โครงการทดสอบ",
+    activity_date: "2026-03-01",
+    status: "completed",
+    participants: 120,
+  },
+];
+
 const mockOccurrences = [
   {
     id: "occ-1",
@@ -168,7 +178,7 @@ assert.equal(
 );
 
 const rankedMetrics = computeExecutiveMetrics(
-  mockOccurrences,
+  mockActivities,
   mockResponses,
   "age_group",
   [],
@@ -190,11 +200,11 @@ assert.equal(
   "scores must be sorted highest-to-lowest within each survey part",
 );
 
-const metrics = computeExecutiveMetrics(mockOccurrences, mockResponses, "age_group", []);
+const metrics = computeExecutiveMetrics(mockActivities, mockResponses, "age_group", []);
 
-assert.equal(metrics.participants, 100, "total participants must be 100");
+assert.equal(metrics.participants, 120, "activity participant_count must be the Dashboard source of truth");
 assert.equal(metrics.responseCount, 2, "total responses must be 2");
-assert.equal(metrics.responseRate, 2.0, "response rate must be 2%");
+assert.equal(metrics.responseRate, (2 / 120) * 100, "response rate must use activity participant_count");
 assert.ok(
   metrics.overallScore !== null && metrics.overallScore > 4.0,
   "overall score must be > 4.0",

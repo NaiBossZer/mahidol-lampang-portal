@@ -277,14 +277,14 @@ export function getRatingLevel(overallScore: number | null): string {
 }
 
 export function computeExecutiveMetrics(
-  occurrences: AdminDashboardData["occurrences"],
+  activities: AdminDashboardData["activities"],
   responses: AdminDashboardData["responses"],
   dimension: Dimension,
   organizations: AdminDashboardData["organizations"],
   scoreLabelOverrides: Partial<Record<ScoreField, string>> = {},
 ): ExecutiveMetrics {
-  const participants = occurrences.reduce(
-    (s, o) => s + Math.max(0, Number(o.participant_count || 0)),
+  const participants = activities.reduce(
+    (s, activity) => s + Math.max(0, Number(activity.participants ?? 0)),
     0,
   );
   const responseCount = responses.length;

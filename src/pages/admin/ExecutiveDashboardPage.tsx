@@ -490,13 +490,13 @@ export function ExecutiveDashboardPage() {
   const metrics = useMemo(
     () =>
       computeExecutiveMetrics(
-        occurrences,
+        activities,
         responses,
         dimension,
         data?.organizations ?? [],
         scoreLabelOverrides,
       ),
-    [occurrences, responses, dimension, data?.organizations, scoreLabelOverrides],
+    [activities, responses, dimension, data?.organizations, scoreLabelOverrides],
   );
   const {
     participants,
