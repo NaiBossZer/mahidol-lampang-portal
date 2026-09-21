@@ -17,6 +17,7 @@ export type SurveyQuestion = {
 export type AdminSurvey = {
   id: string;
   occurrence_id: string;
+  title: string | null;
   enabled: boolean;
   anonymous: boolean;
   open_at: string | null;
@@ -54,6 +55,7 @@ export const getAdminSurveys = (occurrenceId?: string) =>
   );
 export const createAdminSurvey = (input: {
   occurrenceId: string;
+  title: string;
   enabled: boolean;
   anonymous: boolean;
   openAt: string | null;
