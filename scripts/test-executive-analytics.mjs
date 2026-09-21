@@ -5,8 +5,6 @@ import {
   getRatingLevel,
   computeExecutiveMetrics,
   generateReportCsvContent,
-  getSurveyScoreLabelOverrides,
-  ALL_SCORE_FIELDS,
 } from "../src/features/analytics/executiveAnalytics.ts";
 
 console.log("Running Executive Analytics Unit Tests...\n");
@@ -34,22 +32,13 @@ assert.equal(getRatingLevel(3.0), "ปานกลาง", ">= 2.5 is 'ปาน
 assert.equal(getRatingLevel(2.0), "ควรปรับปรุง", "< 2.5 is 'ควรปรับปรุง'");
 console.log("PASS: Rating level bands verified");
 
-// 4. Executive metrics computation with domain data
-const mockOccurrences = [
+// 4. Executive metrics computation from canonical survey_questions + survey_answers
+const mockActivities = [
   {
-    id: "occ-1",
-    activity_id: "act-1",
-    occurrence_no: 1,
-    start_at: "2026-03-01",
-    participant_count: 50,
-    status: "completed",
-  },
-  {
-    id: "occ-2",
-    activity_id: "act-1",
-    occurrence_no: 2,
-    start_at: "2026-03-02",
-    participant_count: 50,
+    id: "act-1",
+    title: "โครงการทดสอบ",
+    activity_date: "2026-03-01",
+    participants: 120,
     status: "completed",
   },
 ];
@@ -59,23 +48,10 @@ const mockResponses = [
     id: "resp-1",
     activity_id: "act-1",
     occurrence_id: "occ-1",
+    survey_id: "survey-1",
     submitted_at: "2026-03-01T12:00:00Z",
     age_group: "21-30",
     affiliation: "นักศึกษา",
-    p2_location: 5,
-    p2_schedule: 4,
-    p2_readiness: 5,
-    p2_reception: 4,
-    p2_overall: 5,
-    p3_interest: 4,
-    p3_content: 5,
-    p3_clarity: 4,
-    p3_benefit: 5,
-    p3_application: 4,
-    p4_knowledge: 5,
-    p4_inspiration: 4,
-    p4_community_resource: 5,
-    p4_future_return: 5,
     feedback: "ยอดเยี่ยมมาก",
     channels: "FACEBOOK, LINE",
   },
@@ -83,136 +59,137 @@ const mockResponses = [
     id: "resp-2",
     activity_id: "act-1",
     occurrence_id: "occ-2",
+    survey_id: "survey-1",
     submitted_at: "2026-03-02T12:00:00Z",
     age_group: "31-40",
     affiliation: "ประชาชนทั่วไป",
-    p2_location: 4,
-    p2_schedule: 4,
-    p2_readiness: 4,
-    p2_reception: 4,
-    p2_overall: 4,
-    p3_interest: 4,
-    p3_content: 4,
-    p3_clarity: 4,
-    p3_benefit: 4,
-    p3_application: 4,
-    p4_knowledge: 4,
-    p4_inspiration: 4,
-    p4_community_resource: 4,
-    p4_future_return: 4,
     feedback: "อยากให้จัดอีก",
     channels: "WEBSITE",
   },
 ];
 
-const liveLabelOverrides = getSurveyScoreLabelOverrides(
-  [
-    {
-      id: "q-1",
-      survey_id: "survey-1",
-      section_key: "opening",
-      question_type: "rating",
-      question_text: "ความเหมาะสมของสถานที่จัดงาน",
-      order_index: 1,
-      active: true,
-    },
-    {
-      id: "q-2",
-      survey_id: "survey-1",
-      section_key: "opening",
-      question_type: "rating",
-      question_text: "ความเหมาะสมของกำหนดการและระยะเวลาการจัดงาน",
-      order_index: 2,
-      active: true,
-    },
-    {
-      id: "q-3",
-      survey_id: "survey-1",
-      section_key: "learning_room",
-      question_type: "rating",
-      question_text: "ความน่าสนใจของห้องการเรียนรู้และนิทรรศการ",
-      order_index: 6,
-      active: true,
-    },
-    {
-      id: "q-4",
-      survey_id: "survey-1",
-      section_key: "outcomes",
-      question_type: "rating",
-      question_text: "ท่านมีความสนใจเข้าร่วมกิจกรรมหรือกลับมาใช้ห้องการเรียนรู้อีกในอนาคต",
-      order_index: 14,
-      active: true,
-    },
-  ],
-  "survey-1",
-);
-assert.equal(
-  liveLabelOverrides.p2_location,
-  "ความเหมาะสมของสถานที่จัดงาน",
-  "part 1 wording must use the full questionnaire text",
-);
-assert.equal(
-  liveLabelOverrides.p2_schedule,
-  "ความเหมาะสมของกำหนดการและระยะเวลาการจัดงาน",
-  "part 1 schedule wording must use the full questionnaire text",
-);
-assert.equal(
-  liveLabelOverrides.p3_interest,
-  "ความน่าสนใจของห้องการเรียนรู้และนิทรรศการ",
-  "part 2 wording must use the full questionnaire text",
-);
-assert.equal(
-  liveLabelOverrides.p4_future_return,
-  "ท่านมีความสนใจเข้าร่วมกิจกรรมหรือกลับมาใช้ห้องการเรียนรู้อีกในอนาคต",
-  "part 3 wording must use the full questionnaire text",
-);
+const mockQuestions = [
+  {
+    id: "q-location",
+    survey_id: "survey-1",
+    section_key: "opening",
+    question_type: "rating",
+    question_text: "ความเหมาะสมของสถานที่จัดงาน",
+    order_index: 1,
+    active: true,
+  },
+  {
+    id: "q-schedule",
+    survey_id: "survey-1",
+    section_key: "opening",
+    question_type: "rating",
+    question_text: "ความเหมาะสมของกำหนดการและระยะเวลาการจัดงาน",
+    order_index: 2,
+    active: true,
+  },
+  {
+    id: "q-learning",
+    survey_id: "survey-1",
+    section_key: "learning_room",
+    question_type: "rating",
+    question_text: "ความน่าสนใจของห้องการเรียนรู้และนิทรรศการ",
+    order_index: 6,
+    active: true,
+  },
+  {
+    id: "q-outcome",
+    survey_id: "survey-1",
+    section_key: "outcomes",
+    question_type: "rating",
+    question_text: "ท่านมีความสนใจเข้าร่วมกิจกรรมหรือกลับมาใช้ห้องการเรียนรู้อีกในอนาคต",
+    order_index: 14,
+    active: true,
+  },
+  {
+    id: "q-text",
+    survey_id: "survey-1",
+    section_key: "feedback",
+    question_type: "text",
+    question_text: "ข้อเสนอแนะเพิ่มเติม",
+    order_index: 15,
+    active: true,
+  },
+];
 
-const rankedMetrics = computeExecutiveMetrics(
-  mockOccurrences,
+const mockAnswers = [
+  { id: "ans-1", response_id: "resp-1", question_id: "q-location", answer_number: 5 },
+  { id: "ans-2", response_id: "resp-1", question_id: "q-schedule", answer_number: 4 },
+  { id: "ans-3", response_id: "resp-1", question_id: "q-learning", answer_number: 5 },
+  { id: "ans-4", response_id: "resp-1", question_id: "q-outcome", answer_number: 5 },
+  { id: "ans-5", response_id: "resp-2", question_id: "q-location", answer_number: 4 },
+  { id: "ans-6", response_id: "resp-2", question_id: "q-schedule", answer_number: 4 },
+  { id: "ans-7", response_id: "resp-2", question_id: "q-learning", answer_number: 4 },
+  { id: "ans-8", response_id: "resp-2", question_id: "q-outcome", answer_number: 4 },
+];
+
+const metrics = computeExecutiveMetrics(
+  mockActivities,
   mockResponses,
+  mockQuestions,
+  mockAnswers,
   "age_group",
   [],
-  liveLabelOverrides,
+  "survey-1",
+);
+
+assert.equal(metrics.participants, 120, "activities.participant_count must be canonical");
+assert.equal(metrics.responseCount, 2, "total responses must be 2");
+assert.equal(metrics.responseRate, (2 / 120) * 100, "response rate must use activity participant_count");
+assert.ok(
+  metrics.overallScore !== null && metrics.overallScore > 4.0,
+  "overall score must be > 4.0",
+);
+assert.equal(metrics.ratingLevel, "ดี", "overall rating level for dynamic survey answers");
+assert.equal(
+  metrics.questionScores.length,
+  4,
+  "only active rating questions with canonical answers must be evaluated",
 );
 assert.equal(
-  rankedMetrics.scoreGroups.length,
+  metrics.questionScores[0]?.label,
+  "ความเหมาะสมของสถานที่จัดงาน",
+  "question labels must come from survey_questions",
+);
+assert.equal(
+  metrics.scoreGroups.length,
   3,
-  "dashboard must preserve the three survey parts",
+  "three groups must be derived from question section_key",
 );
 assert.equal(
-  rankedMetrics.scoreGroups.every(
+  metrics.scoreGroups.every(
     (group) =>
       group.items.every(
         (item, index, items) => index === 0 || items[index - 1].value >= item.value,
       ),
   ),
   true,
-  "scores must be sorted highest-to-lowest within each survey part",
-);
-
-const metrics = computeExecutiveMetrics(mockOccurrences, mockResponses, "age_group", []);
-
-assert.equal(metrics.participants, 100, "total participants must be 100");
-assert.equal(metrics.responseCount, 2, "total responses must be 2");
-assert.equal(metrics.responseRate, 2.0, "response rate must be 2%");
-assert.ok(
-  metrics.overallScore !== null && metrics.overallScore > 4.0,
-  "overall score must be > 4.0",
-);
-assert.equal(metrics.ratingLevel, "ดี", "overall rating level for 4.21 must be 'ดี'");
-assert.equal(
-  metrics.questionScores.length,
-  ALL_SCORE_FIELDS.length,
-  "all 14 score fields must be evaluated",
-);
-assert.equal(
-  metrics.scoreGroups.length,
-  3,
-  "must have 3 score groups (opening, learning, outcome)",
+  "scores must be sorted highest-to-lowest within each survey section",
 );
 assert.equal(metrics.channelDistribution.length, 3, "must detect FACEBOOK, LINE, WEBSITE");
 assert.equal(metrics.comments.length, 2, "must collect 2 comments");
-console.log("PASS: Executive metrics calculations verified");
+console.log("PASS: Executive metrics calculations from canonical survey data verified");
+
+const reportRows = buildReportRows(
+  {
+    activities: mockActivities,
+    occurrences: [],
+    organizations: [],
+  },
+  mockResponses,
+  mockQuestions,
+  mockAnswers,
+);
+assert.equal(reportRows[0]?.questionDetails.length, 4, "report must use dynamic rating questions");
+assert.ok(
+  reportRows[0]?.questionDetails.some((q) => q.question === "ความเหมาะสมของกำหนดการและระยะเวลาการจัดงาน"),
+  "report must preserve full dynamic question text",
+);
+console.log("PASS: Dynamic report question rows verified");
 
 // 5. CSV export generation formatting
 const csvContent = generateReportCsvContent([
