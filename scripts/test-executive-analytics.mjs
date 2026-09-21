@@ -4,6 +4,7 @@ import {
   computeAverage,
   getRatingLevel,
   computeExecutiveMetrics,
+  buildReportRows,
   generateReportCsvContent,
 } from "../src/features/analytics/executiveAnalytics.ts";
 
