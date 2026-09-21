@@ -108,6 +108,7 @@ export type DashboardOrganization = {
 export type DashboardSurvey = {
   id: string;
   occurrence_id: string;
+  title?: string | null;
   enabled: boolean;
   anonymous: boolean;
   open_at?: string | null;
@@ -123,6 +124,15 @@ export type DashboardSurveyQuestion = {
   order_index: number;
   active: boolean;
 };
+export type DashboardSurveyAnswer = {
+  id: string;
+  response_id: string;
+  question_id: string;
+  answer_number?: number | null;
+  answer_text?: string | null;
+  answer_options?: unknown;
+};
+
 export type DashboardResponse = {
   id: string;
   activity_id: string;
@@ -179,6 +189,7 @@ export type AdminDashboardData = {
   surveys: DashboardSurvey[];
   surveyQuestions: DashboardSurveyQuestion[];
   responses: DashboardResponse[];
+  surveyAnswers: DashboardSurveyAnswer[];
   activityLearningCenters: DashboardActivityLearningCenter[];
   activityOrganizers: DashboardActivityOrganizer[];
   activityMedia: DashboardActivityMedia[];
