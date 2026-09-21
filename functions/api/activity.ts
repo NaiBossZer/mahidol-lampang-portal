@@ -9,7 +9,14 @@ type MediaRow = {
   created_at: string;
 };
 const SELECT =
-  "id,title,activity_date,category,featured_image,images,objective,key_activities,outcomes,participants,status,created_at,updated_at,survey_enabled,survey_open_at,survey_close_at,survey_welcome_text";
+  "id,title,slug,summary,content,activity_date,category,location,featured_image,images,objective,key_activities,outcomes,impact,participant_count,participants,status,created_at,updated_at,survey_enabled,survey_open_at,survey_close_at,survey_welcome_text";
+function canonicalParticipantCount(row: ActivityRow) {
+  const canonical = Number(row.participant_count);
+  if (Number.isFinite(canonical) && canonical >= 0) return canonical;
+  const legacy = Number(row.participants);
+  return Number.isFinite(legacy) && legacy >= 0 ? legacy : undefined;
+}
+
 function toActivity(row: ActivityRow, media: MediaRow[] = []) {
   const stored = media
     .filter((item) => item.public_url)
@@ -20,22 +27,19 @@ function toActivity(row: ActivityRow, media: MediaRow[] = []) {
   );
   return {
     id: String(row.id),
-    slug: String(row.id),
+    slug: String(row.slug ?? row.id),
     title: String(row.title ?? ""),
-    summary: String(row.objective ?? row.outcomes ?? "กิจกรรมพันธกิจเพื่อสังคม"),
+    summary: String(row.summary ?? ""),
     activityDate: String(row.activity_date ?? ""),
-    location: "พื้นที่ปฏิบัติการลำปาง",
+    location: String(row.location ?? ""),
     featuredImage: String(row.featured_image ?? "") || images[0] || "/main banner.jpg",
     objective: String(row.objective ?? ""),
     process: Array.isArray(row.key_activities)
       ? row.key_activities.join("\n")
       : String(row.key_activities ?? ""),
     outcome: String(row.outcomes ?? ""),
-    impact: "",
-    participantCount:
-      Number.isFinite(Number(row.participants)) && String(row.participants ?? "").trim() !== ""
-        ? Number(row.participants)
-        : undefined,
+    impact: String(row.impact ?? ""),
+    participantCount: canonicalParticipantCount(row),
     category: String(row.category ?? ""),
     status: String(row.status ?? "draft"),
     images,
@@ -58,7 +62,7 @@ export async function onRequestGet({ request, env }: { request: Request; env: En
       status: "eq.published",
       order: "activity_date.desc",
     });
-    const raw = rows.find((row) => String(row.id) === slug);
+    const raw = rows.find((row) => String(row.id) === slug || String(row.slug ?? "") === slug);
     if (!raw) return json({ error: "Activity not found" }, 404);
     const media = await supabaseRest<MediaRow[]>(env, "activity_media", {
       select: "activity_id,public_url,display_order,created_at",
