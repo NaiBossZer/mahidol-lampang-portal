@@ -602,7 +602,9 @@ export function ExecutiveDashboardPage() {
 
   const title = selectedActivity?.title || "รายงานผลสัมฤทธิ์ทั้งหมด";
   const heroImage =
-    selectedActivity?.featured_image || photos[0]?.image || "/social-engagement-logo.png";
+    activity === "ALL"
+      ? "/social-engagement-logo.png"
+      : selectedActivity?.featured_image || photos[0]?.image || "/social-engagement-logo.png";
 
   const reportRows = useMemo(
     () => buildReportRows(data, responses, data?.surveyQuestions ?? [], data?.surveyAnswers ?? []),
