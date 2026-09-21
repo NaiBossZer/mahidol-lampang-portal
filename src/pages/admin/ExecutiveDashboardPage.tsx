@@ -472,6 +472,17 @@ export function ExecutiveDashboardPage() {
     )[0] ?? null;
   }, [activity, data?.surveys, occurrences, responses]);
 
+  // Keep the report/detail table on the exact same survey scope as the
+  // question-level satisfaction metrics when one activity is selected.
+  // For ALL activities there is no single survey to scope to.
+  const surveyScopedResponses = useMemo(
+    () =>
+      activity !== "ALL" && selectedSurveyId
+        ? responses.filter((response) => response.survey_id === selectedSurveyId)
+        : responses,
+    [activity, responses, selectedSurveyId],
+  );
+
   const metricActivities = useMemo(
     () =>
       activity === "ALL"
@@ -617,8 +628,14 @@ export function ExecutiveDashboardPage() {
       : selectedActivity?.featured_image || photos[0]?.image || "/social-engagement-logo.png";
 
   const reportRows = useMemo(
-    () => buildReportRows(data, responses, data?.surveyQuestions ?? [], data?.surveyAnswers ?? []),
-    [data, responses],
+    () =>
+      buildReportRows(
+        data,
+        surveyScopedResponses,
+        data?.surveyQuestions ?? [],
+        data?.surveyAnswers ?? [],
+      ),
+    [data, surveyScopedResponses],
   );
   const filteredReportRows = useMemo(() => {
     const q = reportSearch.trim().toLowerCase();
