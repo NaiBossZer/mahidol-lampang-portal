@@ -5,6 +5,7 @@ import {
   getRatingLevel,
   computeExecutiveMetrics,
   generateReportCsvContent,
+  getSurveyScoreLabelOverrides,
   ALL_SCORE_FIELDS,
 } from "../src/features/analytics/executiveAnalytics.ts";
 
@@ -103,6 +104,39 @@ const mockResponses = [
     channels: "WEBSITE",
   },
 ];
+
+const liveLabelOverrides = getSurveyScoreLabelOverrides(
+  [
+    {
+      id: "q-1",
+      survey_id: "survey-1",
+      section_key: "opening",
+      question_type: "rating",
+      question_text: "ความเหมาะสมของสถานที่จัดงาน",
+      order_index: 1,
+      active: true,
+    },
+  ],
+  "survey-1",
+);
+const rankedMetrics = computeExecutiveMetrics(
+  mockOccurrences,
+  mockResponses,
+  "age_group",
+  [],
+  liveLabelOverrides,
+);
+assert.equal(
+  rankedMetrics.questionScores.find((item) => item.field === "p2_location")?.label,
+  "ความเหมาะสมของสถานที่จัดงาน",
+  "dashboard must use the questionnaire wording when provided",
+);
+assert.equal(
+  rankedMetrics.questionScores[0].value >=
+    rankedMetrics.questionScores[rankedMetrics.questionScores.length - 1].value,
+  true,
+  "question scores must be sorted from highest to lowest",
+);
 
 const metrics = computeExecutiveMetrics(mockOccurrences, mockResponses, "age_group", []);
 
