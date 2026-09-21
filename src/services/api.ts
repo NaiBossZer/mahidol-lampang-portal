@@ -128,7 +128,7 @@ export type DashboardSurveyAnswer = {
   id: string;
   response_id: string;
   question_id: string;
-  answer_number?: number | null;
+  answer_number?: number | string | null;
   answer_text?: string | null;
   answer_options?: unknown;
 };
