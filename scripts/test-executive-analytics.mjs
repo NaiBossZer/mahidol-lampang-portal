@@ -127,9 +127,9 @@ const rankedMetrics = computeExecutiveMetrics(
   labelOverrides,
 );
 assert.equal(
-  rankedMetrics.questionScores[0].label,
-  "สถานที่",
-  "without a selected survey response, default labels remain deterministic",
+  rankedMetrics.questionScores.find((item) => item.field === "p2_location")?.label,
+  "ความเหมาะสมของสถานที่จัดงาน",
+  "dashboard must use the questionnaire wording when a live survey label is provided",
 );
 assert.equal(
   rankedMetrics.questionScores[0].value >=
