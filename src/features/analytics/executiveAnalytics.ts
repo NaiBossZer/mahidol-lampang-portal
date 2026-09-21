@@ -304,7 +304,8 @@ export function computeExecutiveMetrics(
     ...g,
     items: g.fields
       .map((f) => questionScores.find((x) => x.field === f))
-      .filter((x): x is ScoreItem => Boolean(x)),
+      .filter((x): x is ScoreItem => Boolean(x))
+      .sort((a, b) => b.value - a.value),
   })).filter((g) => g.items.length > 0);
 
   const overallScore = computeAverage(
