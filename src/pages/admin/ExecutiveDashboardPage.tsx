@@ -472,10 +472,18 @@ export function ExecutiveDashboardPage() {
     )[0] ?? null;
   }, [activity, data?.surveys, occurrences, responses]);
 
+  const metricActivities = useMemo(
+    () =>
+      activity === "ALL"
+        ? activities
+        : activities.filter((item) => item.id === activity),
+    [activity, activities],
+  );
+
   const metrics = useMemo(
     () =>
       computeExecutiveMetrics(
-        activities,
+        metricActivities,
         responses,
         data?.surveyQuestions ?? [],
         data?.surveyAnswers ?? [],
@@ -484,7 +492,7 @@ export function ExecutiveDashboardPage() {
         selectedSurveyId,
       ),
     [
-      activities,
+      metricActivities,
       responses,
       data?.surveyQuestions,
       data?.surveyAnswers,
