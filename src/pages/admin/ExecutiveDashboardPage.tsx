@@ -56,12 +56,12 @@ const printCell = (value: unknown) =>
     .replaceAll(">", "&gt;")
     .replaceAll('"', "&quot;");
 
+const MAHIDOL_GOLD = "#AA800E";
+
 function ScoreMeter({
   value,
-  color,
 }: {
   value: number;
-  color: string;
 }) {
   const clamped = Math.max(0, Math.min(5, value));
   return (
@@ -76,7 +76,7 @@ function ScoreMeter({
             >
               <div
                 className="absolute inset-y-0 left-0 rounded-full transition-[width] duration-500 ease-out"
-                style={{ width: `${fill * 100}%`, backgroundColor: color }}
+                style={{ width: `${fill * 100}%`, backgroundColor: MAHIDOL_GOLD }}
               />
             </div>
           );
@@ -1549,10 +1549,7 @@ export function ExecutiveDashboardPage() {
                               <span className="text-[11px] font-normal text-slate-400">/ 5.00</span>
                             </span>
                           </div>
-                          <ScoreMeter
-                            value={item.value}
-                            color={CHART_COLORS[(groupIndex * 2 + index) % CHART_COLORS.length]}
-                          />
+                          <ScoreMeter value={item.value} />
                         </div>
                       ))}
                     </div>
