@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { RefreshCw, ServerCog } from "lucide-react";
+import { RefreshCw, Save, ServerCog } from "lucide-react";
 import { toast } from "sonner";
 type System = {
   system_key: string;
@@ -13,6 +13,8 @@ type System = {
 export function SystemSettingsPage() {
   const [data, setData] = useState<System[]>([]);
   const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState<string | null>(null);
+  const [draftUrls, setDraftUrls] = useState<Record<string, string>>({});
   async function load() {
     setLoading(true);
     try {
@@ -22,7 +24,11 @@ export function SystemSettingsPage() {
       });
       const b = await r.json();
       if (!r.ok) throw new Error(b?.error || "โหลดไม่สำเร็จ");
-      setData(b.data ?? []);
+      const rows = (b.data ?? []) as System[];
+      setData(rows);
+      setDraftUrls(
+        Object.fromEntries(rows.map((row) => [row.system_key, row.base_url ?? ""])),
+      );
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "โหลด settings ไม่สำเร็จ");
     } finally {
@@ -32,6 +38,32 @@ export function SystemSettingsPage() {
   useEffect(() => {
     void load();
   }, []);
+
+  async function save(systemKey: string) {
+    setSaving(systemKey);
+    try {
+      const response = await fetch("/api/admin/system-settings", {
+        method: "PATCH",
+        credentials: "include",
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          systemKey,
+          baseUrl: draftUrls[systemKey]?.trim() || null,
+        }),
+      });
+      const body = await response.json();
+      if (!response.ok) throw new Error(body?.error || "บันทึกไม่สำเร็จ");
+      toast.success("บันทึก URL ระบบเรียบร้อย");
+      await load();
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "บันทึกไม่สำเร็จ");
+    } finally {
+      setSaving(null);
+    }
+  }
   return (
     <section className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
       <div className="flex items-end justify-between">
@@ -67,9 +99,30 @@ export function SystemSettingsPage() {
               <p className="mt-2 text-xs text-slate-500">
                 {x.system_key} · {x.system_type}
               </p>
-              <p className="mt-2 text-xs text-slate-500 break-all">
-                {x.base_url ?? "ไม่เปิดเผย endpoint"}
-              </p>
+              <label className="mt-3 block text-xs font-medium text-slate-600">
+                URL ระบบ
+                <input
+                  value={draftUrls[x.system_key] ?? ""}
+                  onChange={(event) =>
+                    setDraftUrls((current) => ({
+                      ...current,
+                      [x.system_key]: event.target.value,
+                    }))
+                  }
+                  placeholder="https://example.org"
+                  className="mt-1.5 w-full rounded-lg border border-slate-200 px-3 py-2 text-xs text-slate-700 outline-none focus:border-brand-navy"
+                  inputMode="url"
+                />
+              </label>
+              <button
+                type="button"
+                onClick={() => void save(x.system_key)}
+                disabled={saving === x.system_key}
+                className="mt-3 inline-flex min-h-9 items-center gap-1.5 rounded-lg bg-brand-navy px-3 py-2 text-xs font-semibold text-white disabled:opacity-50"
+              >
+                <Save className="h-3.5 w-3.5" />
+                {saving === x.system_key ? "กำลังบันทึก..." : "บันทึก URL"}
+              </button>
             </div>
           ))
         )}
