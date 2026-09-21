@@ -30,13 +30,13 @@ export async function onRequest({ request, env }: { request: Request; env: Env }
       if (!surveyId) {
         const surveys = await sb<Row[]>(
           env,
-          "occurrence_surveys?enabled=eq.true&select=id,occurrence_id,anonymous,welcome_text,open_at,close_at&order=created_at.desc",
+          "occurrence_surveys?enabled=eq.true&select=id,occurrence_id,title,anonymous,welcome_text,open_at,close_at&order=created_at.desc",
         );
         return json({ success: true, data: surveys });
       }
       const surveys = await sb<Row[]>(
         env,
-        `occurrence_surveys?id=eq.${encodeURIComponent(surveyId)}&enabled=eq.true&select=id,occurrence_id,anonymous,open_at,close_at,welcome_text`,
+        `occurrence_surveys?id=eq.${encodeURIComponent(surveyId)}&enabled=eq.true&select=id,occurrence_id,title,anonymous,open_at,close_at,welcome_text`,
       );
       if (!surveys[0])
         return json({ success: false, error: "ไม่พบแบบสอบถามหรือแบบสอบถามปิดอยู่" }, 404);
