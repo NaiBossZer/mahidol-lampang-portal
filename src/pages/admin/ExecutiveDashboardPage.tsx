@@ -1495,30 +1495,41 @@ export function ExecutiveDashboardPage() {
               }
             >
               <div className="space-y-3.5 p-3.5">
-                {questionScores.map((item, index) => (
-                  <div key={item.field}>
-                    <div className="mb-1 flex items-center justify-between gap-2">
-                      <div className="flex min-w-0 items-center gap-2">
-                        <span className="grid h-5 w-5 shrink-0 place-items-center rounded-full bg-slate-100 text-[10px] font-bold text-slate-500">
-                          {index + 1}
-                        </span>
-                        <span className="truncate pr-2 text-[12px] font-medium text-slate-700">
-                          {item.label}
-                        </span>
-                      </div>
-                      <span className="shrink-0 text-[12px] font-bold text-slate-900">
-                        {item.value.toFixed(2)}{" "}
-                        <span className="text-[11px] font-normal text-slate-400">/ 5.00</span>
-                      </span>
+                {scoreGroups.map((group, groupIndex) => (
+                  <div key={group.key} className="rounded-xl border border-slate-100 bg-slate-50/50 p-3">
+                    <div className="mb-3 flex items-center justify-between gap-2 border-b border-slate-200 pb-2">
+                      <h3 className="text-[12px] font-bold text-slate-800">{group.title}</h3>
+                      <span className="shrink-0 text-[10px] font-medium text-slate-400">คะแนน 1–5</span>
                     </div>
-                    <div className="h-2 w-full overflow-hidden rounded-full bg-slate-100">
-                      <div
-                        className="h-full rounded-full transition-all duration-700 ease-out"
-                        style={{
-                          width: `${(item.value / 5) * 100}%`,
-                          backgroundColor: CHART_COLORS[index % CHART_COLORS.length],
-                        }}
-                      />
+                    <div className="space-y-3">
+                      {group.items.map((item, index) => (
+                        <div key={item.field}>
+                          <div className="mb-1 flex items-start justify-between gap-3">
+                            <div className="flex min-w-0 items-start gap-2">
+                              <span className="grid h-5 w-5 shrink-0 place-items-center rounded-full bg-white text-[10px] font-bold text-slate-500 ring-1 ring-slate-200">
+                                {index + 1}
+                              </span>
+                              <span className="min-w-0 whitespace-normal break-words pr-2 text-[12px] font-medium leading-5 text-slate-700">
+                                {item.label}
+                              </span>
+                            </div>
+                            <span className="shrink-0 text-[12px] font-bold text-slate-900">
+                              {item.value.toFixed(2)}{" "}
+                              <span className="text-[11px] font-normal text-slate-400">/ 5.00</span>
+                            </span>
+                          </div>
+                          <div className="h-2 w-full overflow-hidden rounded-full bg-slate-100">
+                            <div
+                              className="h-full rounded-full transition-all duration-700 ease-out"
+                              style={{
+                                width: `${(item.value / 5) * 100}%`,
+                                backgroundColor:
+                                  CHART_COLORS[(groupIndex * 2 + index) % CHART_COLORS.length],
+                              }}
+                            />
+                          </div>
+                        </div>
+                      ))}
                     </div>
                   </div>
                 ))}
