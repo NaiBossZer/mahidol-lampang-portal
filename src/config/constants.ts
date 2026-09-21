@@ -11,14 +11,6 @@ export const SYSTEM_KEYS = {
   FACILITY_SAFETY: "facility-safety",
 } as const;
 
-// Google Apps Script URLs
-export const GOOGLE_SCRIPTS = {
-  DASHBOARD:
-    "https://script.google.com/macros/s/AKfycbxIXYFkonDlYf8sb1VqTDoJXlsZ58Pd53qYSP-rxeLc-9_hiHA4kKIUVAUEM-IdcrLIkQ/exec",
-  SURVEY:
-    "https://script.google.com/macros/s/AKfycbx6MoINngMyK4Jf4JgCTQHY_B_iydnYqtqSKcT2-UbslV23ZBX__k-ez7gbeixDXQ8rPQ/exec",
-} as const;
-
 // App Configuration
 export const APP_CONFIG = {
   NAME: "Mahidol Social Engagement Platform",
