@@ -147,17 +147,8 @@ export async function onRequestGet({ request, env }: { request: Request; env: En
       }),
     ]);
 
-    const firstMediaByActivity = new Map<string, string>();
-    for (const media of activityMedia) {
-      const url = typeof media.public_url === "string" ? media.public_url.trim() : "";
-      if (media.activity_id && url && !firstMediaByActivity.has(media.activity_id))
-        firstMediaByActivity.set(media.activity_id, url);
-    }
     const activitiesWithMedia = activities.map((activity) =>
-      toDashboardActivity(
-        activity,
-        String(activity.featured_image ?? "").trim() || firstMediaByActivity.get(activity.id) || "",
-      ),
+      toDashboardActivity(activity, String(activity.featured_image ?? "").trim()),
     );
 
     return json({
