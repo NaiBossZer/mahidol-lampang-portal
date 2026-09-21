@@ -1,10 +1,9 @@
-import { SUB_SYSTEM_URLS } from "@/config";
-import { EmbeddedSystemView } from "@/components/EmbeddedSystemView";
+import { SystemRegistryView } from "@/components/SystemRegistryView";
 
 export function CleanEnergyPage() {
   return (
-    <EmbeddedSystemView
-      url={SUB_SYSTEM_URLS.CLEAN_ENERGY}
+    <SystemRegistryView
+      systemKey="clean-energy"
       title="Clean Energy System"
       systemLabel="Clean Energy"
     />
