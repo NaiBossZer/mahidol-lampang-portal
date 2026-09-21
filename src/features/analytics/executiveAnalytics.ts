@@ -215,7 +215,13 @@ export function computeExecutiveMetrics(
   const pending = Math.max(0, participants - responseCount);
   const responseRate = participants ? (responseCount / participants) * 100 : null;
 
-  const responseIds = new Set(responses.map((response) => response.id));
+  // Question-level scores must use the same survey-scoped response set as the
+  // detailed report. Activity-level KPIs (participants/response rate) still use
+  // the full response set passed into this function.
+  const scoreResponses = surveyId
+    ? responses.filter((response) => response.survey_id === surveyId)
+    : responses;
+  const responseIds = new Set(scoreResponses.map((response) => response.id));
   const activeRatingQuestions = surveyQuestions
     .filter(
       (question) =>
