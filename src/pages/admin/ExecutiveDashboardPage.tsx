@@ -458,10 +458,12 @@ export function ExecutiveDashboardPage() {
   const {
     participants,
     responseCount,
+    pending,
     responseRate,
     overallScore: overall,
     ratingLevel: level,
     questionScores,
+    scoreGroups,
     highestScore: highest,
     lowestScore: lowest,
     respondentDistribution,
