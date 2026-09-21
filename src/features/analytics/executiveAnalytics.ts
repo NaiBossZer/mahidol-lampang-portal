@@ -31,6 +31,60 @@ export type ScoreItem = {
   respondentCount: number;
 };
 
+export function selectDashboardSurveyId(
+  surveys: AdminDashboardData["surveys"],
+  surveyQuestions: AdminDashboardData["surveyQuestions"],
+  occurrences: AdminDashboardData["occurrences"],
+  responses: AdminDashboardData["responses"],
+  activityId: string,
+): string | null {
+  const occurrenceIds = new Set(
+    occurrences
+      .filter((occurrence) => activityId === "ALL" || occurrence.activity_id === activityId)
+      .map((occurrence) => occurrence.id),
+  );
+  const occurrenceById = new Map(occurrences.map((occurrence) => [occurrence.id, occurrence]));
+  const responseCounts = new Map<string, number>();
+  for (const response of responses) {
+    if (!response.survey_id) continue;
+    responseCounts.set(response.survey_id, (responseCounts.get(response.survey_id) ?? 0) + 1);
+  }
+
+  const questionStats = new Map<string, { count: number; textLength: number }>();
+  for (const question of surveyQuestions) {
+    if (!question.active || question.question_type !== "rating") continue;
+    const current = questionStats.get(question.survey_id) ?? { count: 0, textLength: 0 };
+    current.count += 1;
+    current.textLength += question.question_text.trim().length;
+    questionStats.set(question.survey_id, current);
+  }
+
+  const candidates = surveys.filter((survey) => occurrenceIds.has(survey.occurrence_id));
+  if (!candidates.length) return null;
+
+  candidates.sort((a, b) => {
+    const qa = questionStats.get(a.id) ?? { count: 0, textLength: 0 };
+    const qb = questionStats.get(b.id) ?? { count: 0, textLength: 0 };
+
+    if (activityId === "ALL") {
+      if (qb.count !== qa.count) return qb.count - qa.count;
+      if (qb.textLength !== qa.textLength) return qb.textLength - qa.textLength;
+    } else {
+      const responseDiff = (responseCounts.get(b.id) ?? 0) - (responseCounts.get(a.id) ?? 0);
+      if (responseDiff) return responseDiff;
+      if (qb.count !== qa.count) return qb.count - qa.count;
+      if (qb.textLength !== qa.textLength) return qb.textLength - qa.textLength;
+    }
+
+    return (
+      new Date(occurrenceById.get(b.occurrence_id)?.start_at ?? 0).getTime() -
+      new Date(occurrenceById.get(a.occurrence_id)?.start_at ?? 0).getTime()
+    );
+  });
+
+  return candidates[0]?.id ?? null;
+}
+
 export function getSurveyScoreLabelOverrides(
   surveyQuestions: AdminDashboardData["surveyQuestions"],
   surveyId: string | null,
