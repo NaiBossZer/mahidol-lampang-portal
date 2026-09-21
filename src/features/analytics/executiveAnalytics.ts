@@ -6,72 +6,22 @@ export type ResponseWithChannels = AdminDashboardData["responses"][number] & {
   channels?: string | null;
 };
 
-export type ScoreField = keyof Pick<
-  AdminDashboardData["responses"][number],
-  | "p2_location"
-  | "p2_schedule"
-  | "p2_readiness"
-  | "p2_reception"
-  | "p2_overall"
-  | "p3_interest"
-  | "p3_content"
-  | "p3_clarity"
-  | "p3_benefit"
-  | "p3_application"
-  | "p4_knowledge"
-  | "p4_inspiration"
-  | "p4_community_resource"
-  | "p4_future_return"
->;
+export type ScoreField = string;
+
+export type ResponseWithChannels = AdminDashboardData["responses"][number] & {
+  channels?: string | null;
+};
 
 export type ScoreItem = {
   field: ScoreField;
+  questionId: string;
+  surveyId: string;
+  sectionKey: string;
+  orderIndex: number;
   label: string;
   value: number;
   respondentCount: number;
 };
-
-export function getSurveyScoreLabelOverrides(
-  surveyQuestions: AdminDashboardData["surveyQuestions"],
-  surveyId: string | null,
-): Partial<Record<ScoreField, string>> {
-  const ratingQuestions = surveyQuestions
-    .filter(
-      (question) =>
-        (surveyId ? question.survey_id === surveyId : true) &&
-        question.active &&
-        question.question_type === "rating" &&
-        question.question_text.trim(),
-    )
-    .sort(
-      (a, b) =>
-        a.order_index - b.order_index ||
-        b.question_text.trim().length - a.question_text.trim().length,
-    );
-
-  const overrides: Partial<Record<ScoreField, string>> = {};
-
-  if (surveyId) {
-    ratingQuestions.slice(0, ALL_SCORE_FIELDS.length).forEach((question, index) => {
-      overrides[ALL_SCORE_FIELDS[index]] = question.question_text.trim();
-    });
-    return overrides;
-  }
-
-  const longestByOrder = new Map<number, string>();
-  for (const question of ratingQuestions) {
-    const text = question.question_text.trim();
-    const current = longestByOrder.get(question.order_index);
-    if (!current || text.length > current.length) longestByOrder.set(question.order_index, text);
-  }
-
-  ALL_SCORE_FIELDS.forEach((field, index) => {
-    const text = longestByOrder.get(index + 1);
-    if (text) overrides[field] = text;
-  });
-
-  return overrides;
-}
 
 export type ScoreGroup = {
   key: string;
@@ -88,7 +38,13 @@ export type ReportRow = {
   ageGroup: string;
   affiliation: string;
   organization: string;
-  scores: Record<ScoreField, string>;
+  scores: Record<string, string>;
+  questionDetails: {
+    field: string;
+    group: string;
+    question: string;
+    score: string;
+  }[];
   feedback: string;
   channels: string;
 };
@@ -157,51 +113,21 @@ export type ExecutiveMetrics = {
   comments: string[];
 };
 
-export type DateFilterOptions = {
-  period: Period;
-  year: string;
-  quarter: string;
-  month: string;
-  from: string;
-  to: string;
+const SECTION_TITLE_LABELS: Record<string, string> = {
+  opening: "การจัดกิจกรรม (Activity Organization)",
+  learning: "เนื้อหาและการเรียนรู้ (Content & Learning)",
+  learning_room: "เนื้อหาและการเรียนรู้ (Content & Learning)",
+  outcomes: "ผลลัพธ์และประโยชน์ (Outcomes & Benefits)",
 };
 
-export const SCORE_GROUPS_DEF: { key: string; title: string; fields: ScoreField[] }[] = [
-  {
-    key: "opening",
-    title: "การจัดกิจกรรม (Activity Organization)",
-    fields: ["p2_location", "p2_schedule", "p2_readiness", "p2_reception", "p2_overall"],
-  },
-  {
-    key: "learning",
-    title: "เนื้อหาและการเรียนรู้ (Content & Learning)",
-    fields: ["p3_interest", "p3_content", "p3_clarity", "p3_benefit", "p3_application"],
-  },
-  {
-    key: "outcome",
-    title: "ผลลัพธ์และประโยชน์ (Outcomes & Benefits)",
-    fields: ["p4_knowledge", "p4_inspiration", "p4_community_resource", "p4_future_return"],
-  },
-];
-
-export const SCORE_LABELS: Record<ScoreField, string> = {
-  p2_location: "สถานที่",
-  p2_schedule: "กำหนดการ",
-  p2_readiness: "ความพร้อม",
-  p2_reception: "การต้อนรับ",
-  p2_overall: "ภาพรวมกิจกรรม",
-  p3_interest: "ความน่าสนใจ",
-  p3_content: "เนื้อหา",
-  p3_clarity: "ความชัดเจน",
-  p3_benefit: "ประโยชน์",
-  p3_application: "การนำไปใช้",
-  p4_knowledge: "ความรู้ที่ได้รับ",
-  p4_inspiration: "แรงบันดาลใจ",
-  p4_community_resource: "ทรัพยากรชุมชน",
-  p4_future_return: "การกลับมาใช้บริการ",
-};
-
-export const ALL_SCORE_FIELDS = Object.keys(SCORE_LABELS) as ScoreField[];
+function sectionTitle(sectionKey: string) {
+  return (
+    SECTION_TITLE_LABELS[sectionKey] ??
+    sectionKey
+      .replace(/[_-]+/g, " ")
+      .replace(/\b\w/g, (value) => value.toUpperCase())
+  );
+}
 
 export const CHART_COLORS = ["#10B981", "#0EA5E9", "#F59E0B", "#A855F7", "#FB7185", "#CBD5E1"];
 
@@ -277,54 +203,92 @@ export function getRatingLevel(overallScore: number | null): string {
 }
 
 export function computeExecutiveMetrics(
-  occurrences: AdminDashboardData["occurrences"],
+  activities: AdminDashboardData["activities"],
   responses: AdminDashboardData["responses"],
+  surveyQuestions: AdminDashboardData["surveyQuestions"],
+  surveyAnswers: AdminDashboardData["surveyAnswers"],
   dimension: Dimension,
   organizations: AdminDashboardData["organizations"],
-  scoreLabelOverrides: Partial<Record<ScoreField, string>> = {},
+  surveyId: string | null = null,
 ): ExecutiveMetrics {
-  const participants = occurrences.reduce(
-    (s, o) => s + Math.max(0, Number(o.participant_count || 0)),
+  const participants = activities.reduce(
+    (sum, activity) => sum + Math.max(0, Number(activity.participants ?? 0)),
     0,
   );
   const responseCount = responses.length;
   const pending = Math.max(0, participants - responseCount);
   const responseRate = participants ? (responseCount / participants) * 100 : null;
 
-  const questionScores: ScoreItem[] = ALL_SCORE_FIELDS.flatMap((field) => {
-    const values = responses
-      .map((r) => parseScore(r[field]))
-      .filter((x): x is number => x !== null);
-    const value = computeAverage(values);
-    return value === null
-      ? []
-      : [
-          {
-            field,
-            label: scoreLabelOverrides[field] ?? SCORE_LABELS[field],
-            value,
-            respondentCount: values.length,
-          },
-        ];
-  }).sort((a, b) => b.value - a.value);
+  const responseIds = new Set(responses.map((response) => response.id));
+  const activeRatingQuestions = surveyQuestions
+    .filter(
+      (question) =>
+        question.active &&
+        question.question_type === "rating" &&
+        question.question_text.trim() &&
+        (!surveyId || question.survey_id === surveyId),
+    )
+    .sort((a, b) => a.order_index - b.order_index);
 
-  const scoreGroups: ScoreGroup[] = SCORE_GROUPS_DEF.map((g) => ({
-    ...g,
-    items: g.fields
-      .map((f) => questionScores.find((x) => x.field === f))
-      .filter((x): x is ScoreItem => Boolean(x))
-      .sort((a, b) => b.value - a.value),
-  })).filter((g) => g.items.length > 0);
+  const questionMap = new Map(activeRatingQuestions.map((question) => [question.id, question]));
+  const valuesByQuestion = new Map<string, number[]>();
+  for (const answer of surveyAnswers) {
+    if (!responseIds.has(answer.response_id)) continue;
+    const question = questionMap.get(answer.question_id);
+    if (!question) continue;
+    const value = parseScore(answer.answer_number);
+    if (value === null) continue;
+    const values = valuesByQuestion.get(question.id) ?? [];
+    values.push(value);
+    valuesByQuestion.set(question.id, values);
+  }
 
-  const overallScore = computeAverage(
-    responses.flatMap((r) =>
-      ALL_SCORE_FIELDS.map((f) => parseScore(r[f])).filter((x): x is number => x !== null),
-    ),
-  );
+  const questionScores = activeRatingQuestions
+    .flatMap((question) => {
+      const values = valuesByQuestion.get(question.id) ?? [];
+      const value = computeAverage(values);
+      return value === null
+        ? []
+        : [
+            {
+              field: question.id,
+              questionId: question.id,
+              surveyId: question.survey_id,
+              sectionKey: question.section_key,
+              orderIndex: question.order_index,
+              label: question.question_text.trim(),
+              value,
+              respondentCount: values.length,
+            },
+          ];
+    })
+    .sort((a, b) => b.value - a.value);
 
-  const sortedScores = [...questionScores].sort((a, b) => b.value - a.value);
-  const highestScore = sortedScores[0];
-  const lowestScore = sortedScores[sortedScores.length - 1];
+  const groups = new Map<string, ScoreItem[]>();
+  const groupFirstOrder = new Map<string, number>();
+  for (const item of questionScores) {
+    const current = groups.get(item.sectionKey) ?? [];
+    current.push(item);
+    groups.set(item.sectionKey, current);
+    groupFirstOrder.set(
+      item.sectionKey,
+      Math.min(groupFirstOrder.get(item.sectionKey) ?? Number.POSITIVE_INFINITY, item.orderIndex),
+    );
+  }
+
+  const scoreGroups = [...groups.entries()]
+    .sort((a, b) => (groupFirstOrder.get(a[0]) ?? 0) - (groupFirstOrder.get(b[0]) ?? 0))
+    .map(([key, items]) => ({
+      key,
+      title: sectionTitle(key),
+      fields: items.map((item) => item.field),
+      items: [...items].sort((a, b) => b.value - a.value),
+    }));
+
+  const allSubmittedScores = [...valuesByQuestion.values()].flat();
+  const overallScore = computeAverage(allSubmittedScores);
+  const highestScore = questionScores[0];
+  const lowestScore = questionScores.at(-1);
 
   const respondentMap = new Map<string, number>();
   for (const r of responses) {
@@ -348,20 +312,12 @@ export function computeExecutiveMetrics(
       color: CHART_COLORS[i % CHART_COLORS.length],
     }));
 
-  const totalScoresSubmitted = responses.reduce(
-    (s, r) => s + ALL_SCORE_FIELDS.filter((f) => parseScore(r[f]) !== null).length,
-    0,
-  );
-
-  const scoreDistribution: ScoreDistributionItem[] = [5, 4, 3, 2, 1].map((v) => {
-    const count = responses.reduce(
-      (s, r) => s + ALL_SCORE_FIELDS.filter((f) => parseScore(r[f]) === v).length,
-      0,
-    );
+  const scoreDistribution: ScoreDistributionItem[] = [5, 4, 3, 2, 1].map((value) => {
+    const count = allSubmittedScores.filter((score) => score === value).length;
     return {
-      value: v,
+      value,
       count,
-      percent: totalScoresSubmitted ? (count / totalScoresSubmitted) * 100 : 0,
+      percent: allSubmittedScores.length ? (count / allSubmittedScores.length) * 100 : 0,
     };
   });
 
@@ -418,20 +374,45 @@ export function computeExecutiveMetrics(
 export function buildReportRows(
   data: AdminDashboardData | null,
   responses: AdminDashboardData["responses"],
+  surveyQuestions: AdminDashboardData["surveyQuestions"],
+  surveyAnswers: AdminDashboardData["surveyAnswers"],
 ): ReportRow[] {
   if (!data) return [];
   const occurrenceMap = new Map(data.occurrences.map((o) => [o.id, o]));
   const activityMap = new Map(data.activities.map((a) => [a.id, a]));
   const organizationMap = new Map((data.organizations ?? []).map((o) => [o.id, o.name]));
+  const answersByResponse = new Map<string, AdminDashboardData["surveyAnswers"]>();
+  for (const answer of surveyAnswers) {
+    const current = answersByResponse.get(answer.response_id) ?? [];
+    current.push(answer);
+    answersByResponse.set(answer.response_id, current);
+  }
 
   return responses
     .map((r, index) => {
       const occurrence = r.occurrence_id ? occurrenceMap.get(r.occurrence_id) : undefined;
       const activityId = r.activity_id || occurrence?.activity_id;
       const activityItem = activityId ? activityMap.get(activityId) : undefined;
+      const ratingQuestions = surveyQuestions
+        .filter(
+          (question) =>
+            question.active &&
+            question.question_type === "rating" &&
+            (!r.survey_id || question.survey_id === r.survey_id),
+        )
+        .sort((a, b) => a.order_index - b.order_index);
+      const answersForResponse = new Map(
+        (answersByResponse.get(r.id) ?? []).map((answer) => [answer.question_id, answer]),
+      );
+      const questionDetails = ratingQuestions.map((question) => ({
+        field: question.id,
+        group: sectionTitle(question.section_key),
+        question: question.question_text.trim(),
+        score: parseScore(answersForResponse.get(question.id)?.answer_number)?.toFixed(2) ?? "",
+      }));
       const scores = Object.fromEntries(
-        ALL_SCORE_FIELDS.map((field) => [field, parseScore(r[field])?.toFixed(2) || ""]),
-      ) as Record<ScoreField, string>;
+        questionDetails.map((question) => [question.field, question.score]),
+      );
 
       return {
         id: String(r.id || `${activityId || "row"}-${index}`),
@@ -445,6 +426,7 @@ export function buildReportRows(
             ? organizationMap.get(r.participant_organization_id)
             : "") || "",
         scores,
+        questionDetails,
         feedback: r.feedback?.trim() || "",
         channels: (r as ResponseWithChannels).channels?.trim() || "",
       };
@@ -455,12 +437,9 @@ export function buildReportRows(
     );
 }
 
-export function buildReportDetailRows(
-  filteredReportRows: ReportRow[],
-  scoreLabelOverrides: Partial<Record<ScoreField, string>> = {},
-): ReportDetailRow[] {
+export function buildReportDetailRows(filteredReportRows: ReportRow[]): ReportDetailRow[] {
   return filteredReportRows.flatMap((r) =>
-    ALL_SCORE_FIELDS.map((field) => ({
+    r.questionDetails.map((question) => ({
       respondentId: r.id,
       activity: r.activity,
       date: r.date,
@@ -468,9 +447,9 @@ export function buildReportDetailRows(
       ageGroup: r.ageGroup,
       affiliation: r.affiliation,
       organization: r.organization,
-      group: SCORE_GROUPS_DEF.find((g) => g.fields.includes(field))?.title || "-",
-      question: scoreLabelOverrides[field] ?? SCORE_LABELS[field],
-      score: r.scores[field] || "",
+      group: question.group,
+      question: question.question,
+      score: question.score,
       feedback: r.feedback,
       channels: r.channels,
     })),
@@ -479,9 +458,9 @@ export function buildReportDetailRows(
 
 export function buildRespondentDetailRows(reportRows: ReportRow[]): RespondentDetailRow[] {
   return reportRows.map((row) => {
-    const scores = ALL_SCORE_FIELDS.map((field) => parseScore(row.scores[field])).filter(
-      (value): value is number => value !== null,
-    );
+    const scores = Object.values(row.scores)
+      .map((value) => parseScore(value))
+      .filter((value): value is number => value !== null);
     return {
       id: row.id,
       activity: row.activity,
