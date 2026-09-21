@@ -1,10 +1,9 @@
-import { SUB_SYSTEM_URLS } from "@/config";
-import { EmbeddedSystemView } from "@/components/EmbeddedSystemView";
+import { SystemRegistryView } from "@/components/SystemRegistryView";
 
 export function RACPage() {
   return (
-    <EmbeddedSystemView
-      url={SUB_SYSTEM_URLS.RAC}
+    <SystemRegistryView
+      systemKey="lac-learning"
       title="RAC System"
       systemLabel="Research & Academic Center"
     />

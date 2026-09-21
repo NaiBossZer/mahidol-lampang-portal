@@ -1,10 +1,9 @@
-import { SUB_SYSTEM_URLS } from "@/config";
-import { EmbeddedSystemView } from "@/components/EmbeddedSystemView";
+import { SystemRegistryView } from "@/components/SystemRegistryView";
 
 export function SmartFarmPage() {
   return (
-    <EmbeddedSystemView
-      url={SUB_SYSTEM_URLS.SMART_FARM}
+    <SystemRegistryView
+      systemKey="smart-farm"
       title="Smart Farm System"
       systemLabel="Smart Farm IoT"
     />

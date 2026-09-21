@@ -95,6 +95,7 @@ export async function onRequestGet({ request, env }: { request: Request; env: En
       organizations,
       surveys,
       surveyQuestions,
+      surveyAnswers,
       responses,
       activityCenters,
       activityOrganizers,
@@ -120,12 +121,16 @@ export async function onRequestGet({ request, env }: { request: Request; env: En
         order: "display_order.asc,name.asc",
       }),
       supabaseUserRest(env, accessToken, "occurrence_surveys", {
-        select: "id,occurrence_id,enabled,anonymous,open_at,close_at,welcome_text",
+        select: "id,occurrence_id,title,enabled,anonymous,open_at,close_at,welcome_text",
       }),
       supabaseUserRest(env, accessToken, "survey_questions", {
-        select: "id,survey_id,section_key,question_type,question_text,order_index,active",
+        select: "id,survey_id,section_key,question_type,question_text,order_index,active,scale_min,scale_max",
         active: "eq.true",
         order: "survey_id.asc,order_index.asc",
+      }),
+      supabaseUserRest(env, accessToken, "survey_answers", {
+        select: "id,response_id,question_id,answer_number,answer_text,answer_options",
+        order: "created_at.desc",
       }),
       supabaseUserRest(env, accessToken, "survey_responses", {
         select:
@@ -160,6 +165,7 @@ export async function onRequestGet({ request, env }: { request: Request; env: En
         organizations,
         surveys,
         surveyQuestions,
+        surveyAnswers,
         responses,
         activityLearningCenters: activityCenters,
         activityOrganizers,

@@ -5,6 +5,7 @@ import type { SurveyQuestion } from "@/services/admin-surveys";
 type PublicSurvey = {
   id: string;
   occurrence_id: string;
+  title: string | null;
   anonymous: boolean;
   welcome_text: string | null;
   questions: SurveyQuestion[];
@@ -153,7 +154,7 @@ export function PublicSurveyPage() {
                     onClick={() => void loadSurvey(item.id)}
                     className="block w-full rounded-xl border border-slate-200 p-4 text-left hover:bg-slate-50"
                   >
-                    <p className="font-semibold text-brand-navy">แบบประเมินกิจกรรม</p>
+                    <p className="font-semibold text-brand-navy">{item.title || "แบบประเมินกิจกรรม"}</p>
                     <p className="mt-1 text-xs text-slate-500">
                       {item.anonymous ? "Anonymous" : "Identified"}
                     </p>
@@ -172,7 +173,7 @@ export function PublicSurveyPage() {
           <p className="text-xs font-semibold uppercase tracking-[0.14em] text-emerald-300">
             Mahidol Lampang · Survey
           </p>
-          <h1 className="mt-2 text-2xl font-bold">แบบประเมินกิจกรรม</h1>
+          <h1 className="mt-2 text-2xl font-bold">{survey.title || "แบบประเมินกิจกรรม"}</h1>
           <p className="mt-2 text-sm text-white/80">
             {survey.welcome_text || "ขอความร่วมมือในการประเมินกิจกรรม"}
           </p>

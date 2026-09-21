@@ -26,14 +26,8 @@ import {
   type Period,
   type Dimension,
   type ResponseWithChannels,
-  type ScoreField,
-  type ScoreItem,
   type ReportRow,
   type ReportDetailRow,
-  ALL_SCORE_FIELDS,
-  SCORE_LABELS,
-  getSurveyScoreLabelOverrides,
-  SCORE_GROUPS_DEF as SCORE_GROUPS,
   CHART_COLORS,
   CHANNEL_BRAND_COLORS,
   formatThaiNumber as formatNumber,
@@ -478,25 +472,34 @@ export function ExecutiveDashboardPage() {
     )[0] ?? null;
   }, [activity, data?.surveys, occurrences, responses]);
 
-  const scoreLabelOverrides = useMemo(
+  const metricActivities = useMemo(
     () =>
-      getSurveyScoreLabelOverrides(
-        data?.surveyQuestions ?? [],
-        selectedSurveyId,
-      ),
-    [data?.surveyQuestions, selectedSurveyId],
+      activity === "ALL"
+        ? activities
+        : activities.filter((item) => item.id === activity),
+    [activity, activities],
   );
 
   const metrics = useMemo(
     () =>
       computeExecutiveMetrics(
-        occurrences,
+        metricActivities,
         responses,
+        data?.surveyQuestions ?? [],
+        data?.surveyAnswers ?? [],
         dimension,
         data?.organizations ?? [],
-        scoreLabelOverrides,
+        selectedSurveyId,
       ),
-    [occurrences, responses, dimension, data?.organizations, scoreLabelOverrides],
+    [
+      metricActivities,
+      responses,
+      data?.surveyQuestions,
+      data?.surveyAnswers,
+      dimension,
+      data?.organizations,
+      selectedSurveyId,
+    ],
   );
   const {
     participants,
@@ -599,9 +602,14 @@ export function ExecutiveDashboardPage() {
 
   const title = selectedActivity?.title || "รายงานผลสัมฤทธิ์ทั้งหมด";
   const heroImage =
-    selectedActivity?.featured_image || photos[0]?.image || "/social-engagement-logo.png";
+    activity === "ALL"
+      ? "/social-engagement-logo.png"
+      : selectedActivity?.featured_image || photos[0]?.image || "/social-engagement-logo.png";
 
-  const reportRows = useMemo(() => buildReportRows(data, responses), [data, responses]);
+  const reportRows = useMemo(
+    () => buildReportRows(data, responses, data?.surveyQuestions ?? [], data?.surveyAnswers ?? []),
+    [data, responses],
+  );
   const filteredReportRows = useMemo(() => {
     const q = reportSearch.trim().toLowerCase();
     if (!q) return reportRows;
@@ -614,7 +622,8 @@ export function ExecutiveDashboardPage() {
         r.organization,
         r.feedback,
         r.channels,
-        ...ALL_SCORE_FIELDS.map((f) => r.scores[f]),
+        ...Object.values(r.scores),
+        ...r.questionDetails.map((question) => question.question),
       ].some((v) => v.toLowerCase().includes(q)),
     );
   }, [reportRows, reportSearch]);
@@ -646,8 +655,8 @@ export function ExecutiveDashboardPage() {
   };
 
   const reportDetailRows = useMemo(
-    () => buildReportDetailRows(filteredReportRows, scoreLabelOverrides),
-    [filteredReportRows, scoreLabelOverrides],
+    () => buildReportDetailRows(filteredReportRows),
+    [filteredReportRows],
   );
 
   const respondentDetailRows = useMemo(() => buildRespondentDetailRows(reportRows), [reportRows]);

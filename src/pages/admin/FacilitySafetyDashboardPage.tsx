@@ -1,11 +1,9 @@
-import { EmbeddedSystemView } from "@/components/EmbeddedSystemView";
-
-const FACILITY_SAFETY_URL = "https://mulpfacility-safety.vercel.app";
+import { SystemRegistryView } from "@/components/SystemRegistryView";
 
 export function FacilitySafetyDashboardPage() {
   return (
-    <EmbeddedSystemView
-      url={FACILITY_SAFETY_URL}
+    <SystemRegistryView
+      systemKey="facility-safety"
       title="Facility-Safety Dashboard"
       systemLabel="อาคารและความปลอดภัย"
       sso

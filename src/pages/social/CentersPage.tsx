@@ -1,6 +1,9 @@
+import { useEffect, useState } from "react";
 import { MapPin, ArrowUpRight, BookOpen } from "lucide-react";
+import { Link as RouterLink } from "react-router-dom";
 import { PublicAppShell } from "@/components/layout/PublicAppShell";
 import { PublicPageHeader } from "@/components/layout/PublicPageHeader";
+import { getSystemUrl } from "@/services/systemRegistry";
 
 const centers = [
   {
@@ -10,7 +13,7 @@ const centers = [
     description: "พื้นที่เรียนรู้ครั่งครบวงจร เชื่อมงานวิจัย การเรียนรู้ และการพัฒนาชุมชน",
     location: "สบปราบ ลำปาง",
     image: "/Shellac banner.jpg",
-    href: "https://mahidol-shellac.vercel.app/",
+    systemKey: "lac-learning",
   },
   {
     slug: "smart-farm-station",
@@ -33,6 +36,10 @@ const centers = [
 ];
 
 export function CentersPage() {
+  const [shellacUrl, setShellacUrl] = useState<string | null>(null);
+  useEffect(() => {
+    void getSystemUrl("lac-learning").then(setShellacUrl).catch(() => setShellacUrl(null));
+  }, []);
   return (
     <PublicAppShell>
       <PublicPageHeader
@@ -63,14 +70,25 @@ export function CentersPage() {
                   <MapPin className="h-4 w-4" />
                   {center.location}
                 </p>
-                <a
-                  href={center.href}
-                  target={center.href.startsWith("http") ? "_blank" : undefined}
-                  rel="noreferrer"
-                  className="mt-5 inline-flex min-h-11 items-center gap-1 text-sm font-bold text-[#1677A8] hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-[#1677A8] focus-visible:ring-offset-2"
-                >
-                  เข้าสู่พื้นที่ <ArrowUpRight className="h-4 w-4" />
-                </a>
+                {center.href ? (
+                  <RouterLink
+                    to={center.href}
+                    className="mt-5 inline-flex min-h-11 items-center gap-1 text-sm font-bold text-[#1677A8] hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-[#1677A8] focus-visible:ring-offset-2"
+                  >
+                    เข้าสู่พื้นที่ <ArrowUpRight className="h-4 w-4" />
+                  </RouterLink>
+                ) : (
+                  shellacUrl && (
+                    <a
+                      href={shellacUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="mt-5 inline-flex min-h-11 items-center gap-1 text-sm font-bold text-[#1677A8] hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-[#1677A8] focus-visible:ring-offset-2"
+                    >
+                      เข้าสู่พื้นที่ <ArrowUpRight className="h-4 w-4" />
+                    </a>
+                  )
+                )}
               </div>
             </article>
           ))}

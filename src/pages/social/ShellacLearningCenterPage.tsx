@@ -1,9 +1,14 @@
+import { useEffect, useState } from "react";
 import { ArrowUpRight, BookOpen, ExternalLink, Users } from "lucide-react";
 import { Link as RouterLink } from "react-router-dom";
-import { SUB_SYSTEM_URLS } from "@/config";
+import { getSystemUrl } from "@/services/systemRegistry";
 import { PublicAppShell } from "@/components/layout/PublicAppShell";
 
 export function ShellacLearningCenterPage() {
+  const [racUrl, setRacUrl] = useState<string | null>(null);
+  useEffect(() => {
+    void getSystemUrl("lac-learning").then(setRacUrl).catch(() => setRacUrl(null));
+  }, []);
   return (
     <PublicAppShell>
       <div className="bg-surface-warm text-slate-800">
@@ -27,14 +32,16 @@ export function ShellacLearningCenterPage() {
                   ศูนย์เรียนรู้ครั่งครบวงจร ภายใต้งานพันธกิจเพื่อสังคม เชื่อมองค์ความรู้ งานวิจัย
                   สถานศึกษา และชุมชน
                 </p>
-                <a
-                  href={SUB_SYSTEM_URLS.RAC}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="mt-6 inline-flex min-h-11 items-center gap-2 rounded-xl bg-northern-gold px-5 py-3 text-sm font-bold text-brand-navy focus-visible:ring-2 focus-visible:ring-white"
-                >
-                  เข้าสู่ศูนย์เรียนรู้ <ExternalLink className="h-4 w-4" aria-hidden="true" />
-                </a>
+                {racUrl && (
+                  <a
+                    href={racUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="mt-6 inline-flex min-h-11 items-center gap-2 rounded-xl bg-northern-gold px-5 py-3 text-sm font-bold text-brand-navy focus-visible:ring-2 focus-visible:ring-white"
+                  >
+                    เข้าสู่ศูนย์เรียนรู้ <ExternalLink className="h-4 w-4" aria-hidden="true" />
+                  </a>
+                )}
               </div>
               <img
                 src="/Shellac banner.jpg"
