@@ -5,6 +5,7 @@ import {
   getRatingLevel,
   computeExecutiveMetrics,
   generateReportCsvContent,
+  getSurveyScoreLabelOverrides,
   ALL_SCORE_FIELDS,
 } from "../src/features/analytics/executiveAnalytics.ts";
 
@@ -103,6 +104,57 @@ const mockResponses = [
     channels: "WEBSITE",
   },
 ];
+
+const labelOverrides = getSurveyScoreLabelOverrides(
+  [
+    {
+      id: "q-1",
+      survey_id: "survey-1",
+      section_key: "opening",
+      question_type: "rating",
+      question_text: "ความเหมาะสมของสถานที่จัดงาน",
+      order_index: 1,
+      active: true,
+    },
+  ],
+  "survey-1",
+);
+const rankedMetrics = computeExecutiveMetrics(
+  mockOccurrences,
+  mockResponses,
+  "age_group",
+  [],
+  labelOverrides,
+);
+assert.equal(
+  rankedMetrics.questionScores[0].label,
+  "สถานที่",
+  "without a selected survey response, default labels remain deterministic",
+);
+assert.equal(
+  rankedMetrics.questionScores[0].value >=
+    rankedMetrics.questionScores[rankedMetrics.questionScores.length - 1].value,
+  true,
+  "question scores must be sorted from highest to lowest",
+);
+assert.equal(
+  getSurveyScoreLabelOverrides(
+    [
+      {
+        id: "q-1",
+        survey_id: "survey-1",
+        section_key: "opening",
+        question_type: "rating",
+        question_text: "ความเหมาะสมของสถานที่จัดงาน",
+        order_index: 1,
+        active: true,
+      },
+    ],
+    "survey-1",
+  ).p2_location,
+  "ความเหมาะสมของสถานที่จัดงาน",
+  "survey wording override must match the questionnaire text exactly",
+);
 
 const metrics = computeExecutiveMetrics(mockOccurrences, mockResponses, "age_group", []);
 
