@@ -31,6 +31,40 @@ export type ScoreItem = {
   respondentCount: number;
 };
 
+const SCORE_FIELD_GROUPS: Record<string, ScoreField[]> = {
+  opening: ["p2_location", "p2_schedule", "p2_readiness", "p2_reception", "p2_overall"],
+  learning: ["p3_interest", "p3_content", "p3_clarity", "p3_benefit", "p3_application"],
+  outcomes: ["p4_knowledge", "p4_inspiration", "p4_community_resource", "p4_future_return"],
+};
+
+export function getSurveyScoreLabelOverrides(
+  surveyQuestions: AdminDashboardData["surveyQuestions"],
+  surveyId: string | null,
+): Partial<Record<ScoreField, string>> {
+  if (!surveyId) return {};
+
+  const overrides: Partial<Record<ScoreField, string>> = {};
+  for (const [sectionKey, fields] of Object.entries(SCORE_FIELD_GROUPS)) {
+    const sectionQuestions = surveyQuestions
+      .filter(
+        (question) =>
+          question.survey_id === surveyId &&
+          question.active &&
+          question.question_type === "rating" &&
+          (question.section_key === sectionKey ||
+            (sectionKey === "outcomes" && question.section_key === "outcome")),
+      )
+      .sort((a, b) => a.order_index - b.order_index);
+
+    sectionQuestions.slice(0, fields.length).forEach((question, index) => {
+      const text = question.question_text;
+      if (text.trim()) overrides[fields[index]] = text;
+    });
+  }
+
+  return overrides;
+}
+
 export type ScoreGroup = {
   key: string;
   title: string;
@@ -239,6 +273,7 @@ export function computeExecutiveMetrics(
   responses: AdminDashboardData["responses"],
   dimension: Dimension,
   organizations: AdminDashboardData["organizations"],
+  scoreLabelOverrides: Partial<Record<ScoreField, string>> = {},
 ): ExecutiveMetrics {
   const participants = occurrences.reduce(
     (s, o) => s + Math.max(0, Number(o.participant_count || 0)),
@@ -255,8 +290,15 @@ export function computeExecutiveMetrics(
     const value = computeAverage(values);
     return value === null
       ? []
-      : [{ field, label: SCORE_LABELS[field], value, respondentCount: values.length }];
-  });
+      : [
+          {
+            field,
+            label: scoreLabelOverrides[field] ?? SCORE_LABELS[field],
+            value,
+            respondentCount: values.length,
+          },
+        ];
+  }).sort((a, b) => b.value - a.value);
 
   const scoreGroups: ScoreGroup[] = SCORE_GROUPS_DEF.map((g) => ({
     ...g,
