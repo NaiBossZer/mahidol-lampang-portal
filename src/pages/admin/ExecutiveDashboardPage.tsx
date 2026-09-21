@@ -33,6 +33,7 @@ import {
   ALL_SCORE_FIELDS,
   SCORE_LABELS,
   getSurveyScoreLabelOverrides,
+  selectDashboardSurveyId,
   SCORE_GROUPS_DEF as SCORE_GROUPS,
   CHART_COLORS,
   CHANNEL_BRAND_COLORS,
@@ -425,27 +426,17 @@ export function ExecutiveDashboardPage() {
     );
   }, [data, occurrences, activityIds]);
 
-  const selectedSurveyId = useMemo(() => {
-    if (activity === "ALL") return null;
-
-    const responseCounts = new Map<string, number>();
-    for (const response of responses) {
-      if (!response.survey_id) continue;
-      responseCounts.set(
-        response.survey_id,
-        (responseCounts.get(response.survey_id) ?? 0) + 1,
-      );
-    }
-
-    const occurrenceIds = new Set(occurrences.map((occurrence) => occurrence.id));
-    const candidateSurveyIds = (data?.surveys ?? [])
-      .filter((survey) => occurrenceIds.has(survey.occurrence_id))
-      .map((survey) => survey.id);
-
-    return [...new Set(candidateSurveyIds)].sort(
-      (a, b) => (responseCounts.get(b) ?? 0) - (responseCounts.get(a) ?? 0),
-    )[0] ?? null;
-  }, [activity, data?.surveys, occurrences, responses]);
+  const selectedSurveyId = useMemo(
+    () =>
+      selectDashboardSurveyId(
+        data?.surveys ?? [],
+        data?.surveyQuestions ?? [],
+        occurrences,
+        responses,
+        activity,
+      ),
+    [activity, data?.surveys, data?.surveyQuestions, occurrences, responses],
+  );
 
   const scoreLabelOverrides = useMemo(
     () =>
