@@ -1,6 +1,16 @@
-alter table public.system_registry
-  add constraint if not exists system_registry_base_url_check
-  check (base_url is null or base_url ~ '^https?://');
+do $
+begin
+  if not exists (
+    select 1
+    from pg_constraint
+    where conname = 'system_registry_base_url_check'
+      and conrelid = 'public.system_registry'::regclass
+  ) then
+    alter table public.system_registry
+      add constraint system_registry_base_url_check
+      check (base_url is null or base_url ~ '^https?://');
+  end if;
+end $;
 
 update public.system_registry
 set base_url = case system_key
