@@ -232,31 +232,54 @@ export function computeExecutiveMetrics(
     )
     .sort((a, b) => a.order_index - b.order_index);
 
-  const questionMap = new Map(activeRatingQuestions.map((question) => [question.id, question]));
+  // In "รายงานผลสัมฤทธิ์ทั้งหมด" there can be multiple survey forms for
+  // different activities. Their wording can differ while the position/category
+  // represents the same evaluation item. Merge those equivalent slots so the
+  // executive dashboard does not render both survey forms back-to-back.
+  const canonicalSectionKey = (key: string) => (key === "learning_room" ? "learning" : key);
+  const questionGroupKey = (question: (typeof activeRatingQuestions)[number]) =>
+    surveyId
+      ? question.id
+      : canonicalSectionKey(question.section_key) + ":" + question.order_index;
+
+  const questionById = new Map(
+    activeRatingQuestions.map((question) => [question.id, question]),
+  );
+  const groupQuestions = new Map<string, (typeof activeRatingQuestions)[number]>();
+  const questionIdToGroupKey = new Map<string, string>();
+
+  for (const question of activeRatingQuestions) {
+    const key = questionGroupKey(question);
+    questionIdToGroupKey.set(question.id, key);
+    if (!groupQuestions.has(key)) groupQuestions.set(key, question);
+  }
+
   const valuesByQuestion = new Map<string, number[]>();
   for (const answer of surveyAnswers) {
     if (!responseIds.has(answer.response_id)) continue;
-    const question = questionMap.get(answer.question_id);
+    const question = questionById.get(answer.question_id);
     if (!question) continue;
+    const key = questionIdToGroupKey.get(question.id);
+    if (!key) continue;
     const value = parseScore(answer.answer_number);
     if (value === null) continue;
-    const values = valuesByQuestion.get(question.id) ?? [];
+    const values = valuesByQuestion.get(key) ?? [];
     values.push(value);
-    valuesByQuestion.set(question.id, values);
+    valuesByQuestion.set(key, values);
   }
 
-  const questionScores = activeRatingQuestions
-    .flatMap((question) => {
-      const values = valuesByQuestion.get(question.id) ?? [];
+  const questionScores = [...groupQuestions.entries()]
+    .flatMap(([key, question]) => {
+      const values = valuesByQuestion.get(key) ?? [];
       const value = computeAverage(values);
       return value === null
         ? []
         : [
             {
-              field: question.id,
+              field: key,
               questionId: question.id,
-              surveyId: question.survey_id,
-              sectionKey: question.section_key,
+              surveyId: surveyId ?? "ALL",
+              sectionKey: canonicalSectionKey(question.section_key),
               orderIndex: question.order_index,
               label: question.question_text.trim(),
               value,
