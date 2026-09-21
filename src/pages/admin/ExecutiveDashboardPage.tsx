@@ -439,7 +439,7 @@ export function ExecutiveDashboardPage() {
 
     const occurrenceIds = new Set(occurrences.map((occurrence) => occurrence.id));
     const candidateSurveyIds = (data?.surveys ?? [])
-      .filter((survey) => survey.enabled && occurrenceIds.has(survey.occurrence_id))
+      .filter((survey) => occurrenceIds.has(survey.occurrence_id))
       .map((survey) => survey.id);
 
     return [...new Set(candidateSurveyIds)].sort(
