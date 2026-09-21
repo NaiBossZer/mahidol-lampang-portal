@@ -8,10 +8,6 @@ export type ResponseWithChannels = AdminDashboardData["responses"][number] & {
 
 export type ScoreField = string;
 
-export type ResponseWithChannels = AdminDashboardData["responses"][number] & {
-  channels?: string | null;
-};
-
 export type ScoreItem = {
   field: ScoreField;
   questionId: string;
