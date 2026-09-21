@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState, type ReactNode } from "react";
-import { CalendarDays, ImagePlus, Lightbulb, Pencil, Plus, RefreshCw, Trash2, Upload, X } from "lucide-react";
+import { CalendarDays, CheckCircle2, ImagePlus, Lightbulb, Pencil, Plus, RefreshCw, Star, Trash2, Upload, X } from "lucide-react";
 import { toast } from "sonner";
 import {
   createActivity,
@@ -143,6 +143,7 @@ export function ActivitiesManagementPage() {
   const [organizers, setOrganizers] = useState<RelationState["organizations"]>([]);
   const [media, setMedia] = useState<ActivityMedia[]>([]);
   const [selectedMediaIds, setSelectedMediaIds] = useState<string[]>([]);
+  const [coverMediaId, setCoverMediaId] = useState<string | null>(null);
   const [files, setFiles] = useState<File[]>([]);
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -185,6 +186,7 @@ export function ActivitiesManagementPage() {
     setOrganizers([]);
     setMedia([]);
     setSelectedMediaIds([]);
+    setCoverMediaId(null);
     setFiles([]);
     setOpen(true);
   }
@@ -194,12 +196,18 @@ export function ActivitiesManagementPage() {
     setForm({ ...activity, activityDate: activity.activityDate.slice(0, 10) });
     setFiles([]);
     setSelectedMediaIds([]);
+    setCoverMediaId(null);
     setOpen(true);
     try {
       const [relation, images] = await Promise.all([getRelations(activity.id), getMedia(activity.id)]);
       setSelectedCenters(relation.learningCenterIds ?? []);
       setOrganizers(relation.organizations ?? []);
       setMedia(images);
+      setCoverMediaId(
+        activity.featuredImage
+          ? images.find((image) => image.public_url === activity.featuredImage)?.id ?? null
+          : null,
+      );
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "โหลดข้อมูลกิจกรรมเพิ่มเติมไม่สำเร็จ");
       setSelectedCenters([]);
@@ -214,6 +222,7 @@ export function ActivitiesManagementPage() {
     setEdit(null);
     setFiles([]);
     setSelectedMediaIds([]);
+    setCoverMediaId(null);
   }
 
   async function deleteSelectedMedia() {
@@ -226,6 +235,10 @@ export function ActivitiesManagementPage() {
     const deleted = ids.length - failed;
     const failedIds = ids.filter((_, index) => results[index]?.status === "rejected");
     setMedia((current) => current.filter((image) => !ids.includes(image.id) || failedIds.includes(image.id)));
+    if (coverMediaId && ids.includes(coverMediaId) && !failedIds.includes(coverMediaId)) {
+      setCoverMediaId(null);
+      setForm((current) => ({ ...current, featuredImage: "" }));
+    }
     setSelectedMediaIds(failedIds);
     if (deleted) toast.success(`ลบรูปภาพสำเร็จ ${deleted} รูป`);
     if (failed) toast.error(`ลบรูปภาพไม่สำเร็จ ${failed} รูป`);
@@ -303,13 +316,6 @@ export function ActivitiesManagementPage() {
         if (uploaded.length) setMedia((current) => [...uploaded, ...current]);
         if (failed) warnings.push(`รูปภาพ: อัปโหลดไม่สำเร็จ ${failed} ไฟล์`);
 
-        if (!payload.featuredImage && uploaded[0]?.public_url) {
-          try {
-            await updateActivity({ id: activity.id, featuredImage: uploaded[0].public_url });
-          } catch (error) {
-            warnings.push(error instanceof Error ? `รูปปก: ${error.message}` : "บันทึกรูปปกไม่สำเร็จ");
-          }
-        }
         setFiles([]);
       }
 
@@ -322,6 +328,7 @@ export function ActivitiesManagementPage() {
       setEdit(null);
       setFiles([]);
       setSelectedMediaIds([]);
+      setCoverMediaId(null);
       if (warnings.length) {
         toast.warning(`บันทึกกิจกรรมแล้ว แต่มีรายการย่อยที่ต้องตรวจสอบ ${warnings.length} รายการ`, {
           description: warnings.join(" | "),
@@ -481,8 +488,28 @@ export function ActivitiesManagementPage() {
                 <Field label="รูปภาพหน้าปกกิจกรรม">
                   <GoogleDriveImagePicker
                     value={form.featuredImage}
-                    onChange={(url) => setForm((current) => ({ ...current, featuredImage: url }))}
+                    onChange={(url) => {
+                      setCoverMediaId(null);
+                      setForm((current) => ({ ...current, featuredImage: url }));
+                    }}
                   />
+                  <p className="mt-1.5 text-xs font-normal text-slate-500">
+                    รูปปกต้องเลือกเองจาก Google Drive / URL หรือกด “ใช้เป็นรูปปก” จากรูปภาพกิจกรรมด้านล่าง
+                    ระบบจะไม่เลือกรูปแรกให้อัตโนมัติ
+                  </p>
+                  {form.featuredImage ? (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setCoverMediaId(null);
+                        setForm((current) => ({ ...current, featuredImage: "" }));
+                      }}
+                      className="mt-2 inline-flex min-h-9 items-center gap-1.5 rounded-lg border border-slate-200 px-3 text-xs font-semibold text-slate-600 hover:bg-slate-50"
+                    >
+                      <X className="h-3.5 w-3.5" />
+                      ไม่ใช้รูปปก
+                    </button>
+                  ) : null}
                 </Field>
               </div>
 
@@ -553,25 +580,59 @@ export function ActivitiesManagementPage() {
                     <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
                       {media.map((image) => {
                         const selected = selectedMediaIds.includes(image.id);
+                        const isCover = coverMediaId === image.id;
                         return (
-                          <label key={image.id} className={`relative block cursor-pointer overflow-hidden rounded-xl border-2 bg-white transition ${selected ? "border-red-400 ring-2 ring-red-100" : "border-slate-200 hover:border-slate-300"}`}>
+                          <div
+                            key={image.id}
+                            className={`relative overflow-hidden rounded-xl border-2 bg-white transition ${selected ? "border-red-400 ring-2 ring-red-100" : isCover ? "border-amber-400 ring-2 ring-amber-100" : "border-slate-200 hover:border-slate-300"}`}
+                          >
                             <img src={image.public_url} alt={image.caption ?? "ภาพกิจกรรม"} className="aspect-[4/3] w-full object-cover" />
-                            <span className="absolute left-2 top-2 rounded-md bg-white/90 p-1 shadow-sm">
+                            <label className="absolute left-2 top-2 rounded-md bg-white/95 p-1.5 shadow-sm">
                               <input
                                 type="checkbox"
                                 checked={selected}
-                                onChange={(event) => setSelectedMediaIds((current) => event.target.checked ? [...new Set([...current, image.id])] : current.filter((id) => id !== image.id))}
+                                onChange={(event) =>
+                                  setSelectedMediaIds((current) =>
+                                    event.target.checked
+                                      ? [...new Set([...current, image.id])]
+                                      : current.filter((id) => id !== image.id),
+                                  )
+                                }
                                 aria-label="เลือกรูปภาพเพื่อจัดการ"
                               />
-                            </span>
-                            {selected && <span className="absolute right-2 top-2 rounded-full bg-red-500 p-1 text-white"><Trash2 className="h-3 w-3" /></span>}
-                            {image.caption ? <p className="truncate border-t border-slate-100 px-2 py-2 text-xs text-slate-500">{image.caption}</p> : null}
-                          </label>
+                            </label>
+                            {isCover ? (
+                              <span className="absolute right-2 top-2 inline-flex items-center gap-1 rounded-full bg-amber-500 px-2 py-1 text-[10px] font-bold text-white shadow-sm">
+                                <CheckCircle2 className="h-3 w-3" />
+                                รูปปก
+                              </span>
+                            ) : null}
+                            {selected && !isCover ? (
+                              <span className="absolute right-2 top-2 rounded-full bg-red-500 p-1 text-white">
+                                <Trash2 className="h-3 w-3" />
+                              </span>
+                            ) : null}
+                            <div className="border-t border-slate-100 bg-white p-2">
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setCoverMediaId(image.id);
+                                  setForm((current) => ({ ...current, featuredImage: image.public_url }));
+                                }}
+                                disabled={isCover || saving || deletingMedia}
+                                className="inline-flex min-h-9 w-full items-center justify-center gap-1.5 rounded-lg border border-amber-200 bg-amber-50 px-2 py-1.5 text-xs font-semibold text-amber-800 transition-colors hover:bg-amber-100 disabled:cursor-default disabled:opacity-70"
+                              >
+                                <Star className="h-3.5 w-3.5" />
+                                {isCover ? "ใช้เป็นรูปปกแล้ว" : "ใช้เป็นรูปปก"}
+                              </button>
+                              {image.caption ? (
+                                <p className="mt-1.5 truncate text-xs text-slate-500">{image.caption}</p>
+                              ) : null}
+                            </div>
+                          </div>
                         );
                       })}
                     </div>
-                  </>
-                )}
               </div>
             </div>
 
