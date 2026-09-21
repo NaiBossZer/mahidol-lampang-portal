@@ -3,11 +3,12 @@
  * Single source of truth for all external URLs and configuration
  */
 
-// Sub-system URLs
-export const SUB_SYSTEM_URLS = {
-  RAC: "https://mahidol-shellac.vercel.app",
-  CLEAN_ENERGY: "https://mahidol-clean-energy.vercel.app",
-  SMART_FARM: "https://mahidol-smart-farm.vercel.app/",
+// Central system registry keys. URLs are stored in Supabase system_registry.
+export const SYSTEM_KEYS = {
+  RAC: "lac-learning",
+  CLEAN_ENERGY: "clean-energy",
+  SMART_FARM: "smart-farm",
+  FACILITY_SAFETY: "facility-safety",
 } as const;
 
 // Google Apps Script URLs
