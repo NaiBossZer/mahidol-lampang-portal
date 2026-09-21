@@ -94,6 +94,7 @@ export async function onRequestGet({ request, env }: { request: Request; env: En
       centers,
       organizations,
       surveys,
+      surveyQuestions,
       responses,
       activityCenters,
       activityOrganizers,
@@ -120,6 +121,11 @@ export async function onRequestGet({ request, env }: { request: Request; env: En
       }),
       supabaseUserRest(env, accessToken, "occurrence_surveys", {
         select: "id,occurrence_id,enabled,anonymous,open_at,close_at,welcome_text",
+      }),
+      supabaseUserRest(env, accessToken, "survey_questions", {
+        select: "id,survey_id,section_key,question_type,question_text,order_index,active",
+        active: "eq.true",
+        order: "survey_id.asc,order_index.asc",
       }),
       supabaseUserRest(env, accessToken, "survey_responses", {
         select:
