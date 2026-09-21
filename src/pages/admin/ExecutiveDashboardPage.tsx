@@ -32,6 +32,7 @@ import {
   type ReportDetailRow,
   ALL_SCORE_FIELDS,
   SCORE_LABELS,
+  getSurveyScoreLabelOverrides,
   SCORE_GROUPS_DEF as SCORE_GROUPS,
   CHART_COLORS,
   CHANNEL_BRAND_COLORS,
@@ -423,19 +424,44 @@ export function ExecutiveDashboardPage() {
       r.occurrence_id ? ids.has(r.occurrence_id) : activityIds.has(r.activity_id),
     );
   }, [data, occurrences, activityIds]);
+
+  const selectedSurveyId = useMemo(() => {
+    if (activity === "ALL" || !responses.length) return null;
+    const counts = new Map<string, number>();
+    for (const response of responses) {
+      if (!response.survey_id) continue;
+      counts.set(response.survey_id, (counts.get(response.survey_id) ?? 0) + 1);
+    }
+    return [...counts.entries()].sort((a, b) => b[1] - a[1])[0]?.[0] ?? null;
+  }, [activity, responses]);
+
+  const scoreLabelOverrides = useMemo(
+    () =>
+      getSurveyScoreLabelOverrides(
+        data?.surveyQuestions ?? [],
+        selectedSurveyId,
+      ),
+    [data?.surveyQuestions, selectedSurveyId],
+  );
+
   const metrics = useMemo(
-    () => computeExecutiveMetrics(occurrences, responses, dimension, data?.organizations ?? []),
-    [occurrences, responses, dimension, data],
+    () =>
+      computeExecutiveMetrics(
+        occurrences,
+        responses,
+        dimension,
+        data?.organizations ?? [],
+        scoreLabelOverrides,
+      ),
+    [occurrences, responses, dimension, data?.organizations, scoreLabelOverrides],
   );
   const {
     participants,
     responseCount,
-    pending,
     responseRate,
     overallScore: overall,
     ratingLevel: level,
     questionScores,
-    scoreGroups,
     highestScore: highest,
     lowestScore: lowest,
     respondentDistribution,
@@ -1290,14 +1316,6 @@ export function ExecutiveDashboardPage() {
             iconClass="bg-indigo-50 text-indigo-600"
           />
           <KpiCard
-            icon={<Users className="h-5 w-5" />}
-            label="ยังไม่ได้ตอบ"
-            value={formatNumber(pending)}
-            suffix="คน"
-            onClick={() => setKpiMetric("ยังไม่ได้ตอบ")}
-            iconClass="bg-purple-50 text-purple-600"
-          />
-          <KpiCard
             icon={<ActivityIcon className="h-5 w-5" />}
             label="อัตราการตอบกลับ"
             value={responseRate === null ? "-" : Math.min(100, responseRate).toFixed(1)}
@@ -1456,41 +1474,47 @@ export function ExecutiveDashboardPage() {
             </Card>
           </div>
           <div className="space-y-2.5 lg:col-span-5">
-            {scoreGroups.map((g, groupIndex) => (
-              <Card
-                key={g.key}
-                title={g.title}
-                right={
-                  <span className="text-[11px] font-medium text-slate-400">สเกล 1–5 คะแนน</span>
-                }
-              >
-                <div className="space-y-3.5 p-3.5">
-                  {g.items.map((item, idx) => (
-                    <div key={item.field}>
-                      <div className="mb-1 flex items-center justify-between gap-2">
+            <Card
+              title="ผลแบบประเมินความพึงพอใจ (รายละเอียดรายข้อ)"
+              right={
+                <span className="text-[11px] font-medium text-slate-400">เรียงคะแนนมาก → น้อย</span>
+              }
+            >
+              <div className="space-y-3.5 p-3.5">
+                {questionScores.map((item, index) => (
+                  <div key={item.field}>
+                    <div className="mb-1 flex items-center justify-between gap-2">
+                      <div className="flex min-w-0 items-center gap-2">
+                        <span className="grid h-5 w-5 shrink-0 place-items-center rounded-full bg-slate-100 text-[10px] font-bold text-slate-500">
+                          {index + 1}
+                        </span>
                         <span className="truncate pr-2 text-[12px] font-medium text-slate-700">
                           {item.label}
                         </span>
-                        <span className="shrink-0 text-[12px] font-bold text-slate-900">
-                          {item.value.toFixed(2)}{" "}
-                          <span className="text-[11px] font-normal text-slate-400">/ 5.00</span>
-                        </span>
                       </div>
-                      <div className="h-2 w-full overflow-hidden rounded-full bg-slate-100">
-                        <div
-                          className="h-full rounded-full transition-all duration-700 ease-out"
-                          style={{
-                            width: `${(item.value / 5) * 100}%`,
-                            backgroundColor:
-                              CHART_COLORS[(groupIndex * 2 + idx) % CHART_COLORS.length],
-                          }}
-                        />
-                      </div>
+                      <span className="shrink-0 text-[12px] font-bold text-slate-900">
+                        {item.value.toFixed(2)}{" "}
+                        <span className="text-[11px] font-normal text-slate-400">/ 5.00</span>
+                      </span>
                     </div>
-                  ))}
-                </div>
-              </Card>
-            ))}
+                    <div className="h-2 w-full overflow-hidden rounded-full bg-slate-100">
+                      <div
+                        className="h-full rounded-full transition-all duration-700 ease-out"
+                        style={{
+                          width: `${(item.value / 5) * 100}%`,
+                          backgroundColor: CHART_COLORS[index % CHART_COLORS.length],
+                        }}
+                      />
+                    </div>
+                  </div>
+                ))}
+                {!questionScores.length && (
+                  <p className="py-6 text-center text-[11px] text-slate-400">
+                    ยังไม่มีข้อมูลคะแนนแบบประเมิน
+                  </p>
+                )}
+              </div>
+            </Card>
             <Card
               title="ช่องทางการรับรู้กิจกรรม (Activity Awareness Channels)"
               right={
