@@ -56,6 +56,37 @@ const printCell = (value: unknown) =>
     .replaceAll(">", "&gt;")
     .replaceAll('"', "&quot;");
 
+const MAHIDOL_GOLD = "#AA800E";
+
+function ScoreMeter({
+  value,
+}: {
+  value: number;
+}) {
+  const clamped = Math.max(0, Math.min(5, value));
+  return (
+    <div className="mt-2.5 flex items-end gap-1.5" aria-label={`${clamped.toFixed(2)} / 5.00`}>
+      <div className="flex min-w-0 flex-1 gap-1" aria-hidden="true">
+        {Array.from({ length: 5 }, (_, index) => {
+          const fill = Math.max(0, Math.min(1, clamped - index));
+          return (
+            <div
+              key={index}
+              className="relative h-2.5 min-w-0 flex-1 overflow-hidden rounded-full bg-slate-100 ring-1 ring-inset ring-slate-200/70"
+            >
+              <div
+                className="absolute inset-y-0 left-0 rounded-full transition-[width] duration-500 ease-out"
+                style={{ width: `${fill * 100}%`, backgroundColor: MAHIDOL_GOLD }}
+              />
+            </div>
+          );
+        })}
+      </div>
+      <span className="shrink-0 text-[10px] font-semibold tabular-nums text-slate-400">5</span>
+    </div>
+  );
+}
+
 function Card({
   title,
   right,
@@ -615,8 +646,8 @@ export function ExecutiveDashboardPage() {
   };
 
   const reportDetailRows = useMemo(
-    () => buildReportDetailRows(filteredReportRows),
-    [filteredReportRows],
+    () => buildReportDetailRows(filteredReportRows, scoreLabelOverrides),
+    [filteredReportRows, scoreLabelOverrides],
   );
 
   const respondentDetailRows = useMemo(() => buildRespondentDetailRows(reportRows), [reportRows]);
@@ -1518,16 +1549,7 @@ export function ExecutiveDashboardPage() {
                               <span className="text-[11px] font-normal text-slate-400">/ 5.00</span>
                             </span>
                           </div>
-                          <div className="h-2 w-full overflow-hidden rounded-full bg-slate-100">
-                            <div
-                              className="h-full rounded-full transition-all duration-700 ease-out"
-                              style={{
-                                width: `${(item.value / 5) * 100}%`,
-                                backgroundColor:
-                                  CHART_COLORS[(groupIndex * 2 + index) % CHART_COLORS.length],
-                              }}
-                            />
-                          </div>
+                          <ScoreMeter value={item.value} />
                         </div>
                       ))}
                     </div>

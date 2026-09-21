@@ -35,21 +35,39 @@ export function getSurveyScoreLabelOverrides(
   surveyQuestions: AdminDashboardData["surveyQuestions"],
   surveyId: string | null,
 ): Partial<Record<ScoreField, string>> {
-  if (!surveyId) return {};
-
   const ratingQuestions = surveyQuestions
     .filter(
       (question) =>
-        question.survey_id === surveyId &&
+        (surveyId ? question.survey_id === surveyId : true) &&
         question.active &&
-        question.question_type === "rating",
+        question.question_type === "rating" &&
+        question.question_text.trim(),
     )
-    .sort((a, b) => a.order_index - b.order_index);
+    .sort(
+      (a, b) =>
+        a.order_index - b.order_index ||
+        b.question_text.trim().length - a.question_text.trim().length,
+    );
 
   const overrides: Partial<Record<ScoreField, string>> = {};
-  ratingQuestions.slice(0, ALL_SCORE_FIELDS.length).forEach((question, index) => {
+
+  if (surveyId) {
+    ratingQuestions.slice(0, ALL_SCORE_FIELDS.length).forEach((question, index) => {
+      overrides[ALL_SCORE_FIELDS[index]] = question.question_text.trim();
+    });
+    return overrides;
+  }
+
+  const longestByOrder = new Map<number, string>();
+  for (const question of ratingQuestions) {
     const text = question.question_text.trim();
-    if (text) overrides[ALL_SCORE_FIELDS[index]] = text;
+    const current = longestByOrder.get(question.order_index);
+    if (!current || text.length > current.length) longestByOrder.set(question.order_index, text);
+  }
+
+  ALL_SCORE_FIELDS.forEach((field, index) => {
+    const text = longestByOrder.get(index + 1);
+    if (text) overrides[field] = text;
   });
 
   return overrides;
@@ -437,7 +455,10 @@ export function buildReportRows(
     );
 }
 
-export function buildReportDetailRows(filteredReportRows: ReportRow[]): ReportDetailRow[] {
+export function buildReportDetailRows(
+  filteredReportRows: ReportRow[],
+  scoreLabelOverrides: Partial<Record<ScoreField, string>> = {},
+): ReportDetailRow[] {
   return filteredReportRows.flatMap((r) =>
     ALL_SCORE_FIELDS.map((field) => ({
       respondentId: r.id,
@@ -448,7 +469,7 @@ export function buildReportDetailRows(filteredReportRows: ReportRow[]): ReportDe
       affiliation: r.affiliation,
       organization: r.organization,
       group: SCORE_GROUPS_DEF.find((g) => g.fields.includes(field))?.title || "-",
-      question: SCORE_LABELS[field],
+      question: scoreLabelOverrides[field] ?? SCORE_LABELS[field],
       score: r.scores[field] || "",
       feedback: r.feedback,
       channels: r.channels,
