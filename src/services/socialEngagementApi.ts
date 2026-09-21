@@ -1,4 +1,4 @@
-import { FALLBACK_ACTIVITIES, type SocialActivity } from "@/data/socialEngagement";
+import type { SocialActivity } from "@/data/socialEngagement";
 import { apiRequest } from "@/services/api";
 
 function normalizeActivity(value: unknown): SocialActivity | null {
@@ -10,9 +10,9 @@ function normalizeActivity(value: unknown): SocialActivity | null {
     id: String(item["id"] ?? item["slug"]),
     slug: item["slug"],
     title: item["title"],
-    summary: typeof item["summary"] === "string" ? item["summary"] : "กิจกรรมพันธกิจเพื่อสังคม",
+    summary: typeof item["summary"] === "string" ? item["summary"] : "",
     activityDate: String(item["activityDate"] ?? ""),
-    location: String(item["location"] ?? "พื้นที่ปฏิบัติการลำปาง"),
+    location: String(item["location"] ?? ""),
     featuredImage:
       typeof item["featuredImage"] === "string" ? item["featuredImage"] : "/main banner.jpg",
     system: "social",
@@ -43,19 +43,17 @@ export async function getActivities(): Promise<SocialActivity[]> {
     const activities = Array.isArray(data)
       ? (data.map(normalizeActivity).filter(Boolean) as SocialActivity[])
       : [];
-    return activities.length ? activities : FALLBACK_ACTIVITIES;
+    return activities;
   } catch {
-    return FALLBACK_ACTIVITIES;
+    return [];
   }
 }
 
 export async function getActivity(slug: string): Promise<SocialActivity | null> {
   try {
     const data = await apiRequest<unknown>(`/api/activity?slug=${encodeURIComponent(slug)}`);
-    return (
-      normalizeActivity(data) ?? FALLBACK_ACTIVITIES.find((item) => item.slug === slug) ?? null
-    );
+    return normalizeActivity(data);
   } catch {
-    return FALLBACK_ACTIVITIES.find((item) => item.slug === slug) ?? null;
+    return null;
   }
 }
