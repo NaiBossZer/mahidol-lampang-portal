@@ -8,5 +8,3 @@ bun.lock
 routeTree.gen.ts
 .github/workflows/temporary-activity-image-fix.yml
 .github/workflows/temporary-activity-image-fix-pr.yml
-
-src/lib/electricityReportGenerator.ts
