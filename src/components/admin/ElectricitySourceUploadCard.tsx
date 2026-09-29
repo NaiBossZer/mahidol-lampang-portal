@@ -60,7 +60,7 @@ export function ElectricitySourceUploadCard() {
     return () => {
       active = false;
     };
-  }, [canManage, sourceSite]);
+  }, [canManage]);
 
   const handleUpload = async () => {
     if (!sourceFile) {
