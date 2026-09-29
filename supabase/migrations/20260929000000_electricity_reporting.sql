@@ -203,25 +203,11 @@ drop trigger if exists audit_electricity_report_sources on public.electricity_mo
 create trigger audit_electricity_report_sources after insert or update or delete on public.electricity_monthly_report_sources
 for each row execute function private.write_electricity_audit();
 
-drop trigger if exists electricity_sites_select on public.electricity_sites;
-drop policy if exists electricity_sites_select on public.electricity_sites;
-drop policy if exists electricity_sites_read on public.electricity_sites;
-drop policy if exists electricity_sites_write on public.electricity_sites;
-create policy electricity_sites_select on public.electricity_sites for select to authenticated
-using ((select public.app_role()) in ('SUPER_ADMIN','FACILITY_ADMIN'));
-create policy electricity_sites_insert on public.electricity_sites for insert to authenticated
-with check ((select public.app_role()) in ('SUPER_ADMIN','FACILITY_ADMIN'));
-create policy electricity_sites_update on public.electricity_sites for update to authenticated
-using ((select public.app_role()) in ('SUPER_ADMIN','FACILITY_ADMIN'))
-with check ((select public.app_role()) in ('SUPER_ADMIN','FACILITY_ADMIN'));
-create policy electricity_sites_delete on public.electricity_sites for delete to authenticated
-using ((select public.app_role()) in ('SUPER_ADMIN','FACILITY_ADMIN'));
-
 do $$
 declare t text;
 begin
   foreach t in array ARRAY[
-    'electricity_source_documents','electricity_bill_readings',
+    'electricity_sites','electricity_source_documents','electricity_bill_readings',
     'electricity_solar_readings','electricity_monthly_reports',
     'electricity_monthly_report_sources','electricity_processing_runs'
   ] loop
@@ -232,22 +218,10 @@ begin
     execute format('drop policy if exists %I_read on public.%I', t, t);
     execute format('drop policy if exists %I_write on public.%I', t, t);
 
-    execute format(
-      'create policy %I_select on public.%I for select to authenticated using ((select public.app_role()) in (''SUPER_ADMIN'',''FACILITY_ADMIN''))',
-      t || '_select', t
-    );
-    execute format(
-      'create policy %I_insert on public.%I for insert to authenticated with check ((select public.app_role()) in (''SUPER_ADMIN'',''FACILITY_ADMIN''))',
-      t || '_insert', t
-    );
-    execute format(
-      'create policy %I_update on public.%I for update to authenticated using ((select public.app_role()) in (''SUPER_ADMIN'',''FACILITY_ADMIN'')) with check ((select public.app_role()) in (''SUPER_ADMIN'',''FACILITY_ADMIN''))',
-      t || '_update', t
-    );
-    execute format(
-      'create policy %I_delete on public.%I for delete to authenticated using ((select public.app_role()) in (''SUPER_ADMIN'',''FACILITY_ADMIN''))',
-      t || '_delete', t
-    );
+    execute format('create policy %I_select on public.%I for select to authenticated using ((select public.app_role()) in (''SUPER_ADMIN'',''FACILITY_ADMIN''))', t || '_select', t);
+    execute format('create policy %I_insert on public.%I for insert to authenticated with check ((select public.app_role()) in (''SUPER_ADMIN'',''FACILITY_ADMIN''))', t || '_insert', t);
+    execute format('create policy %I_update on public.%I for update to authenticated using ((select public.app_role()) in (''SUPER_ADMIN'',''FACILITY_ADMIN'')) with check ((select public.app_role()) in (''SUPER_ADMIN'',''FACILITY_ADMIN''))', t || '_update', t);
+    execute format('create policy %I_delete on public.%I for delete to authenticated using ((select public.app_role()) in (''SUPER_ADMIN'',''FACILITY_ADMIN''))', t || '_delete', t);
   end loop;
 end $$;
 
