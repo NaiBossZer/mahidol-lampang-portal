@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   Zap,
   Download,
@@ -14,352 +14,1033 @@ import {
   Info,
   Clock,
   Sparkles,
+  Upload,
+  Play,
+  Pencil,
+  Trash2,
+  Plus,
+  Database,
+  ShieldCheck,
+  AlertTriangle,
 } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 
+type ReportStatus = "draft" | "processing" | "needs_review" | "approved" | "published" | "failed";
+type SourceStatus = "uploaded" | "queued" | "processing" | "processed" | "needs_review" | "failed";
+type SourceType = "pea_bill" | "solar_excel" | "report_pdf" | "report_pptx" | "other";
+
 interface MonthlyReport {
   id: string;
-  month: string;
-  yearBce: number;
-  sobprabKwh: number;
-  sobprabAmount: number;
-  phalaadKwh: number;
-  phalaadAmount: number;
-  solarYieldKwh: number;
-  co2AvoidedTon: number;
-  coalSavedTon: number;
-  totalPeaKwh: number;
-  totalAmountThb: number;
-  solarRatioPct: number;
-  processedAt: string;
-  pptxFilename: string;
-  pdfFilename: string;
-  status: "completed" | "processing" | "pending";
+  report_month: string;
+  sobprab_kwh: number;
+  sobprab_amount_thb: number;
+  phalaad_kwh: number;
+  phalaad_amount_thb: number;
+  solar_yield_kwh: number;
+  total_pea_kwh: number;
+  total_amount_thb: number;
+  solar_ratio_pct: number;
+  co2_avoided_ton: number | null;
+  coal_saved_ton: number | null;
+  status: ReportStatus;
+  processed_at: string | null;
+  calculation_version: string | null;
 }
 
-const INITIAL_REPORTS: MonthlyReport[] = [
-  {
-    id: "rep-2569-09",
-    month: "กันยายน",
-    yearBce: 2569,
-    sobprabKwh: 3680.0,
-    sobprabAmount: 18230.5,
-    phalaadKwh: 310.0,
-    phalaadAmount: 1720.25,
-    solarYieldKwh: 1945.5,
-    co2AvoidedTon: 0.973,
-    coalSavedTon: 0.603,
-    totalPeaKwh: 3990.0,
-    totalAmountThb: 19950.75,
-    solarRatioPct: 32.78,
-    processedAt: "2026-09-29 19:30",
-    pptxFilename: "8.สรุปการใช้ไฟฟ้าและ Solar Cell (ลำปาง)_02092569.pptx",
-    pdfFilename: "8.สรุปการใช้ไฟฟ้าและ Solar Cell (ลำปาง)_02092569.pdf",
-    status: "completed",
-  },
-  {
-    id: "rep-2569-08",
-    month: "สิงหาคม",
-    yearBce: 2569,
-    sobprabKwh: 3840.0,
-    sobprabAmount: 19120.4,
-    phalaadKwh: 340.0,
-    phalaadAmount: 1890.1,
-    solarYieldKwh: 1880.2,
-    co2AvoidedTon: 0.94,
-    coalSavedTon: 0.583,
-    totalPeaKwh: 4180.0,
-    totalAmountThb: 21010.5,
-    solarRatioPct: 31.02,
-    processedAt: "2026-08-30 14:15",
-    pptxFilename: "8.สรุปการใช้ไฟฟ้าและ Solar Cell (ลำปาง)_สิงหาคม2569.pptx",
-    pdfFilename: "8.สรุปการใช้ไฟฟ้าและ Solar Cell (ลำปาง)_สิงหาคม2569.pdf",
-    status: "completed",
-  },
+interface Site {
+  id: string;
+  code: "SOBPRAB" | "PHALAAD" | "SOLAR" | string;
+  name: string;
+  site_type: string;
+  account_number: string | null;
+  meter_number: string | null;
+  active: boolean;
+}
+
+interface SourceDocument {
+  id: string;
+  site_id: string | null;
+  source_type: SourceType;
+  billing_period: string | null;
+  filename: string;
+  storage_bucket: string;
+  mime_type: string;
+  file_size: number | null;
+  sha256: string | null;
+  status: SourceStatus;
+  parser_version: string | null;
+  validation_errors: string[] | null;
+  error_message: string | null;
+  uploaded_at: string;
+  processed_at: string | null;
+  site?: { code?: string; name?: string } | null;
+}
+
+interface ProcessingRun {
+  id: string;
+  status: string;
+  agent_name: string;
+  agent_version: string | null;
+  trigger_source: string;
+  started_at: string;
+  finished_at: string | null;
+  output_report_id: string | null;
+  metrics: Record<string, unknown>;
+  error_message: string | null;
+}
+
+interface DashboardPayload {
+  reports: MonthlyReport[];
+  sources: SourceDocument[];
+  sites: Site[];
+  runs: ProcessingRun[];
+}
+
+interface ReportDraft {
+  report_month: string;
+  sobprab_kwh: string;
+  sobprab_amount_thb: string;
+  phalaad_kwh: string;
+  phalaad_amount_thb: string;
+  solar_yield_kwh: string;
+  co2_avoided_ton: string;
+  coal_saved_ton: string;
+  status: ReportStatus;
+}
+
+const SOURCE_TYPE_LABEL: Record<SourceType, string> = {
+  pea_bill: "PEA Bill / PDF",
+  solar_excel: "Solar Excel",
+  report_pdf: "Report PDF",
+  report_pptx: "Report PPTX",
+  other: "เอกสารอื่น",
+};
+
+const STATUS_META: Record<string, { label: string; className: string }> = {
+  uploaded: { label: "รอประมวลผล", className: "bg-slate-100 text-slate-700" },
+  queued: { label: "เข้าคิว", className: "bg-blue-100 text-blue-700" },
+  processing: { label: "กำลังประมวลผล", className: "bg-amber-100 text-amber-800" },
+  processed: { label: "ประมวลผลแล้ว", className: "bg-emerald-100 text-emerald-800" },
+  needs_review: { label: "รอตรวจสอบ", className: "bg-orange-100 text-orange-800" },
+  failed: { label: "ผิดพลาด", className: "bg-rose-100 text-rose-700" },
+  draft: { label: "Draft", className: "bg-slate-100 text-slate-700" },
+  approved: { label: "อนุมัติแล้ว", className: "bg-emerald-100 text-emerald-800" },
+  published: { label: "เผยแพร่แล้ว", className: "bg-violet-100 text-violet-800" },
+};
+
+const THAI_MONTHS = [
+  "มกราคม",
+  "กุมภาพันธ์",
+  "มีนาคม",
+  "เมษายน",
+  "พฤษภาคม",
+  "มิถุนายน",
+  "กรกฎาคม",
+  "สิงหาคม",
+  "กันยายน",
+  "ตุลาคม",
+  "พฤศจิกายน",
+  "ธันวาคม",
 ];
 
+function monthLabel(value: string | null | undefined) {
+  if (!value) return "—";
+  const [year, month] = value.slice(0, 7).split("-").map(Number);
+  if (!year || !month) return value;
+  return THAI_MONTHS[month - 1] + " " + (year + 543);
+}
+
+function monthInput(value: string | null | undefined) {
+  return value ? value.slice(0, 7) : "";
+}
+
+function formatNumber(value: number | null | undefined, digits = 1) {
+  if (value == null || !Number.isFinite(value)) return "—";
+  return value.toLocaleString("th-TH", {
+    minimumFractionDigits: digits,
+    maximumFractionDigits: digits,
+  });
+}
+
+function formatMoney(value: number | null | undefined) {
+  if (value == null || !Number.isFinite(value)) return "—";
+  return value.toLocaleString("th-TH", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
+}
+
+function formatDateTime(value: string | null | undefined) {
+  if (!value) return "—";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return value;
+  return date.toLocaleString("th-TH", {
+    dateStyle: "medium",
+    timeStyle: "short",
+  });
+}
+
+function emptyDraft(): ReportDraft {
+  const now = new Date();
+  const month = now.getUTCFullYear() + "-" + String(now.getUTCMonth() + 1).padStart(2, "0");
+  return {
+    report_month: month,
+    sobprab_kwh: "0",
+    sobprab_amount_thb: "0",
+    phalaad_kwh: "0",
+    phalaad_amount_thb: "0",
+    solar_yield_kwh: "0",
+    co2_avoided_ton: "",
+    coal_saved_ton: "",
+    status: "draft",
+  };
+}
+
+function draftFromReport(report: MonthlyReport): ReportDraft {
+  return {
+    report_month: monthInput(report.report_month),
+    sobprab_kwh: String(report.sobprab_kwh ?? 0),
+    sobprab_amount_thb: String(report.sobprab_amount_thb ?? 0),
+    phalaad_kwh: String(report.phalaad_kwh ?? 0),
+    phalaad_amount_thb: String(report.phalaad_amount_thb ?? 0),
+    solar_yield_kwh: String(report.solar_yield_kwh ?? 0),
+    co2_avoided_ton: report.co2_avoided_ton == null ? "" : String(report.co2_avoided_ton),
+    coal_saved_ton: report.coal_saved_ton == null ? "" : String(report.coal_saved_ton),
+    status: report.status,
+  };
+}
+
+async function apiRequest<T = unknown>(url: string, init: RequestInit = {}) {
+  const response = await fetch(url, {
+    credentials: "include",
+    ...init,
+  });
+  const body = (await response.json().catch(() => null)) as
+    | { success?: boolean; data?: T; error?: string }
+    | null;
+  if (!response.ok || !body?.success) {
+    throw new Error(body?.error || "เกิดข้อผิดพลาดจากระบบ");
+  }
+  return body.data as T;
+}
+
 export function ElectricityReportsPage() {
-  const [reports, setReports] = useState<MonthlyReport[]>(INITIAL_REPORTS);
-  const [selectedReportId, setSelectedReportId] = useState<string>("rep-2569-09");
+  const [reports, setReports] = useState<MonthlyReport[]>([]);
+  const [sources, setSources] = useState<SourceDocument[]>([]);
+  const [sites, setSites] = useState<Site[]>([]);
+  const [runs, setRuns] = useState<ProcessingRun[]>([]);
+  const [selectedReportId, setSelectedReportId] = useState("");
+  const [selectedSourceIds, setSelectedSourceIds] = useState<string[]>([]);
+  const [loading, setLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [showEditor, setShowEditor] = useState(false);
+  const [draft, setDraft] = useState<ReportDraft>(emptyDraft());
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [sourceFile, setSourceFile] = useState<File | null>(null);
+  const [sourceSite, setSourceSite] = useState("SOBPRAB");
+  const [sourceType, setSourceType] = useState<SourceType>("pea_bill");
+  const [sourceMonth, setSourceMonth] = useState(monthInput(new Date().toISOString()));
 
-  const activeReport = reports.find((r) => r.id === selectedReportId) ?? reports[0];
-
-  const handleRefresh = () => {
-    setIsRefreshing(true);
-    setTimeout(() => {
+  const loadDashboard = async (silent = false) => {
+    try {
+      if (!silent) setLoading(true);
+      const data = await apiRequest<DashboardPayload>("/api/admin/electricity?resource=dashboard");
+      setReports(data.reports ?? []);
+      setSources(data.sources ?? []);
+      setSites(data.sites ?? []);
+      setRuns(data.runs ?? []);
+      setSelectedReportId((current) => {
+        if (current && data.reports.some((item) => item.id === current)) return current;
+        return data.reports[0]?.id ?? "";
+      });
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "โหลดข้อมูลระบบรายงานค่าไฟฟ้าไม่สำเร็จ");
+    } finally {
+      setLoading(false);
       setIsRefreshing(false);
-      toast.success("อัปเดตข้อมูลรายงานค่าไฟฟ้าล่าสุดเรียบร้อยแล้ว");
-    }, 600);
+    }
   };
 
-  const handleDownload = (filename: string, filetype: "PDF" | "PPTX") => {
-    toast.info(`กำลังเริ่มดาวน์โหลดเอกสาร ${filetype}: ${filename}`);
+  useEffect(() => {
+    void loadDashboard();
+  }, []);
+
+  const activeReport = useMemo(
+    () => reports.find((item) => item.id === selectedReportId) ?? reports[0] ?? null,
+    [reports, selectedReportId],
+  );
+
+  const selectedMonthSources = useMemo(() => {
+    if (!activeReport) return sources;
+    return sources.filter(
+      (item) =>
+        !item.billing_period ||
+        item.billing_period.slice(0, 7) === activeReport.report_month.slice(0, 7),
+    );
+  }, [activeReport, sources]);
+
+  const latestRun = runs[0];
+
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+    await loadDashboard(true);
+    toast.success("โหลดข้อมูลจาก Supabase ล่าสุดแล้ว");
   };
+
+  const handleDownloadSource = async (sourceId: string) => {
+    try {
+      window.location.href = "/api/admin/electricity?action=file&id=" + encodeURIComponent(sourceId);
+    } catch {
+      toast.error("ไม่สามารถเปิดเอกสารต้นฉบับได้");
+    }
+  };
+
+  const handleUpload = async () => {
+    if (!sourceFile) {
+      toast.error("กรุณาเลือกไฟล์ PDF/Excel ก่อน");
+      return;
+    }
+    setIsUploading(true);
+    try {
+      const form = new FormData();
+      form.append("file", sourceFile);
+      form.append("siteCode", sourceSite);
+      form.append("sourceType", sourceType);
+      form.append("billingPeriod", sourceMonth + "-01");
+      await apiRequest("/api/admin/electricity?action=upload", {
+        method: "POST",
+        body: form,
+      });
+      setSourceFile(null);
+      toast.success("บันทึกไฟล์ต้นฉบับลง Supabase Storage แล้ว");
+      await loadDashboard(true);
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "อัปโหลดไม่สำเร็จ");
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  const toggleSource = (id: string) => {
+    setSelectedSourceIds((current) =>
+      current.includes(id) ? current.filter((value) => value !== id) : [...current, id],
+    );
+  };
+
+  const handleProcess = async (ids = selectedSourceIds) => {
+    if (!ids.length) {
+      toast.error("เลือกเอกสารต้นทางอย่างน้อย 1 รายการ");
+      return;
+    }
+    setIsProcessing(true);
+    try {
+      await apiRequest("/api/admin/electricity?action=process", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ sourceDocumentIds: ids }),
+      });
+      setSelectedSourceIds([]);
+      toast.success("AI Agent ประมวลผลแล้ว และสร้าง Monthly Report ในสถานะรอตรวจสอบ");
+      await loadDashboard(true);
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "AI Agent ประมวลผลไม่สำเร็จ");
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  const startNewReport = () => {
+    setEditingId(null);
+    setDraft(emptyDraft());
+    setShowEditor(true);
+  };
+
+  const startEditReport = (report: MonthlyReport) => {
+    setEditingId(report.id);
+    setDraft(draftFromReport(report));
+    setShowEditor(true);
+  };
+
+  const saveReport = async () => {
+    try {
+      const payload = {
+        report_month: draft.report_month + "-01",
+        sobprab_kwh: draft.sobprab_kwh,
+        sobprab_amount_thb: draft.sobprab_amount_thb,
+        phalaad_kwh: draft.phalaad_kwh,
+        phalaad_amount_thb: draft.phalaad_amount_thb,
+        solar_yield_kwh: draft.solar_yield_kwh,
+        co2_avoided_ton: draft.co2_avoided_ton || null,
+        coal_saved_ton: draft.coal_saved_ton || null,
+        status: draft.status,
+      };
+
+      if (editingId) {
+        await apiRequest("/api/admin/electricity?action=report&id=" + encodeURIComponent(editingId), {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+        toast.success("แก้ไขรายงานเรียบร้อย");
+      } else {
+        await apiRequest("/api/admin/electricity?action=report", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+        toast.success("สร้างรายงานรายเดือนเรียบร้อย");
+      }
+
+      setShowEditor(false);
+      setEditingId(null);
+      await loadDashboard(true);
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "บันทึกรายงานไม่สำเร็จ");
+    }
+  };
+
+  const deleteReport = async (report: MonthlyReport) => {
+    const confirmed = window.confirm(
+      "ลบรายงาน " + monthLabel(report.report_month) + " หรือไม่? เอกสารต้นทางจะไม่ถูกลบ",
+    );
+    if (!confirmed) return;
+
+    try {
+      await apiRequest("/api/admin/electricity?action=report&id=" + encodeURIComponent(report.id), {
+        method: "DELETE",
+      });
+      toast.success("ลบรายงานเรียบร้อย");
+      await loadDashboard(true);
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "ลบรายงานไม่สำเร็จ");
+    }
+  };
+
+  const setDraftField = (field: keyof ReportDraft, value: string) =>
+    setDraft((current) => ({ ...current, [field]: value }));
+
+  if (loading) {
+    return (
+      <section className="min-h-[calc(100vh-4rem)] bg-slate-50/60 px-4 py-10 sm:px-6 lg:px-8">
+        <div className="mx-auto flex max-w-7xl items-center justify-center rounded-2xl border border-slate-200 bg-white p-12 text-sm font-semibold text-slate-500 shadow-xs">
+          กำลังโหลดข้อมูลรายงานค่าไฟฟ้าจาก Supabase…
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section className="min-h-[calc(100vh-4rem)] bg-slate-50/60 px-4 py-6 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-7xl space-y-6">
-        {/* Header Bar */}
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between border-b border-slate-200/80 pb-5">
+        <div className="flex flex-col gap-4 border-b border-slate-200/80 pb-5 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2">
               <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-semibold text-amber-800">
                 <Zap className="h-3.5 w-3.5 fill-amber-500 text-amber-600" />
                 Engineering & Energy Agent Hub
               </span>
-              <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2.5 py-0.5 text-xs font-medium text-emerald-800">
-                <CheckCircle2 className="h-3 w-3 text-emerald-600" /> AI Agent Live
+              <span className="inline-flex items-center gap-1 rounded-full bg-blue-100 px-2.5 py-0.5 text-xs font-semibold text-blue-800">
+                <Database className="h-3 w-3" />
+                Supabase Source of Truth
               </span>
             </div>
             <h1 className="mt-2 text-2xl font-bold tracking-tight text-[#0c2340]">
               ระบบรายงานสรุปการใช้ไฟฟ้าและพลังงานหมุนเวียน (EE Report)
             </h1>
             <p className="mt-1 text-sm text-slate-500">
-              งานพันธกิจเพื่อสังคม คณะสิ่งแวดล้อมและทรัพยากรศาสตร์ มหาวิทยาลัยมหิดล จังหวัดลำปาง
+              ข้อมูลจริงจากเอกสารต้นทาง → AI extraction → validation → Monthly Report → Dashboard
             </p>
           </div>
 
-          <div className="flex flex-wrap items-center gap-2.5">
+          <div className="flex flex-wrap items-center gap-2">
             <button
               type="button"
-              onClick={handleRefresh}
+              onClick={() => void handleRefresh()}
               disabled={isRefreshing}
-              className="inline-flex items-center gap-1.5 rounded-lg border border-slate-300 bg-white px-3.5 py-2 text-xs font-semibold text-slate-700 shadow-xs hover:bg-slate-50 transition-colors"
+              className="inline-flex items-center gap-1.5 rounded-lg border border-slate-300 bg-white px-3.5 py-2 text-xs font-semibold text-slate-700 shadow-xs transition-colors hover:bg-slate-50"
             >
               <RefreshCw className={cn("h-3.5 w-3.5 text-slate-500", isRefreshing && "animate-spin")} />
               รีเฟรช
             </button>
             <button
               type="button"
-              onClick={() => handleDownload(activeReport.pdfFilename, "PDF")}
-              className="inline-flex items-center gap-1.5 rounded-lg bg-[#002d62] px-4 py-2 text-xs font-bold text-white shadow-xs hover:bg-[#00224b] transition-colors"
+              onClick={startNewReport}
+              className="inline-flex items-center gap-1.5 rounded-lg border border-[#002d62] bg-white px-3.5 py-2 text-xs font-bold text-[#002d62] shadow-xs hover:bg-blue-50"
             >
-              <Download className="h-3.5 w-3.5" />
-              ดาวน์โหลดสรุป PDF ประจำเดือน
+              <Plus className="h-3.5 w-3.5" />
+              สร้างรายงานด้วยมือ
             </button>
           </div>
         </div>
 
-        {/* Selected Month Selector Ribbon */}
-        <div className="flex items-center justify-between rounded-xl bg-white p-3 shadow-xs border border-slate-200">
+        {!reports.length && (
+          <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
+            <div className="flex items-start gap-3">
+              <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
+              <div>
+                <p className="font-bold">ยังไม่มี Monthly Report ในฐานข้อมูล</p>
+                <p className="mt-1 text-xs">
+                  ให้อัปโหลด PDF ค่าไฟสบปราบ/ผาลาด และ Excel Solar ที่ส่วนเอกสารต้นทางด้านล่าง แล้วสั่ง AI Agent ประมวลผล
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+
+        <div className="flex items-center justify-between rounded-xl border border-slate-200 bg-white p-3 shadow-xs">
           <div className="flex items-center gap-2">
             <Calendar className="h-4 w-4 text-[#002d62]" />
-            <span className="text-xs font-bold text-slate-700">เลือกรอบเดือนที่แสดงผล:</span>
+            <span className="text-xs font-bold text-slate-700">เลือกรอบเดือน:</span>
           </div>
           <div className="flex items-center gap-1.5 overflow-x-auto">
-            {reports.map((rep) => (
+            {reports.map((report) => (
               <button
-                key={rep.id}
+                key={report.id}
                 type="button"
-                onClick={() => setSelectedReportId(rep.id)}
+                onClick={() => setSelectedReportId(report.id)}
                 className={cn(
                   "rounded-lg px-3 py-1.5 text-xs font-bold transition-all",
-                  selectedReportId === rep.id
+                  selectedReportId === report.id
                     ? "bg-[#0c2340] text-white shadow-xs"
-                    : "text-slate-600 hover:bg-slate-100"
+                    : "text-slate-600 hover:bg-slate-100",
                 )}
               >
-                {rep.month} {rep.yearBce}
+                {monthLabel(report.report_month)}
               </button>
             ))}
           </div>
         </div>
 
-        {/* KPI Cards Grid */}
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {/* Card 1: Total Electric Bill */}
-          <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-xs">
-            <div className="flex items-center justify-between text-slate-500">
-              <span className="text-xs font-bold tracking-wide uppercase">ค่าไฟฟ้ารวม (กฟภ.)</span>
-              <div className="rounded-lg bg-blue-50 p-2 text-blue-700">
-                <Zap className="h-4 w-4" />
-              </div>
-            </div>
-            <div className="mt-3">
-              <span className="text-2xl font-black text-[#0c2340]">
-                ฿{activeReport.totalAmountThb.toLocaleString("th-TH", { minimumFractionDigits: 2 })}
-              </span>
-              <span className="ml-1 text-xs text-slate-500">บาท</span>
-            </div>
-            <p className="mt-2 flex items-center text-xs text-slate-500">
-              <TrendingDown className="mr-1 h-3.5 w-3.5 text-emerald-600" />
-              หน่วยไฟรวม {activeReport.totalPeaKwh.toLocaleString()} kWh
-            </p>
-          </div>
-
-          {/* Card 2: PEA Sobprab Station */}
-          <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-xs">
-            <div className="flex items-center justify-between text-slate-500">
-              <span className="text-xs font-bold tracking-wide uppercase">กฟภ. สถานีสบปราบ</span>
-              <div className="rounded-lg bg-amber-50 p-2 text-amber-700">
-                <Building2 className="h-4 w-4" />
-              </div>
-            </div>
-            <div className="mt-3">
-              <span className="text-2xl font-black text-[#0c2340]">
-                {activeReport.sobprabKwh.toLocaleString("th-TH", { minimumFractionDigits: 1 })}
-              </span>
-              <span className="ml-1 text-xs text-slate-500">kWh</span>
-            </div>
-            <p className="mt-2 text-xs text-slate-500">
-              ยอดเงิน: ฿{activeReport.sobprabAmount.toLocaleString("th-TH", { minimumFractionDigits: 2 })} บาท
-            </p>
-          </div>
-
-          {/* Card 3: Solar Cell Production */}
-          <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-xs">
-            <div className="flex items-center justify-between text-slate-500">
-              <span className="text-xs font-bold tracking-wide uppercase">การผลิต Solar Cell</span>
-              <div className="rounded-lg bg-amber-50 p-2 text-amber-600">
-                <SunMedium className="h-4 w-4" />
-              </div>
-            </div>
-            <div className="mt-3">
-              <span className="text-2xl font-black text-amber-700">
-                {activeReport.solarYieldKwh.toLocaleString("th-TH", { minimumFractionDigits: 1 })}
-              </span>
-              <span className="ml-1 text-xs text-slate-500">kWh Yield</span>
-            </div>
-            <p className="mt-2 text-xs font-semibold text-emerald-600">
-              ทดแทนพลังงาน {activeReport.solarRatioPct.toFixed(1)}% ของการใช้รวม
-            </p>
-          </div>
-
-          {/* Card 4: Environmental Savings */}
-          <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-xs">
-            <div className="flex items-center justify-between text-slate-500">
-              <span className="text-xs font-bold tracking-wide uppercase">ลดคาร์บอน (CO₂ Avoided)</span>
-              <div className="rounded-lg bg-emerald-50 p-2 text-emerald-700">
-                <Leaf className="h-4 w-4" />
-              </div>
-            </div>
-            <div className="mt-3">
-              <span className="text-2xl font-black text-emerald-700">
-                {activeReport.co2AvoidedTon.toFixed(3)}
-              </span>
-              <span className="ml-1 text-xs text-slate-500">ตัน CO₂</span>
-            </div>
-            <p className="mt-2 text-xs text-slate-500">
-              ทดแทนถ่านหินมาตรฐาน {activeReport.coalSavedTon.toFixed(3)} ตัน
-            </p>
-          </div>
-        </div>
-
-        {/* Detailed Breakdown & Download Hub */}
-        <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-          {/* Main Table: Monthly Reports List */}
-          <div className="lg:col-span-2 rounded-xl border border-slate-200 bg-white p-5 shadow-xs">
-            <div className="flex items-center justify-between border-b border-slate-100 pb-4">
-              <div>
-                <h2 className="text-base font-bold text-[#0c2340]">ประวัติเอกสารรายงานสรุปประจำเดือน</h2>
-                <p className="text-xs text-slate-500">เอกสารสรุปผลจัดทำโดย AI Agent อัตโนมัติ</p>
-              </div>
-              <span className="text-xs font-semibold text-slate-400">
-                ทั้งหมด {reports.length} รายการ
-              </span>
-            </div>
-
-            <div className="mt-4 divide-y divide-slate-100">
-              {reports.map((rep) => (
-                <div
-                  key={rep.id}
-                  className="flex flex-col gap-3 py-3.5 sm:flex-row sm:items-center sm:justify-between hover:bg-slate-50/70 p-2 rounded-lg transition-colors"
-                >
-                  <div className="space-y-1">
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm font-bold text-slate-800">
-                        ประจำเดือน {rep.month} {rep.yearBce}
-                      </span>
-                      <span className="rounded bg-emerald-100 px-2 py-0.5 text-[10px] font-bold text-emerald-800">
-                        สมบูรณ์
-                      </span>
-                    </div>
-                    <div className="flex flex-wrap items-center gap-x-3 text-xs text-slate-500">
-                      <span>สบปราบ: {rep.sobprabKwh.toLocaleString()} kWh</span>
-                      <span>ผาลาด: {rep.phalaadKwh.toLocaleString()} kWh</span>
-                      <span>Solar: {rep.solarYieldKwh.toLocaleString()} kWh</span>
-                      <span className="font-semibold text-slate-700">
-                        รวม: ฿{rep.totalAmountThb.toLocaleString()} บ.
-                      </span>
-                    </div>
+        {activeReport && (
+          <>
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+              <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-xs">
+                <div className="flex items-center justify-between text-slate-500">
+                  <span className="text-xs font-bold uppercase tracking-wide">ค่าไฟฟ้ารวม (กฟภ.)</span>
+                  <div className="rounded-lg bg-blue-50 p-2 text-blue-700">
+                    <Zap className="h-4 w-4" />
                   </div>
+                </div>
+                <div className="mt-3">
+                  <span className="text-2xl font-black text-[#0c2340]">
+                    ฿{formatMoney(activeReport.total_amount_thb)}
+                  </span>
+                </div>
+                <p className="mt-2 flex items-center text-xs text-slate-500">
+                  <TrendingDown className="mr-1 h-3.5 w-3.5 text-emerald-600" />
+                  หน่วยไฟรวม {formatNumber(activeReport.total_pea_kwh)} kWh
+                </p>
+              </div>
 
+              <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-xs">
+                <div className="flex items-center justify-between text-slate-500">
+                  <span className="text-xs font-bold uppercase tracking-wide">กฟภ. สถานีสบปราบ</span>
+                  <div className="rounded-lg bg-amber-50 p-2 text-amber-700">
+                    <Building2 className="h-4 w-4" />
+                  </div>
+                </div>
+                <div className="mt-3">
+                  <span className="text-2xl font-black text-[#0c2340]">
+                    {formatNumber(activeReport.sobprab_kwh)}
+                  </span>
+                  <span className="ml-1 text-xs text-slate-500">kWh</span>
+                </div>
+                <p className="mt-2 text-xs text-slate-500">
+                  ยอดเงิน: ฿{formatMoney(activeReport.sobprab_amount_thb)} บาท
+                </p>
+              </div>
+
+              <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-xs">
+                <div className="flex items-center justify-between text-slate-500">
+                  <span className="text-xs font-bold uppercase tracking-wide">การผลิต Solar Cell</span>
+                  <div className="rounded-lg bg-amber-50 p-2 text-amber-600">
+                    <SunMedium className="h-4 w-4" />
+                  </div>
+                </div>
+                <div className="mt-3">
+                  <span className="text-2xl font-black text-amber-700">
+                    {formatNumber(activeReport.solar_yield_kwh)}
+                  </span>
+                  <span className="ml-1 text-xs text-slate-500">kWh Yield</span>
+                </div>
+                <p className="mt-2 text-xs font-semibold text-emerald-600">
+                  {formatNumber(activeReport.solar_ratio_pct, 2)}% ของการใช้รวมที่รายงาน
+                </p>
+              </div>
+
+              <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-xs">
+                <div className="flex items-center justify-between text-slate-500">
+                  <span className="text-xs font-bold uppercase tracking-wide">ลดคาร์บอน</span>
+                  <div className="rounded-lg bg-emerald-50 p-2 text-emerald-700">
+                    <Leaf className="h-4 w-4" />
+                  </div>
+                </div>
+                <div className="mt-3">
+                  <span className="text-2xl font-black text-emerald-700">
+                    {formatNumber(activeReport.co2_avoided_ton, 3)}
+                  </span>
+                  <span className="ml-1 text-xs text-slate-500">ตัน CO₂</span>
+                </div>
+                <p className="mt-2 text-xs text-slate-500">
+                  ถ่านหินเทียบเท่า {formatNumber(activeReport.coal_saved_ton, 3)} ตัน
+                </p>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+              <div className="lg:col-span-2 rounded-xl border border-slate-200 bg-white p-5 shadow-xs">
+                <div className="flex flex-col gap-3 border-b border-slate-100 pb-4 sm:flex-row sm:items-center sm:justify-between">
+                  <div>
+                    <h2 className="text-base font-bold text-[#0c2340]">
+                      Monthly Report — {monthLabel(activeReport.report_month)}
+                    </h2>
+                    <p className="text-xs text-slate-500">
+                      ค่า Total เป็น generated column จากข้อมูล PEA ไม่ใช่ตัวเลขที่หน้าเว็บคำนวณเอง
+                    </p>
+                  </div>
                   <div className="flex items-center gap-2">
+                    <span
+                      className={cn(
+                        "rounded-full px-2.5 py-1 text-[10px] font-black",
+                        STATUS_META[activeReport.status]?.className ?? "bg-slate-100 text-slate-700",
+                      )}
+                    >
+                      {STATUS_META[activeReport.status]?.label ?? activeReport.status}
+                    </span>
                     <button
                       type="button"
-                      onClick={() => handleDownload(rep.pptxFilename, "PPTX")}
-                      className="inline-flex items-center gap-1 rounded-md border border-slate-200 bg-white px-2.5 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-100"
-                      title="ดาวน์โหลดไฟล์ PowerPoint"
+                      onClick={() => startEditReport(activeReport)}
+                      className="inline-flex items-center gap-1 rounded-lg border border-slate-200 px-2.5 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50"
                     >
-                      <FileSpreadsheet className="h-3.5 w-3.5 text-orange-600" />
-                      PPTX
+                      <Pencil className="h-3.5 w-3.5" />
+                      แก้ไข
                     </button>
                     <button
                       type="button"
-                      onClick={() => handleDownload(rep.pdfFilename, "PDF")}
-                      className="inline-flex items-center gap-1 rounded-md bg-[#0c2340] px-3 py-1.5 text-xs font-bold text-white hover:bg-[#163a66]"
-                      title="ดาวน์โหลดไฟล์ PDF"
+                      onClick={() => void deleteReport(activeReport)}
+                      className="inline-flex items-center gap-1 rounded-lg border border-rose-200 px-2.5 py-1.5 text-xs font-semibold text-rose-700 hover:bg-rose-50"
                     >
-                      <FileText className="h-3.5 w-3.5 text-rose-300" />
-                      PDF
+                      <Trash2 className="h-3.5 w-3.5" />
+                      ลบ
                     </button>
                   </div>
                 </div>
-              ))}
-            </div>
-          </div>
 
-          {/* Sidebar / Info Box: AI Agent Pipeline Info */}
-          <div className="space-y-4">
-            <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-xs space-y-4">
-              <div className="flex items-center gap-2 border-b border-slate-100 pb-3">
-                <Sparkles className="h-4 w-4 text-purple-600" />
-                <h3 className="text-sm font-bold text-[#0c2340]">สถานะ AI Agent อัตโนมัติ</h3>
+                <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-3">
+                  <div className="rounded-xl border border-slate-100 bg-slate-50 p-4">
+                    <div className="text-[10px] font-black uppercase text-slate-500">สบปราบ</div>
+                    <div className="mt-1 text-xl font-black text-[#0c2340]">
+                      {formatNumber(activeReport.sobprab_kwh)} <span className="text-xs font-semibold">kWh</span>
+                    </div>
+                    <div className="mt-1 text-xs text-slate-500">฿{formatMoney(activeReport.sobprab_amount_thb)}</div>
+                  </div>
+                  <div className="rounded-xl border border-slate-100 bg-slate-50 p-4">
+                    <div className="text-[10px] font-black uppercase text-slate-500">ผาลาด</div>
+                    <div className="mt-1 text-xl font-black text-[#0c2340]">
+                      {formatNumber(activeReport.phalaad_kwh)} <span className="text-xs font-semibold">kWh</span>
+                    </div>
+                    <div className="mt-1 text-xs text-slate-500">฿{formatMoney(activeReport.phalaad_amount_thb)}</div>
+                  </div>
+                  <div className="rounded-xl border border-slate-100 bg-slate-50 p-4">
+                    <div className="text-[10px] font-black uppercase text-slate-500">Solar</div>
+                    <div className="mt-1 text-xl font-black text-amber-700">
+                      {formatNumber(activeReport.solar_yield_kwh)} <span className="text-xs font-semibold">kWh</span>
+                    </div>
+                    <div className="mt-1 text-xs text-slate-500">
+                      ประมวลผล {formatDateTime(activeReport.processed_at)}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="mt-5">
+                  <h3 className="mb-3 text-sm font-bold text-[#0c2340]">เอกสารที่เป็น Source of Truth</h3>
+                  <div className="divide-y divide-slate-100 overflow-hidden rounded-xl border border-slate-200">
+                    {selectedMonthSources.length ? (
+                      selectedMonthSources.map((source) => {
+                        const status = STATUS_META[source.status] ?? STATUS_META.uploaded;
+                        return (
+                          <div key={source.id} className="flex flex-col gap-3 p-3 sm:flex-row sm:items-center sm:justify-between">
+                            <div className="min-w-0">
+                              <div className="flex items-center gap-2">
+                                <span className="truncate text-sm font-semibold text-slate-800">{source.filename}</span>
+                                <span className={cn("shrink-0 rounded px-2 py-0.5 text-[9px] font-bold", status.className)}>
+                                  {status.label}
+                                </span>
+                              </div>
+                              <div className="mt-1 flex flex-wrap gap-x-3 gap-y-1 text-[11px] text-slate-500">
+                                <span>{SOURCE_TYPE_LABEL[source.source_type]}</span>
+                                <span>{source.site?.name ?? "ไม่ระบุ site"}</span>
+                                <span>{source.billing_period ? monthLabel(source.billing_period) : "ไม่ระบุเดือน"}</span>
+                                {source.sha256 && <span>SHA-256 {source.sha256.slice(0, 12)}…</span>}
+                              </div>
+                              {source.validation_errors?.length ? (
+                                <p className="mt-1 text-[11px] font-medium text-orange-700">
+                                  ต้องตรวจ: {source.validation_errors.join(" / ")}
+                                </p>
+                              ) : null}
+                            </div>
+                            <div className="flex shrink-0 items-center gap-2">
+                              {source.source_type === "pea_bill" || source.source_type === "solar_excel" ? (
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setSelectedSourceIds((current) =>
+                                      current.includes(source.id)
+                                        ? current.filter((value) => value !== source.id)
+                                        : [...current, source.id],
+                                    );
+                                  }}
+                                  className={cn(
+                                    "rounded-lg border px-2.5 py-1.5 text-xs font-semibold",
+                                    selectedSourceIds.includes(source.id)
+                                      ? "border-[#002d62] bg-blue-50 text-[#002d62]"
+                                      : "border-slate-200 text-slate-600 hover:bg-slate-50",
+                                  )}
+                                >
+                                  {selectedSourceIds.includes(source.id) ? "เลือกแล้ว" : "เลือก"}
+                                </button>
+                              ) : null}
+                              <button
+                                type="button"
+                                onClick={() => void handleDownloadSource(source.id)}
+                                className="inline-flex items-center gap-1 rounded-lg bg-[#0c2340] px-2.5 py-1.5 text-xs font-bold text-white hover:bg-[#163a66]"
+                              >
+                                <Download className="h-3.5 w-3.5" />
+                                เปิดไฟล์
+                              </button>
+                            </div>
+                          </div>
+                        );
+                      })
+                    ) : (
+                      <div className="p-6 text-center text-xs text-slate-500">
+                        ยังไม่มีเอกสารต้นทางสำหรับเดือนนี้
+                      </div>
+                    )}
+                  </div>
+
+                  {selectedSourceIds.length > 0 && (
+                    <div className="mt-3 flex flex-col gap-2 rounded-xl border border-blue-200 bg-blue-50 p-3 sm:flex-row sm:items-center sm:justify-between">
+                      <div className="text-xs text-blue-900">
+                        เลือกเอกสาร {selectedSourceIds.length} รายการสำหรับ AI Agent
+                      </div>
+                      <button
+                        type="button"
+                        disabled={isProcessing}
+                        onClick={() => void handleProcess()}
+                        className="inline-flex items-center justify-center gap-1.5 rounded-lg bg-[#002d62] px-3 py-2 text-xs font-bold text-white disabled:opacity-60"
+                      >
+                        <Play className="h-3.5 w-3.5" />
+                        {isProcessing ? "กำลังประมวลผล…" : "ประมวลผลด้วย AI Agent"}
+                      </button>
+                    </div>
+                  )}
+                </div>
               </div>
 
-              <div className="space-y-3 text-xs text-slate-600">
-                <div className="flex items-start gap-2">
-                  <div className="mt-0.5 rounded-full bg-emerald-500 h-2 w-2 shrink-0" />
-                  <div>
-                    <span className="font-bold text-slate-800">โหมดการประมวลผล:</span>
-                    <p className="text-slate-500">100% Offline Multi-Bill Processing Pipeline</p>
+              <div className="space-y-4">
+                <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-xs">
+                  <div className="flex items-center gap-2 border-b border-slate-100 pb-3">
+                    <Sparkles className="h-4 w-4 text-purple-600" />
+                    <h3 className="text-sm font-bold text-[#0c2340]">AI Agent Pipeline</h3>
+                  </div>
+                  <div className="mt-4 space-y-3 text-xs">
+                    <div className="flex items-start gap-2">
+                      <Upload className="mt-0.5 h-3.5 w-3.5 text-blue-600" />
+                      <div>
+                        <div className="font-bold text-slate-800">1. Ingest</div>
+                        <p className="text-slate-500">ไฟล์จริงถูกเก็บใน private Supabase Storage พร้อม SHA-256</p>
+                      </div>
+                    </div>
+                    <div className="flex items-start gap-2">
+                      <Sparkles className="mt-0.5 h-3.5 w-3.5 text-purple-600" />
+                      <div>
+                        <div className="font-bold text-slate-800">2. Extract</div>
+                        <p className="text-slate-500">Responses API อ่าน PDF/Excel และคืน structured JSON</p>
+                      </div>
+                    </div>
+                    <div className="flex items-start gap-2">
+                      <ShieldCheck className="mt-0.5 h-3.5 w-3.5 text-emerald-600" />
+                      <div>
+                        <div className="font-bold text-slate-800">3. Validate</div>
+                        <p className="text-slate-500">เทียบ site/month และตั้ง confidence + needs_review</p>
+                      </div>
+                    </div>
+                    <div className="flex items-start gap-2">
+                      <Database className="mt-0.5 h-3.5 w-3.5 text-slate-600" />
+                      <div>
+                        <div className="font-bold text-slate-800">4. Persist</div>
+                        <p className="text-slate-500">เขียน reading + Monthly Report และผูก source document</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="mt-4 rounded-lg border border-slate-200 bg-slate-50 p-3">
+                    <div className="text-[10px] font-black uppercase text-slate-500">Last run</div>
+                    <div className="mt-1 text-xs font-semibold text-slate-700">
+                      {latestRun ? formatDateTime(latestRun.finished_at ?? latestRun.started_at) : "ยังไม่มีการประมวลผล"}
+                    </div>
+                    {latestRun?.error_message ? (
+                      <p className="mt-1 text-[11px] text-rose-700">{latestRun.error_message}</p>
+                    ) : null}
                   </div>
                 </div>
 
-                <div className="flex items-start gap-2">
-                  <Clock className="mt-0.5 h-3.5 w-3.5 text-slate-400 shrink-0" />
-                  <div>
-                    <span className="font-bold text-slate-800">เวลาประมวลผลล่าสุด:</span>
-                    <p className="text-slate-500">{activeReport.processedAt} น.</p>
+                <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-xs">
+                  <div className="flex items-center gap-2 border-b border-slate-100 pb-3">
+                    <Upload className="h-4 w-4 text-[#002d62]" />
+                    <h3 className="text-sm font-bold text-[#0c2340]">รับไฟล์ต้นทางจริง</h3>
                   </div>
-                </div>
 
-                <div className="rounded-lg bg-slate-50 p-3 border border-slate-200/80 space-y-1.5">
-                  <div className="flex items-center gap-1.5 font-bold text-slate-700">
-                    <Info className="h-3.5 w-3.5 text-blue-600" />
-                    <span>โฟลเดอร์นำเข้าข้อมูล (Data Inbox):</span>
+                  <div className="mt-4 space-y-3">
+                    <label className="block text-[11px] font-bold text-slate-600">
+                      สถานที่
+                      <select
+                        value={sourceSite}
+                        onChange={(event) => setSourceSite(event.target.value)}
+                        className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700"
+                      >
+                        {sites
+                          .filter((site) => site.active)
+                          .map((site) => (
+                            <option key={site.id} value={site.code}>
+                              {site.name}
+                            </option>
+                          ))}
+                      </select>
+                    </label>
+
+                    <label className="block text-[11px] font-bold text-slate-600">
+                      ประเภท
+                      <select
+                        value={sourceType}
+                        onChange={(event) => setSourceType(event.target.value as SourceType)}
+                        className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700"
+                      >
+                        <option value="pea_bill">PEA Bill / PDF</option>
+                        <option value="solar_excel">Solar Excel</option>
+                        <option value="other">เอกสารอื่น</option>
+                      </select>
+                    </label>
+
+                    <label className="block text-[11px] font-bold text-slate-600">
+                      รอบเดือน
+                      <input
+                        type="month"
+                        value={sourceMonth}
+                        onChange={(event) => setSourceMonth(event.target.value)}
+                        className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700"
+                      />
+                    </label>
+
+                    <label className="block rounded-lg border border-dashed border-slate-300 bg-slate-50 p-3 text-xs text-slate-600">
+                      <span className="font-bold">ไฟล์ PDF / Excel</span>
+                      <input
+                        type="file"
+                        accept=".pdf,.xls,.xlsx,.ppt,.pptx,application/pdf,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                        onChange={(event) => setSourceFile(event.target.files?.[0] ?? null)}
+                        className="mt-2 block w-full text-xs"
+                      />
+                    </label>
+
+                    {sourceFile ? (
+                      <div className="rounded-lg bg-blue-50 p-2.5 text-[11px] text-blue-900">
+                        <div className="font-bold">{sourceFile.name}</div>
+                        <div>{(sourceFile.size / 1024 / 1024).toFixed(2)} MB</div>
+                      </div>
+                    ) : null}
+
+                    <button
+                      type="button"
+                      disabled={!sourceFile || isUploading}
+                      onClick={() => void handleUpload()}
+                      className="inline-flex w-full items-center justify-center gap-1.5 rounded-lg bg-[#002d62] px-3 py-2.5 text-xs font-bold text-white disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                      <Upload className="h-3.5 w-3.5" />
+                      {isUploading ? "กำลังอัปโหลด…" : "เก็บเป็น Source of Truth"}
+                    </button>
                   </div>
-                  <p className="font-mono text-[11px] text-slate-600 break-all">
-                    data/inbox/
-                  </p>
-                  <p className="text-[11px] text-slate-500">
-                    วางไฟล์ PDF สบปราบ, ผาลาด และ Excel Solar เพื่อให้ AI ประมวลผลรอบใหม่อัตโนมัติ
-                  </p>
                 </div>
               </div>
             </div>
 
-            {/* Quick Contact & Dispatch Notice */}
-            <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-xs text-xs space-y-2">
-              <span className="font-bold text-[#0c2340]">การจัดส่งรายงานอัตโนมัติ:</span>
-              <p className="text-slate-500">
-                ระบบเชื่อมต่อการส่งไฟล์รายงานสรุปผ่าน Gmail SMTP ไปยังวิศวกรผู้ดูแล และแจ้งเตือนสรุปผลรายเดือนผ่าน Telegram Bot ของศูนย์ฯ
-              </p>
+            <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-xs">
+              <div className="flex flex-col gap-2 border-b border-slate-100 pb-4 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                  <h2 className="text-base font-bold text-[#0c2340]">ประวัติ Monthly Reports</h2>
+                  <p className="text-xs text-slate-500">
+                    CRUD ใช้ Supabase RLS + Facility Admin permission; เอกสารต้นทางไม่ถูกลบพร้อม Report
+                  </p>
+                </div>
+                <div className="text-xs font-semibold text-slate-400">ทั้งหมด {reports.length} รายการ</div>
+              </div>
+
+              <div className="mt-4 divide-y divide-slate-100">
+                {reports.map((report) => (
+                  <div
+                    key={report.id}
+                    className="flex flex-col gap-3 rounded-lg p-2.5 transition-colors hover:bg-slate-50/70 sm:flex-row sm:items-center sm:justify-between"
+                  >
+                    <button
+                      type="button"
+                      onClick={() => setSelectedReportId(report.id)}
+                      className="min-w-0 text-left"
+                    >
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm font-bold text-slate-800">{monthLabel(report.report_month)}</span>
+                        <span
+                          className={cn(
+                            "rounded px-2 py-0.5 text-[10px] font-bold",
+                            STATUS_META[report.status]?.className ?? "bg-slate-100 text-slate-700",
+                          )}
+                        >
+                          {STATUS_META[report.status]?.label ?? report.status}
+                        </span>
+                      </div>
+                      <div className="mt-1 flex flex-wrap gap-x-3 text-[11px] text-slate-500">
+                        <span>สบปราบ {formatNumber(report.sobprab_kwh)} kWh</span>
+                        <span>ผาลาด {formatNumber(report.phalaad_kwh)} kWh</span>
+                        <span>Solar {formatNumber(report.solar_yield_kwh)} kWh</span>
+                        <span>รวม ฿{formatMoney(report.total_amount_thb)}</span>
+                      </div>
+                    </button>
+
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => startEditReport(report)}
+                        className="inline-flex items-center gap-1 rounded-md border border-slate-200 bg-white px-2.5 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-100"
+                      >
+                        <Pencil className="h-3.5 w-3.5" />
+                        แก้ไข
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => void deleteReport(report)}
+                        className="inline-flex items-center gap-1 rounded-md border border-rose-200 bg-white px-2.5 py-1.5 text-xs font-semibold text-rose-700 hover:bg-rose-50"
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                        ลบ
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-xs">
+              <div className="flex items-start gap-3">
+                <Info className="mt-0.5 h-4 w-4 shrink-0 text-blue-600" />
+                <div className="text-xs text-slate-600">
+                  <div className="font-bold text-slate-800">ข้อกำกับข้อมูล</div>
+                  <p className="mt-1">
+                    AI Agent ไม่คำนวณ CO₂ หรือถ่านหินจากตัวเลขที่เดาเอง ค่าเหล่านี้ต้องมาจาก calculation factor ที่ได้รับอนุมัติหรือการกรอกโดยผู้รับผิดชอบ
+                  </p>
+                </div>
+              </div>
+            </div>
+          </>
+        )}
+
+        {showEditor && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/40 p-4">
+            <div className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-2xl border border-slate-200 bg-white p-5 shadow-2xl">
+              <div className="flex items-start justify-between border-b border-slate-100 pb-4">
+                <div>
+                  <h2 className="text-lg font-black text-[#0c2340]">
+                    {editingId ? "แก้ไข Monthly Report" : "สร้าง Monthly Report"}
+                  </h2>
+                  <p className="mt-1 text-xs text-slate-500">ใช้สำหรับแก้ไข/รับรองข้อมูลจาก AI extraction</p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setShowEditor(false)}
+                  className="rounded-lg px-2 py-1 text-slate-400 hover:bg-slate-100"
+                >
+                  ✕
+                </button>
+              </div>
+
+              <div className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-2">
+                <label className="text-[11px] font-bold text-slate-600">
+                  รอบเดือน
+                  <input
+                    type="month"
+                    value={draft.report_month}
+                    onChange={(event) => setDraftField("report_month", event.target.value)}
+                    className="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-xs"
+                  />
+                </label>
+
+                <label className="text-[11px] font-bold text-slate-600">
+                  สถานะ
+                  <select
+                    value={draft.status}
+                    onChange={(event) => setDraftField("status", event.target.value as ReportStatus)}
+                    className="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-xs"
+                  >
+                    <option value="draft">Draft</option>
+                    <option value="processing">Processing</option>
+                    <option value="needs_review">Needs Review</option>
+                    <option value="approved">Approved</option>
+                    <option value="published">Published</option>
+                    <option value="failed">Failed</option>
+                  </select>
+                </label>
+
+                {[
+                  ["sobprab_kwh", "สบปราบ kWh"],
+                  ["sobprab_amount_thb", "สบปราบ บาท"],
+                  ["phalaad_kwh", "ผาลาด kWh"],
+                  ["phalaad_amount_thb", "ผาลาด บาท"],
+                  ["solar_yield_kwh", "Solar kWh"],
+                  ["co2_avoided_ton", "CO₂ Avoided ton"],
+                  ["coal_saved_ton", "Coal Saved ton"],
+                ].map(([field, label]) => (
+                  <label key={field} className="text-[11px] font-bold text-slate-600">
+                    {label}
+                    <input
+                      type="number"
+                      min="0"
+                      step="0.001"
+                      value={draft[field as keyof ReportDraft]}
+                      onChange={(event) =>
+                        setDraftField(field as keyof ReportDraft, event.target.value)
+                      }
+                      className="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-xs"
+                    />
+                  </label>
+                ))}
+              </div>
+
+              <div className="mt-5 rounded-lg bg-slate-50 p-3 text-[11px] text-slate-500">
+                Total kWh / Total Amount / Solar Ratio จะถูกคำนวณโดย PostgreSQL generated columns
+                หลังบันทึก
+              </div>
+
+              <div className="mt-5 flex items-center justify-end gap-2">
+                <button
+                  type="button"
+                  onClick={() => setShowEditor(false)}
+                  className="rounded-lg border border-slate-200 px-3 py-2 text-xs font-semibold text-slate-700"
+                >
+                  ยกเลิก
+                </button>
+                <button
+                  type="button"
+                  onClick={() => void saveReport()}
+                  className="inline-flex items-center gap-1.5 rounded-lg bg-[#002d62] px-4 py-2 text-xs font-bold text-white"
+                >
+                  <CheckCircle2 className="h-3.5 w-3.5" />
+                  บันทึก
+                </button>
+              </div>
             </div>
           </div>
-        </div>
+        )}
       </div>
     </section>
   );
