@@ -289,7 +289,6 @@ async function extractWithAI(
             schema: extractionSchema,
           },
         },
-        temperature: 0,
       }),
     });
 
