@@ -103,8 +103,8 @@ export function buildElectricityReportModel(reports: ElectricityReportRecord[], 
       label:m.label,
       peaKwh,
       solarKwh,
-      peaPct:total == null ? null : percent(peaKwh,total),
-      solarPct:total == null ? null : percent(solarKwh,total)
+      peaPct:total == null ? null : percent(n(peaKwh),total),
+      solarPct:total == null ? null : percent(n(solarKwh),total)
     };
   });
   const peaKwh = detail.reduce((s,r) => s+n(r.peaKwh),0);
@@ -199,7 +199,7 @@ function page2(ctx:CanvasRenderingContext2D,model:ElectricityReportModel,logo:HT
   model.annualUsage.forEach((r,i)=>{
     const c=plot.x+gw*(i+0.5); const bw=Math.min(90,gw*0.22);
     [[r.phalaad,COLORS.lineBlue,"ผาลาด"],[r.sobprab,COLORS.orange,"สบปราบ"]].forEach((a,j)=>{
-      const h=plot.h*a[0]/maxY; const x=c+(j===0?-bw-8:8); const y=plot.y+plot.h-h;
+      const h=plot.h*Number(a[0])/maxY; const x=c+(j===0?-bw-8:8); const y=plot.y+plot.h-h;
       box(ctx,x,y,bw,h,a[1] as string); text(ctx,fmt(a[0] as number),x+bw/2,y-16,15,400,"center"); 
     });
     text(ctx,fyLabel(r.fiscalYear),c,plot.y+plot.h+32,15,400,"center");
@@ -262,7 +262,7 @@ function crc32(bytes:Uint8Array){let c=0xffffffff;for(const b of bytes){c^=b;for
 class Zip {
   items:Array<{name:Uint8Array,data:Uint8Array,crc:number,offset:number}>=[]; enc=new TextEncoder();
   add(name:string,data:Uint8Array){this.items.push({name:this.enc.encode(name),data,crc:crc32(data),offset:0});}
-  blob(){const parts:Uint8Array[]=[];let off=0;this.items.forEach((f)=>{f.offset=off;const h=concat([le32(0x04034b50),le16(20),le16(0),le16(0),le16(0),le16(0),le32(f.crc),le32(f.data.length),le32(f.data.length),le16(f.name.length),le16(0),f.name,f.data]);parts.push(h);off+=h.length;});const cd=off;this.items.forEach((f)=>{const h=concat([le32(0x02014b50),le16(20),le16(20),le16(0),le16(0),le16(0),le16(0),le32(f.crc),le32(f.data.length),le32(f.data.length),le16(f.name.length),le16(0),le16(0),le16(0),le16(0),le32(0),le32(f.offset),f.name]);parts.push(h);off+=h.length;});parts.push(concat([le32(0x06054b50),le16(0),le16(0),le16(this.items.length),le16(this.items.length),le32(off-cd),le32(cd),le16(0)]));return new Blob(parts,{type:"application/vnd.openxmlformats-officedocument.presentationml.presentation"});}
+  blob(){const parts:Uint8Array[]=[];let off=0;this.items.forEach((f)=>{f.offset=off;const h=concat([le32(0x04034b50),le16(20),le16(0),le16(0),le16(0),le16(0),le32(f.crc),le32(f.data.length),le32(f.data.length),le16(f.name.length),le16(0),f.name,f.data]);parts.push(h);off+=h.length;});const cd=off;this.items.forEach((f)=>{const h=concat([le32(0x02014b50),le16(20),le16(20),le16(0),le16(0),le16(0),le16(0),le32(f.crc),le32(f.data.length),le32(f.data.length),le16(f.name.length),le16(0),le16(0),le16(0),le16(0),le32(0),le32(f.offset),f.name]);parts.push(h);off+=h.length;});parts.push(concat([le32(0x06054b50),le16(0),le16(0),le16(this.items.length),le16(this.items.length),le32(off-cd),le32(cd),le16(0)]));return new Blob(parts.map((part)=>part.buffer.slice(part.byteOffset,part.byteOffset+part.byteLength) as ArrayBuffer),{type:"application/vnd.openxmlformats-officedocument.presentationml.presentation"});}
 }
 
 function esc(s:string){return s.replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;").replaceAll("'","&apos;");}
@@ -326,7 +326,7 @@ function pdfFromImages(images:Array<{bytes:Uint8Array;w:number;h:number}>) {
   const enc=new TextEncoder(), objects:Uint8Array[]=[enc.encode("<< /Type /Catalog /Pages 2 0 R >>"),enc.encode("<< /Type /Pages /Kids [3 0 R 6 0 R 9 0 R] /Count 3 >>")], offsets:number[]=[]; let pos=0;
   const header=enc.encode("%PDF-1.4\\n%\\xFF\\xFF\\xFF\\xFF\\n"); pos=header.length;
   images.forEach((im,i)=>{const pg=3+i*3,io=pg+1,co=pg+2;const stream=enc.encode("q\\n960 0 0 540 0 0 cm\\n/Im"+(i+1)+" Do\\nQ");objects[pg-1]=enc.encode("<< /Type /Page /Parent 2 0 R /MediaBox [0 0 960 540] /Resources << /XObject << /Im"+(i+1)+" "+io+" 0 R >> >> /Contents "+co+" 0 R >>");objects[io-1]=concat([enc.encode("<< /Type /XObject /Subtype /Image /Width "+im.w+" /Height "+im.h+" /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length "+im.bytes.length+" >>\\nstream\\n"),im.bytes,enc.encode("\\nendstream")]);objects[co-1]=concat([enc.encode("<< /Length "+stream.length+" >>\\nstream\\n"),stream,enc.encode("\\nendstream")]);});
-  const chunks:Uint8Array[]=[header];let off=pos;objects.forEach((obj,i)=>{offsets[i+1]=off;const a=enc.encode((i+1)+" 0 obj\\n"),b=enc.encode("\\nendobj\\n");chunks.push(a,obj,b);off+=a.length+obj.length+b.length;});const x=off;let xref="xref\\n0 "+(objects.length+1)+"\\n0000000000 65535 f \\n";for(let i=1;i<=objects.length;i++)xref+=String(offsets[i]).padStart(10,"0")+" 00000 n \\n";xref+="trailer\\n<< /Size "+(objects.length+1)+" /Root 1 0 R >>\\nstartxref\\n"+x+"\\n%%EOF";chunks.push(enc.encode(xref));return new Blob(chunks,{type:"application/pdf"});
+  const chunks:Uint8Array[]=[header];let off=pos;objects.forEach((obj,i)=>{offsets[i+1]=off;const a=enc.encode((i+1)+" 0 obj\\n"),b=enc.encode("\\nendobj\\n");chunks.push(a,obj,b);off+=a.length+obj.length+b.length;});const x=off;let xref="xref\\n0 "+(objects.length+1)+"\\n0000000000 65535 f \\n";for(let i=1;i<=objects.length;i++)xref+=String(offsets[i]).padStart(10,"0")+" 00000 n \\n";xref+="trailer\\n<< /Size "+(objects.length+1)+" /Root 1 0 R >>\\nstartxref\\n"+x+"\\n%%EOF";chunks.push(enc.encode(xref));return new Blob(chunks.map((part)=>part.buffer.slice(part.byteOffset,part.byteOffset+part.byteLength) as ArrayBuffer),{type:"application/pdf"});
 }
 export async function generateElectricityPdf(model:ElectricityReportModel) {
   const pages=await renderPages(model); return pdfFromImages(pages.map((c)=>({bytes:b64Bytes(c.toDataURL("image/jpeg",.94)),w:c.width,h:c.height})));
