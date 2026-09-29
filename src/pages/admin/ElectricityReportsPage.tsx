@@ -25,6 +25,14 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import {
+  buildElectricityReportModel,
+  canGenerateElectricityReport,
+  downloadBlob,
+  electricityReportFilename,
+  generateElectricityPdf,
+  generateElectricityPptx,
+} from "@/lib/electricityReportGenerator";
 
 type ReportStatus = "draft" | "processing" | "needs_review" | "approved" | "published" | "failed";
 type SourceStatus = "uploaded" | "queued" | "processing" | "processed" | "needs_review" | "failed";
@@ -243,6 +251,7 @@ export function ElectricityReportsPage() {
   const [sourceSite, setSourceSite] = useState("SOBPRAB");
   const [sourceType, setSourceType] = useState<SourceType>("pea_bill");
   const [sourceMonth, setSourceMonth] = useState(monthInput(new Date().toISOString()));
+  const [exporting, setExporting] = useState<"pptx" | "pdf" | null>(null);
 
   const loadDashboard = async (silent = false) => {
     try {
@@ -349,6 +358,32 @@ export function ElectricityReportsPage() {
       toast.error(error instanceof Error ? error.message : "AI Agent ประมวลผลไม่สำเร็จ");
     } finally {
       setIsProcessing(false);
+    }
+  };
+
+  const handleExport = async (extension: "pptx" | "pdf") => {
+    if (!activeReport) {
+      toast.error("ยังไม่มี Monthly Report สำหรับสร้างไฟล์รายงาน");
+      return;
+    }
+    if (!canGenerateElectricityReport(activeReport)) {
+      toast.error("ต้องตรวจสอบและอนุมัติ Monthly Report ก่อนจึงจะส่งออกได้");
+      return;
+    }
+
+    setExporting(extension);
+    try {
+      const model = buildElectricityReportModel(reports, activeReport);
+      const blob =
+        extension === "pptx"
+          ? await generateElectricityPptx(model)
+          : await generateElectricityPdf(model);
+      downloadBlob(blob, electricityReportFilename(model, extension));
+      toast.success(extension === "pptx" ? "สร้างไฟล์ PPTX ที่แก้ไขได้แล้ว" : "สร้างไฟล์ PDF ตามรูปแบบรายงานแล้ว");
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "สร้างไฟล์รายงานไม่สำเร็จ");
+    } finally {
+      setExporting(null);
     }
   };
 
@@ -472,6 +507,26 @@ export function ElectricityReportsPage() {
             >
               <Plus className="h-3.5 w-3.5" />
               สร้างรายงานด้วยมือ
+            </button>
+            <button
+              type="button"
+              onClick={() => void handleExport("pptx")}
+              disabled={!canGenerateElectricityReport(activeReport) || exporting !== null}
+              className="inline-flex items-center gap-1.5 rounded-lg bg-[#002d62] px-3.5 py-2 text-xs font-bold text-white shadow-xs hover:bg-[#163a66] disabled:cursor-not-allowed disabled:opacity-45"
+              title="ส่งออก PowerPoint แบบแก้ไขได้"
+            >
+              <FileText className="h-3.5 w-3.5" />
+              {exporting === "pptx" ? "กำลังสร้าง PPTX…" : "PPTX"}
+            </button>
+            <button
+              type="button"
+              onClick={() => void handleExport("pdf")}
+              disabled={!canGenerateElectricityReport(activeReport) || exporting !== null}
+              className="inline-flex items-center gap-1.5 rounded-lg border border-[#002d62] bg-white px-3.5 py-2 text-xs font-bold text-[#002d62] shadow-xs hover:bg-blue-50 disabled:cursor-not-allowed disabled:opacity-45"
+              title="ส่งออก PDF ตามรูปแบบเดียวกับ PPTX"
+            >
+              <Download className="h-3.5 w-3.5" />
+              {exporting === "pdf" ? "กำลังสร้าง PDF…" : "PDF"}
             </button>
           </div>
         </div>
@@ -599,6 +654,9 @@ export function ElectricityReportsPage() {
                     </h2>
                     <p className="text-xs text-slate-500">
                       ค่า Total เป็น generated column จากข้อมูล PEA ไม่ใช่ตัวเลขที่หน้าเว็บคำนวณเอง
+                    </p>
+                    <p className="mt-1 text-[11px] text-slate-400">
+                      ปุ่ม PPTX / PDF จะเปิดใช้งานหลังรายงานอยู่ในสถานะอนุมัติหรือเผยแพร่แล้ว เพื่อป้องกันการส่งออกข้อมูลที่ยังไม่ผ่านการตรวจสอบ
                     </p>
                   </div>
                   <div className="flex items-center gap-2">
