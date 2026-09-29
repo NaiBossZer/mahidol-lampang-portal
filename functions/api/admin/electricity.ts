@@ -236,9 +236,9 @@ async function extractWithAI(
     billing_period?: string | null;
     filename: string;
   },
+  model: string,
 ) {
   const fileId = await uploadToOpenAI(apiKey, file);
-  const model = String(envValue("OPENAI_ELECTRICITY_MODEL", "gpt-4o-mini"));
   const sourceContext = [
     "ระบบ: Mahidol Lampang Electricity Reporting",
     "ไฟล์ต้นฉบับ: " + source.filename,
@@ -312,10 +312,6 @@ async function extractWithAI(
   }
 }
 
-function envValue(name: string, fallback: string) {
-  return fallback;
-}
-
 async function rebuildMonthlyReport(
   config: { url: string; key: string },
   token: string,
@@ -330,12 +326,19 @@ async function rebuildMonthlyReport(
       encodeURIComponent(month) +
       "&select=id,site_id,billing_period,billed_kwh,total_amount_thb,needs_review,source_document:electricity_source_documents(id,uploaded_at,source_type,status),site:electricity_sites(code,name)&order=site_id.asc",
   );
+  const nextMonthDate = new Date(month + "T00:00:00.000Z");
+  nextMonthDate.setUTCMonth(nextMonthDate.getUTCMonth() + 1);
+  const nextMonth =
+    nextMonthDate.toISOString().slice(0, 7) + "-01";
+
   const solar = await supabaseJson<Array<Record<string, unknown>>>(
     config,
     token,
-    "electricity_solar_readings?reading_period=eq." +
+    "electricity_solar_readings?reading_period=gte." +
       encodeURIComponent(month) +
-      "&select=id,site_id,reading_period,yield_kwh,needs_review,source_document:electricity_source_documents(id,uploaded_at,source_type,status)&order=site_id.asc",
+      "&reading_period=lt." +
+      encodeURIComponent(nextMonth) +
+      "&select=id,site_id,reading_period,yield_kwh,needs_review,source_document:electricity_source_documents(id,uploaded_at,source_type,status)&order=site_id.asc,reading_period.asc",
   );
 
   const latestBillBySite = new Map<string, Record<string, unknown>>();
@@ -347,13 +350,24 @@ async function rebuildMonthlyReport(
     if (!current || uploadedAt > currentAt) latestBillBySite.set(code, row);
   }
 
-  const latestSolarBySourceSite = new Map<string, Record<string, unknown>>();
+  const latestSolarSourceBySite = new Map<string, string>();
   for (const row of solar) {
-    const key = String(row.site_id ?? "SOLAR");
-    const current = latestSolarBySourceSite.get(key);
+    const siteId = String(row.site_id ?? "SOLAR");
+    const currentSourceId = latestSolarSourceBySite.get(siteId);
     const uploadedAt = String(jsonObject(row.source_document).uploaded_at ?? "");
-    const currentAt = String(jsonObject(current?.source_document).uploaded_at ?? "");
-    if (!current || uploadedAt > currentAt) latestSolarBySourceSite.set(key, row);
+    const currentSourceAt = currentSourceId
+      ? String(
+          jsonObject(
+            solar.find(
+              (candidate) =>
+                String(jsonObject(candidate.source_document).id ?? "") === currentSourceId,
+            )?.source_document,
+          ).uploaded_at ?? "",
+        )
+      : "";
+    if (!currentSourceId || uploadedAt > currentSourceAt) {
+      latestSolarSourceBySite.set(siteId, String(jsonObject(row.source_document).id ?? ""));
+    }
   }
 
   const sobprab = latestBillBySite.get("SOBPRAB");
@@ -365,7 +379,10 @@ async function rebuildMonthlyReport(
 
   let solarYield = 0;
   let requiresReview = Boolean(sobprab?.needs_review) || Boolean(phalaad?.needs_review);
-  for (const row of latestSolarBySourceSite.values()) {
+  for (const row of solar) {
+    const sourceId = String(jsonObject(row.source_document).id ?? "");
+    const siteId = String(row.site_id ?? "SOLAR");
+    if (latestSolarSourceBySite.get(siteId) !== sourceId) continue;
     solarYield += numberOrNull(row.yield_kwh) ?? 0;
     requiresReview ||= Boolean(row.needs_review);
   }
@@ -428,9 +445,7 @@ async function rebuildMonthlyReport(
     sourceDocumentIds: [
       sobprab ? String(jsonObject(sobprab.source_document).id ?? "") : "",
       phalaad ? String(jsonObject(phalaad.source_document).id ?? "") : "",
-      ...Array.from(latestSolarBySourceSite.values()).map((row) =>
-        String(jsonObject(row.source_document).id ?? ""),
-      ),
+      ...Array.from(latestSolarSourceBySite.values()),
     ].filter(Boolean),
   };
 }
@@ -855,12 +870,17 @@ async function handleProcess(request: Request, env: Env) {
         type: String(document.mime_type || "application/octet-stream"),
       });
 
-      const extraction = await extractWithAI(apiKey, file, {
-        source_type: String(document.source_type),
-        site_code: String(jsonObject(document.site).code ?? ""),
-        billing_period: String(document.billing_period ?? ""),
-        filename: String(document.filename),
-      });
+      const extraction = await extractWithAI(
+        apiKey,
+        file,
+        {
+          source_type: String(document.source_type),
+          site_code: String(jsonObject(document.site).code ?? ""),
+          billing_period: String(document.billing_period ?? ""),
+          filename: String(document.filename),
+        },
+        String(env.OPENAI_ELECTRICITY_MODEL ?? "gpt-4o-mini"),
+      );
 
       const parsed = extraction.data;
       const aiErrors = Array.isArray(parsed.validation_errors)
@@ -962,7 +982,7 @@ async function handleProcess(request: Request, env: Env) {
               body: JSON.stringify({
                 source_document_id: sourceId,
                 site_id: siteId,
-                reading_period: solarMonth,
+                reading_period: readingPeriod,
                 yield_kwh: yieldKwh,
                 operating_days: numberOrNull(row.operating_days),
                 raw_fields: parsed,
@@ -1047,7 +1067,6 @@ async function handleProcess(request: Request, env: Env) {
     const message = error instanceof Error ? error.message : "AI processing failed";
 
     for (const document of documents) {
-      if (document.status === "processing") {
         await supabaseJson(
           auth.config,
           auth.token,
