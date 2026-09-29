@@ -245,7 +245,7 @@ async function extractWithAI(
     "source_type: " + source.source_type,
     "site_code ที่เจ้าหน้าที่เลือก: " + (source.site_code || "ไม่ระบุ"),
     "รอบเดือนที่เจ้าหน้าที่เลือก: " + (source.billing_period || "ไม่ระบุ"),
-  ].join("\\n");
+  ].join("\n");
 
   const prompt = [
     "You are the extraction agent for an institutional electricity reporting system.",
@@ -846,10 +846,12 @@ async function handleProcess(request: Request, env: Env) {
     startedAt: new Date().toISOString(),
   };
   const reportPeriods = new Set<string>();
+  const processingDocumentIds = new Set<string>();
 
   try {
     for (const document of documents) {
       const sourceId = String(document.id);
+      processingDocumentIds.add(sourceId);
       await supabaseJson(
         auth.config,
         auth.token,
@@ -994,6 +996,7 @@ async function handleProcess(request: Request, env: Env) {
         }
       }
 
+      processingDocumentIds.delete(sourceId);
       const metricDocuments = metrics.documents as unknown[];
       metricDocuments.push({
         id: sourceId,
@@ -1066,20 +1069,19 @@ async function handleProcess(request: Request, env: Env) {
   } catch (error) {
     const message = error instanceof Error ? error.message : "AI processing failed";
 
-    for (const document of documents) {
-        await supabaseJson(
-          auth.config,
-          auth.token,
-          "electricity_source_documents?id=eq." + encodeURIComponent(String(document.id)),
-          {
-            method: "PATCH",
-            body: JSON.stringify({
-              status: "failed",
-              error_message: message.slice(0, 1000),
-            }),
-          },
-        ).catch(() => undefined);
-      }
+    for (const sourceId of processingDocumentIds) {
+      await supabaseJson(
+        auth.config,
+        auth.token,
+        "electricity_source_documents?id=eq." + encodeURIComponent(sourceId),
+        {
+          method: "PATCH",
+          body: JSON.stringify({
+            status: "failed",
+            error_message: message.slice(0, 1000),
+          }),
+        },
+      ).catch(() => undefined);
     }
 
     await supabaseJson(
