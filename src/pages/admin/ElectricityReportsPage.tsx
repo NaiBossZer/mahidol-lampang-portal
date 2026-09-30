@@ -7,12 +7,10 @@ import {
   Leaf,
   SunMedium,
   CheckCircle2,
-  FileSpreadsheet,
   FileText,
   RefreshCw,
   TrendingDown,
   Info,
-  Clock,
   Sparkles,
   Upload,
   Play,
@@ -24,6 +22,7 @@ import {
   AlertTriangle,
 } from "lucide-react";
 import { toast } from "sonner";
+import { ElectricitySourceUploadCard } from "@/components/admin/ElectricitySourceUploadCard";
 import { cn } from "@/lib/utils";
 import {
   buildElectricityReportModel,
@@ -54,16 +53,6 @@ interface MonthlyReport {
   status: ReportStatus;
   processed_at: string | null;
   calculation_version: string | null;
-}
-
-interface Site {
-  id: string;
-  code: "SOBPRAB" | "PHALAAD" | "SOLAR" | string;
-  name: string;
-  site_type: string;
-  account_number: string | null;
-  meter_number: string | null;
-  active: boolean;
 }
 
 interface SourceDocument {
@@ -101,7 +90,6 @@ interface ProcessingRun {
 interface DashboardPayload {
   reports: MonthlyReport[];
   sources: SourceDocument[];
-  sites: Site[];
   runs: ProcessingRun[];
 }
 
@@ -236,21 +224,15 @@ async function apiRequest<T = unknown>(url: string, init: RequestInit = {}) {
 export function ElectricityReportsPage() {
   const [reports, setReports] = useState<MonthlyReport[]>([]);
   const [sources, setSources] = useState<SourceDocument[]>([]);
-  const [sites, setSites] = useState<Site[]>([]);
   const [runs, setRuns] = useState<ProcessingRun[]>([]);
   const [selectedReportId, setSelectedReportId] = useState("");
   const [selectedSourceIds, setSelectedSourceIds] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
-  const [isUploading, setIsUploading] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [showEditor, setShowEditor] = useState(false);
   const [draft, setDraft] = useState<ReportDraft>(emptyDraft());
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [sourceFile, setSourceFile] = useState<File | null>(null);
-  const [sourceSite, setSourceSite] = useState("SOBPRAB");
-  const [sourceType, setSourceType] = useState<SourceType>("pea_bill");
-  const [sourceMonth, setSourceMonth] = useState(monthInput(new Date().toISOString()));
   const [exporting, setExporting] = useState<"pptx" | "pdf" | null>(null);
 
   const loadDashboard = async (silent = false) => {
@@ -259,7 +241,6 @@ export function ElectricityReportsPage() {
       const data = await apiRequest<DashboardPayload>("/api/admin/electricity?resource=dashboard");
       setReports(data.reports ?? []);
       setSources(data.sources ?? []);
-      setSites(data.sites ?? []);
       setRuns(data.runs ?? []);
       setSelectedReportId((current) => {
         if (current && data.reports.some((item) => item.id === current)) return current;
@@ -304,32 +285,6 @@ export function ElectricityReportsPage() {
       window.location.href = "/api/admin/electricity?action=file&id=" + encodeURIComponent(sourceId);
     } catch {
       toast.error("ไม่สามารถเปิดเอกสารต้นฉบับได้");
-    }
-  };
-
-  const handleUpload = async () => {
-    if (!sourceFile) {
-      toast.error("กรุณาเลือกไฟล์ PDF/Excel ก่อน");
-      return;
-    }
-    setIsUploading(true);
-    try {
-      const form = new FormData();
-      form.append("file", sourceFile);
-      form.append("siteCode", sourceSite);
-      form.append("sourceType", sourceType);
-      form.append("billingPeriod", sourceMonth + "-01");
-      await apiRequest("/api/admin/electricity?action=upload", {
-        method: "POST",
-        body: form,
-      });
-      setSourceFile(null);
-      toast.success("บันทึกไฟล์ต้นฉบับลง Supabase Storage แล้ว");
-      await loadDashboard(true);
-    } catch (error) {
-      toast.error(error instanceof Error ? error.message : "อัปโหลดไม่สำเร็จ");
-    } finally {
-      setIsUploading(false);
     }
   };
 
@@ -531,6 +486,8 @@ export function ElectricityReportsPage() {
           </div>
         </div>
 
+        <ElectricitySourceUploadCard onUploaded={() => loadDashboard(true)} />
+
         {!reports.length && (
           <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
             <div className="flex items-start gap-3">
@@ -538,7 +495,7 @@ export function ElectricityReportsPage() {
               <div>
                 <p className="font-bold">ยังไม่มี Monthly Report ในฐานข้อมูล</p>
                 <p className="mt-1 text-xs">
-                  ให้อัปโหลด PDF ค่าไฟสบปราบ/ผาลาด และ Excel Solar ที่ส่วนเอกสารต้นทางด้านล่าง แล้วสั่ง AI Agent ประมวลผล
+                  อัปโหลด PDF ค่าไฟสบปราบ/ผาลาด หรือ Excel Solar ที่ส่วนอัปโหลดด้านบน แล้วเลือกเอกสารต้นทางเพื่อสั่ง AI Agent ประมวลผล
                 </p>
               </div>
             </div>
@@ -801,16 +758,25 @@ export function ElectricityReportsPage() {
 
               <div className="space-y-4">
                 <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-xs">
-                  <div className="flex items-center gap-2 border-b border-slate-100 pb-3">
-                    <Sparkles className="h-4 w-4 text-purple-600" />
-                    <h3 className="text-sm font-bold text-[#0c2340]">AI Agent Pipeline</h3>
+                  <div className="flex items-center justify-between gap-3 border-b border-slate-100 pb-3">
+                    <div className="flex items-center gap-2">
+                      <Sparkles className="h-4 w-4 text-purple-600" />
+                      <h3 className="text-sm font-bold text-[#0c2340]">AI Agent Pipeline</h3>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => navigate("/admin")}
+                      className="text-[11px] font-bold text-[#002d62] hover:underline"
+                    >
+                      อัปโหลดที่ Admin
+                    </button>
                   </div>
                   <div className="mt-4 space-y-3 text-xs">
                     <div className="flex items-start gap-2">
                       <Upload className="mt-0.5 h-3.5 w-3.5 text-blue-600" />
                       <div>
                         <div className="font-bold text-slate-800">1. Ingest</div>
-                        <p className="text-slate-500">ไฟล์จริงถูกเก็บใน private Supabase Storage พร้อม SHA-256</p>
+                        <p className="text-slate-500">อัปโหลดจากหน้า Admin → private Supabase Storage พร้อม SHA-256</p>
                       </div>
                     </div>
                     <div className="flex items-start gap-2">
@@ -844,82 +810,6 @@ export function ElectricityReportsPage() {
                     {latestRun?.error_message ? (
                       <p className="mt-1 text-[11px] text-rose-700">{latestRun.error_message}</p>
                     ) : null}
-                  </div>
-                </div>
-
-                <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-xs">
-                  <div className="flex items-center gap-2 border-b border-slate-100 pb-3">
-                    <Upload className="h-4 w-4 text-[#002d62]" />
-                    <h3 className="text-sm font-bold text-[#0c2340]">รับไฟล์ต้นทางจริง</h3>
-                  </div>
-
-                  <div className="mt-4 space-y-3">
-                    <label className="block text-[11px] font-bold text-slate-600">
-                      สถานที่
-                      <select
-                        value={sourceSite}
-                        onChange={(event) => setSourceSite(event.target.value)}
-                        className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700"
-                      >
-                        {sites
-                          .filter((site) => site.active)
-                          .map((site) => (
-                            <option key={site.id} value={site.code}>
-                              {site.name}
-                            </option>
-                          ))}
-                      </select>
-                    </label>
-
-                    <label className="block text-[11px] font-bold text-slate-600">
-                      ประเภท
-                      <select
-                        value={sourceType}
-                        onChange={(event) => setSourceType(event.target.value as SourceType)}
-                        className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700"
-                      >
-                        <option value="pea_bill">PEA Bill / PDF</option>
-                        <option value="solar_excel">Solar Excel</option>
-                        <option value="other">เอกสารอื่น</option>
-                      </select>
-                    </label>
-
-                    <label className="block text-[11px] font-bold text-slate-600">
-                      รอบเดือน
-                      <input
-                        type="month"
-                        value={sourceMonth}
-                        onChange={(event) => setSourceMonth(event.target.value)}
-                        className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700"
-                      />
-                    </label>
-
-                    <label className="block rounded-lg border border-dashed border-slate-300 bg-slate-50 p-3 text-xs text-slate-600">
-                      <span className="font-bold">ไฟล์ PDF / Excel</span>
-                      <input
-                        type="file"
-                        accept=".pdf,.xls,.xlsx,.ppt,.pptx,application/pdf,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-                        onChange={(event) => setSourceFile(event.target.files?.[0] ?? null)}
-                        className="mt-2 block w-full text-xs"
-                      />
-                    </label>
-
-                    {sourceFile ? (
-                      <div className="rounded-lg bg-blue-50 p-2.5 text-[11px] text-blue-900">
-                        <div className="font-bold">{sourceFile.name}</div>
-                        <div>{(sourceFile.size / 1024 / 1024).toFixed(2)} MB</div>
-                      </div>
-                    ) : null}
-
-                    <button
-                      type="button"
-                      disabled={!sourceFile || isUploading}
-                      onClick={() => void handleUpload()}
-                      className="inline-flex w-full items-center justify-center gap-1.5 rounded-lg bg-[#002d62] px-3 py-2.5 text-xs font-bold text-white disabled:cursor-not-allowed disabled:opacity-50"
-                    >
-                      <Upload className="h-3.5 w-3.5" />
-                      {isUploading ? "กำลังอัปโหลด…" : "เก็บเป็น Source of Truth"}
-                    </button>
                   </div>
                 </div>
               </div>
