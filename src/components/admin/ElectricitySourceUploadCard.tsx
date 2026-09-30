@@ -21,12 +21,19 @@ function monthInput(value: string) {
   return value.slice(0, 7);
 }
 
-export function ElectricitySourceUploadCard() {
+interface ElectricitySourceUploadCardProps {
+  onUploaded?: () => void | Promise<void>;
+}
+
+export function ElectricitySourceUploadCard({ onUploaded }: ElectricitySourceUploadCardProps) {
   const { role, permissions } = useAdminAuth();
   const canManage = role === "SUPER_ADMIN" || permissions.includes("facility.manage");
   const [sites, setSites] = useState<Site[]>([]);
   const [sourceSite, setSourceSite] = useState("SOBPRAB");
   const [sourceType, setSourceType] = useState<SourceType>("pea_bill");
+  const selectableSites = sites.filter((site) =>
+    sourceType === "solar_excel" ? site.code === "SOLAR" : site.code === "SOBPRAB" || site.code === "PHALAAD",
+  );
   const [sourceMonth, setSourceMonth] = useState(monthInput(new Date().toISOString()));
   const [sourceFile, setSourceFile] = useState<File | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -81,6 +88,7 @@ export function ElectricitySourceUploadCard() {
 
       setSourceFile(null);
       toast.success("อัปโหลด Source of Truth เข้าระบบแล้ว");
+      await onUploaded?.();
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "อัปโหลดไม่สำเร็จ");
     } finally {
@@ -124,7 +132,7 @@ export function ElectricitySourceUploadCard() {
                 disabled={isLoading || !sites.length}
                 className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-xs font-semibold text-slate-700"
               >
-                {sites.map((site) => (
+                {selectableSites.map((site) => (
                   <option key={site.id} value={site.code}>
                     {site.name}
                   </option>
@@ -136,7 +144,12 @@ export function ElectricitySourceUploadCard() {
               ประเภทไฟล์
               <select
                 value={sourceType}
-                onChange={(event) => setSourceType(event.target.value as SourceType)}
+                onChange={(event) => {
+                  const nextType = event.target.value as SourceType;
+                  setSourceType(nextType);
+                  if (nextType === "solar_excel") setSourceSite("SOLAR");
+                  else if (sourceSite === "SOLAR") setSourceSite("SOBPRAB");
+                }}
                 className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-xs font-semibold text-slate-700"
               >
                 <option value="pea_bill">PEA Bill / PDF</option>
