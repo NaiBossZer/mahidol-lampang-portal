@@ -22,7 +22,7 @@ import {
   AlertTriangle,
 } from "lucide-react";
 import { toast } from "sonner";
-import { ElectricitySourceUploadCard } from "@/components/admin/ElectricitySourceUploadCard";
+import { ElectricitySourceUploadCard } from "@/components/admin/electricity/ElectricitySourceUploadCard";
 import { cn } from "@/lib/utils";
 import {
   buildElectricityReportModel,
@@ -763,13 +763,9 @@ export function ElectricityReportsPage() {
                       <Sparkles className="h-4 w-4 text-purple-600" />
                       <h3 className="text-sm font-bold text-[#0c2340]">AI Agent Pipeline</h3>
                     </div>
-                    <button
-                      type="button"
-                      onClick={() => navigate("/admin")}
-                      className="text-[11px] font-bold text-[#002d62] hover:underline"
-                    >
-                      อัปโหลดที่ Admin
-                    </button>
+                    <span className="text-[11px] font-semibold text-slate-400">
+                      อัปโหลดไฟล์จากส่วน Source of Truth ด้านบน
+                    </span>
                   </div>
                   <div className="mt-4 space-y-3 text-xs">
                     <div className="flex items-start gap-2">
