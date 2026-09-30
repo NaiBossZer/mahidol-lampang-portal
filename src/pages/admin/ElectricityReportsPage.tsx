@@ -238,7 +238,6 @@ export function ElectricityReportsPage() {
   const navigate = useNavigate();
   const [reports, setReports] = useState<MonthlyReport[]>([]);
   const [sources, setSources] = useState<SourceDocument[]>([]);
-  const [sites, setSites] = useState<Site[]>([]);
   const [runs, setRuns] = useState<ProcessingRun[]>([]);
   const [selectedReportId, setSelectedReportId] = useState("");
   const [selectedSourceIds, setSelectedSourceIds] = useState<string[]>([]);
@@ -256,7 +255,6 @@ export function ElectricityReportsPage() {
       const data = await apiRequest<DashboardPayload>("/api/admin/electricity?resource=dashboard");
       setReports(data.reports ?? []);
       setSources(data.sources ?? []);
-      setSites(data.sites ?? []);
       setRuns(data.runs ?? []);
       setSelectedReportId((current) => {
         if (current && data.reports.some((item) => item.id === current)) return current;
@@ -835,8 +833,10 @@ export function ElectricityReportsPage() {
                     ) : null}
                   </div>
                 </div>
+              </div>
+            </div>
 
-<div className="rounded-xl border border-slate-200 bg-white p-5 shadow-xs">
+            <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-xs">
               <div className="flex flex-col gap-2 border-b border-slate-100 pb-4 sm:flex-row sm:items-center sm:justify-between">
                 <div>
                   <h2 className="text-base font-bold text-[#0c2340]">ประวัติ Monthly Reports</h2>
