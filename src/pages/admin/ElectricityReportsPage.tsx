@@ -7,12 +7,10 @@ import {
   Leaf,
   SunMedium,
   CheckCircle2,
-  FileSpreadsheet,
   FileText,
   RefreshCw,
   TrendingDown,
   Info,
-  Clock,
   Sparkles,
   Upload,
   Play,
@@ -57,16 +55,6 @@ interface MonthlyReport {
   calculation_version: string | null;
 }
 
-interface Site {
-  id: string;
-  code: "SOBPRAB" | "PHALAAD" | "SOLAR" | string;
-  name: string;
-  site_type: string;
-  account_number: string | null;
-  meter_number: string | null;
-  active: boolean;
-}
-
 interface SourceDocument {
   id: string;
   site_id: string | null;
@@ -102,7 +90,6 @@ interface ProcessingRun {
 interface DashboardPayload {
   reports: MonthlyReport[];
   sources: SourceDocument[];
-  sites: Site[];
   runs: ProcessingRun[];
 }
 
@@ -499,7 +486,7 @@ export function ElectricityReportsPage() {
           </div>
         </div>
 
-        <ElectricitySourceUploadCard />
+        <ElectricitySourceUploadCard onUploaded={() => loadDashboard(true)} />
 
         {!reports.length && (
           <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
