@@ -677,7 +677,7 @@ async function handleUploadSet(request: Request, env: Env) {
       });
     }
 
-    const created = await supabaseJson<Array<Record<string, unknown>>>(
+    created = await supabaseJson<Array<Record<string, unknown>>>(
       auth.config,
       auth.token,
       "electricity_source_documents",
