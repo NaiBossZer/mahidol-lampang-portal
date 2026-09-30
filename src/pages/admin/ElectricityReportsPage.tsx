@@ -841,37 +841,14 @@ export function ElectricityReportsPage() {
                   </div>
 
                   <div className="mt-3 rounded-xl border border-slate-200 bg-slate-50 p-3">
-                    <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                      <div>
-                        <div className="text-xs font-black text-slate-800">
-                          ชุดเอกสาร {sourceViewMonth} — {latestSetSources.length}/3 รายการ
-                        </div>
-                        <p className="mt-1 text-[11px] text-slate-500">
-                          ต้องครบ PEA สบปราบ, PEA ผาลาด และ Solar ก่อนส่งเข้า AI Agent
-                        </p>
-                      </div>
-                      {sourceSetComplete ? (
-                        <div className="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-[11px] font-semibold text-emerald-700">ครบ 3 เอกสาร</div>
-                      ) : (
-                        <div className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-[11px] font-semibold text-amber-800">ชุดเอกสารยังไม่ครบ 3 รายการ</div>
-                      )}
-                      {false ? (
-                        <button
-                          type="button"
-                          disabled={isProcessing || sourceSetProcessing}
-                          onClick={() => void handleProcess()}
-                          className="inline-flex items-center justify-center gap-1.5 rounded-lg bg-[#002d62] px-3 py-2 text-xs font-bold text-white disabled:cursor-not-allowed disabled:opacity-50"
-                        >
-                          <Play className="h-3.5 w-3.5" />
-                          {isProcessing
-                            ? "กำลังประมวลผล…"
-                            : sourceSetProcessing
-                              ? "AI Agent กำลังทำงาน…"
-                              : "ส่งชุดนี้เข้า AI Agent อีกครั้ง"}
-                        </button>
-                      ) : null}
+                    <div className="text-xs font-black text-slate-800">
+                      ชุดเอกสาร {sourceViewMonth} — {latestSetSources.length}/3 รายการ
                     </div>
+                    <p className="mt-1 text-[11px] text-slate-500">
+                      ต้องครบ PEA สบปราบ, PEA ผาลาด และ Solar ก่อนสร้าง Monthly Report
+                    </p>
                   </div>
+
                 </div>
               </div>
 
