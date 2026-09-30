@@ -251,7 +251,18 @@ export function computeExecutiveMetrics(
   for (const question of activeRatingQuestions) {
     const key = questionGroupKey(question);
     questionIdToGroupKey.set(question.id, key);
-    if (!groupQuestions.has(key)) groupQuestions.set(key, question);
+
+    const current = groupQuestions.get(key);
+    const questionText = question.question_text.trim();
+    // ALL-activities can combine equivalent question slots from multiple survey
+    // forms. Prefer the most complete wording for the shared label while
+    // keeping the aggregated scores from every matching survey.
+    if (
+      !current ||
+      (!surveyId && questionText.length > current.question_text.trim().length)
+    ) {
+      groupQuestions.set(key, question);
+    }
   }
 
   const valuesByQuestion = new Map<string, number[]>();
