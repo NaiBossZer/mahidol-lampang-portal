@@ -432,7 +432,7 @@ async function rebuildMonthlyReport(
     );
     report = updated[0] ?? { id: old.id };
   } else {
-    created = await supabaseJson<Array<Record<string, unknown>>>(
+    const created = await supabaseJson<Array<Record<string, unknown>>>(
       config,
       token,
       "electricity_monthly_reports",
