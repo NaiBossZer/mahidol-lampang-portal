@@ -1,4 +1,3 @@
-import { ElectricitySourceUploadCard } from "@/components/admin/ElectricitySourceUploadCard";
 import { AdminDashboard } from "@/components/storefront/AdminDashboard";
 
 export function AdminPage() {
@@ -24,7 +23,6 @@ export function AdminPage() {
           </div>
         </div>
       </section>
-      <ElectricitySourceUploadCard />
       <AdminDashboard />
     </div>
   );
