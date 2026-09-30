@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
-import { ArrowRight, Database, FileSpreadsheet, FileText, Upload } from "lucide-react";
+import { Database, FileSpreadsheet, FileText, Upload } from "lucide-react";
 import { toast } from "sonner";
-import { useNavigate } from "react-router-dom";
 import { useAdminAuth } from "@/components/AdminGuard";
 import { apiRequest } from "@/services/api";
 
@@ -24,7 +23,6 @@ function monthInput(value: string) {
 
 export function ElectricitySourceUploadCard() {
   const { role, permissions } = useAdminAuth();
-  const navigate = useNavigate();
   const canManage = role === "SUPER_ADMIN" || permissions.includes("facility.manage");
   const [sites, setSites] = useState<Site[]>([]);
   const [sourceSite, setSourceSite] = useState("SOBPRAB");
@@ -112,18 +110,9 @@ export function ElectricitySourceUploadCard() {
                 </div>
               </div>
               <p className="mt-2 max-w-2xl text-sm text-slate-600">
-                อัปโหลด PEA PDF หรือ Solar Excel จากหน้า Admin โดยตรง ไฟล์จะถูกเก็บใน private Supabase
-                Storage และนำไปเข้า AI Agent ต่อในหน้า EE Report
+                อัปโหลด PEA PDF หรือ Solar Excel แล้วเก็บเป็น Source of Truth ก่อนนำไปประมวลผลด้วย AI Agent
               </p>
             </div>
-            <button
-              type="button"
-              onClick={() => navigate("/admin/electricity-reports")}
-              className="inline-flex shrink-0 items-center justify-center gap-1.5 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-xs font-bold text-slate-700 hover:bg-slate-100"
-            >
-              เปิด EE Report
-              <ArrowRight className="h-3.5 w-3.5" />
-            </button>
           </div>
 
           <div className="mt-5 grid grid-cols-1 gap-3 md:grid-cols-[1.2fr_1.1fr_1fr_1.8fr_auto] md:items-end">
@@ -203,7 +192,7 @@ export function ElectricitySourceUploadCard() {
               <FileText className="h-3.5 w-3.5" />
               PDF / XLS / XLSX
             </span>
-            <span>หลังอัปโหลด ให้เปิด EE Report เพื่อเลือกเอกสารและสั่ง AI Agent</span>
+            <span>หลังอัปโหลด ให้เลือกเอกสารด้านล่างและสั่ง AI Agent ได้ทันที</span>
           </div>
         </div>
       </div>
