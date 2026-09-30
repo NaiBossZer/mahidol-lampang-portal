@@ -432,7 +432,7 @@ async function rebuildMonthlyReport(
     );
     report = updated[0] ?? { id: old.id };
   } else {
-    const created = await supabaseJson<Array<Record<string, unknown>>>(
+    created = await supabaseJson<Array<Record<string, unknown>>>(
       config,
       token,
       "electricity_monthly_reports",
@@ -624,6 +624,8 @@ async function handleUploadSet(request: Request, env: Env) {
   const uploadedPaths: string[] = [];
   const createdDocumentIds: string[] = [];
 
+  let created: Array<Record<string, unknown>> = [];
+
   try {
     const rows = [];
     for (let index = 0; index < requiredFiles.length; index += 1) {
@@ -693,18 +695,6 @@ async function handleUploadSet(request: Request, env: Env) {
       throw new Error("บันทึกชุดเอกสาร Source of Truth ไม่ครบ 3 รายการ");
     }
 
-    const processed = await processElectricityDocuments(auth, env, createdDocumentIds);
-
-    return json(
-      {
-        success: true,
-        data: {
-          documents: created,
-          ...processed,
-        },
-      },
-      201,
-    );
   } catch (error) {
     for (const id of createdDocumentIds) {
       await supabaseJson(
@@ -719,6 +709,18 @@ async function handleUploadSet(request: Request, env: Env) {
     }
     throw error;
   }
+
+  const processed = await processElectricityDocuments(auth, env, createdDocumentIds);
+  return json(
+    {
+      success: true,
+      data: {
+        documents: created,
+        ...processed,
+      },
+    },
+    201,
+  );
 }
 
 async function handleFileDownload(request: Request, env: Env) {
@@ -1142,6 +1144,11 @@ async function processElectricityDocuments(
         validationErrors.push("billing period ไม่ตรงกับที่เจ้าหน้าที่เลือก");
       }
 
+      const effectivePeriod = documentPeriod || extractedPeriod;
+      if (effectivePeriod && effectivePeriod.slice(0, 7) !== reportPeriod.slice(0, 7)) {
+        validationErrors.push("เอกสารนี้มีรอบเดือนไม่ตรงกับชุดเอกสาร");
+      }
+
       const confidence = Math.max(0, Math.min(1, numberOrNull(parsed.confidence) ?? 0));
       await supabaseJson(
         auth.config,
@@ -1159,11 +1166,6 @@ async function processElectricityDocuments(
           }),
         },
       );
-
-      const effectivePeriod = documentPeriod || extractedPeriod;
-      if (effectivePeriod && effectivePeriod.slice(0, 7) !== reportPeriod.slice(0, 7)) {
-        validationErrors.push("เอกสารนี้มีรอบเดือนไม่ตรงกับชุดเอกสาร");
-      }
 
       const siteId = String(document.site_id);
       const bill = jsonObject(parsed.bill);
