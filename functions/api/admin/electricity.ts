@@ -20,6 +20,7 @@ const ALLOWED_MIME = new Set([
 ]);
 const SOURCE_TYPES = new Set(["pea_bill", "solar_excel", "report_pdf", "report_pptx", "other"]);
 const REPORT_STATUSES = new Set(["draft", "processing", "needs_review", "approved", "published", "failed"]);
+const REPORT_EDITABLE_STATUSES = new Set(["draft", "processing", "needs_review", "failed"]);
 const SITE_CODES = new Set(["SOBPRAB", "PHALAAD", "SOLAR"]);
 
 const extractionSchema = {
@@ -669,7 +670,7 @@ async function handleReportCreate(request: Request, env: Env) {
 
   const payload: Record<string, unknown> = {
     report_month: reportMonth.slice(0, 7) + "-01",
-    status: REPORT_STATUSES.has(String(body.status)) ? String(body.status) : "draft",
+    status: REPORT_EDITABLE_STATUSES.has(String(body.status)) ? String(body.status) : "draft",
     created_by: auth.user.id,
     updated_by: auth.user.id,
   };
@@ -714,16 +715,30 @@ async function handleReportPatch(request: Request, env: Env) {
   if (!id) return json({ success: false, error: "id is required" }, 400);
 
   const body = (await request.json()) as Record<string, unknown>;
+  const existingRows = await supabaseJson<Array<Record<string, unknown>>>(
+    auth.config,
+    auth.token,
+    "electricity_monthly_reports?id=eq." + encodeURIComponent(id) + "&select=id,status&limit=1",
+  );
+  const existing = existingRows[0];
+  if (!existing) return json({ success: false, error: "ไม่พบรายงานที่ต้องการแก้ไข" }, 404);
+
   const payload: Record<string, unknown> = { updated_by: auth.user.id };
+  let hasDataChanges = false;
 
   if (body.report_month !== undefined) {
     const period = normalizePeriod(body.report_month);
     if (!period) return json({ success: false, error: "report_month ไม่ถูกต้อง" }, 400);
     payload.report_month = period.slice(0, 7) + "-01";
+    hasDataChanges = true;
   }
+
   if (body.status !== undefined) {
     const status = String(body.status);
-    if (!REPORT_STATUSES.has(status)) return json({ success: false, error: "status ไม่ถูกต้อง" }, 400);
+    if (!REPORT_STATUSES.has(status))
+      return json({ success: false, error: "status ไม่ถูกต้อง" }, 400);
+    if (!REPORT_EDITABLE_STATUSES.has(status))
+      return json({ success: false, error: "สถานะอนุมัติ/เผยแพร่ต้องใช้ workflow transition ที่กำหนด" }, 409);
     payload.status = status;
   }
 
@@ -742,6 +757,14 @@ async function handleReportPatch(request: Request, env: Env) {
       return json({ success: false, error: field + " ไม่ถูกต้อง" }, 400);
     }
     payload[field] = n;
+    hasDataChanges = true;
+  }
+
+  if (
+    hasDataChanges &&
+    ["approved", "published"].includes(String(existing.status))
+  ) {
+    payload.status = "needs_review";
   }
 
   const updated = await supabaseJson<Array<Record<string, unknown>>>(
@@ -758,6 +781,61 @@ async function handleReportPatch(request: Request, env: Env) {
   return json({ success: true, data: updated[0] });
 }
 
+async function handleReportTransition(
+  request: Request,
+  env: Env,
+  transition: "approve" | "publish",
+) {
+  const auth = await authorize(request, env, "facility.manage");
+  if ("error" in auth) return auth.error;
+
+  const id = new URL(request.url).searchParams.get("id");
+  if (!id) return json({ success: false, error: "id is required" }, 400);
+
+  const reports = await supabaseJson<Array<Record<string, unknown>>>(
+    auth.config,
+    auth.token,
+    "electricity_monthly_reports?id=eq." + encodeURIComponent(id) +
+      "&select=id,status,report_month,sobprab_kwh,sobprab_amount_thb,phalaad_kwh,phalaad_amount_thb,solar_yield_kwh,co2_avoided_ton,coal_saved_ton&limit=1",
+  );
+  const report = reports[0];
+  if (!report) return json({ success: false, error: "ไม่พบรายงานที่ต้องการ" }, 404);
+
+  const currentStatus = String(report.status ?? "");
+  if (transition === "approve" && currentStatus !== "needs_review") {
+    return json({ success: false, error: "รายงานต้องอยู่ในสถานะรอตรวจสอบก่อนอนุมัติ" }, 409);
+  }
+  if (transition === "publish" && currentStatus !== "approved") {
+    return json({ success: false, error: "ต้องอนุมัติรายงานก่อนเผยแพร่" }, 409);
+  }
+
+  const numericFields = [
+    "sobprab_kwh",
+    "sobprab_amount_thb",
+    "phalaad_kwh",
+    "phalaad_amount_thb",
+    "solar_yield_kwh",
+  ];
+  for (const field of numericFields) {
+    const value = numberOrNull(report[field]);
+    if (value === null || value < 0) {
+      return json({ success: false, error: "ข้อมูล " + field + " ไม่พร้อมสำหรับการรับรอง" }, 409);
+    }
+  }
+
+  const nextStatus = transition === "approve" ? "approved" : "published";
+  const updated = await supabaseJson<Array<Record<string, unknown>>>(
+    auth.config,
+    auth.token,
+    "electricity_monthly_reports?id=eq." + encodeURIComponent(id),
+    {
+      method: "PATCH",
+      headers: { Prefer: "return=representation" },
+      body: JSON.stringify({ status: nextStatus, updated_by: auth.user.id }),
+    },
+  );
+  return json({ success: true, data: updated[0] ?? null });
+}
 async function handleReportDelete(request: Request, env: Env) {
   const auth = await authorize(request, env, "facility.manage");
   if ("error" in auth) return auth.error;
@@ -1120,6 +1198,12 @@ export async function onRequest({ request, env }: { request: Request; env: Env }
 
     if (request.method === "PATCH" && action === "report") {
       return await handleReportPatch(request, env);
+    }
+    if (request.method === "PATCH" && action === "approve") {
+      return await handleReportTransition(request, env, "approve");
+    }
+    if (request.method === "PATCH" && action === "publish") {
+      return await handleReportTransition(request, env, "publish");
     }
     if (request.method === "DELETE" && action === "report") {
       return await handleReportDelete(request, env);

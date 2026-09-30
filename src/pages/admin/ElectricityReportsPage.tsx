@@ -34,6 +34,7 @@ import {
 } from "@/lib/electricityReportGenerator";
 
 type ReportStatus = "draft" | "processing" | "needs_review" | "approved" | "published" | "failed";
+const REPORT_EDITABLE_STATUSES = new Set<ReportStatus>(["draft", "processing", "needs_review", "failed"]);
 type SourceStatus = "uploaded" | "queued" | "processing" | "processed" | "needs_review" | "failed";
 type SourceType = "pea_bill" | "solar_excel" | "report_pdf" | "report_pptx" | "other";
 
@@ -354,6 +355,25 @@ export function ElectricityReportsPage() {
     setShowEditor(true);
   };
 
+  const transitionReport = async (report: MonthlyReport, action: "approve" | "publish") => {
+    const message =
+      action === "approve"
+        ? "ยืนยันการตรวจสอบและอนุมัติ Monthly Report นี้หรือไม่?"
+        : "ยืนยันการเผยแพร่ Monthly Report ที่อนุมัติแล้วหรือไม่?";
+    if (!window.confirm(message)) return;
+
+    try {
+      await apiRequest(
+        "/api/admin/electricity?action=" + action + "&id=" + encodeURIComponent(report.id),
+        { method: "PATCH" },
+      );
+      toast.success(action === "approve" ? "อนุมัติ Monthly Report แล้ว" : "เผยแพร่ Monthly Report แล้ว");
+      await loadDashboard(true);
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "เปลี่ยนสถานะรายงานไม่สำเร็จ");
+    }
+  };
+
   const saveReport = async () => {
     try {
       const payload = {
@@ -365,7 +385,7 @@ export function ElectricityReportsPage() {
         solar_yield_kwh: draft.solar_yield_kwh,
         co2_avoided_ton: draft.co2_avoided_ton || null,
         coal_saved_ton: draft.coal_saved_ton || null,
-        status: draft.status,
+        status: REPORT_EDITABLE_STATUSES.has(draft.status) ? draft.status : "needs_review",
       };
 
       if (editingId) {
@@ -633,6 +653,25 @@ export function ElectricityReportsPage() {
                       <Pencil className="h-3.5 w-3.5" />
                       แก้ไข
                     </button>
+                    {activeReport.status === "needs_review" ? (
+                      <button
+                        type="button"
+                        onClick={() => void transitionReport(activeReport, "approve")}
+                        className="inline-flex items-center gap-1 rounded-lg bg-emerald-600 px-2.5 py-1.5 text-xs font-bold text-white hover:bg-emerald-700"
+                      >
+                        <CheckCircle2 className="h-3.5 w-3.5" />
+                        อนุมัติ
+                      </button>
+                    ) : null}
+                    {activeReport.status === "approved" ? (
+                      <button
+                        type="button"
+                        onClick={() => void transitionReport(activeReport, "publish")}
+                        className="inline-flex items-center gap-1 rounded-lg bg-violet-600 px-2.5 py-1.5 text-xs font-bold text-white hover:bg-violet-700"
+                      >
+                        เผยแพร่
+                      </button>
+                    ) : null}
                     <button
                       type="button"
                       onClick={() => void deleteReport(activeReport)}
@@ -929,8 +968,6 @@ export function ElectricityReportsPage() {
                     <option value="draft">Draft</option>
                     <option value="processing">Processing</option>
                     <option value="needs_review">Needs Review</option>
-                    <option value="approved">Approved</option>
-                    <option value="published">Published</option>
                     <option value="failed">Failed</option>
                   </select>
                 </label>
