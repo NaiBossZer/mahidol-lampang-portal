@@ -24,7 +24,7 @@ import {
   AlertTriangle,
 } from "lucide-react";
 import { toast } from "sonner";
-import { useNavigate } from "react-router-dom";
+import { ElectricitySourceUploadCard } from "@/components/admin/ElectricitySourceUploadCard";
 import { cn } from "@/lib/utils";
 import {
   buildElectricityReportModel,
@@ -235,7 +235,6 @@ async function apiRequest<T = unknown>(url: string, init: RequestInit = {}) {
 }
 
 export function ElectricityReportsPage() {
-  const navigate = useNavigate();
   const [reports, setReports] = useState<MonthlyReport[]>([]);
   const [sources, setSources] = useState<SourceDocument[]>([]);
   const [runs, setRuns] = useState<ProcessingRun[]>([]);
@@ -500,25 +499,18 @@ export function ElectricityReportsPage() {
           </div>
         </div>
 
+        <ElectricitySourceUploadCard />
+
         {!reports.length && (
           <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-              <div className="flex items-start gap-3">
-                <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
-                <div>
-                  <p className="font-bold">ยังไม่มี Monthly Report ในฐานข้อมูล</p>
-                  <p className="mt-1 text-xs">
-                    ให้อัปโหลด PDF ค่าไฟสบปราบ/ผาลาด หรือ Excel Solar ผ่านหน้า Admin แล้วกลับมาที่หน้านี้เพื่อเลือกเอกสารและสั่ง AI Agent
-                  </p>
-                </div>
+            <div className="flex items-start gap-3">
+              <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
+              <div>
+                <p className="font-bold">ยังไม่มี Monthly Report ในฐานข้อมูล</p>
+                <p className="mt-1 text-xs">
+                  อัปโหลด PDF ค่าไฟสบปราบ/ผาลาด หรือ Excel Solar ที่ส่วนอัปโหลดด้านบน แล้วเลือกเอกสารต้นทางเพื่อสั่ง AI Agent ประมวลผล
+                </p>
               </div>
-              <button
-                type="button"
-                onClick={() => navigate("/admin")}
-                className="inline-flex shrink-0 items-center justify-center rounded-lg bg-[#002d62] px-3 py-2 text-xs font-bold text-white hover:bg-[#163a66]"
-              >
-                ไปหน้า Admin เพื่ออัปโหลด
-              </button>
             </div>
           </div>
         )}
