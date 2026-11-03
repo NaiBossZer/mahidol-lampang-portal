@@ -46,6 +46,7 @@ export function SurveyManagementPage() {
   const [loading, setLoading] = useState(true);
   const [surveyTitleDraft, setSurveyTitleDraft] = useState("");
   const [surveyTitleSaving, setSurveyTitleSaving] = useState(false);
+  const [activeTab, setActiveTab] = useState<"list" | "builder">("list");
 
   async function load() {
     setLoading(true);
@@ -108,6 +109,7 @@ export function SurveyManagementPage() {
   function selectSurvey(survey: AdminSurvey) {
     setSelected(survey);
     resetDraft();
+    setActiveTab("builder");
   }
 
   async function createSurvey() {
@@ -141,6 +143,7 @@ export function SurveyManagementPage() {
       setSurveys((items) => [created, ...items]);
       setSelected(created);
       resetDraft();
+      setActiveTab("builder");
       toast.success("สร้างแบบประเมินแล้ว");
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "สร้างแบบประเมินไม่สำเร็จ");
@@ -250,7 +253,7 @@ export function SurveyManagementPage() {
       <AdminPageHeader
         eyebrow="SURVEYS"
         title="จัดการแบบประเมิน"
-        description="สร้างและจัดการแบบประเมินกิจกรรม พร้อม Question Builder ในหน้าจอเดียว"
+        description="จัดการรายการแบบประเมิน และสร้าง แก้ไขและปรับปรุงแบบสอบถามในแท็บแยกกัน"
         actions={
           <>
             <Link
@@ -310,8 +313,42 @@ export function SurveyManagementPage() {
         </div>
       </AdminFilterBar>
 
-      <div className="mt-4 grid gap-5 xl:grid-cols-[1.05fr_1.55fr]">
-        <AdminCard className="overflow-hidden">
+      <div className="mt-4">
+        <div
+          role="tablist"
+          aria-label="เมนูจัดการแบบประเมิน"
+          className="mb-4 flex flex-wrap gap-2 rounded-2xl border border-slate-200 bg-slate-50 p-2"
+        >
+          <button
+            type="button"
+            role="tab"
+            aria-selected={activeTab === "list"}
+            onClick={() => setActiveTab("list")}
+            className={`min-h-10 rounded-xl px-4 py-2 text-sm font-semibold transition ${
+              activeTab === "list"
+                ? "bg-[#002d62] text-white shadow-sm"
+                : "text-slate-600 hover:bg-white hover:text-[#002d62]"
+            }`}
+          >
+            รายการแบบประเมิน
+          </button>
+          <button
+            type="button"
+            role="tab"
+            aria-selected={activeTab === "builder"}
+            onClick={() => setActiveTab("builder")}
+            className={`min-h-10 rounded-xl px-4 py-2 text-sm font-semibold transition ${
+              activeTab === "builder"
+                ? "bg-[#002d62] text-white shadow-sm"
+                : "text-slate-600 hover:bg-white hover:text-[#002d62]"
+            }`}
+          >
+            สร้าง แก้ไขและปรับปรุงแบบสอบถาม
+          </button>
+        </div>
+
+        {activeTab === "list" ? (
+          <AdminCard className="overflow-hidden">
           <div className="border-b border-slate-200 px-5 py-4">
             <div className="flex items-center justify-between gap-3">
               <div>
@@ -393,16 +430,16 @@ export function SurveyManagementPage() {
               </tbody>
             </AdminTable>
           )}
-        </AdminCard>
-
-        <AdminCard className="overflow-hidden">
+          </AdminCard>
+        ) : (
+          <AdminCard className="overflow-hidden">
           {selected ? (
             <>
               <div className="border-b border-slate-200 px-5 py-4">
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                   <div className="min-w-0">
                     <p className="text-xs font-semibold uppercase tracking-[0.14em] text-violet-600">
-                      QUESTION BUILDER
+                      สร้าง แก้ไขและปรับปรุงแบบสอบถาม
                     </p>
                     <p className="mt-1 text-xs font-semibold text-slate-500">
                       {selectedOccurrence
@@ -739,7 +776,8 @@ export function SurveyManagementPage() {
               />
             </div>
           )}
-        </AdminCard>
+          </AdminCard>
+        )}
       </div>
     </section>
   );
