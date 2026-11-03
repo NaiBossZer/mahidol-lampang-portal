@@ -64,8 +64,8 @@ function Field({ label, children, hint, error }: { label: string; children: Reac
   return <label className="field"><span className="field__label">{label}</span>{children}{error && <span className="field__error"><Icon name="alert" size={14} />{error}</span>}{hint && !error && <span className="field__hint">{hint}</span>}</label>
 }
 
-type Survey = { id: number; title: string; activity: string; created: string; status: 'เผยแพร่' | 'ฉบับร่าง'; questions: number }
 type Question = { id: number; text: string; type: string; required: boolean; category: string; options?: string[] }
+type Survey = { id: number; title: string; activity: string; created: string; status: 'เผยแพร่' | 'ฉบับร่าง'; questions: number; questionsData?: Question[] }
 
 const initialSurveys: Survey[] = [
   { id: 1, title: 'แบบประเมินความพึงพอใจโครงการปฐมนิเทศ', activity: 'ปฐมนิเทศนักศึกษาใหม่ ปี 2568', created: '12 มิ.ย. 2568', status: 'เผยแพร่', questions: 12 },
@@ -88,6 +88,7 @@ function App() {
   const [search, setSearch] = useState('')
   const [status, setStatus] = useState('ทั้งหมด')
   const [activity, setActivity] = useState('ทุกกิจกรรม')
+  const [surveys, setSurveys] = useState<Survey[]>(initialSurveys)
   const [loadState, setLoadState] = useState<'ready' | 'loading' | 'error'>('ready')
   const [selected, setSelected] = useState<Survey>(initialSurveys[1])
   const [questions, setQuestions] = useState<Question[]>(initialQuestions)
@@ -100,12 +101,15 @@ function App() {
   const [questionForm, setQuestionForm] = useState({ text: '', type: 'ตัวเลือกเดียว', category: 'ความพึงพอใจโดยรวม', required: true, options: 'ดีมาก\nดี\nปานกลาง\nควรปรับปรุง' })
   const [questionError, setQuestionError] = useState('')
 
-  const filtered = useMemo(() => initialSurveys.filter((item) => {
+  const filtered = useMemo(() => surveys.filter((item) => {
     const matchedSearch = item.title.toLowerCase().includes(search.toLowerCase())
     const matchedStatus = status === 'ทั้งหมด' || item.status === status
     const matchedActivity = activity === 'ทุกกิจกรรม' || item.activity.includes(activity)
     return matchedSearch && matchedStatus && matchedActivity
-  }), [search, status, activity])
+  }), [surveys, search, status, activity])
+
+  const publishedCount = surveys.filter((item) => item.status === 'เผยแพร่').length
+  const draftCount = surveys.filter((item) => item.status === 'ฉบับร่าง').length
 
   const notify = (text: string, kind: 'success' | 'error' = 'success') => {
     setToast({ text, kind })
@@ -113,10 +117,10 @@ function App() {
   }
 
   const openBuilder = (survey?: Survey) => {
-    const target = survey ?? { id: Date.now(), title: '', activity: '', created: 'วันนี้', status: 'ฉบับร่าง' as const, questions: 0 }
+    const target = survey ?? { id: Date.now(), title: '', activity: '', created: 'วันนี้', status: 'ฉบับร่าง' as const, questions: 0, questionsData: [] }
     setSelected(target)
     setForm({ title: target.title, description: survey ? 'แบบประเมินเพื่อรับฟังความคิดเห็นและนำไปพัฒนาการจัดกิจกรรมให้มีประสิทธิภาพยิ่งขึ้น' : '', activity: target.activity, status: target.status })
-    if (!survey) setQuestions([])
+    setQuestions(survey?.questionsData ?? (survey ? initialQuestions : []))
     setDirty(false)
     setTab('builder')
     window.scrollTo({ top: 0, behavior: 'smooth' })
@@ -154,13 +158,34 @@ function App() {
     notify(questionModal.item ? 'แก้ไขคำถามเรียบร้อยแล้ว' : 'เพิ่มคำถามใหม่เรียบร้อยแล้ว')
   }
 
-  const saveDraft = () => {
+  const persistSurvey = (nextStatus: Survey['status']) => {
     if (!form.title.trim()) {
       notify('กรุณาระบุชื่อแบบสอบถามก่อนบันทึก', 'error')
-      return
+      return false
     }
+    const updated: Survey = {
+      ...selected,
+      title: form.title.trim(),
+      activity: form.activity || 'ยังไม่ระบุกิจกรรม',
+      status: nextStatus,
+      questions: questions.length,
+      questionsData: questions,
+    }
+    setSurveys((current) => current.some((item) => item.id === updated.id)
+      ? current.map((item) => item.id === updated.id ? updated : item)
+      : [updated, ...current])
+    setSelected(updated)
+    setForm((current) => ({ ...current, status: nextStatus }))
     setDirty(false)
-    notify('บันทึกฉบับร่างเรียบร้อยแล้ว')
+    return true
+  }
+
+  const saveDraft = () => {
+    if (persistSurvey('ฉบับร่าง')) notify('บันทึกฉบับร่างเรียบร้อยแล้ว')
+  }
+
+  const publishSurvey = () => {
+    if (persistSurvey('เผยแพร่')) notify('เผยแพร่แบบประเมินเรียบร้อยแล้ว')
   }
 
   return <div className="app-shell">
@@ -222,7 +247,13 @@ function App() {
           </button>
         </div>
 
-        {tab === 'list' ? <section className="content-card list-panel">
+        {tab === 'list' ? <>
+          <section className="overview-grid" aria-label="สรุปแบบประเมิน">
+            <article className="overview-card overview-card--total"><div className="overview-card__icon"><Icon name="survey" size={20} /></div><div><span>แบบประเมินทั้งหมด</span><strong>{surveys.length}</strong><small>รายการในระบบ</small></div></article>
+            <article className="overview-card overview-card--published"><div className="overview-card__icon"><Icon name="check" size={20} /></div><div><span>เผยแพร่แล้ว</span><strong>{publishedCount}</strong><small>พร้อมรับคำตอบ</small></div></article>
+            <article className="overview-card overview-card--draft"><div className="overview-card__icon"><Icon name="edit" size={20} /></div><div><span>ฉบับร่าง</span><strong>{draftCount}</strong><small>รอการตรวจสอบ</small></div></article>
+          </section>
+          <section className="content-card list-panel">
           <div className="card-heading">
             <div><h2>รายการแบบประเมิน</h2><p>ค้นหา ตรวจสอบ และจัดการแบบประเมินทั้งหมดในระบบ</p></div>
             <button className="icon-button" aria-label="โหลดข้อมูลใหม่" onClick={() => {
@@ -251,9 +282,10 @@ function App() {
                 </tr>)}</tbody>
               </table>
             </div>
-            <div className="table-footer"><span>แสดง {filtered.length} จาก {initialSurveys.length} รายการ</span><div className="pagination"><button disabled>ก่อนหน้า</button><button className="active">1</button><button disabled>ถัดไป</button></div></div>
+            <div className="table-footer"><span>แสดง {filtered.length} จาก {surveys.length} รายการ</span><div className="pagination"><button disabled>ก่อนหน้า</button><button className="active">1</button><button disabled>ถัดไป</button></div></div>
           </>}
-        </section> : <Builder
+          </section>
+        </> : <Builder
           form={form}
           questions={questions}
           dirty={dirty}
@@ -262,7 +294,7 @@ function App() {
           setDeleteItem={setDeleteItem}
           setPreview={setPreview}
           saveDraft={saveDraft}
-          publish={() => { if (!form.title) return notify('กรุณาระบุชื่อแบบสอบถามก่อนเผยแพร่', 'error'); setDirty(false); changeForm('status', 'เผยแพร่'); setDirty(false); notify('เผยแพร่แบบสอบถามเรียบร้อยแล้ว') }}
+          publish={publishSurvey}
           toggleRequired={(id) => { setQuestions((prev) => prev.map((q) => q.id === id ? { ...q, required: !q.required } : q)); setDirty(true) }}
           reorderQuestions={(from, to) => {
             if (from === to) return
