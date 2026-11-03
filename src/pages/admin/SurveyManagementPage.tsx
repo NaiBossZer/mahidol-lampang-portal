@@ -297,6 +297,15 @@ export function SurveyManagementPage() {
       toast.error("กรุณาเผยแพร่แบบประเมินก่อนสร้าง QR Code");
       return;
     }
+    const now = Date.now();
+    if (survey.open_at && now < Date.parse(survey.open_at)) {
+      toast.error("แบบประเมินยังไม่ถึงเวลาเปิดรับคำตอบ");
+      return;
+    }
+    if (survey.close_at && now > Date.parse(survey.close_at)) {
+      toast.error("แบบประเมินปิดรับคำตอบแล้ว");
+      return;
+    }
     setQrSurvey(survey);
   }
 
