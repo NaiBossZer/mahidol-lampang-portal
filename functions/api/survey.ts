@@ -22,21 +22,20 @@ async function sb<T>(env: Env, path: string, init: RequestInit = {}) {
   return body as T;
 }
 
+async function getPublicSurveyOccurrence(env: Env, surveyId: string): Promise<Row | null> {
+  const occurrences = await sb<Row[]>(env, "rpc/get_public_survey_occurrence", {
+    method: "POST",
+    body: JSON.stringify({ p_survey_id: surveyId }),
+  });
+  const occurrence = occurrences[0];
+  return occurrence && !["cancelled", "archived"].includes(String(occurrence.occurrence_status))
+    ? occurrence
+    : null;
+}
+
 async function isSurveyPubliclyAvailable(env: Env, survey: Row): Promise<boolean> {
   if (survey.enabled !== true) return false;
-  const now = Date.now();
-  if (survey.open_at && now < Date.parse(String(survey.open_at))) return false;
-  if (survey.close_at && now > Date.parse(String(survey.close_at))) return false;
-  const occurrenceId = String(survey.occurrence_id ?? "");
-  if (!occurrenceId) return false;
-  const occurrences = await sb<Row[]>(
-    env,
-    `activity_occurrences?id=eq.${encodeURIComponent(occurrenceId)}&select=id,activity_id,status`,
-  );
-  const occurrence = occurrences[0];
-  // The public SELECT policy on activity_occurrences only exposes rows whose parent
-  // activity is published, so no direct public SELECT on activities is required.
-  return Boolean(occurrence && !["cancelled", "archived"].includes(String(occurrence.status)));
+  return Boolean(await getPublicSurveyOccurrence(env, String(survey.id ?? "")));
 }
 
 export async function onRequest({ request, env }: { request: Request; env: Env }) {
@@ -90,14 +89,13 @@ export async function onRequest({ request, env }: { request: Request; env: Env }
       `occurrence_surveys?id=eq.${encodeURIComponent(body.surveyId)}&enabled=eq.true&select=id,occurrence_id,open_at,close_at`,
     );
     const survey = surveys[0];
-    if (!survey || !(await isSurveyPubliclyAvailable(env, survey)))
+    const occurrence = survey
+      ? await getPublicSurveyOccurrence(env, String(survey.id))
+      : null;
+    if (!survey || !occurrence)
       return json({ success: false, error: "แบบประเมินไม่พร้อมรับคำตอบ หรืออยู่นอกช่วงเวลาเปิดรับ" }, 409);
-    const occurrenceId = String(survey.occurrence_id);
-    const occurrences = await sb<Row[]>(
-      env,
-      `activity_occurrences?id=eq.${encodeURIComponent(occurrenceId)}&select=id,activity_id,status`,
-    );
-    const activityId = String(occurrences[0]?.activity_id ?? "");
+    const occurrenceId = String(occurrence.occurrence_id);
+    const activityId = String(occurrence.activity_id ?? "");
     const responseRows = await sb<Row[]>(env, "survey_responses", {
       method: "POST",
       headers: { Prefer: "return=representation" },
