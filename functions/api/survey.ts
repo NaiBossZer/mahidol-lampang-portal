@@ -114,11 +114,15 @@ export async function onRequest({ request, env }: { request: Request; env: Env }
         normalizedAnswers.push({ question_id: question.id, answer_number: null, answer_text: value, answer_options: [] });
       } else if (type === "multi_choice") {
         const values = Array.isArray(answer.options) ? answer.options.map(String) : [];
+        if (question.required === true && values.length === 0)
+          return json({ success: false, error: "กรุณาเลือกคำตอบในคำถามที่จำเป็น" }, 400);
         if (values.some((value) => !options.includes(value)))
           return json({ success: false, error: "พบตัวเลือกที่ไม่ถูกต้อง" }, 400);
         normalizedAnswers.push({ question_id: question.id, answer_number: null, answer_text: null, answer_options: values });
       } else if (type === "text") {
         const value = String(answer.text ?? "");
+        if (question.required === true && !value.trim())
+          return json({ success: false, error: "กรุณากรอกคำตอบในคำถามที่จำเป็น" }, 400);
         if (value.length > 5000)
           return json({ success: false, error: "คำตอบข้อความยาวเกิน 5,000 ตัวอักษร" }, 400);
         normalizedAnswers.push({ question_id: question.id, answer_number: null, answer_text: value, answer_options: [] });
