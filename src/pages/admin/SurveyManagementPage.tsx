@@ -335,7 +335,6 @@ export function SurveyManagementPage() {
 
   return (
     <section className="survey-management-design mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
-      <div className="survey-page-intro">
       <AdminPageHeader
         eyebrow="งานพันธกิจเพื่อสังคม · แบบประเมิน"
         title="จัดการแบบประเมิน"
@@ -359,12 +358,6 @@ export function SurveyManagementPage() {
           </>
         }
       />
-      <div className="survey-page-intro__note">
-        <span className="survey-page-intro__mark"><ClipboardList className="h-5 w-5" /></span>
-        <span><strong>ระบบจัดการแบบประเมิน</strong><small>คณะสิ่งแวดล้อมและทรัพยากรศาสตร์ · มหาวิทยาลัยมหิดล</small></span>
-      </div>
-      </div>
-
       <div className="survey-workspace">
         <div role="tablist" aria-label="ส่วนจัดการแบบประเมิน" className="mb-5 flex gap-1 overflow-x-auto rounded-2xl border border-slate-200 bg-slate-100/80 p-1.5">
           <button type="button" role="tab" aria-selected={activeTab === "list"} onClick={() => setActiveTab("list")} className={"inline-flex min-h-11 shrink-0 items-center gap-2 rounded-xl px-4 text-sm font-semibold transition-all " + (activeTab === "list" ? "bg-white text-[#1455a0] shadow-sm ring-1 ring-slate-200/70" : "text-slate-500 hover:bg-white/70 hover:text-[#1455a0]")}><FileText className="h-4 w-4" />รายการแบบประเมิน<span className="rounded-full bg-blue-50 px-2 py-0.5 text-[11px] text-[#1455a0]">{surveys.length}</span></button>
