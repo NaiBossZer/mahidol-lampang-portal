@@ -153,9 +153,14 @@ export function SurveyManagementPage() {
   }
 
   async function installTemplateForSurvey(survey: AdminSurvey) {
-    if (survey.questions.length > 0) return survey;
-    const created: SurveyQuestion[] = [];
+    const templateTexts = new Set(shellacWorkshopSurveyTemplate.map((question) => question.question_text));
+    const hasTemplateQuestion = survey.questions.some((question) => templateTexts.has(question.question_text));
+    if (survey.questions.length > 0 && !hasTemplateQuestion) return survey;
+
+    const existingTexts = new Set(survey.questions.map((question) => question.question_text));
+    const created: SurveyQuestion[] = [...survey.questions];
     for (const question of shellacWorkshopSurveyTemplate) {
+      if (existingTexts.has(question.question_text)) continue;
       const saved = await createAdminQuestion({
         ...question,
         survey_id: survey.id,
@@ -284,7 +289,9 @@ export function SurveyManagementPage() {
       setSelected(next);
       setSurveys((items) => items.map((item) => (item.id === selected.id ? next : item)));
       setSurveyTitleDraft(next.title ?? "");
-      toast.success(`เพิ่มชุดคำถาม ${next.questions.length} ข้อเรียบร้อยแล้ว`);
+      const addedCount = next.questions.length - selected.questions.length;
+      if (addedCount > 0) toast.success(`เพิ่มชุดคำถาม ${addedCount} ข้อเรียบร้อยแล้ว`);
+      else toast.info("แบบประเมินนี้มีคำถามอยู่แล้วและไม่ได้เพิ่มคำถามซ้ำ");
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "ติดตั้งชุดคำถามไม่สำเร็จ");
       await load();
@@ -617,7 +624,7 @@ export function SurveyManagementPage() {
                       variant="secondary"
                       icon={<ClipboardList className="h-4 w-4" />}
                       onClick={() => void applyShellacTemplate()}
-                      disabled={templateApplying || selected.questions.length > 0}
+                      disabled={templateApplying || selected.questions.length >= shellacWorkshopSurveyTemplate.length}
                     >
                       {templateApplying ? "กำลังติดตั้ง..." : "ติดตั้งชุดคำถามครั่ง"}
                     </AdminButton>
