@@ -335,8 +335,9 @@ export function SurveyManagementPage() {
 
   return (
     <section className="survey-management-design mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
+      <div className="survey-page-intro">
       <AdminPageHeader
-        eyebrow="แบบประเมิน"
+        eyebrow="งานพันธกิจเพื่อสังคม · แบบประเมิน"
         title="จัดการแบบประเมิน"
         description="จัดการรายการแบบประเมิน และสร้าง แก้ไขและปรับปรุงแบบสอบถาม"
         actions={
@@ -358,18 +359,25 @@ export function SurveyManagementPage() {
           </>
         }
       />
+      <div className="survey-page-intro__note">
+        <span className="survey-page-intro__mark"><ClipboardList className="h-5 w-5" /></span>
+        <span><strong>ระบบจัดการแบบประเมิน</strong><small>คณะสิ่งแวดล้อมและทรัพยากรศาสตร์ · มหาวิทยาลัยมหิดล</small></span>
+      </div>
+      </div>
 
-      <div className="mt-5">
+      <div className="survey-workspace">
         <div role="tablist" aria-label="ส่วนจัดการแบบประเมิน" className="mb-5 flex gap-1 overflow-x-auto rounded-2xl border border-slate-200 bg-slate-100/80 p-1.5">
           <button type="button" role="tab" aria-selected={activeTab === "list"} onClick={() => setActiveTab("list")} className={"inline-flex min-h-11 shrink-0 items-center gap-2 rounded-xl px-4 text-sm font-semibold transition-all " + (activeTab === "list" ? "bg-white text-[#1455a0] shadow-sm ring-1 ring-slate-200/70" : "text-slate-500 hover:bg-white/70 hover:text-[#1455a0]")}><FileText className="h-4 w-4" />รายการแบบประเมิน<span className="rounded-full bg-blue-50 px-2 py-0.5 text-[11px] text-[#1455a0]">{surveys.length}</span></button>
           <button type="button" role="tab" aria-selected={activeTab === "builder"} onClick={() => setActiveTab("builder")} className={"inline-flex min-h-11 shrink-0 items-center gap-2 rounded-xl px-4 text-sm font-semibold transition-all " + (activeTab === "builder" ? "bg-white text-[#1455a0] shadow-sm ring-1 ring-slate-200/70" : "text-slate-500 hover:bg-white/70 hover:text-[#1455a0]")}><ClipboardList className="h-4 w-4" />สร้าง แก้ไขและปรับปรุงแบบสอบถาม</button>
         </div>
         {activeTab === "list" && <>
-          <div className="mb-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+          <div className="survey-metrics mb-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
             <div className="flex items-center gap-4 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm"><span className="grid h-12 w-12 place-items-center rounded-2xl bg-blue-50 text-[#1455a0]"><ClipboardList className="h-5 w-5" /></span><div><p className="text-xs font-semibold text-slate-500">แบบประเมินทั้งหมด</p><p className="mt-0.5 text-2xl font-bold tracking-tight text-slate-900">{surveys.length}</p><p className="text-[11px] text-slate-400">{totalQuestions} คำถามในระบบ</p></div></div>
             <div className="flex items-center gap-4 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm"><span className="grid h-12 w-12 place-items-center rounded-2xl bg-emerald-50 text-emerald-700"><CheckCircle2 className="h-5 w-5" /></span><div><p className="text-xs font-semibold text-slate-500">เปิดใช้งาน</p><p className="mt-0.5 text-2xl font-bold tracking-tight text-slate-900">{enabledCount}</p><p className="text-[11px] text-slate-400">อนุญาตให้รับคำตอบตามช่วงเวลา</p></div></div>
             <div className="flex items-center gap-4 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:col-span-2 xl:col-span-1"><span className="grid h-12 w-12 place-items-center rounded-2xl bg-amber-50 text-amber-700"><FileText className="h-5 w-5" /></span><div><p className="text-xs font-semibold text-slate-500">ปิดใช้งาน</p><p className="mt-0.5 text-2xl font-bold tracking-tight text-slate-900">{disabledCount}</p><p className="text-[11px] text-slate-400">ไม่อนุญาตให้ส่งคำตอบ</p></div></div>
           </div>
+      <div className="survey-filter-panel">
+      <div className="survey-filter-panel__heading"><div><strong>ค้นหาและเลือกกิจกรรม</strong><span>กรองรายการตามกิจกรรมที่ต้องการจัดการ</span></div><span className="survey-filter-panel__count">{filteredSurveys.length} รายการ</span></div>
       <AdminFilterBar>
         <AdminSearchInput
           value={search}
@@ -408,10 +416,11 @@ export function SurveyManagementPage() {
           </AdminButton>
         </div>
       </AdminFilterBar>
+      </div>
         </>}
 
       {activeTab === "list" && <div className="mt-4">
-        <AdminCard className="survey-builder-panel overflow-hidden rounded-2xl border-slate-200 shadow-sm">
+        <AdminCard className="survey-builder-panel survey-list-card overflow-hidden rounded-2xl border-slate-200 shadow-sm">
           <div className="border-b border-slate-100 px-5 py-5">
             <div className="flex items-center justify-between gap-3">
               <div>
@@ -676,7 +685,7 @@ export function SurveyManagementPage() {
                 </div>
               </div>
 
-              <div className="grid gap-4 p-5 xl:grid-cols-[minmax(0,1.2fr)_minmax(300px,.8fr)]">
+              <div className="survey-builder-layout grid gap-4 p-5 xl:grid-cols-[minmax(0,1.2fr)_minmax(300px,.8fr)]">
                 <div className="order-2 rounded-2xl border border-slate-200 bg-slate-50/80 p-5 xl:order-2">
                   <div className="grid gap-3 md:grid-cols-[minmax(0,1fr)_160px_auto]">
                     <label className="block">
