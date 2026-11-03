@@ -16,6 +16,16 @@ function choiceOptions(question: SurveyQuestion): string[] {
   return Array.isArray(question.options) ? question.options.map((option) => String(option)) : [];
 }
 
+const sectionLabels: Record<string, string> = {
+  profile: "ส่วนที่ 1 · ข้อมูลทั่วไป",
+  organization: "ส่วนที่ 2 · ความพึงพอใจต่อการจัดอบรม",
+  learning: "ส่วนที่ 3 · เนื้อหาและวิทยากร",
+  practice: "ส่วนที่ 4 · การสาธิตและฝึกปฏิบัติ",
+  outcomes: "ส่วนที่ 5 · ความรู้และการนำไปใช้",
+  overall: "ส่วนที่ 6 · ภาพรวมโครงการ",
+  feedback: "ส่วนที่ 7 · ความคิดเห็นเพิ่มเติม",
+};
+
 export function PublicSurveyPage() {
   const querySurveyId = useMemo(
     () => new URLSearchParams(window.location.search).get("surveyId"),
@@ -63,6 +73,7 @@ export function PublicSurveyPage() {
         setLoading(false);
       });
   }, [querySurveyId]);
+  const isShellacSurvey = Boolean(survey?.title?.includes("ครั่งสร้างรายได้"));
   const setAnswer = (question: SurveyQuestion, value: string) =>
     setAnswers((current) => ({ ...current, [question.id]: value }));
   async function submit(event: FormEvent) {
@@ -71,13 +82,14 @@ export function PublicSurveyPage() {
       setError("กรุณายอมรับข้อตกลงความเป็นส่วนตัว");
       return;
     }
-    const missing = survey.questions.filter(
-      (q) =>
+    const missing = survey.questions.filter((q) => {
+      const answer = answers[q.id];
+      return (
         q.required &&
-        (answers[q.id] === undefined ||
-          answers[q.id] === "" ||
-          (Array.isArray(answers[q.id]) && answers[q.id].length === 0)),
-    );
+        (answer === undefined ||
+          (typeof answer === "string" ? !answer.trim() : answer.length === 0))
+      );
+    });
     if (missing.length) {
       setError("กรุณาตอบคำถามที่จำเป็นให้ครบ");
       return;
@@ -85,13 +97,18 @@ export function PublicSurveyPage() {
     setSubmitting(true);
     setError("");
     try {
-      const normalized = survey.questions.map((q) => {
+      const normalized = survey.questions.flatMap((q) => {
         const value = answers[q.id];
-        return q.question_type === "rating"
-          ? { questionId: q.id, number: Number(value) }
-          : q.question_type === "multi_choice"
-            ? { questionId: q.id, options: Array.isArray(value) ? value : [String(value)] }
-            : { questionId: q.id, text: String(value ?? "") };
+        const unanswered =
+          value === undefined || value === "" || (Array.isArray(value) && value.length === 0);
+        if (unanswered) return [];
+        return [
+          q.question_type === "rating"
+            ? { questionId: q.id, number: Number(value) }
+            : q.question_type === "multi_choice"
+              ? { questionId: q.id, options: Array.isArray(value) ? value : [String(value)] }
+              : { questionId: q.id, text: String(value) },
+        ];
       });
       const response = await fetch("/api/survey", {
         method: "POST",
@@ -174,9 +191,16 @@ export function PublicSurveyPage() {
             Mahidol Lampang · Survey
           </p>
           <h1 className="mt-2 text-2xl font-bold">{survey.title || "แบบประเมินกิจกรรม"}</h1>
-          <p className="mt-2 text-sm text-white/80">
+          <p className="mt-2 text-sm leading-6 text-white/80">
             {survey.welcome_text || "ขอความร่วมมือในการประเมินกิจกรรม"}
           </p>
+          {isShellacSurvey && (
+            <div className="mt-4 flex flex-wrap gap-2 text-xs text-white/75">
+              <span className="rounded-full bg-white/10 px-3 py-1">วันศุกร์ที่ 18 ธันวาคม 2569</span>
+              <span className="rounded-full bg-white/10 px-3 py-1">ใช้เวลาประมาณ 5–8 นาที</span>
+              <span className="rounded-full bg-white/10 px-3 py-1">{survey.anonymous ? "ไม่ถามชื่อและเบอร์โทรศัพท์" : "แบบประเมินระบุตัวตน"}</span>
+            </div>
+          )}
         </header>
         <form onSubmit={submit} className="mt-5 space-y-4">
           <section className="rounded-2xl border border-slate-200 bg-white p-5">
@@ -188,17 +212,28 @@ export function PublicSurveyPage() {
                 className="mt-0.5 h-4 w-4"
               />
               <span>
-                ข้าพเจ้ายอมรับข้อตกลงความเป็นส่วนตัวและยินยอมให้ใช้ข้อมูลเพื่อการวิเคราะห์และปรับปรุงกิจกรรม
+                {survey.anonymous
+                  ? "ข้าพเจ้าได้รับทราบวัตถุประสงค์การเก็บข้อมูลเพื่อประเมินผลและปรับปรุงกิจกรรม โดยแบบประเมินนี้ไม่ถามชื่อหรือเบอร์โทรศัพท์ และยินยอมให้ใช้คำตอบเพื่อสรุปผลในภาพรวม"
+                  : "ข้าพเจ้าได้รับทราบวัตถุประสงค์การเก็บข้อมูลเพื่อประเมินผลและปรับปรุงกิจกรรม และยินยอมให้ใช้ข้อมูลตามคำชี้แจงความเป็นส่วนตัวของกิจกรรมนี้"}
               </span>
             </label>
-            <p className="mt-2 text-xs text-slate-500">
-              โหมดข้อมูล: {survey.anonymous ? "Anonymous" : "Identified"}
+            <p className="mt-2 text-xs leading-5 text-slate-500">
+              {survey.anonymous
+                ? "กรุณาไม่ระบุชื่อ เบอร์โทรศัพท์ หรือข้อมูลส่วนบุคคลของตนเองหรือบุคคลอื่นในช่องความคิดเห็น คำตอบจะถูกนำไปใช้เพื่อสรุปผลในภาพรวม"
+                : "โปรดตรวจสอบคำชี้แจงความเป็นส่วนตัวของกิจกรรมก่อนส่งคำตอบ"}
             </p>
           </section>
           {survey.questions.map((q, index) => {
             const options = choiceOptions(q);
+            const isNewSection = index === 0 || survey.questions[index - 1].section_key !== q.section_key;
             return (
-              <section key={q.id} className="rounded-2xl border border-slate-200 bg-white p-5">
+              <div key={q.id}>
+                {isNewSection && (
+                  <div className="mb-2 mt-5 px-1 text-sm font-bold text-brand-navy">
+                    {sectionLabels[q.section_key] ?? q.section_key}
+                  </div>
+                )}
+              <section className="rounded-2xl border border-slate-200 bg-white p-5">
                 <p className="text-sm font-semibold text-slate-800">
                   {index + 1}. {q.question_text}
                   {q.required && <span className="ml-1 text-red-600">*</span>}
@@ -266,6 +301,7 @@ export function PublicSurveyPage() {
                   </div>
                 )}
               </section>
+              </div>
             );
           })}
           {error && (

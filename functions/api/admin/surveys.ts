@@ -172,13 +172,12 @@ export async function onRequest({ request, env }: { request: Request; env: Env }
     }
 
     if (!surveyId) return json({ success: false, error: "ต้องระบุ survey id" }, 400);
-    const row: Record<string, unknown> = {
-      enabled: body.enabled,
-      anonymous: body.anonymous,
-      open_at: body.openAt ?? null,
-      close_at: body.closeAt ?? null,
-      welcome_text: body.welcomeText ?? null,
-    };
+    const row: Record<string, unknown> = {};
+    if (body.enabled !== undefined) row.enabled = body.enabled;
+    if (body.anonymous !== undefined) row.anonymous = body.anonymous;
+    if (body.openAt !== undefined) row.open_at = body.openAt;
+    if (body.closeAt !== undefined) row.close_at = body.closeAt;
+    if (body.welcomeText !== undefined) row.welcome_text = body.welcomeText;
     if (body.title !== undefined) {
       const title = body.title?.trim();
       if (!title) return json({ success: false, error: "ชื่อแบบประเมินห้ามว่าง" }, 400);
