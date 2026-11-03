@@ -65,11 +65,19 @@ export const createAdminSurvey = (input: {
 export const updateAdminSurvey = (
   id: string,
   input: Partial<Omit<AdminSurvey, "id" | "occurrence_id" | "questions">>,
-) =>
-  request<AdminSurvey>(`/api/admin/surveys?id=${encodeURIComponent(id)}`, {
+) => {
+  const body: Record<string, unknown> = {};
+  if (input.title !== undefined) body.title = input.title;
+  if (input.enabled !== undefined) body.enabled = input.enabled;
+  if (input.anonymous !== undefined) body.anonymous = input.anonymous;
+  if (input.open_at !== undefined) body.openAt = input.open_at;
+  if (input.close_at !== undefined) body.closeAt = input.close_at;
+  if (input.welcome_text !== undefined) body.welcomeText = input.welcome_text;
+  return request<AdminSurvey>(`/api/admin/surveys?id=${encodeURIComponent(id)}`, {
     method: "PUT",
-    body: JSON.stringify(input),
+    body: JSON.stringify(body),
   });
+};
 
 export const createAdminQuestion = (
   input: Omit<SurveyQuestion, "id" | "active"> & { active?: boolean },
