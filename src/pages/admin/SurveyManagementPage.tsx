@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { Plus, RefreshCw, Save, Sparkles, Trash2 } from "lucide-react";
+import { ArrowLeft, CalendarClock, CheckCircle2, ClipboardList, FileText, Plus, RefreshCw, Save, Search, Settings2, Sparkles, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { type ActivityOccurrence } from "@/services/admin-occurrences";
 import {
@@ -46,6 +46,7 @@ export function SurveyManagementPage() {
   const [loading, setLoading] = useState(true);
   const [surveyTitleDraft, setSurveyTitleDraft] = useState("");
   const [surveyTitleSaving, setSurveyTitleSaving] = useState(false);
+  const [activeTab, setActiveTab] = useState<"list" | "builder">("list");
 
   async function load() {
     setLoading(true);
@@ -108,6 +109,7 @@ export function SurveyManagementPage() {
   function selectSurvey(survey: AdminSurvey) {
     setSelected(survey);
     resetDraft();
+    setActiveTab("builder");
   }
 
   async function createSurvey() {
@@ -141,6 +143,7 @@ export function SurveyManagementPage() {
       setSurveys((items) => [created, ...items]);
       setSelected(created);
       resetDraft();
+      setActiveTab("builder");
       toast.success("สร้างแบบประเมินแล้ว");
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "สร้างแบบประเมินไม่สำเร็จ");
@@ -244,13 +247,16 @@ export function SurveyManagementPage() {
   const selectedOccurrence = selected
     ? occurrences.find((item) => item.id === selected.occurrence_id)
     : null;
+  const publishedCount = surveys.filter((survey) => survey.enabled).length;
+  const disabledCount = surveys.length - publishedCount;
+  const totalQuestions = surveys.reduce((sum, survey) => sum + survey.questions.length, 0);
 
   return (
     <section className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
       <AdminPageHeader
         eyebrow="SURVEYS"
         title="จัดการแบบประเมิน"
-        description="สร้างและจัดการแบบประเมินกิจกรรม พร้อม Question Builder ในหน้าจอเดียว"
+        description="จัดการรายการแบบประเมิน และสร้าง แก้ไขและปรับปรุงแบบสอบถาม"
         actions={
           <>
             <Link
@@ -271,6 +277,17 @@ export function SurveyManagementPage() {
         }
       />
 
+      <div className="mt-5">
+        <div role="tablist" aria-label="ส่วนจัดการแบบประเมิน" className="mb-5 flex gap-1 overflow-x-auto rounded-2xl border border-slate-200 bg-slate-100/80 p-1.5">
+          <button type="button" role="tab" aria-selected={activeTab === "list"} onClick={() => setActiveTab("list")} className={"inline-flex min-h-11 shrink-0 items-center gap-2 rounded-xl px-4 text-sm font-semibold transition-all " + (activeTab === "list" ? "bg-white text-[#1455a0] shadow-sm ring-1 ring-slate-200/70" : "text-slate-500 hover:bg-white/70 hover:text-[#1455a0]")}><FileText className="h-4 w-4" />รายการแบบประเมิน<span className="rounded-full bg-blue-50 px-2 py-0.5 text-[11px] text-[#1455a0]">{surveys.length}</span></button>
+          <button type="button" role="tab" aria-selected={activeTab === "builder"} onClick={() => setActiveTab("builder")} className={"inline-flex min-h-11 shrink-0 items-center gap-2 rounded-xl px-4 text-sm font-semibold transition-all " + (activeTab === "builder" ? "bg-white text-[#1455a0] shadow-sm ring-1 ring-slate-200/70" : "text-slate-500 hover:bg-white/70 hover:text-[#1455a0]")}><ClipboardList className="h-4 w-4" />สร้าง แก้ไขและปรับปรุงแบบสอบถาม</button>
+        </div>
+        {activeTab === "list" && <>
+          <div className="mb-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+            <div className="flex items-center gap-4 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm"><span className="grid h-12 w-12 place-items-center rounded-2xl bg-blue-50 text-[#1455a0]"><ClipboardList className="h-5 w-5" /></span><div><p className="text-xs font-semibold text-slate-500">แบบประเมินทั้งหมด</p><p className="mt-0.5 text-2xl font-bold tracking-tight text-slate-900">{surveys.length}</p><p className="text-[11px] text-slate-400">{totalQuestions} คำถามในระบบ</p></div></div>
+            <div className="flex items-center gap-4 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm"><span className="grid h-12 w-12 place-items-center rounded-2xl bg-emerald-50 text-emerald-700"><CheckCircle2 className="h-5 w-5" /></span><div><p className="text-xs font-semibold text-slate-500">เผยแพร่แล้ว</p><p className="mt-0.5 text-2xl font-bold tracking-tight text-slate-900">{publishedCount}</p><p className="text-[11px] text-slate-400">พร้อมรับคำตอบ</p></div></div>
+            <div className="flex items-center gap-4 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:col-span-2 xl:col-span-1"><span className="grid h-12 w-12 place-items-center rounded-2xl bg-amber-50 text-amber-700"><FileText className="h-5 w-5" /></span><div><p className="text-xs font-semibold text-slate-500">ปิดใช้งาน / ฉบับร่าง</p><p className="mt-0.5 text-2xl font-bold tracking-tight text-slate-900">{disabledCount}</p><p className="text-[11px] text-slate-400">ยังไม่พร้อมรับคำตอบ</p></div></div>
+          </div>
       <AdminFilterBar>
         <AdminSearchInput
           value={search}
@@ -309,10 +326,11 @@ export function SurveyManagementPage() {
           </AdminButton>
         </div>
       </AdminFilterBar>
+        </>}
 
-      <div className="mt-4 grid gap-5 xl:grid-cols-[1.05fr_1.55fr]">
-        <AdminCard className="overflow-hidden">
-          <div className="border-b border-slate-200 px-5 py-4">
+      {activeTab === "list" && <div className="mt-4">
+        <AdminCard className="overflow-hidden rounded-2xl border-slate-200 shadow-sm">
+          <div className="border-b border-slate-100 px-5 py-5">
             <div className="flex items-center justify-between gap-3">
               <div>
                 <h2 className="text-base font-bold text-[#002d62]">รายการแบบประเมิน</h2>
@@ -394,15 +412,21 @@ export function SurveyManagementPage() {
             </AdminTable>
           )}
         </AdminCard>
+      </div>}
 
-        <AdminCard className="overflow-hidden">
+      {activeTab === "builder" && <div className="mt-4 space-y-4">
+        <div className="flex items-center justify-between gap-3">
+          <button type="button" onClick={() => setActiveTab("list")} className="inline-flex items-center gap-2 text-sm font-semibold text-slate-500 transition hover:text-[#1455a0]"><ArrowLeft className="h-4 w-4" />กลับไปยังรายการแบบประเมิน</button>
+          {selected && <span className="text-xs font-medium text-slate-400">Survey ID: {selected.id}</span>}
+        </div>
+        <AdminCard className="overflow-hidden rounded-2xl border-slate-200 shadow-sm">
           {selected ? (
             <>
               <div className="border-b border-slate-200 px-5 py-4">
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                   <div className="min-w-0">
-                    <p className="text-xs font-semibold uppercase tracking-[0.14em] text-violet-600">
-                      QUESTION BUILDER
+                    <p className="text-[11px] font-bold uppercase tracking-[0.13em] text-[#1455a0]">
+                      สร้าง แก้ไขและปรับปรุงแบบสอบถาม
                     </p>
                     <p className="mt-1 text-xs font-semibold text-slate-500">
                       {selectedOccurrence
@@ -544,7 +568,7 @@ export function SurveyManagementPage() {
               </div>
 
               <div className="p-5">
-                <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                <div className="rounded-2xl border border-slate-200 bg-slate-50/80 p-5">
                   <div className="grid gap-3 md:grid-cols-[minmax(0,1fr)_160px_auto]">
                     <label className="block">
                       <span className="mb-1 block text-xs font-semibold text-slate-600">คำถาม</span>
@@ -689,7 +713,7 @@ export function SurveyManagementPage() {
                     selected.questions.map((question, index) => (
                       <div
                         key={question.id}
-                        className="rounded-2xl border border-slate-200 bg-white p-4 transition hover:border-slate-300 hover:shadow-sm"
+                        className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm transition hover:-translate-y-0.5 hover:border-blue-200 hover:shadow-md"
                       >
                         <div className="flex items-start gap-3">
                           <button
@@ -740,7 +764,8 @@ export function SurveyManagementPage() {
             </div>
           )}
         </AdminCard>
-      </div>
+      </div>}
+    </div>
     </section>
   );
 }
