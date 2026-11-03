@@ -323,7 +323,10 @@ export function PublicSurveyPage() {
               <input
                 type="checkbox"
                 checked={consent}
-                onChange={(event) => setConsent(event.target.checked)}
+                onChange={(event) => {
+                  setConsent(event.target.checked);
+                  setError("");
+                }}
                 className="mt-1 h-4 w-4 shrink-0 accent-[#8f1831]"
               />
               <span>ข้าพเจ้ายอมรับข้อตกลงความเป็นส่วนตัวและยินยอมให้ใช้ข้อมูลเพื่อการวิเคราะห์และปรับปรุงกิจกรรม</span>
@@ -337,7 +340,9 @@ export function PublicSurveyPage() {
             const options = choiceOptions(question);
             const missing = showValidation && missingQuestionIds.has(question.id);
             return (
-              <fieldset
+              <section
+                role="group"
+                aria-labelledby={`question-title-${question.id}`}
                 key={question.id}
                 id={`survey-question-${question.id}`}
                 className={`rounded-2xl border bg-white p-4 shadow-sm transition sm:p-5 ${missing ? "border-red-300 ring-2 ring-red-100" : "border-slate-200"}`}
@@ -349,7 +354,7 @@ export function PublicSurveyPage() {
                   </span>
                   <div className="min-w-0 flex-1">
                     <div className="flex flex-wrap items-center gap-2">
-                      <legend className="text-sm font-semibold leading-6 text-slate-900">{question.question_text}</legend>
+                      <h2 id={`question-title-${question.id}`} className="text-sm font-semibold leading-6 text-slate-900">{question.question_text}</h2>
                       {question.required ? (
                         <span className="rounded-full bg-red-50 px-2 py-0.5 text-[10px] font-semibold text-red-700">จำเป็น</span>
                       ) : (
@@ -398,9 +403,10 @@ export function PublicSurveyPage() {
                     {(question.question_type === "single_choice" || question.question_type === "multi_choice") && (
                       <div className="mt-4 grid gap-2 sm:grid-cols-2">
                         {options.map((option) => {
+                          const currentAnswer = answers[question.id];
                           const selected = question.question_type === "multi_choice"
-                            ? Array.isArray(answers[question.id]) && answers[question.id].includes(option)
-                            : answers[question.id] === option;
+                            ? Array.isArray(currentAnswer) && currentAnswer.includes(option)
+                            : currentAnswer === option;
                           return (
                             <label key={option} className="group flex cursor-pointer items-center gap-3 rounded-xl border border-slate-200 bg-white p-3 text-sm text-slate-700 transition hover:border-[#a51f3a]/40 hover:bg-[#fffafb] has-[:checked]:border-[#a51f3a] has-[:checked]:bg-[#fff6f7]">
                               <input
@@ -440,7 +446,7 @@ export function PublicSurveyPage() {
                     )}
                   </div>
                 </div>
-              </fieldset>
+              </section>
             );
           })}
 
