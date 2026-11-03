@@ -171,7 +171,7 @@ export function SurveyManagementPage() {
       title,
       anonymous: true,
       enabled: true,
-      open_at: "2026-12-18T01:30:00.000Z",
+      open_at: "2026-12-18T08:45:00.000Z",
       close_at: "2026-12-25T16:59:59.000Z",
       welcome_text: welcomeText,
     });
@@ -243,7 +243,7 @@ export function SurveyManagementPage() {
           title: "แบบประเมินผลโครงการอบรมเชิงปฏิบัติการ",
           enabled: true,
           anonymous: true,
-          openAt: "2026-12-18T01:30:00.000Z",
+          openAt: "2026-12-18T08:45:00.000Z",
           closeAt: "2026-12-25T16:59:59.000Z",
           welcomeText: "แบบประเมินผลการอบรม",
         });
