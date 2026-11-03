@@ -15,7 +15,7 @@
 5. Select the survey and use **คัดลอกลิงก์** to copy its public response URL.
 6. Review the activity draft and event metadata in Activity Management before publishing the activity page.
 
-The public survey is scheduled to open at 08:30 on 18 Dec 2026 (UTC+7) and close at 23:59:59 on 25 Dec 2026 (UTC+7). The survey is anonymous and does not ask for names or phone numbers. Optional demographic questions are intentionally non-identifying.
+The public survey is scheduled to open at 15:45 on 18 Dec 2026 (UTC+7) and close at 23:59:59 on 25 Dec 2026 (UTC+7). The survey is anonymous and does not ask for names or phone numbers. Optional demographic questions are intentionally non-identifying.
 
 ## Survey sections
 1. General participant profile (age band, occupation, prior shellac experience, host plants)
