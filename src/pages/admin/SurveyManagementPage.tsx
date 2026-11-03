@@ -160,7 +160,7 @@ export function SurveyManagementPage() {
       const created = await createAdminSurvey({
         occurrenceId: occurrence.id,
         title: activityTitles[activityFilter]?.trim() || "แบบประเมินกิจกรรม",
-        enabled: true,
+        enabled: false,
         anonymous: false,
         openAt: null,
         closeAt: null,
@@ -170,7 +170,7 @@ export function SurveyManagementPage() {
       setSelected(created);
       resetDraft();
       setActiveTab("builder");
-      toast.success("สร้างแบบประเมินแล้ว");
+      toast.success("สร้างแบบประเมินแล้ว กรุณาเปิดใช้งานเมื่อพร้อมรับคำตอบ");
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "สร้างแบบประเมินไม่สำเร็จ");
     }
