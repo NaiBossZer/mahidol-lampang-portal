@@ -270,8 +270,8 @@ export function SurveyManagementPage() {
       const next = await installTemplateForSurvey(selected);
       setSelected(next);
       setSurveys((items) => items.map((item) => (item.id === selected.id ? next : item)));
-      setSurveyTitleDraft(title);
-      toast.success(`เพิ่มชุดคำถาม ${created.length} ข้อเรียบร้อยแล้ว`);
+      setSurveyTitleDraft(next.title ?? "");
+      toast.success(`เพิ่มชุดคำถาม ${next.questions.length} ข้อเรียบร้อยแล้ว`);
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "ติดตั้งชุดคำถามไม่สำเร็จ");
       await load();
