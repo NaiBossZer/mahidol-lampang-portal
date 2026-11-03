@@ -188,11 +188,7 @@
 .survey-management-design .survey-builder-layout > div:last-child { border-color: #e4e8ee; box-shadow: 0 2px 10px rgb(20 32 50 / 3%); }
 .survey-management-design .survey-question-item { border-radius: 12px; }
 .survey-management-design .survey-question-item:focus-within { border-color: #c98b98; box-shadow: 0 0 0 3px rgb(165 31 58 / 7%); }
-@media (max-width: 900px) {
-
-}
 @media (max-width: 640px) {
- .survey-management-design .survey-page-intro > header > div:last-child > * { flex: 1; }
  .survey-management-design .survey-workspace > [role="tablist"] { width: 100%; }
  .survey-management-design .survey-workspace > [role="tablist"] button { flex: 1; justify-content: center; padding-inline: .55rem; font-size: .7rem; }
  .survey-management-design .survey-filter-panel { padding: .8rem; }
