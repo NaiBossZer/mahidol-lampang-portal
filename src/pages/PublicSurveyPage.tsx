@@ -36,12 +36,12 @@ export function PublicSurveyPage() {
     try {
       const response = await fetch(`/api/survey?surveyId=${encodeURIComponent(id)}`);
       const body = await response.json();
-      if (!response.ok) throw new Error(body.error || "ไม่สามารถโหลดแบบสอบถามได้");
+      if (!response.ok) throw new Error(body.error || "ไม่สามารถโหลดแบบประเมินได้");
       setSurvey(body.data as PublicSurvey);
       setAnswers({});
       setConsent(false);
     } catch (e) {
-      setError(e instanceof Error ? e.message : "ไม่สามารถโหลดแบบสอบถามได้");
+      setError(e instanceof Error ? e.message : "ไม่สามารถโหลดแบบประเมินได้");
     } finally {
       setLoading(false);
     }
@@ -50,7 +50,7 @@ export function PublicSurveyPage() {
     fetch("/api/survey")
       .then(async (r) => {
         const body = await r.json();
-        if (!r.ok) throw new Error(body.error || "ไม่สามารถโหลดรายการแบบสอบถามได้");
+        if (!r.ok) throw new Error(body.error || "ไม่สามารถโหลดรายการแบบประเมินได้");
         return body.data as SurveySummary[];
       })
       .then((rows) => {
@@ -59,7 +59,7 @@ export function PublicSurveyPage() {
         else setLoading(false);
       })
       .catch((e) => {
-        setError(e instanceof Error ? e.message : "ไม่สามารถโหลดรายการแบบสอบถามได้");
+        setError(e instanceof Error ? e.message : "ไม่สามารถโหลดรายการแบบประเมินได้");
         setLoading(false);
       });
   }, [querySurveyId]);
@@ -79,7 +79,7 @@ export function PublicSurveyPage() {
           (Array.isArray(answers[q.id]) && answers[q.id].length === 0)),
     );
     if (missing.length) {
-      setError("กรุณาตอบคำถามที่จำเป็นให้ครบ");
+      setError("กรุณาตอบคำถามที่จำเป็นให้ครบถ้วน");
       return;
     }
     setSubmitting(true);
@@ -104,10 +104,10 @@ export function PublicSurveyPage() {
         }),
       });
       const body = await response.json();
-      if (!response.ok) throw new Error(body.error || "ส่งแบบสอบถามไม่สำเร็จ");
+      if (!response.ok) throw new Error(body.error || "ส่งแบบประเมินไม่สำเร็จ");
       setSubmitted(true);
     } catch (e) {
-      setError(e instanceof Error ? e.message : "ส่งแบบสอบถามไม่สำเร็จ");
+      setError(e instanceof Error ? e.message : "ส่งแบบประเมินไม่สำเร็จ");
     } finally {
       setSubmitting(false);
     }
@@ -117,7 +117,7 @@ export function PublicSurveyPage() {
       <div className="grid min-h-screen place-items-center bg-slate-50">
         <div className="flex items-center gap-2 text-sm font-semibold text-brand-navy">
           <Loader2 className="h-5 w-5 animate-spin" />
-          กำลังโหลดแบบสอบถาม...
+          กำลังโหลดแบบประเมิน...
         </div>
       </div>
     );
@@ -127,7 +127,7 @@ export function PublicSurveyPage() {
         <div className="max-w-md rounded-2xl border border-slate-200 bg-white p-8 text-center shadow-sm">
           <CheckCircle2 className="mx-auto h-14 w-14 text-emerald-600" />
           <h1 className="mt-4 text-2xl font-bold text-brand-navy">ขอบคุณสำหรับการประเมิน</h1>
-          <p className="mt-2 text-sm text-slate-600">ระบบบันทึกคำตอบลงฐานข้อมูลกลางเรียบร้อยแล้ว</p>
+          <p className="mt-2 text-sm text-slate-600">ระบบบันทึกคำตอบเรียบร้อยแล้ว ขอบคุณที่ร่วมประเมิน</p>
         </div>
       </div>
     );
@@ -137,14 +137,14 @@ export function PublicSurveyPage() {
         <div className="mx-auto max-w-3xl">
           <header className="rounded-2xl bg-brand-navy p-6 text-white">
             <p className="text-xs font-semibold uppercase tracking-[0.14em] text-emerald-300">
-              Mahidol Lampang · Survey
+              มหาวิทยาลัยมหิดล วิทยาเขตลำปาง · แบบประเมิน
             </p>
             <h1 className="mt-2 text-2xl font-bold">เลือกแบบประเมินกิจกรรม</h1>
           </header>
           <div className="mt-5 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
             {error && <p className="mb-4 rounded-xl bg-red-50 p-3 text-sm text-red-700">{error}</p>}
             {available.length === 0 ? (
-              <p className="text-sm text-slate-500">ขณะนี้ยังไม่มีแบบสอบถามที่เปิดรับคำตอบ</p>
+              <p className="text-sm text-slate-500">ขณะนี้ยังไม่มีแบบประเมินที่เปิดรับคำตอบ</p>
             ) : (
               <div className="space-y-2">
                 {available.map((item) => (
@@ -156,7 +156,7 @@ export function PublicSurveyPage() {
                   >
                     <p className="font-semibold text-brand-navy">{item.title || "แบบประเมินกิจกรรม"}</p>
                     <p className="mt-1 text-xs text-slate-500">
-                      {item.anonymous ? "Anonymous" : "Identified"}
+                      {item.anonymous ? "ไม่ระบุตัวตน" : "ระบุตัวตน"}
                     </p>
                   </button>
                 ))}
@@ -171,11 +171,11 @@ export function PublicSurveyPage() {
       <div className="mx-auto max-w-3xl">
         <header className="rounded-2xl bg-brand-navy p-6 text-white shadow-sm">
           <p className="text-xs font-semibold uppercase tracking-[0.14em] text-emerald-300">
-            Mahidol Lampang · Survey
+            มหาวิทยาลัยมหิดล วิทยาเขตลำปาง · แบบประเมิน
           </p>
           <h1 className="mt-2 text-2xl font-bold">{survey.title || "แบบประเมินกิจกรรม"}</h1>
           <p className="mt-2 text-sm text-white/80">
-            {survey.welcome_text || "ขอความร่วมมือในการประเมินกิจกรรม"}
+            {survey.welcome_text || "ขอความร่วมมือในการตอบแบบประเมินกิจกรรม"}
           </p>
         </header>
         <form onSubmit={submit} className="mt-5 space-y-4">
@@ -192,7 +192,7 @@ export function PublicSurveyPage() {
               </span>
             </label>
             <p className="mt-2 text-xs text-slate-500">
-              โหมดข้อมูล: {survey.anonymous ? "Anonymous" : "Identified"}
+              รูปแบบการเก็บข้อมูล: {survey.anonymous ? "ไม่ระบุตัวตน" : "ระบุตัวตน"}
             </p>
           </section>
           {survey.questions.map((q, index) => {
