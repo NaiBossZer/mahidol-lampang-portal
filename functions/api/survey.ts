@@ -34,12 +34,9 @@ async function isSurveyPubliclyAvailable(env: Env, survey: Row): Promise<boolean
     `activity_occurrences?id=eq.${encodeURIComponent(occurrenceId)}&select=id,activity_id,status`,
   );
   const occurrence = occurrences[0];
-  if (!occurrence || ["cancelled", "archived"].includes(String(occurrence.status))) return false;
-  const activities = await sb<Row[]>(
-    env,
-    `activities?id=eq.${encodeURIComponent(String(occurrence.activity_id))}&select=id,status`,
-  );
-  return ["published", "completed"].includes(String(activities[0]?.status));
+  // The public SELECT policy on activity_occurrences only exposes rows whose parent
+  // activity is published, so no direct public SELECT on activities is required.
+  return Boolean(occurrence && !["cancelled", "archived"].includes(String(occurrence.status)));
 }
 
 export async function onRequest({ request, env }: { request: Request; env: Env }) {
