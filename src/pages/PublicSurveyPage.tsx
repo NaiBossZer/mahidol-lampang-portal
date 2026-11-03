@@ -249,79 +249,101 @@ export function PublicSurveyPage() {
     );
   }
 
+  const sectionGroups = survey.questions.reduce<Array<{ key: string; title: string; questions: SurveyQuestion[] }>>(
+    (groups, question) => {
+      const key = question.section_key || "general";
+      let group = groups.find((item) => item.key === key);
+      if (!group) {
+        group = { key, title: key === "general" ? "คำถามประเมิน" : key.replace(/[_-]+/g, " "), questions: [] };
+        groups.push(group);
+      }
+      group.questions.push(question);
+      return groups;
+    },
+    [],
+  );
+
+  const activityTitle = (survey as PublicSurvey & { activity_title?: string | null }).activity_title;
+  const activityDate = (survey as PublicSurvey & { activity_date?: string | null }).activity_date;
+
   return (
-    <main className="min-h-screen bg-[#f7f7f4] px-3 py-5 sm:px-6 sm:py-10">
-      <div className="mx-auto max-w-3xl">
-        <header className="overflow-hidden rounded-3xl bg-[#002d62] text-white shadow-lg shadow-blue-950/10">
-          <div className="flex items-center justify-between gap-3 border-b border-white/10 px-5 py-4 sm:px-7">
-            <div>
-              <p className="text-[10px] font-bold tracking-[0.16em] text-blue-200 sm:text-xs">MAHIDOL UNIVERSITY</p>
-              <p className="mt-1 text-[11px] text-white/70 sm:text-xs">คณะสิ่งแวดล้อมและทรัพยากรศาสตร์ · งานพันธกิจเพื่อสังคม</p>
-            </div>
-            <span className="hidden rounded-full border border-white/20 bg-white/10 px-3 py-1.5 text-[11px] font-semibold text-white/90 sm:inline-flex">
-              แบบประเมินกิจกรรม
-            </span>
+    <main className="min-h-screen bg-[#fffdf7] pb-10 text-[#183153]">
+      <header className="w-full border-b-[3px] border-[#d6b34a] bg-[#102d55] text-white">
+        <div className="mx-auto flex min-h-[76px] w-full max-w-[560px] items-center gap-3 px-4 sm:px-0">
+          <div className="grid h-12 w-12 shrink-0 place-items-center rounded-full border border-[#8295ae] bg-[#173b68] shadow-inner">
+            <span className="font-serif text-base font-bold tracking-wide text-[#e5bd48]">MU</span>
           </div>
-          <div className="px-5 py-7 sm:px-7 sm:py-9">
-            <button
-              type="button"
-              onClick={() => {
-                setSurvey(null);
-                setAnswers({});
-                setConsent(false);
-                setError("");
-                setShowValidation(false);
-              }}
-              className="mb-5 inline-flex items-center gap-1.5 text-xs font-medium text-white/75 transition hover:text-white"
-            >
-              <ArrowLeft className="h-4 w-4" /> กลับไปเลือกรายการ
-            </button>
-            <div className="flex flex-wrap items-center gap-2">
-              <span className="rounded-full bg-white/10 px-3 py-1 text-[11px] font-semibold text-white/90">
-                แบบประเมิน
-              </span>
-              <span className="rounded-full bg-white/10 px-3 py-1 text-[11px] font-semibold text-white/90">
-                {survey.anonymous ? "ไม่ระบุตัวตน" : "มีการระบุตัวตน"}
-              </span>
+          <div className="min-w-0 flex-1">
+            <p className="text-sm font-bold leading-5 text-white">งานพันธกิจเพื่อสังคม</p>
+            <p className="text-[10px] font-medium leading-4 text-white/90">คณะสิ่งแวดล้อมและทรัพยากรศาสตร์</p>
+            <p className="text-[9px] leading-3 text-white/65">มหาวิทยาลัยมหิดล</p>
+          </div>
+          <span className="hidden items-center gap-2 rounded-md border border-white/20 bg-white/5 px-3 py-2 text-[10px] text-white/90 sm:inline-flex">
+            <ClipboardCheck className="h-3 w-3" /> ระบบแบบประเมินออนไลน์
+          </span>
+        </div>
+      </header>
+
+      <div className="mx-auto w-full max-w-[556px] px-3 pt-7 sm:px-0 sm:pt-12">
+        <div className="overflow-hidden rounded-[9px] border border-[#e8e3d8] bg-white shadow-[0_5px_18px_rgba(25,45,75,0.06)]">
+          <div className="grid min-h-[102px] grid-cols-1 sm:grid-cols-[1.8fr_1fr]">
+            <div className="border-l-[4px] border-[#b51f43] px-4 py-4 sm:px-5">
+              <p className="text-[9px] font-bold tracking-wide text-[#b51f43]">แบบประเมินกิจกรรม</p>
+              <h1 className="mt-2 text-[17px] font-semibold leading-6 text-[#12345b]">{survey.title || "แบบประเมินกิจกรรม"}</h1>
+              <p className="mt-1 text-[10px] leading-4 text-slate-500">
+                {survey.welcome_text || "แบบประเมินเพื่อรับฟังความคิดเห็นและนำไปพัฒนาการจัดกิจกรรมให้มีประสิทธิภาพยิ่งขึ้น"}
+              </p>
             </div>
-            <h1 className="mt-4 text-2xl font-bold leading-snug sm:text-3xl">{survey.title || "แบบประเมินกิจกรรม"}</h1>
-            <p className="mt-3 max-w-2xl text-sm leading-7 text-white/75">
-              {survey.welcome_text || "ขอความร่วมมือในการตอบแบบประเมินกิจกรรม เพื่อใช้เป็นข้อมูลในการพัฒนาและปรับปรุงการดำเนินงาน"}
+            <div className="border-t border-[#eee4d0] bg-[#fff8e9] px-4 py-4 sm:border-l sm:border-t-0">
+              <p className="flex items-center gap-2 text-[10px] font-bold text-[#b51f43]">
+                <ClipboardCheck className="h-3.5 w-3.5" /> กิจกรรม
+              </p>
+              <p className="mt-2 text-[11px] font-semibold leading-5 text-[#183153]">{activityTitle || "ข้อมูลกิจกรรม"}</p>
+              {activityDate && <p className="mt-1 text-[9px] text-slate-500">{activityDate}</p>}
+              <p className="mt-1 text-[9px] text-slate-400">ใช้เวลาประมาณ 3–5 นาที · {questionCount} คำถาม</p>
+            </div>
+          </div>
+        </div>
+
+        <section className="mt-3 flex items-start gap-3 rounded-[9px] border border-[#eee2c9] bg-[#fff8e9] px-3 py-3">
+          <span className="grid h-8 w-8 shrink-0 place-items-center rounded-md border border-[#f0dfbd] bg-white text-[#b51f43]">
+            <ClipboardCheck className="h-4 w-4" />
+          </span>
+          <div className="min-w-0">
+            <h2 className="text-[11px] font-semibold text-[#183153]">ยินดีต้อนรับสู่แบบประเมิน</h2>
+            <p className="mt-1 text-[9px] leading-4 text-slate-500">
+              กรุณาตอบคำถามตามความคิดเห็นของท่าน ข้อมูลคำตอบจะถูกเก็บเป็นความลับและใช้เพื่อการพัฒนากิจกรรมเท่านั้น
             </p>
           </div>
-          <div className="h-1.5 bg-[#a51f3a]" />
-        </header>
+        </section>
 
-        <section className="mt-4 rounded-2xl border border-slate-200 bg-white px-4 py-4 shadow-sm sm:px-5">
+        <section className="mt-3 rounded-[9px] border border-[#dce3ec] bg-white px-3 py-3">
           <div className="flex items-center justify-between gap-3">
             <div>
-              <p className="text-xs font-bold text-slate-800">ความคืบหน้าการตอบ</p>
-              <p className="mt-1 text-[11px] text-slate-500">ตอบแล้ว {answeredCount} จาก {questionCount} ข้อ</p>
+              <p className="text-[9px] font-semibold text-[#183153]">ความคืบหน้า</p>
+              <p className="mt-1 text-[8px] text-slate-400">ตอบแล้ว {answeredCount} จาก {questionCount} ข้อ</p>
             </div>
-            <span className="text-lg font-bold tabular-nums text-[#8f1831]">{progress}%</span>
-          </div>
-          <div className="mt-3 h-2 overflow-hidden rounded-full bg-slate-100" role="progressbar" aria-label="ความคืบหน้าการตอบแบบประเมิน" aria-valuemin={0} aria-valuemax={100} aria-valuenow={progress}>
-            <div className="h-full rounded-full bg-[#a51f3a] transition-all duration-300" style={{ width: `${progress}%` }} />
+            <div className="flex min-w-0 flex-1 items-center gap-3 pl-3">
+              <div className="h-[5px] flex-1 overflow-hidden rounded-full bg-[#edf1f5]" role="progressbar" aria-label="ความคืบหน้าการตอบแบบประเมิน" aria-valuemin={0} aria-valuemax={100} aria-valuenow={progress}>
+                <div className="h-full rounded-full bg-[#b51f43] transition-all" style={{ width: `${progress}%` }} />
+              </div>
+              <span className="text-[9px] font-bold tabular-nums text-[#b51f43]">{progress}%</span>
+            </div>
           </div>
         </section>
 
         <form onSubmit={submit} className="mt-4 space-y-4">
-          <section className="rounded-2xl border border-[#eadfe1] bg-white p-4 shadow-sm sm:p-5">
-            <div className="flex items-start gap-3">
-              <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-[#f9edf0] text-[#8f1831]">
-                <ShieldCheck className="h-5 w-5" />
-              </span>
-              <div className="min-w-0 flex-1">
-                <h2 className="text-sm font-bold text-slate-900">การคุ้มครองข้อมูลส่วนบุคคล</h2>
-                <p className="mt-1 text-xs leading-6 text-slate-600">
-                  โปรดอ่านและยืนยันความยินยอมก่อนส่งแบบประเมิน ข้อมูลจะถูกใช้เพื่อการวิเคราะห์และปรับปรุงกิจกรรมตามวัตถุประสงค์ที่แจ้งไว้
-                </p>
-                <p className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-slate-100 px-2.5 py-1 text-[11px] font-medium text-slate-600">
-                  <LockKeyhole className="h-3 w-3" /> รูปแบบการเก็บข้อมูล: {survey.anonymous ? "ไม่ระบุตัวตน" : "ระบุตัวตน"}
+          <section className="rounded-[9px] border border-[#e5e9ef] bg-white p-3">
+            <div className="flex items-start gap-2">
+              <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-[#b51f43]" />
+              <div>
+                <h2 className="text-[10px] font-semibold text-[#183153]">การคุ้มครองข้อมูลส่วนบุคคล (PDPA)</h2>
+                <p className="mt-1 text-[9px] leading-4 text-slate-500">
+                  ข้อมูลจะถูกใช้เพื่อการวิเคราะห์และปรับปรุงกิจกรรมตามวัตถุประสงค์ที่แจ้งไว้
                 </p>
               </div>
             </div>
-            <label className="mt-4 flex cursor-pointer items-start gap-3 rounded-xl border border-slate-200 bg-slate-50 p-3.5 text-xs leading-6 text-slate-700 transition hover:border-[#a51f3a]/30">
+            <label className="mt-3 flex cursor-pointer items-start gap-2 rounded-md border border-[#e5e9ef] bg-[#fafbfc] p-2.5 text-[9px] leading-4 text-slate-600">
               <input
                 type="checkbox"
                 checked={consent}
@@ -329,154 +351,137 @@ export function PublicSurveyPage() {
                   setConsent(event.target.checked);
                   setError("");
                 }}
-                className="mt-1 h-4 w-4 shrink-0 accent-[#8f1831]"
+                className="mt-0.5 h-3.5 w-3.5 shrink-0 accent-[#b51f43]"
               />
               <span>ข้าพเจ้ายอมรับข้อตกลงความเป็นส่วนตัวและยินยอมให้ใช้ข้อมูลเพื่อการวิเคราะห์และปรับปรุงกิจกรรม</span>
             </label>
-            {!consent && error.includes("ความเป็นส่วนตัว") && (
-              <p className="mt-2 text-xs font-medium text-red-600" role="alert">กรุณายืนยันความยินยอมก่อนดำเนินการต่อ</p>
-            )}
           </section>
 
-          {survey.questions.map((question, index) => {
-            const options = choiceOptions(question);
-            const missing = showValidation && missingQuestionIds.has(question.id);
-            return (
-              <section
-                role="group"
-                aria-labelledby={`question-title-${question.id}`}
-                key={question.id}
-                id={`survey-question-${question.id}`}
-                className={`rounded-2xl border bg-white p-4 shadow-sm transition sm:p-5 ${missing ? "border-red-300 ring-2 ring-red-100" : "border-slate-200"}`}
-                aria-describedby={missing ? `question-error-${question.id}` : undefined}
-              >
-                <div className="flex items-start gap-3">
-                  <span className="grid h-8 w-8 shrink-0 place-items-center rounded-xl bg-[#f9edf0] text-xs font-bold text-[#8f1831]">
-                    {String(index + 1).padStart(2, "0")}
-                  </span>
-                  <div className="min-w-0 flex-1">
-                    <div className="flex flex-wrap items-center gap-2">
-                      <h2 id={`question-title-${question.id}`} className="text-sm font-semibold leading-6 text-slate-900">{question.question_text}</h2>
-                      {question.required ? (
-                        <span className="rounded-full bg-red-50 px-2 py-0.5 text-[10px] font-semibold text-red-700">จำเป็น</span>
-                      ) : (
-                        <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-medium text-slate-500">ไม่บังคับ</span>
-                      )}
-                    </div>
-                    {question.question_type === "rating" && (
-                      <div className="mt-4 grid grid-cols-[repeat(auto-fit,minmax(2.75rem,1fr))] gap-2">
-                        {Array.from(
-                          { length: Math.max(0, question.scale_max - question.scale_min + 1) },
-                          (_, i) => question.scale_min + i,
-                        ).map((score) => (
-                          <label key={score} className="group cursor-pointer">
-                            <input
-                              type="radio"
-                              name={question.id}
-                              value={score}
-                              checked={answers[question.id] === String(score)}
-                              onChange={() => setAnswer(question, String(score))}
-                              className="peer sr-only"
-                            />
-                            <span className="grid min-h-12 place-items-center rounded-xl border border-slate-200 bg-white text-sm font-semibold text-slate-700 transition group-hover:border-[#a51f3a]/40 group-hover:bg-[#fffafb] peer-checked:border-[#8f1831] peer-checked:bg-[#8f1831] peer-checked:text-white peer-focus-visible:ring-4 peer-focus-visible:ring-[#a51f3a]/15">
-                              {score}
-                            </span>
-                          </label>
-                        ))}
-                      </div>
-                    )}
-                    {question.question_type === "rating" && (
-                      <div className="mt-2 flex justify-between text-[10px] text-slate-400">
-                        <span>คะแนนต่ำสุด {question.scale_min}</span>
-                        <span>คะแนนสูงสุด {question.scale_max}</span>
-                      </div>
-                    )}
-                    {question.question_type === "text" && (
-                      <textarea
-                        value={String(answers[question.id] ?? "")}
-                        onChange={(event) => setAnswer(question, event.target.value)}
-                        rows={4}
-                        placeholder="พิมพ์ความคิดเห็นหรือข้อเสนอแนะของท่าน..."
-                        className="mt-4 w-full resize-y rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm leading-6 text-slate-800 outline-none transition placeholder:text-slate-400 focus:border-[#a51f3a]/60 focus:bg-white focus:ring-4 focus:ring-[#a51f3a]/10"
-                      />
-                    )}
-                    {(question.question_type === "single_choice" || question.question_type === "multi_choice") && (
-                      <div className="mt-4 grid gap-2 sm:grid-cols-2">
-                        {options.map((option) => {
-                          const currentAnswer = answers[question.id];
-                          const selected = question.question_type === "multi_choice"
-                            ? Array.isArray(currentAnswer) && currentAnswer.includes(option)
-                            : currentAnswer === option;
-                          return (
-                            <label key={option} className="group flex cursor-pointer items-center gap-3 rounded-xl border border-slate-200 bg-white p-3 text-sm text-slate-700 transition hover:border-[#a51f3a]/40 hover:bg-[#fffafb] has-[:checked]:border-[#a51f3a] has-[:checked]:bg-[#fff6f7]">
-                              <input
-                                type={question.question_type === "multi_choice" ? "checkbox" : "radio"}
-                                name={question.id}
-                                value={option}
-                                checked={selected}
-                                onChange={() => {
-                                  if (question.question_type === "multi_choice") {
-                                    setError("");
-                                    setAnswers((current) => {
-                                      const value = current[question.id];
-                                      const selectedOptions = Array.isArray(value) ? value : [];
-                                      return {
-                                        ...current,
-                                        [question.id]: selectedOptions.includes(option)
-                                          ? selectedOptions.filter((item) => item !== option)
-                                          : [...selectedOptions, option],
-                                      };
-                                    });
-                                  } else {
-                                    setAnswer(question, option);
-                                  }
-                                }}
-                                className="h-4 w-4 shrink-0 accent-[#8f1831]"
-                              />
-                              <span>{option}</span>
-                            </label>
-                          );
-                        })}
-                      </div>
-                    )}
-                    {missing && (
-                      <p id={`question-error-${question.id}`} className="mt-3 flex items-center gap-1.5 text-xs font-medium text-red-600">
-                        <AlertCircle className="h-3.5 w-3.5" /> กรุณาตอบคำถามนี้
-                      </p>
-                    )}
-                  </div>
-                </div>
-              </section>
-            );
-          })}
-
-          {error && (
-            <div className="flex items-start gap-2 rounded-xl border border-red-200 bg-red-50 p-3.5 text-sm text-red-700" role="alert">
-              <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" /> {error}
-            </div>
-          )}
-
-          <section className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5">
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-              <div>
-                <p className="text-sm font-bold text-slate-900">ตรวจสอบคำตอบก่อนส่ง</p>
-                <p className="mt-1 text-xs text-slate-500">ตอบแล้ว {answeredCount} จาก {questionCount} ข้อ · {progress}%</p>
+          {sectionGroups.map((group) => (
+            <section key={group.key}>
+              <div className="mb-2 flex items-center gap-2">
+                <h2 className="shrink-0 text-[10px] font-bold text-[#b51f43]">{group.title}</h2>
+                <div className="h-px flex-1 bg-[#e8e2d9]" />
               </div>
-              <button
-                type="submit"
-                disabled={submitting || !consent}
-                className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-[#8f1831] px-6 py-3 text-sm font-bold text-white shadow-sm transition hover:bg-[#741329] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#a51f3a]/20 disabled:cursor-not-allowed disabled:bg-slate-300 sm:w-auto"
-              >
-                {submitting ? <><Loader2 className="h-4 w-4 animate-spin" /> กำลังส่งคำตอบ...</> : <><ClipboardCheck className="h-4 w-4" /> ส่งแบบประเมิน</>}
-              </button>
+              <div className="space-y-3">
+                {group.questions.map((question) => {
+                  const options = choiceOptions(question);
+                  const missing = showValidation && missingQuestionIds.has(question.id);
+                  return (
+                    <section
+                      role="group"
+                      aria-labelledby={`question-title-${question.id}`}
+                      key={question.id}
+                      id={`survey-question-${question.id}`}
+                      className={`rounded-[9px] border bg-white px-3 py-3 shadow-[0_2px_8px_rgba(25,45,75,0.025)] ${missing ? "border-red-300 ring-2 ring-red-100" : "border-[#e0e6ed]"}`}
+                      aria-describedby={missing ? `question-error-${question.id}` : undefined}
+                    >
+                      <div className="flex items-start gap-2">
+                        <div className="min-w-0 flex-1">
+                          <h3 id={`question-title-${question.id}`} className="text-[10px] font-semibold leading-5 text-[#183153]">
+                            {question.order_index}. {question.question_text}{question.required && <span className="ml-1 text-[#b51f43]">*</span>}
+                          </h3>
+                          {question.question_type === "rating" && (
+                            <>
+                              <div className="mt-2 flex items-center justify-between text-[8px] text-slate-400">
+                                <span>น้อยที่สุด</span><span>มากที่สุด</span>
+                              </div>
+                              <div className="mt-1 flex flex-wrap gap-1.5">
+                                {Array.from({ length: Math.max(0, question.scale_max - question.scale_min + 1) }, (_, i) => question.scale_min + i).map((score) => (
+                                  <label key={score} className="cursor-pointer">
+                                    <input
+                                      type="radio"
+                                      name={question.id}
+                                      value={score}
+                                      checked={answers[question.id] === String(score)}
+                                      onChange={() => setAnswer(question, String(score))}
+                                      className="peer sr-only"
+                                    />
+                                    <span className="grid h-8 w-10 place-items-center rounded-[5px] border border-[#d4dce6] bg-white text-[10px] font-medium text-[#183153] transition peer-checked:border-[#b51f43] peer-checked:bg-[#b51f43] peer-checked:text-white peer-focus-visible:ring-2 peer-focus-visible:ring-[#b51f43]/20">
+                                      {score}
+                                    </span>
+                                  </label>
+                                ))}
+                              </div>
+                            </>
+                          )}
+                          {question.question_type === "text" && (
+                            <textarea
+                              value={String(answers[question.id] ?? "")}
+                              onChange={(event) => setAnswer(question, event.target.value)}
+                              rows={3}
+                              placeholder="พิมพ์ความคิดเห็นหรือข้อเสนอแนะของท่าน..."
+                              className="mt-2 w-full rounded-md border border-[#d4dce6] bg-white px-3 py-2 text-[11px] leading-5 outline-none focus:border-[#b51f43] focus:ring-2 focus:ring-[#b51f43]/10"
+                            />
+                          )}
+                          {(question.question_type === "single_choice" || question.question_type === "multi_choice") && (
+                            <div className="mt-2 grid gap-2 sm:grid-cols-2">
+                              {options.map((option) => {
+                                const current = answers[question.id];
+                                const selected = question.question_type === "multi_choice"
+                                  ? Array.isArray(current) && current.includes(option)
+                                  : current === option;
+                                return (
+                                  <label key={option} className="flex cursor-pointer items-center gap-2 rounded-md border border-[#d4dce6] px-3 py-2 text-[10px] text-slate-700 has-[:checked]:border-[#b51f43] has-[:checked]:bg-[#fff8f9]">
+                                    <input
+                                      type={question.question_type === "multi_choice" ? "checkbox" : "radio"}
+                                      name={question.id}
+                                      value={option}
+                                      checked={selected}
+                                      onChange={() => {
+                                        if (question.question_type === "multi_choice") {
+                                          setError("");
+                                          setAnswers((currentAnswers) => {
+                                            const value = currentAnswers[question.id];
+                                            const selectedOptions = Array.isArray(value) ? value : [];
+                                            return {
+                                              ...currentAnswers,
+                                              [question.id]: selectedOptions.includes(option)
+                                                ? selectedOptions.filter((item) => item !== option)
+                                                : [...selectedOptions, option],
+                                            };
+                                          });
+                                        } else {
+                                          setAnswer(question, option);
+                                        }
+                                      }}
+                                      className="h-3.5 w-3.5 shrink-0 accent-[#b51f43]"
+                                    />
+                                    <span>{option}</span>
+                                  </label>
+                                );
+                              })}
+                            </div>
+                          )}
+                          {missing && <p id={`question-error-${question.id}`} className="mt-2 text-[9px] font-medium text-red-600">กรุณาตอบคำถามนี้</p>}
+                        </div>
+                      </div>
+                    </section>
+                  );
+                })}
+              </div>
+            </section>
+          ))}
+
+          {error && <p className="rounded-md border border-red-200 bg-red-50 p-3 text-[10px] text-red-700" role="alert">{error}</p>}
+
+          <section className="flex flex-col gap-3 rounded-[9px] border border-[#e0e6ed] bg-white p-3 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <p className="text-[10px] font-semibold text-[#183153]">ตรวจสอบคำตอบก่อนส่ง</p>
+              <p className="mt-1 text-[9px] text-slate-500">ตอบแล้ว {answeredCount} จาก {questionCount} ข้อ</p>
             </div>
-            {!consent && <p className="mt-2 text-[11px] text-slate-400">กรุณายืนยันข้อตกลงความเป็นส่วนตัวเพื่อเปิดใช้งานปุ่มส่ง</p>}
+            <button
+              type="submit"
+              disabled={submitting || !consent}
+              className="inline-flex min-h-9 items-center justify-center gap-2 rounded-md bg-[#b51f43] px-5 py-2 text-[10px] font-semibold text-white transition hover:bg-[#941934] disabled:cursor-not-allowed disabled:bg-slate-300"
+            >
+              {submitting ? <><Loader2 className="h-3.5 w-3.5 animate-spin" /> กำลังส่งคำตอบ...</> : "ส่งแบบประเมิน"}
+            </button>
           </section>
         </form>
 
-        <footer className="px-3 py-6 text-center">
-          <p className="text-[11px] font-medium text-slate-500">มหาวิทยาลัยมหิดล · คณะสิ่งแวดล้อมและทรัพยากรศาสตร์</p>
-          <p className="mt-1 text-[10px] text-slate-400">งานพันธกิจเพื่อสังคม · ระบบแบบประเมินกิจกรรม</p>
+        <footer className="mt-6 border-t border-[#e8e2d9] pt-4 text-center text-[9px] leading-4 text-slate-400">
+          มหาวิทยาลัยมหิดล · คณะสิ่งแวดล้อมและทรัพยากรศาสตร์ · งานพันธกิจเพื่อสังคม
         </footer>
       </div>
     </main>
