@@ -186,13 +186,14 @@ export function SurveyManagementPage() {
       const location =
         "คณะสิ่งแวดล้อมและทรัพยากรศาสตร์ มหาวิทยาลัยมหิดล อำเภอสบปราบ จังหวัดลำปาง";
       const activities = await getAdminActivities();
-      let activity = activities.find((item) =>
-        item.title.includes("ครั่งสร้างรายได้ สู้โลกร้อน"),
+      let activity = activities.find(
+        (item) =>
+          item.title.includes("ครั่งสร้างรายได้ สู้โลกร้อน") && item.status !== "archived",
       );
       if (!activity) {
         activity = await createActivity({
           title,
-          slug: "shellac-income-climate-workshop-2026",
+          slug: `shellac-income-climate-workshop-2026-${Date.now()}`,
           summary: "อบรมเชิงปฏิบัติการการปล่อยเลี้ยงครั่ง การจัดการครั่งอย่างยั่งยืน และการสร้างรายได้ในชุมชน",
           content: "กิจกรรมประกอบด้วยการบรรยายวงจรชีวิตครั่งและพืชอาศัย เทคนิคการปล่อยเลี้ยง การดูแลแปลง การเก็บเกี่ยวและคัดคุณภาพผลผลิต การตลาด การสาธิต และการฝึกปฏิบัติในแปลงสาธิต",
           activityDate: "2026-12-18",
@@ -207,11 +208,17 @@ export function SurveyManagementPage() {
       }
 
       let occurrences = await getAdminOccurrences(activity.id);
-      let occurrence = occurrences.find((item) => item.start_at.startsWith("2026-12-18"));
+      let occurrence = occurrences.find(
+        (item) =>
+          item.start_at.startsWith("2026-12-18") &&
+          !["cancelled", "archived"].includes(item.status),
+      );
       if (!occurrence) {
+        const nextOccurrenceNo =
+          occurrences.reduce((max, item) => Math.max(max, item.occurrence_no), 0) + 1;
         await createAdminOccurrence({
           activityId: activity.id,
-          occurrenceNo: 1,
+          occurrenceNo: nextOccurrenceNo,
           startAt: "2026-12-18T08:30:00+07:00",
           endAt: "2026-12-18T16:00:00+07:00",
           status: "scheduled",
@@ -220,7 +227,11 @@ export function SurveyManagementPage() {
           location_detail: location,
         });
         occurrences = await getAdminOccurrences(activity.id);
-        occurrence = occurrences.find((item) => item.start_at.startsWith("2026-12-18"));
+        occurrence = occurrences.find(
+          (item) =>
+            item.start_at.startsWith("2026-12-18") &&
+            !["cancelled", "archived"].includes(item.status),
+        );
       }
       if (!occurrence) throw new Error("สร้างรอบกิจกรรมไม่สำเร็จ");
 
