@@ -1,8 +1,9 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { Plus, RefreshCw, Save, Sparkles, Trash2 } from "lucide-react";
+import { ClipboardList, Copy, Plus, RefreshCw, Save, Sparkles, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { type ActivityOccurrence } from "@/services/admin-occurrences";
+import { shellacWorkshopSurveyTemplate } from "@/services/shellac-workshop-survey-template";
 import {
   createAdminQuestion,
   createAdminSurvey,
@@ -46,6 +47,7 @@ export function SurveyManagementPage() {
   const [loading, setLoading] = useState(true);
   const [surveyTitleDraft, setSurveyTitleDraft] = useState("");
   const [surveyTitleSaving, setSurveyTitleSaving] = useState(false);
+  const [templateApplying, setTemplateApplying] = useState(false);
 
   async function load() {
     setLoading(true);
@@ -133,7 +135,7 @@ export function SurveyManagementPage() {
         occurrenceId: occurrence.id,
         title: activityTitles[activityFilter]?.trim() || "แบบประเมินกิจกรรม",
         enabled: true,
-        anonymous: false,
+        anonymous: true,
         openAt: null,
         closeAt: null,
         welcomeText: "ขอความร่วมมือประเมินกิจกรรม",
@@ -144,6 +146,56 @@ export function SurveyManagementPage() {
       toast.success("สร้างแบบประเมินแล้ว");
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "สร้างแบบประเมินไม่สำเร็จ");
+    }
+  }
+
+  async function applyShellacTemplate() {
+    if (!selected) return;
+    if (selected.questions.length > 0) {
+      toast.error("ใช้ชุดคำถามนี้ได้กับแบบประเมินที่ยังไม่มีคำถามเท่านั้น");
+      return;
+    }
+    setTemplateApplying(true);
+    try {
+      const created: SurveyQuestion[] = [];
+      for (const question of shellacWorkshopSurveyTemplate) {
+        const saved = await createAdminQuestion({
+          ...question,
+          survey_id: selected.id,
+          active: true,
+        });
+        created.push(saved);
+      }
+      const title =
+        "แบบประเมินผลโครงการอบรมเชิงปฏิบัติการ “ครั่งสร้างรายได้ สู้โลกร้อน: การปล่อยเลี้ยงครั่งและการจัดการครั่งอย่างยั่งยืน”";
+      const welcomeText =
+        "วันศุกร์ที่ 18 ธันวาคม 2569 เวลา 08.30–16.00 น. ณ คณะสิ่งแวดล้อมและทรัพยากรศาสตร์ มหาวิทยาลัยมหิดล อำเภอสบปราบ จังหวัดลำปาง แบบประเมินนี้ใช้เพื่อประเมินการจัดอบรม ความรู้และทักษะที่ได้รับ ตลอดจนแนวทางนำไปใช้ในพื้นที่ ระดับคะแนน 1 = น้อยที่สุด และ 5 = มากที่สุด";
+      const updated = await updateAdminSurvey(selected.id, {
+        title,
+        anonymous: true,
+        welcome_text: welcomeText,
+      });
+      const next = { ...selected, ...updated, questions: created };
+      setSelected(next);
+      setSurveys((items) => items.map((item) => (item.id === selected.id ? next : item)));
+      setSurveyTitleDraft(title);
+      toast.success(`เพิ่มชุดคำถาม ${created.length} ข้อเรียบร้อยแล้ว`);
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "ติดตั้งชุดคำถามไม่สำเร็จ");
+      await load();
+    } finally {
+      setTemplateApplying(false);
+    }
+  }
+
+  async function copyPublicSurveyLink() {
+    if (!selected) return;
+    const link = `${window.location.origin}/survey?surveyId=${encodeURIComponent(selected.id)}`;
+    try {
+      await navigator.clipboard.writeText(link);
+      toast.success("คัดลอกลิงก์แบบประเมินแล้ว");
+    } catch {
+      toast.error("ไม่สามารถคัดลอกลิงก์ได้ กรุณาคัดลอกจากแถบที่อยู่");
     }
   }
 
@@ -440,7 +492,22 @@ export function SurveyManagementPage() {
                       </p>
                     )}
                   </div>
-                  <div className="flex items-center gap-2">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <AdminButton
+                      variant="secondary"
+                      icon={<Copy className="h-4 w-4" />}
+                      onClick={() => void copyPublicSurveyLink()}
+                    >
+                      คัดลอกลิงก์
+                    </AdminButton>
+                    <AdminButton
+                      variant="secondary"
+                      icon={<ClipboardList className="h-4 w-4" />}
+                      onClick={() => void applyShellacTemplate()}
+                      disabled={templateApplying || selected.questions.length > 0}
+                    >
+                      {templateApplying ? "กำลังติดตั้ง..." : "ติดตั้งชุดคำถามครั่ง"}
+                    </AdminButton>
                     <AdminStatusBadge tone={selected.enabled ? "success" : "neutral"}>
                       {selected.enabled ? "Published" : "Disabled"}
                     </AdminStatusBadge>
@@ -672,7 +739,7 @@ export function SurveyManagementPage() {
                 <div className="mt-5 flex items-center justify-between gap-3">
                   <div>
                     <h3 className="text-sm font-bold text-slate-900">รายการคำถาม</h3>
-                    <p className="mt-0.5 text-xs text-slate-500">คลิกคำถามเพื่อแก้ไข</p>
+                    <p className="mt-0.5 text-xs text-slate-500">คลิกคำถามเพื่อแก้ไข · แบ่งหมวดตามเนื้อหาการอบรม</p>
                   </div>
                   <span className="text-xs font-semibold text-slate-400">
                     {selected.questions.length} ข้อ
