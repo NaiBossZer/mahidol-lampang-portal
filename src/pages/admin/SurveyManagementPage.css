@@ -158,29 +158,6 @@
   max-width: 90rem; color: #252a35;
   --survey-lac-deep: #8f1831; --survey-lac-wash: #fbf1f2; --survey-cream-soft: #fffaf0;
 }
-.survey-management-design .survey-page-intro {
-  position: relative; display: flex; align-items: center; justify-content: space-between; gap: 1.5rem;
-  margin: -.25rem 0 1.35rem; padding: 1.45rem 1.55rem; overflow: hidden;
-  border: 1px solid #eadfe0; border-left: 5px solid var(--survey-lac); border-radius: 15px;
-  background: linear-gradient(112deg, #fffaf1 0%, #fff 62%, #f8fafd 100%);
-}
-.survey-management-design .survey-page-intro::after {
-  position: absolute; right: -3.5rem; top: -5rem; width: 14rem; height: 14rem;
-  border: 1px solid rgb(165 31 58 / 9%); border-radius: 50%;
-  box-shadow: 0 0 0 1.5rem rgb(165 31 58 / 2%), 0 0 0 3rem rgb(165 31 58 / 1%);
-  content: ""; pointer-events: none;
-}
-.survey-management-design .survey-page-intro > header { position: relative; z-index: 1; flex: 1; margin: 0; }
-.survey-management-design .survey-page-intro > header h1 { color: #202b3b; font-size: clamp(1.45rem, 2vw, 1.9rem); letter-spacing: -.035em; }
-.survey-management-design .survey-page-intro > header > div:last-child { gap: .55rem; }
-.survey-management-design .survey-page-intro__note {
-  position: relative; z-index: 1; display: flex; align-items: center; gap: .75rem; min-width: 17rem;
-  padding: .75rem .9rem; border: 1px solid #eee1d2; border-radius: 11px; background: rgb(255 255 255 / 82%);
-}
-.survey-management-design .survey-page-intro__mark { display: grid; width: 2.5rem; height: 2.5rem; place-items: center; flex: none; border-radius: 9px; color: var(--survey-lac); background: #f9e7eb; }
-.survey-management-design .survey-page-intro__note strong,.survey-management-design .survey-page-intro__note small { display: block; }
-.survey-management-design .survey-page-intro__note strong { color: #263347; font-size: .76rem; }
-.survey-management-design .survey-page-intro__note small { margin-top: .18rem; color: #788292; font-size: .62rem; line-height: 1.5; }
 .survey-management-design .survey-workspace { min-width: 0; }
 .survey-management-design .survey-workspace > [role="tablist"] {
   display: flex; gap: .35rem; width: fit-content; max-width: 100%; margin-bottom: 1.15rem; padding: .35rem;
@@ -212,13 +189,9 @@
 .survey-management-design .survey-question-item { border-radius: 12px; }
 .survey-management-design .survey-question-item:focus-within { border-color: #c98b98; box-shadow: 0 0 0 3px rgb(165 31 58 / 7%); }
 @media (max-width: 900px) {
- .survey-management-design .survey-page-intro { align-items: flex-start; flex-direction: column; }
- .survey-management-design .survey-page-intro__note { width: 100%; }
+
 }
 @media (max-width: 640px) {
- .survey-management-design .survey-page-intro { padding: 1rem; }
- .survey-management-design .survey-page-intro > header { width: 100%; }
- .survey-management-design .survey-page-intro > header > div:last-child { width: 100%; flex-wrap: wrap; }
  .survey-management-design .survey-page-intro > header > div:last-child > * { flex: 1; }
  .survey-management-design .survey-workspace > [role="tablist"] { width: 100%; }
  .survey-management-design .survey-workspace > [role="tablist"] button { flex: 1; justify-content: center; padding-inline: .55rem; font-size: .7rem; }
