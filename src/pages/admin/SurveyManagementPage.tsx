@@ -306,10 +306,10 @@ export function SurveyManagementPage() {
       anchor.click();
       anchor.remove();
       URL.revokeObjectURL(objectUrl);
-      toast.success("ดาวน์โหลด QR Code แล้ว");
+      toast.success("ดาวน์โหลดคิวอาร์โค้ดแล้ว");
     } catch {
       window.open(qrImageUrl, "_blank", "noopener,noreferrer");
-      toast.info("เปิด QR Code ในแท็บใหม่แล้ว สามารถบันทึกรูปภาพได้");
+      toast.info("เปิดคิวอาร์โค้ดในแท็บใหม่แล้ว สามารถบันทึกรูปภาพได้");
     } finally {
       setQrDownloading(false);
     }
@@ -490,7 +490,7 @@ export function SurveyManagementPage() {
                       <td className="px-4 py-3">
                         <div className="flex items-center justify-center gap-1.5">
                           <button type="button" onClick={() => setPreviewSurvey(survey)} className="inline-flex min-h-9 items-center gap-1.5 rounded-lg border border-slate-200 px-2.5 text-xs font-semibold text-slate-700 hover:border-blue-200 hover:bg-blue-50 hover:text-[#1455a0]">
-                            <Eye className="h-3.5 w-3.5" /> Preview
+                            <Eye className="h-3.5 w-3.5" /> ดูตัวอย่าง
                           </button>
                           <button type="button" onClick={() => openSurveyQr(survey)} disabled={!survey.enabled} className="inline-flex min-h-9 items-center gap-1.5 rounded-lg border border-slate-200 px-2.5 text-xs font-semibold text-slate-700 hover:border-blue-200 hover:bg-blue-50 hover:text-[#1455a0] disabled:cursor-not-allowed disabled:opacity-40">
                             <QrCode className="h-3.5 w-3.5" /> คิวอาร์โค้ด
@@ -888,10 +888,10 @@ export function SurveyManagementPage() {
                 <h2 id="survey-qr-title" className="mt-1 text-xl font-bold text-[#002d62]">คิวอาร์โค้ดแบบประเมิน</h2>
                 <p className="mt-1 text-sm text-slate-600">{qrSurvey.title || "แบบประเมินกิจกรรม"}</p>
               </div>
-              <button type="button" onClick={() => setQrSurvey(null)} className="rounded-lg p-2 text-slate-500 hover:bg-slate-100" aria-label="ปิด QR Code"><X className="h-5 w-5" /></button>
+              <button type="button" onClick={() => setQrSurvey(null)} className="rounded-lg p-2 text-slate-500 hover:bg-slate-100" aria-label="ปิดคิวอาร์โค้ด"><X className="h-5 w-5" /></button>
             </div>
             <div className="mt-5 grid place-items-center rounded-2xl border border-slate-200 bg-white p-5">
-              <img src={qrImageUrl} alt="QR Code สำหรับเปิดแบบประเมิน" className="h-64 w-64 max-w-full object-contain" />
+              <img src={qrImageUrl} alt="คิวอาร์โค้ดสำหรับเปิดแบบประเมิน" className="h-64 w-64 max-w-full object-contain" />
               <p className="mt-3 text-center text-sm font-semibold text-slate-800">สแกนเพื่อเปิดแบบประเมิน</p>
               <p className="mt-1 text-center text-xs text-slate-500">ผู้ตอบสามารถส่งคำตอบได้โดยไม่ต้องเข้าสู่ระบบ</p>
             </div>
@@ -943,7 +943,7 @@ function SurveyPreviewModal({ survey, onClose }: { survey: AdminSurvey; onClose:
               {(question.question_type === "single_choice" || question.question_type === "multi_choice") && <div className="mt-3 space-y-2">{(Array.isArray(question.options) ? question.options : []).map((option, i) => <label key={i} className="flex items-center gap-2 text-sm text-slate-700"><input type={question.question_type === "multi_choice" ? "checkbox" : "radio"} disabled />{String(option)}</label>)}</div>}
             </section>
           ))}
-          <div className="rounded-xl border border-blue-100 bg-blue-50 p-3 text-xs text-blue-800">นี่คือโหมด Preview เท่านั้น ปุ่มส่งคำตอบถูกปิดไว้และไม่มีการบันทึกข้อมูล</div>
+          <div className="rounded-xl border border-blue-100 bg-blue-50 p-3 text-xs text-blue-800">นี่เป็นเพียงหน้าตัวอย่าง ปุ่มส่งคำตอบถูกปิดไว้และไม่มีการบันทึกข้อมูล</div>
         </div>
       </div>
     </div>
