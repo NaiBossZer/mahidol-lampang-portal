@@ -86,7 +86,7 @@ export function PublicSurveyPage() {
       (q) =>
         q.required &&
         (answers[q.id] === undefined ||
-          answers[q.id] === "" ||
+          (typeof answers[q.id] === "string" && !answers[q.id].trim()) ||
           (Array.isArray(answers[q.id]) && answers[q.id].length === 0)),
     );
     if (missing.length) {
