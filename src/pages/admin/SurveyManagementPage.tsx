@@ -142,8 +142,9 @@ export function SurveyManagementPage() {
         closeAt: null,
         welcomeText: "ขอความร่วมมือประเมินกิจกรรม",
       });
-      setSurveys((items) => [created, ...items]);
-      setSelected(created);
+      const initialized = { ...created, questions: [] };
+      setSurveys((items) => [initialized, ...items]);
+      setSelected(initialized);
       resetDraft();
       toast.success("สร้างแบบประเมินแล้ว");
     } catch (e) {
@@ -226,7 +227,7 @@ export function SurveyManagementPage() {
       const existingSurveys = await getAdminSurveys(occurrence.id);
       let survey = existingSurveys[0];
       if (!survey) {
-        survey = await createAdminSurvey({
+        const created = await createAdminSurvey({
           occurrenceId: occurrence.id,
           title: "แบบประเมินผลโครงการอบรมเชิงปฏิบัติการ",
           enabled: true,
@@ -235,6 +236,7 @@ export function SurveyManagementPage() {
           closeAt: "2026-12-25T16:59:59.000Z",
           welcomeText: "แบบประเมินผลการอบรม",
         });
+        survey = { ...created, questions: [] };
       }
       survey = await installTemplateForSurvey(survey);
       setActivityTitles((current) => ({ ...current, [activity.id]: activity.title }));
