@@ -73,6 +73,7 @@ export function PublicSurveyPage() {
         setLoading(false);
       });
   }, [querySurveyId]);
+  const isShellacSurvey = Boolean(survey?.title?.includes("ครั่งสร้างรายได้"));
   const setAnswer = (question: SurveyQuestion, value: string) =>
     setAnswers((current) => ({ ...current, [question.id]: value }));
   async function submit(event: FormEvent) {
@@ -192,11 +193,13 @@ export function PublicSurveyPage() {
           <p className="mt-2 text-sm leading-6 text-white/80">
             {survey.welcome_text || "ขอความร่วมมือในการประเมินกิจกรรม"}
           </p>
-          <div className="mt-4 flex flex-wrap gap-2 text-xs text-white/75">
-            <span className="rounded-full bg-white/10 px-3 py-1">วันศุกร์ที่ 18 ธันวาคม 2569</span>
-            <span className="rounded-full bg-white/10 px-3 py-1">ใช้เวลาประมาณ 5–8 นาที</span>
-            <span className="rounded-full bg-white/10 px-3 py-1">{survey.anonymous ? "ไม่ถามชื่อและเบอร์โทรศัพท์" : "แบบประเมินระบุตัวตน"}</span>
-          </div>
+          {isShellacSurvey && (
+            <div className="mt-4 flex flex-wrap gap-2 text-xs text-white/75">
+              <span className="rounded-full bg-white/10 px-3 py-1">วันศุกร์ที่ 18 ธันวาคม 2569</span>
+              <span className="rounded-full bg-white/10 px-3 py-1">ใช้เวลาประมาณ 5–8 นาที</span>
+              <span className="rounded-full bg-white/10 px-3 py-1">{survey.anonymous ? "ไม่ถามชื่อและเบอร์โทรศัพท์" : "แบบประเมินระบุตัวตน"}</span>
+            </div>
+          )}
         </header>
         <form onSubmit={submit} className="mt-5 space-y-4">
           <section className="rounded-2xl border border-slate-200 bg-white p-5">
@@ -208,12 +211,15 @@ export function PublicSurveyPage() {
                 className="mt-0.5 h-4 w-4"
               />
               <span>
-                ข้าพเจ้าได้รับทราบวัตถุประสงค์การเก็บข้อมูลเพื่อประเมินผลและปรับปรุงการจัดอบรม โดยจะไม่ระบุชื่อหรือเบอร์โทรศัพท์ในแบบประเมินนี้ และยินยอมให้ใช้คำตอบเพื่อสรุปผลในภาพรวม
+                {survey.anonymous
+                  ? "ข้าพเจ้าได้รับทราบวัตถุประสงค์การเก็บข้อมูลเพื่อประเมินผลและปรับปรุงกิจกรรม โดยแบบประเมินนี้ไม่ถามชื่อหรือเบอร์โทรศัพท์ และยินยอมให้ใช้คำตอบเพื่อสรุปผลในภาพรวม"
+                  : "ข้าพเจ้าได้รับทราบวัตถุประสงค์การเก็บข้อมูลเพื่อประเมินผลและปรับปรุงกิจกรรม และยินยอมให้ใช้ข้อมูลตามคำชี้แจงความเป็นส่วนตัวของกิจกรรมนี้"}
               </span>
             </label>
             <p className="mt-2 text-xs leading-5 text-slate-500">
-              กรุณาไม่ระบุชื่อ เบอร์โทรศัพท์ หรือข้อมูลส่วนบุคคลของตนเองหรือบุคคลอื่นในช่องความคิดเห็น
-              คำตอบจะถูกนำไปใช้เพื่อสรุปผลโครงการและพัฒนาการอบรมครั้งต่อไป
+              {survey.anonymous
+                ? "กรุณาไม่ระบุชื่อ เบอร์โทรศัพท์ หรือข้อมูลส่วนบุคคลของตนเองหรือบุคคลอื่นในช่องความคิดเห็น คำตอบจะถูกนำไปใช้เพื่อสรุปผลในภาพรวม"
+                : "โปรดตรวจสอบคำชี้แจงความเป็นส่วนตัวของกิจกรรมก่อนส่งคำตอบ"}
             </p>
           </section>
           {survey.questions.map((q, index) => {
