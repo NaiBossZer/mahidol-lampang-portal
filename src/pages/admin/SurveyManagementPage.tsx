@@ -509,7 +509,7 @@ export function SurveyManagementPage() {
       {activeTab === "builder" && <div className="mt-4 space-y-4">
         <div className="flex items-center justify-between gap-3">
           <button type="button" onClick={() => setActiveTab("list")} className="inline-flex items-center gap-2 text-sm font-semibold text-slate-500 transition hover:text-[#1455a0]"><ArrowLeft className="h-4 w-4" />กลับไปยังรายการแบบประเมิน</button>
-          {selected && <span className="text-xs font-medium text-slate-400">Survey ID: {selected.id}</span>}
+          {selected && <span className="text-xs font-medium text-slate-400">รหัสแบบประเมิน: {selected.id}</span>}
         </div>
         <AdminCard className="overflow-hidden rounded-2xl border-slate-200 shadow-sm">
           {selected ? (
@@ -601,7 +601,7 @@ export function SurveyManagementPage() {
                           )
                       }
                     >
-                      {selected.anonymous ? "ไม่ระบุตัวตน" : "ระบุตัวตน"}
+                      {selected.anonymous ? "เปลี่ยนเป็นระบุตัวตน" : "เปลี่ยนเป็นไม่ระบุตัวตน"}
                     </AdminButton>
                   </div>
                 </div>
