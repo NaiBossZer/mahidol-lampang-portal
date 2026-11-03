@@ -22,6 +22,26 @@ async function sb<T>(env: Env, path: string, init: RequestInit = {}) {
   return body as T;
 }
 
+async function isSurveyPubliclyAvailable(env: Env, survey: Row): Promise<boolean> {
+  if (survey.enabled !== true) return false;
+  const now = Date.now();
+  if (survey.open_at && now < Date.parse(String(survey.open_at))) return false;
+  if (survey.close_at && now > Date.parse(String(survey.close_at))) return false;
+  const occurrenceId = String(survey.occurrence_id ?? "");
+  if (!occurrenceId) return false;
+  const occurrences = await sb<Row[]>(
+    env,
+    `activity_occurrences?id=eq.${encodeURIComponent(occurrenceId)}&select=id,activity_id,status`,
+  );
+  const occurrence = occurrences[0];
+  if (!occurrence || ["cancelled", "archived"].includes(String(occurrence.status))) return false;
+  const activities = await sb<Row[]>(
+    env,
+    `activities?id=eq.${encodeURIComponent(String(occurrence.activity_id))}&select=id,status`,
+  );
+  return ["published", "completed"].includes(String(activities[0]?.status));
+}
+
 export async function onRequest({ request, env }: { request: Request; env: Env }) {
   try {
     const url = new URL(request.url);
@@ -32,14 +52,19 @@ export async function onRequest({ request, env }: { request: Request; env: Env }
           env,
           "occurrence_surveys?enabled=eq.true&select=id,occurrence_id,title,anonymous,welcome_text,open_at,close_at&order=created_at.desc",
         );
-        return json({ success: true, data: surveys });
+        const available = await Promise.all(
+          surveys.map(async (survey) =>
+            (await isSurveyPubliclyAvailable(env, survey)) ? survey : null,
+          ),
+        );
+        return json({ success: true, data: available.filter((survey): survey is Row => survey !== null) });
       }
       const surveys = await sb<Row[]>(
         env,
         `occurrence_surveys?id=eq.${encodeURIComponent(surveyId)}&enabled=eq.true&select=id,occurrence_id,title,anonymous,open_at,close_at,welcome_text`,
       );
-      if (!surveys[0])
-        return json({ success: false, error: "ไม่พบแบบสอบถามหรือแบบสอบถามปิดอยู่" }, 404);
+      if (!surveys[0] || !(await isSurveyPubliclyAvailable(env, surveys[0])))
+        return json({ success: false, error: "ไม่พบแบบประเมิน แบบประเมินยังไม่เปิด หรือปิดรับคำตอบแล้ว" }, 404);
       const survey = surveys[0];
       const questions = await sb<Row[]>(
         env,
@@ -68,19 +93,14 @@ export async function onRequest({ request, env }: { request: Request; env: Env }
       `occurrence_surveys?id=eq.${encodeURIComponent(body.surveyId)}&enabled=eq.true&select=id,occurrence_id,open_at,close_at`,
     );
     const survey = surveys[0];
-    if (!survey) return json({ success: false, error: "แบบสอบถามไม่พร้อมรับคำตอบ" }, 409);
-    const now = Date.now();
-    if (survey.open_at && now < Date.parse(String(survey.open_at)))
-      return json({ success: false, error: "แบบสอบถามยังไม่เปิด" }, 409);
-    if (survey.close_at && now > Date.parse(String(survey.close_at)))
-      return json({ success: false, error: "แบบสอบถามปิดรับคำตอบแล้ว" }, 409);
+    if (!survey || !(await isSurveyPubliclyAvailable(env, survey)))
+      return json({ success: false, error: "แบบประเมินไม่พร้อมรับคำตอบ หรืออยู่นอกช่วงเวลาเปิดรับ" }, 409);
     const occurrenceId = String(survey.occurrence_id);
     const occurrences = await sb<Row[]>(
       env,
-      `activity_occurrences?id=eq.${encodeURIComponent(occurrenceId)}&status=neq.cancelled&status=neq.archived&select=id,activity_id`,
+      `activity_occurrences?id=eq.${encodeURIComponent(occurrenceId)}&select=id,activity_id,status`,
     );
-    if (!occurrences[0]) return json({ success: false, error: "รอบกิจกรรมไม่พร้อมรับคำตอบ" }, 409);
-    const activityId = String(occurrences[0].activity_id);
+    const activityId = String(occurrences[0]?.activity_id ?? "");
     const responseRows = await sb<Row[]>(env, "survey_responses", {
       method: "POST",
       headers: { Prefer: "return=representation" },

@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { ArrowLeft, CheckCircle2, ClipboardList, FileText, Plus, RefreshCw, Save, Sparkles, Trash2 } from "lucide-react";
+import { ArrowLeft, CheckCircle2, ClipboardList, Copy, Download, ExternalLink, Eye, FileText, Plus, QrCode, RefreshCw, Save, Sparkles, Trash2, X } from "lucide-react";
 import { toast } from "sonner";
 import { type ActivityOccurrence } from "@/services/admin-occurrences";
 import {
@@ -47,6 +47,9 @@ export function SurveyManagementPage() {
   const [surveyTitleDraft, setSurveyTitleDraft] = useState("");
   const [surveyTitleSaving, setSurveyTitleSaving] = useState(false);
   const [activeTab, setActiveTab] = useState<"list" | "builder">("list");
+  const [previewSurvey, setPreviewSurvey] = useState<AdminSurvey | null>(null);
+  const [qrSurvey, setQrSurvey] = useState<AdminSurvey | null>(null);
+  const [qrDownloading, setQrDownloading] = useState(false);
 
   async function load() {
     setLoading(true);
@@ -250,6 +253,52 @@ export function SurveyManagementPage() {
   const publishedCount = surveys.filter((survey) => survey.enabled).length;
   const disabledCount = surveys.length - publishedCount;
   const totalQuestions = surveys.reduce((sum, survey) => sum + survey.questions.length, 0);
+  const publicSurveyUrl = (surveyId: string) =>
+    `${window.location.origin}/survey?surveyId=${encodeURIComponent(surveyId)}`;
+  const qrImageUrl = qrSurvey
+    ? `https://api.qrserver.com/v1/create-qr-code/?size=640x640&format=png&margin=16&data=${encodeURIComponent(publicSurveyUrl(qrSurvey.id))}`
+    : "";
+
+  async function copySurveyLink(survey: AdminSurvey) {
+    try {
+      await navigator.clipboard.writeText(publicSurveyUrl(survey.id));
+      toast.success("คัดลอกลิงก์แบบประเมินแล้ว");
+    } catch {
+      toast.error("ไม่สามารถคัดลอกลิงก์ได้ กรุณาคัดลอกจากช่อง URL");
+    }
+  }
+
+  async function downloadSurveyQr() {
+    if (!qrSurvey || !qrImageUrl) return;
+    setQrDownloading(true);
+    try {
+      const response = await fetch(qrImageUrl);
+      if (!response.ok) throw new Error("QR service unavailable");
+      const blob = await response.blob();
+      const objectUrl = URL.createObjectURL(blob);
+      const anchor = document.createElement("a");
+      anchor.href = objectUrl;
+      anchor.download = `survey-${qrSurvey.id}-qr.png`;
+      document.body.appendChild(anchor);
+      anchor.click();
+      anchor.remove();
+      URL.revokeObjectURL(objectUrl);
+      toast.success("ดาวน์โหลด QR Code แล้ว");
+    } catch {
+      window.open(qrImageUrl, "_blank", "noopener,noreferrer");
+      toast.info("เปิด QR Code ในแท็บใหม่แล้ว สามารถบันทึกรูปภาพได้");
+    } finally {
+      setQrDownloading(false);
+    }
+  }
+
+  function openSurveyQr(survey: AdminSurvey) {
+    if (!survey.enabled) {
+      toast.error("กรุณาเผยแพร่แบบประเมินก่อนสร้าง QR Code");
+      return;
+    }
+    setQrSurvey(survey);
+  }
 
   return (
     <section className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
@@ -353,13 +402,14 @@ export function SurveyManagementPage() {
               }
             />
           ) : (
-            <AdminTable minWidth="620px" className="mt-0 rounded-none border-0 shadow-none">
+            <AdminTable minWidth="820px" className="mt-0 rounded-none border-0 shadow-none">
               <AdminTableHeader>
                 <tr>
                   <th className="px-5 py-3 text-left">แบบประเมิน</th>
                   <th className="px-4 py-3 text-center">คำถาม</th>
                   <th className="px-4 py-3 text-center">สถานะ</th>
                   <th className="px-4 py-3 text-center">โหมด</th>
+                  <th className="px-4 py-3 text-center">เครื่องมือ</th>
                 </tr>
               </AdminTableHeader>
               <tbody>
@@ -404,6 +454,16 @@ export function SurveyManagementPage() {
                         <AdminStatusBadge tone={survey.anonymous ? "neutral" : "success"}>
                           {survey.anonymous ? "Anonymous" : "Identified"}
                         </AdminStatusBadge>
+                      </td>
+                      <td className="px-4 py-3">
+                        <div className="flex items-center justify-center gap-1.5">
+                          <button type="button" onClick={() => setPreviewSurvey(survey)} className="inline-flex min-h-9 items-center gap-1.5 rounded-lg border border-slate-200 px-2.5 text-xs font-semibold text-slate-700 hover:border-blue-200 hover:bg-blue-50 hover:text-[#1455a0]">
+                            <Eye className="h-3.5 w-3.5" /> Preview
+                          </button>
+                          <button type="button" onClick={() => openSurveyQr(survey)} disabled={!survey.enabled} className="inline-flex min-h-9 items-center gap-1.5 rounded-lg border border-slate-200 px-2.5 text-xs font-semibold text-slate-700 hover:border-blue-200 hover:bg-blue-50 hover:text-[#1455a0] disabled:cursor-not-allowed disabled:opacity-40">
+                            <QrCode className="h-3.5 w-3.5" /> QR Code
+                          </button>
+                        </div>
                       </td>
                     </AdminTableRow>
                   );
@@ -464,7 +524,9 @@ export function SurveyManagementPage() {
                       </p>
                     )}
                   </div>
-                  <div className="flex items-center gap-2">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <AdminButton variant="secondary" icon={<Eye className="h-4 w-4" />} onClick={() => setPreviewSurvey(selected)}>Preview</AdminButton>
+                    <AdminButton variant="secondary" icon={<QrCode className="h-4 w-4" />} onClick={() => openSurveyQr(selected)} disabled={!selected.enabled}>QR Code</AdminButton>
                     <AdminStatusBadge tone={selected.enabled ? "success" : "neutral"}>
                       {selected.enabled ? "Published" : "Disabled"}
                     </AdminStatusBadge>
@@ -768,6 +830,76 @@ export function SurveyManagementPage() {
         </AdminCard>
       </div>}
     </div>
+      {previewSurvey && (
+        <SurveyPreviewModal survey={previewSurvey} onClose={() => setPreviewSurvey(null)} />
+      )}
+      {qrSurvey && (
+        <div className="fixed inset-0 z-[100] grid place-items-center overflow-y-auto bg-slate-950/60 p-4" role="dialog" aria-modal="true" aria-labelledby="survey-qr-title">
+          <div className="my-8 w-full max-w-lg rounded-2xl bg-white p-5 shadow-2xl sm:p-6">
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <p className="text-xs font-bold uppercase tracking-wider text-[#1455a0]">PUBLIC SURVEY</p>
+                <h2 id="survey-qr-title" className="mt-1 text-xl font-bold text-[#002d62]">QR Code แบบประเมิน</h2>
+                <p className="mt-1 text-sm text-slate-600">{qrSurvey.title || "แบบประเมินกิจกรรม"}</p>
+              </div>
+              <button type="button" onClick={() => setQrSurvey(null)} className="rounded-lg p-2 text-slate-500 hover:bg-slate-100" aria-label="ปิด QR Code"><X className="h-5 w-5" /></button>
+            </div>
+            <div className="mt-5 grid place-items-center rounded-2xl border border-slate-200 bg-white p-5">
+              <img src={qrImageUrl} alt="QR Code สำหรับเปิดแบบประเมิน" className="h-64 w-64 max-w-full object-contain" />
+              <p className="mt-3 text-center text-sm font-semibold text-slate-800">สแกนเพื่อเปิดแบบประเมิน</p>
+              <p className="mt-1 text-center text-xs text-slate-500">บุคคลทั่วไปตอบได้โดยไม่ต้องเข้าสู่ระบบ</p>
+            </div>
+            <label className="mt-4 block">
+              <span className="mb-1 block text-xs font-semibold text-slate-600">ลิงก์สาธารณะ</span>
+              <input readOnly value={publicSurveyUrl(qrSurvey.id)} className="h-11 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 text-xs text-slate-700" onFocus={(event) => event.currentTarget.select()} />
+            </label>
+            <div className="mt-4 flex flex-wrap justify-end gap-2">
+              <AdminButton variant="secondary" icon={<Copy className="h-4 w-4" />} onClick={() => void copySurveyLink(qrSurvey)}>คัดลอกลิงก์</AdminButton>
+              <AdminButton variant="secondary" icon={<ExternalLink className="h-4 w-4" />} onClick={() => window.open(publicSurveyUrl(qrSurvey.id), "_blank", "noopener,noreferrer")}>เปิดหน้าแบบประเมิน</AdminButton>
+              <AdminButton variant="primary" icon={<Download className="h-4 w-4" />} onClick={() => void downloadSurveyQr()} disabled={qrDownloading}>{qrDownloading ? "กำลังดาวน์โหลด..." : "ดาวน์โหลด PNG"}</AdminButton>
+            </div>
+            <p className="mt-3 text-[11px] leading-5 text-slate-400">QR Code สร้างจากลิงก์สาธารณะของแบบประเมินที่เผยแพร่แล้ว</p>
+          </div>
+        </div>
+      )}
     </section>
+  );
+}
+
+function SurveyPreviewModal({ survey, onClose }: { survey: AdminSurvey; onClose: () => void }) {
+  return (
+    <div className="fixed inset-0 z-[100] grid place-items-center overflow-y-auto bg-slate-950/60 p-4" role="dialog" aria-modal="true" aria-labelledby="survey-preview-title">
+      <div className="my-8 max-h-[90vh] w-full max-w-3xl overflow-y-auto rounded-2xl bg-slate-50 shadow-2xl">
+        <div className="sticky top-0 z-10 flex items-start justify-between gap-3 border-b border-slate-200 bg-white px-5 py-4">
+          <div>
+            <p className="text-xs font-bold uppercase tracking-wider text-[#1455a0]">PREVIEW MODE</p>
+            <h2 id="survey-preview-title" className="mt-1 text-lg font-bold text-[#002d62]">{survey.title || "แบบประเมินกิจกรรม"}</h2>
+            <p className="mt-1 text-xs text-slate-500">ตัวอย่างมุมมองผู้ตอบ · ไม่ส่งหรือบันทึกคำตอบ</p>
+          </div>
+          <button type="button" onClick={onClose} className="rounded-lg p-2 text-slate-500 hover:bg-slate-100" aria-label="ปิด Preview"><X className="h-5 w-5" /></button>
+        </div>
+        <div className="space-y-3 p-4 sm:p-6">
+          <header className="rounded-2xl bg-[#002d62] p-6 text-white">
+            <p className="text-xs font-semibold uppercase tracking-wider text-emerald-300">Mahidol Lampang · Survey</p>
+            <h3 className="mt-2 text-2xl font-bold">{survey.title || "แบบประเมินกิจกรรม"}</h3>
+            <p className="mt-2 text-sm text-white/80">{survey.welcome_text || "ขอความร่วมมือประเมินกิจกรรม"}</p>
+          </header>
+          <div className="rounded-2xl border border-slate-200 bg-white p-4 text-xs text-slate-500">
+            โหมดข้อมูล: {survey.anonymous ? "ไม่ระบุตัวตน (Anonymous)" : "ระบุตัวตน (Identified)"} · {survey.questions.length} คำถาม
+          </div>
+          {survey.questions.length === 0 ? (
+            <div className="rounded-2xl border border-dashed border-slate-300 bg-white p-8 text-center text-sm text-slate-500">ยังไม่มีคำถามในแบบประเมินนี้</div>
+          ) : survey.questions.map((question, index) => (
+            <section key={question.id} className="rounded-2xl border border-slate-200 bg-white p-5">
+              <p className="text-sm font-semibold text-slate-800">{index + 1}. {question.question_text}{question.required && <span className="ml-1 text-red-600">*</span>}</p>
+              {question.question_type === "rating" && <div className="mt-4 flex flex-wrap gap-2">{Array.from({length: Math.max(0, question.scale_max - question.scale_min + 1)}, (_, i) => question.scale_min + i).map((score) => <span key={score} className="grid h-10 min-w-10 place-items-center rounded-xl border border-slate-200 bg-slate-50 text-sm">{score}</span>)}</div>}
+              {question.question_type === "text" && <textarea disabled rows={3} placeholder="พิมพ์คำตอบของคุณ..." className="mt-3 w-full rounded-xl border border-slate-200 bg-slate-50 p-3 text-sm" />}
+              {(question.question_type === "single_choice" || question.question_type === "multi_choice") && <div className="mt-3 space-y-2">{(Array.isArray(question.options) ? question.options : []).map((option, i) => <label key={i} className="flex items-center gap-2 text-sm text-slate-700"><input type={question.question_type === "multi_choice" ? "checkbox" : "radio"} disabled />{String(option)}</label>)}</div>}
+            </section>
+          ))}
+          <div className="rounded-xl border border-blue-100 bg-blue-50 p-3 text-xs text-blue-800">นี่คือโหมด Preview เท่านั้น ปุ่มส่งคำตอบถูกปิดไว้และไม่มีการบันทึกข้อมูล</div>
+        </div>
+      </div>
+    </div>
   );
 }
