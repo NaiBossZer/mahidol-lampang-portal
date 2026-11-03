@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { ArrowLeft, CalendarClock, CheckCircle2, ClipboardList, FileText, Plus, RefreshCw, Save, Search, Settings2, Sparkles, Trash2 } from "lucide-react";
+import { ArrowLeft, CheckCircle2, ClipboardList, FileText, Plus, RefreshCw, Save, Sparkles, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { type ActivityOccurrence } from "@/services/admin-occurrences";
 import {
@@ -422,7 +422,7 @@ export function SurveyManagementPage() {
         <AdminCard className="overflow-hidden rounded-2xl border-slate-200 shadow-sm">
           {selected ? (
             <>
-              <div className="border-b border-slate-200 px-5 py-4">
+              <div className="border-b border-slate-100 bg-white px-5 py-5">
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                   <div className="min-w-0">
                     <p className="text-[11px] font-bold uppercase tracking-[0.13em] text-[#1455a0]">
@@ -512,7 +512,7 @@ export function SurveyManagementPage() {
                   </div>
                 </div>
               </div>
-              <div className="border-t border-slate-100 px-5 py-3">
+              <div className="border-t border-slate-100 bg-slate-50/70 px-5 py-4">
                 <div className="grid gap-3 sm:grid-cols-2">
                   <label className="block">
                     <span className="mb-1 block text-xs font-semibold text-slate-600">เปิดรับ</span>
@@ -567,8 +567,8 @@ export function SurveyManagementPage() {
                 </div>
               </div>
 
-              <div className="p-5">
-                <div className="rounded-2xl border border-slate-200 bg-slate-50/80 p-5">
+              <div className="grid gap-4 p-5 xl:grid-cols-[minmax(0,1.2fr)_minmax(300px,.8fr)]">
+                <div className="order-2 rounded-2xl border border-slate-200 bg-slate-50/80 p-5 xl:order-2">
                   <div className="grid gap-3 md:grid-cols-[minmax(0,1fr)_160px_auto]">
                     <label className="block">
                       <span className="mb-1 block text-xs font-semibold text-slate-600">คำถาม</span>
@@ -693,7 +693,8 @@ export function SurveyManagementPage() {
                   </label>
                 </div>
 
-                <div className="mt-5 flex items-center justify-between gap-3">
+                <div className="order-1 rounded-2xl border border-slate-200 bg-white p-4 xl:order-1">
+                <div className="flex items-center justify-between gap-3">
                   <div>
                     <h3 className="text-sm font-bold text-slate-900">รายการคำถาม</h3>
                     <p className="mt-0.5 text-xs text-slate-500">คลิกคำถามเพื่อแก้ไข</p>
@@ -752,6 +753,7 @@ export function SurveyManagementPage() {
                       </div>
                     ))
                   )}
+                </div>
                 </div>
               </div>
             </>
