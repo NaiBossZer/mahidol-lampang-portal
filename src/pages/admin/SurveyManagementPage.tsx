@@ -4,10 +4,11 @@ import { ClipboardList, Copy, Plus, RefreshCw, Save, Sparkles, Trash2 } from "lu
 import { toast } from "sonner";
 import { createAdminOccurrence, getAdminOccurrences, type ActivityOccurrence } from "@/services/admin-occurrences";
 import { shellacWorkshopSurveyTemplate } from "@/services/shellac-workshop-survey-template";
-import { createActivity, getAdminActivities } from "@/services/api";
+import { createActivity, getAdminActivities, type AdminActivity } from "@/services/api";
 import {
   createAdminQuestion,
   createAdminSurvey,
+  getAdminSurveys,
   getSurveyWorkspaceData,
   updateAdminQuestion,
   updateAdminSurvey,
@@ -196,7 +197,7 @@ export function SurveyManagementPage() {
           item.title.includes("ครั่งสร้างรายได้ สู้โลกร้อน") && item.status !== "archived",
       );
       if (!activity) {
-        activity = await createActivity({
+        activity = (await createActivity({
           title,
           slug: `shellac-income-climate-workshop-2026-${Date.now()}`,
           summary: "อบรมเชิงปฏิบัติการการปล่อยเลี้ยงครั่ง การจัดการครั่งอย่างยั่งยืน และการสร้างรายได้ในชุมชน",
@@ -209,8 +210,9 @@ export function SurveyManagementPage() {
           outcome: "ผู้เข้าร่วมมีความรู้และทักษะเบื้องต้นในการปล่อยเลี้ยง ดูแล ติดตาม และเตรียมผลผลิตครั่งเพื่อจำหน่าย",
           impact: "เพิ่มโอกาสสร้างรายได้จากครั่งและส่งเสริมการจัดการทรัพยากรอย่างยั่งยืนในชุมชน",
           status: "draft",
-        });
+        })) as AdminActivity;
       }
+      if (!activity) throw new Error("ไม่พบหรือสร้างกิจกรรมไม่สำเร็จ");
 
       let occurrences = await getAdminOccurrences(activity.id);
       let occurrence = occurrences.find(

@@ -82,13 +82,14 @@ export function PublicSurveyPage() {
       setError("กรุณายอมรับข้อตกลงความเป็นส่วนตัว");
       return;
     }
-    const missing = survey.questions.filter(
-      (q) =>
+    const missing = survey.questions.filter((q) => {
+      const answer = answers[q.id];
+      return (
         q.required &&
-        (answers[q.id] === undefined ||
-          (typeof answers[q.id] === "string" && !answers[q.id].trim()) ||
-          (Array.isArray(answers[q.id]) && answers[q.id].length === 0)),
-    );
+        (answer === undefined ||
+          (typeof answer === "string" ? !answer.trim() : answer.length === 0))
+      );
+    });
     if (missing.length) {
       setError("กรุณาตอบคำถามที่จำเป็นให้ครบ");
       return;
