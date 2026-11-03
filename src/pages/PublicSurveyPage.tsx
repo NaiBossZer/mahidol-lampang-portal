@@ -95,13 +95,18 @@ export function PublicSurveyPage() {
     setSubmitting(true);
     setError("");
     try {
-      const normalized = survey.questions.map((q) => {
+      const normalized = survey.questions.flatMap((q) => {
         const value = answers[q.id];
-        return q.question_type === "rating"
-          ? { questionId: q.id, number: Number(value) }
-          : q.question_type === "multi_choice"
-            ? { questionId: q.id, options: Array.isArray(value) ? value : [String(value)] }
-            : { questionId: q.id, text: String(value ?? "") };
+        const unanswered =
+          value === undefined || value === "" || (Array.isArray(value) && value.length === 0);
+        if (unanswered) return [];
+        return [
+          q.question_type === "rating"
+            ? { questionId: q.id, number: Number(value) }
+            : q.question_type === "multi_choice"
+              ? { questionId: q.id, options: Array.isArray(value) ? value : [String(value)] }
+              : { questionId: q.id, text: String(value) },
+        ];
       });
       const response = await fetch("/api/survey", {
         method: "POST",
