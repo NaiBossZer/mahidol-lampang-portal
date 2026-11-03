@@ -46,7 +46,7 @@ export async function onRequest({ request, env }: { request: Request; env: Env }
       if (!surveyId) {
         const surveys = await sb<Row[]>(
           env,
-          "occurrence_surveys?enabled=eq.true&select=id,occurrence_id,title,anonymous,welcome_text,open_at,close_at&order=created_at.desc",
+          "occurrence_surveys?enabled=eq.true&select=id,occurrence_id,title,anonymous,welcome_text,open_at,close_at,enabled&order=created_at.desc",
         );
         const available = await Promise.all(
           surveys.map(async (survey) =>
@@ -57,7 +57,7 @@ export async function onRequest({ request, env }: { request: Request; env: Env }
       }
       const surveys = await sb<Row[]>(
         env,
-        `occurrence_surveys?id=eq.${encodeURIComponent(surveyId)}&enabled=eq.true&select=id,occurrence_id,title,anonymous,open_at,close_at,welcome_text`,
+        `occurrence_surveys?id=eq.${encodeURIComponent(surveyId)}&enabled=eq.true&select=id,occurrence_id,title,anonymous,open_at,close_at,welcome_text,enabled`,
       );
       if (!surveys[0] || !(await isSurveyPubliclyAvailable(env, surveys[0])))
         return json({ success: false, error: "ไม่พบแบบประเมิน แบบประเมินยังไม่เปิด หรือปิดรับคำตอบแล้ว" }, 404);
