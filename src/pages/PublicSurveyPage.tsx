@@ -79,8 +79,10 @@ export function PublicSurveyPage() {
       });
   }, [querySurveyId]);
 
-  const setAnswer = (question: SurveyQuestion, value: string) =>
+  const setAnswer = (question: SurveyQuestion, value: string) => {
     setAnswers((current) => ({ ...current, [question.id]: value }));
+    setError("");
+  }
 
   const answeredCount = survey
     ? survey.questions.filter((question) => isAnswered(answers[question.id])).length
@@ -375,7 +377,6 @@ export function PublicSurveyPage() {
                               checked={answers[question.id] === String(score)}
                               onChange={() => setAnswer(question, String(score))}
                               className="peer sr-only"
-                              required={question.required}
                             />
                             <span className="grid min-h-12 place-items-center rounded-xl border border-slate-200 bg-white text-sm font-semibold text-slate-700 transition group-hover:border-[#a51f3a]/40 group-hover:bg-[#fffafb] peer-checked:border-[#8f1831] peer-checked:bg-[#8f1831] peer-checked:text-white peer-focus-visible:ring-4 peer-focus-visible:ring-[#a51f3a]/15">
                               {score}
@@ -396,7 +397,6 @@ export function PublicSurveyPage() {
                         onChange={(event) => setAnswer(question, event.target.value)}
                         rows={4}
                         placeholder="พิมพ์ความคิดเห็นหรือข้อเสนอแนะของท่าน..."
-                        required={question.required}
                         className="mt-4 w-full resize-y rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm leading-6 text-slate-800 outline-none transition placeholder:text-slate-400 focus:border-[#a51f3a]/60 focus:bg-white focus:ring-4 focus:ring-[#a51f3a]/10"
                       />
                     )}
@@ -414,9 +414,9 @@ export function PublicSurveyPage() {
                                 name={question.id}
                                 value={option}
                                 checked={selected}
-                                required={question.required && question.question_type === "single_choice"}
                                 onChange={() => {
                                   if (question.question_type === "multi_choice") {
+                                    setError("");
                                     setAnswers((current) => {
                                       const value = current[question.id];
                                       const selectedOptions = Array.isArray(value) ? value : [];
