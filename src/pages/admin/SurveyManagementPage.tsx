@@ -35,6 +35,29 @@ const emptyDraft: Partial<SurveyQuestion> = {
   options: [],
 };
 
+function surveyAvailability(survey: AdminSurvey) {
+  if (!survey.enabled) return { label: "ปิดใช้งาน", tone: "neutral" as const };
+  const now = Date.now();
+  if (survey.open_at && now < Date.parse(survey.open_at))
+    return { label: "รอเปิดรับคำตอบ", tone: "neutral" as const };
+  if (survey.close_at && now > Date.parse(survey.close_at))
+    return { label: "ปิดรับคำตอบแล้ว", tone: "neutral" as const };
+  return { label: "เปิดรับคำตอบ", tone: "success" as const };
+}
+
+function toLocalDateTimeInput(value: string | null) {
+  if (!value) return "";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "";
+  return new Date(date.getTime() - date.getTimezoneOffset() * 60_000)
+    .toISOString()
+    .slice(0, 16);
+}
+
+function fromLocalDateTimeInput(value: string) {
+  return value ? new Date(value).toISOString() : null;
+}
+
 export function SurveyManagementPage() {
   const [occurrences, setOccurrences] = useState<ActivityOccurrence[]>([]);
   const [surveys, setSurveys] = useState<AdminSurvey[]>([]);
@@ -250,8 +273,8 @@ export function SurveyManagementPage() {
   const selectedOccurrence = selected
     ? occurrences.find((item) => item.id === selected.occurrence_id)
     : null;
-  const publishedCount = surveys.filter((survey) => survey.enabled).length;
-  const disabledCount = surveys.length - publishedCount;
+  const enabledCount = surveys.filter((survey) => survey.enabled).length;
+  const disabledCount = surveys.length - enabledCount;
   const totalQuestions = surveys.reduce((sum, survey) => sum + survey.questions.length, 0);
   const publicSurveyUrl = (surveyId: string) =>
     `${window.location.origin}/survey?surveyId=${encodeURIComponent(surveyId)}`;
@@ -294,7 +317,7 @@ export function SurveyManagementPage() {
 
   function openSurveyQr(survey: AdminSurvey) {
     if (!survey.enabled) {
-      toast.error("กรุณาเผยแพร่แบบประเมินก่อนสร้าง QR Code");
+      toast.error("กรุณาเปิดใช้งานแบบประเมินก่อนสร้างคิวอาร์โค้ด");
       return;
     }
     const now = Date.now();
@@ -312,7 +335,7 @@ export function SurveyManagementPage() {
   return (
     <section className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
       <AdminPageHeader
-        eyebrow="SURVEYS"
+        eyebrow="แบบประเมิน"
         title="จัดการแบบประเมิน"
         description="จัดการรายการแบบประเมิน และสร้าง แก้ไขและปรับปรุงแบบสอบถาม"
         actions={
@@ -322,7 +345,7 @@ export function SurveyManagementPage() {
               className="inline-flex min-h-10 items-center justify-center gap-2 rounded-xl border border-violet-200 bg-violet-50 px-4 text-sm font-semibold text-violet-800 hover:bg-violet-100"
             >
               <Sparkles className="h-4 w-4" />
-              AI Studio
+              เครื่องมือ AI
             </Link>
             <AdminButton
               variant="secondary"
@@ -343,8 +366,8 @@ export function SurveyManagementPage() {
         {activeTab === "list" && <>
           <div className="mb-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
             <div className="flex items-center gap-4 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm"><span className="grid h-12 w-12 place-items-center rounded-2xl bg-blue-50 text-[#1455a0]"><ClipboardList className="h-5 w-5" /></span><div><p className="text-xs font-semibold text-slate-500">แบบประเมินทั้งหมด</p><p className="mt-0.5 text-2xl font-bold tracking-tight text-slate-900">{surveys.length}</p><p className="text-[11px] text-slate-400">{totalQuestions} คำถามในระบบ</p></div></div>
-            <div className="flex items-center gap-4 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm"><span className="grid h-12 w-12 place-items-center rounded-2xl bg-emerald-50 text-emerald-700"><CheckCircle2 className="h-5 w-5" /></span><div><p className="text-xs font-semibold text-slate-500">เผยแพร่แล้ว</p><p className="mt-0.5 text-2xl font-bold tracking-tight text-slate-900">{publishedCount}</p><p className="text-[11px] text-slate-400">พร้อมรับคำตอบ</p></div></div>
-            <div className="flex items-center gap-4 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:col-span-2 xl:col-span-1"><span className="grid h-12 w-12 place-items-center rounded-2xl bg-amber-50 text-amber-700"><FileText className="h-5 w-5" /></span><div><p className="text-xs font-semibold text-slate-500">ปิดใช้งาน / ฉบับร่าง</p><p className="mt-0.5 text-2xl font-bold tracking-tight text-slate-900">{disabledCount}</p><p className="text-[11px] text-slate-400">ยังไม่พร้อมรับคำตอบ</p></div></div>
+            <div className="flex items-center gap-4 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm"><span className="grid h-12 w-12 place-items-center rounded-2xl bg-emerald-50 text-emerald-700"><CheckCircle2 className="h-5 w-5" /></span><div><p className="text-xs font-semibold text-slate-500">เปิดใช้งาน</p><p className="mt-0.5 text-2xl font-bold tracking-tight text-slate-900">{enabledCount}</p><p className="text-[11px] text-slate-400">อนุญาตให้รับคำตอบตามช่วงเวลา</p></div></div>
+            <div className="flex items-center gap-4 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:col-span-2 xl:col-span-1"><span className="grid h-12 w-12 place-items-center rounded-2xl bg-amber-50 text-amber-700"><FileText className="h-5 w-5" /></span><div><p className="text-xs font-semibold text-slate-500">ปิดใช้งาน</p><p className="mt-0.5 text-2xl font-bold tracking-tight text-slate-900">{disabledCount}</p><p className="text-[11px] text-slate-400">ไม่อนุญาตให้ส่งคำตอบ</p></div></div>
           </div>
       <AdminFilterBar>
         <AdminSearchInput
@@ -455,13 +478,13 @@ export function SurveyManagementPage() {
                         {survey.questions.length}
                       </td>
                       <td className="px-4 py-4 text-center">
-                        <AdminStatusBadge tone={survey.enabled ? "success" : "neutral"}>
-                          {survey.enabled ? "Published" : "Disabled"}
+                        <AdminStatusBadge tone={surveyAvailability(survey).tone}>
+                          {surveyAvailability(survey).label}
                         </AdminStatusBadge>
                       </td>
                       <td className="px-4 py-4 text-center">
                         <AdminStatusBadge tone={survey.anonymous ? "neutral" : "success"}>
-                          {survey.anonymous ? "Anonymous" : "Identified"}
+                          {survey.anonymous ? "ไม่ระบุตัวตน" : "ระบุตัวตน"}
                         </AdminStatusBadge>
                       </td>
                       <td className="px-4 py-3">
@@ -470,7 +493,7 @@ export function SurveyManagementPage() {
                             <Eye className="h-3.5 w-3.5" /> Preview
                           </button>
                           <button type="button" onClick={() => openSurveyQr(survey)} disabled={!survey.enabled} className="inline-flex min-h-9 items-center gap-1.5 rounded-lg border border-slate-200 px-2.5 text-xs font-semibold text-slate-700 hover:border-blue-200 hover:bg-blue-50 hover:text-[#1455a0] disabled:cursor-not-allowed disabled:opacity-40">
-                            <QrCode className="h-3.5 w-3.5" /> QR Code
+                            <QrCode className="h-3.5 w-3.5" /> คิวอาร์โค้ด
                           </button>
                         </div>
                       </td>
@@ -529,15 +552,15 @@ export function SurveyManagementPage() {
                     </p>
                     {selectedOccurrence && (
                       <p className="mt-1 font-mono text-[10px] text-slate-400">
-                        Activity: {selectedOccurrence.activity_id} · Survey: {selected?.id}
+                        รหัสกิจกรรม: {selectedOccurrence.activity_id} · รหัสแบบประเมิน: {selected?.id}
                       </p>
                     )}
                   </div>
                   <div className="flex flex-wrap items-center gap-2">
-                    <AdminButton variant="secondary" icon={<Eye className="h-4 w-4" />} onClick={() => setPreviewSurvey(selected)}>Preview</AdminButton>
-                    <AdminButton variant="secondary" icon={<QrCode className="h-4 w-4" />} onClick={() => openSurveyQr(selected)} disabled={!selected.enabled}>QR Code</AdminButton>
-                    <AdminStatusBadge tone={selected.enabled ? "success" : "neutral"}>
-                      {selected.enabled ? "Published" : "Disabled"}
+                    <AdminButton variant="secondary" icon={<Eye className="h-4 w-4" />} onClick={() => setPreviewSurvey(selected)}>ดูตัวอย่าง</AdminButton>
+                    <AdminButton variant="secondary" icon={<QrCode className="h-4 w-4" />} onClick={() => openSurveyQr(selected)} disabled={!selected.enabled}>คิวอาร์โค้ด</AdminButton>
+                    <AdminStatusBadge tone={surveyAvailability(selected).tone}>
+                      {surveyAvailability(selected).label}
                     </AdminStatusBadge>
                     <AdminButton
                       variant={selected.enabled ? "secondary" : "primary"}
@@ -551,7 +574,7 @@ export function SurveyManagementPage() {
                               ),
                             );
                             toast.success(
-                              updated.enabled ? "เผยแพร่แบบประเมินแล้ว" : "ปิดการเผยแพร่แล้ว",
+                              updated.enabled ? "เปิดใช้งานแบบประเมินแล้ว" : "ปิดใช้งานแบบประเมินแล้ว",
                             );
                           })
                           .catch((e) =>
@@ -559,7 +582,7 @@ export function SurveyManagementPage() {
                           )
                       }
                     >
-                      {selected.enabled ? "ปิดการเผยแพร่" : "เผยแพร่"}
+                      {selected.enabled ? "ปิดใช้งาน" : "เปิดใช้งาน"}
                     </AdminButton>
                     <AdminButton
                       variant="secondary"
@@ -578,10 +601,14 @@ export function SurveyManagementPage() {
                           )
                       }
                     >
-                      {selected.anonymous ? "Anonymous" : "Identified"}
+                      {selected.anonymous ? "ไม่ระบุตัวตน" : "ระบุตัวตน"}
                     </AdminButton>
                   </div>
                 </div>
+                <p className="mt-3 text-xs leading-5 text-slate-500">
+                  การเปิดใช้งานแบบประเมินแยกจากสถานะกิจกรรม กิจกรรมฉบับร่างหรือเสร็จสิ้นแล้วก็เปิดรับคำตอบได้
+                  หากไม่กำหนดวันและเวลา ระบบจะเปิดรับคำตอบต่อเนื่องจนกว่าจะปิดใช้งาน
+                </p>
               </div>
               <div className="border-t border-slate-100 bg-slate-50/70 px-5 py-4">
                 <div className="grid gap-3 sm:grid-cols-2">
@@ -589,11 +616,16 @@ export function SurveyManagementPage() {
                     <span className="mb-1 block text-xs font-semibold text-slate-600">เปิดรับ</span>
                     <input
                       type="datetime-local"
-                      value={selected.open_at ? selected.open_at.slice(0, 16) : ""}
+                      value={toLocalDateTimeInput(selected.open_at)}
                       onChange={(event) => {
                         const value = event.target.value;
+                        const openAt = fromLocalDateTimeInput(value);
+                        if (openAt && selected.close_at && Date.parse(openAt) > Date.parse(selected.close_at)) {
+                          toast.error("เวลาเริ่มเปิดรับต้องไม่อยู่หลังเวลาปิดรับ");
+                          return;
+                        }
                         void updateAdminSurvey(selected.id, {
-                          open_at: value ? new Date(value).toISOString() : null,
+                          open_at: openAt,
                         })
                           .then((updated) => {
                             setSelected({ ...selected, ...updated });
@@ -614,11 +646,16 @@ export function SurveyManagementPage() {
                     <span className="mb-1 block text-xs font-semibold text-slate-600">ปิดรับ</span>
                     <input
                       type="datetime-local"
-                      value={selected.close_at ? selected.close_at.slice(0, 16) : ""}
+                      value={toLocalDateTimeInput(selected.close_at)}
                       onChange={(event) => {
                         const value = event.target.value;
+                        const closeAt = fromLocalDateTimeInput(value);
+                        if (closeAt && selected.open_at && Date.parse(closeAt) < Date.parse(selected.open_at)) {
+                          toast.error("เวลาปิดรับต้องไม่อยู่ก่อนเวลาเริ่มเปิดรับ");
+                          return;
+                        }
                         void updateAdminSurvey(selected.id, {
-                          close_at: value ? new Date(value).toISOString() : null,
+                          close_at: closeAt,
                         })
                           .then((updated) => {
                             setSelected({ ...selected, ...updated });
@@ -847,8 +884,8 @@ export function SurveyManagementPage() {
           <div className="my-8 w-full max-w-lg rounded-2xl bg-white p-5 shadow-2xl sm:p-6">
             <div className="flex items-start justify-between gap-3">
               <div>
-                <p className="text-xs font-bold uppercase tracking-wider text-[#1455a0]">PUBLIC SURVEY</p>
-                <h2 id="survey-qr-title" className="mt-1 text-xl font-bold text-[#002d62]">QR Code แบบประเมิน</h2>
+                <p className="text-xs font-bold uppercase tracking-wider text-[#1455a0]">แบบประเมินสาธารณะ</p>
+                <h2 id="survey-qr-title" className="mt-1 text-xl font-bold text-[#002d62]">คิวอาร์โค้ดแบบประเมิน</h2>
                 <p className="mt-1 text-sm text-slate-600">{qrSurvey.title || "แบบประเมินกิจกรรม"}</p>
               </div>
               <button type="button" onClick={() => setQrSurvey(null)} className="rounded-lg p-2 text-slate-500 hover:bg-slate-100" aria-label="ปิด QR Code"><X className="h-5 w-5" /></button>
@@ -856,7 +893,7 @@ export function SurveyManagementPage() {
             <div className="mt-5 grid place-items-center rounded-2xl border border-slate-200 bg-white p-5">
               <img src={qrImageUrl} alt="QR Code สำหรับเปิดแบบประเมิน" className="h-64 w-64 max-w-full object-contain" />
               <p className="mt-3 text-center text-sm font-semibold text-slate-800">สแกนเพื่อเปิดแบบประเมิน</p>
-              <p className="mt-1 text-center text-xs text-slate-500">บุคคลทั่วไปตอบได้โดยไม่ต้องเข้าสู่ระบบ</p>
+              <p className="mt-1 text-center text-xs text-slate-500">ผู้ตอบสามารถส่งคำตอบได้โดยไม่ต้องเข้าสู่ระบบ</p>
             </div>
             <label className="mt-4 block">
               <span className="mb-1 block text-xs font-semibold text-slate-600">ลิงก์สาธารณะ</span>
@@ -865,9 +902,9 @@ export function SurveyManagementPage() {
             <div className="mt-4 flex flex-wrap justify-end gap-2">
               <AdminButton variant="secondary" icon={<Copy className="h-4 w-4" />} onClick={() => void copySurveyLink(qrSurvey)}>คัดลอกลิงก์</AdminButton>
               <AdminButton variant="secondary" icon={<ExternalLink className="h-4 w-4" />} onClick={() => window.open(publicSurveyUrl(qrSurvey.id), "_blank", "noopener,noreferrer")}>เปิดหน้าแบบประเมิน</AdminButton>
-              <AdminButton variant="primary" icon={<Download className="h-4 w-4" />} onClick={() => void downloadSurveyQr()} disabled={qrDownloading}>{qrDownloading ? "กำลังดาวน์โหลด..." : "ดาวน์โหลด PNG"}</AdminButton>
+              <AdminButton variant="primary" icon={<Download className="h-4 w-4" />} onClick={() => void downloadSurveyQr()} disabled={qrDownloading}>{qrDownloading ? "กำลังดาวน์โหลด..." : "ดาวน์โหลดไฟล์ PNG"}</AdminButton>
             </div>
-            <p className="mt-3 text-[11px] leading-5 text-slate-400">QR Code สร้างจากลิงก์สาธารณะของแบบประเมินที่เผยแพร่แล้ว</p>
+            <p className="mt-3 text-[11px] leading-5 text-slate-400">คิวอาร์โค้ดสร้างจากลิงก์สาธารณะของแบบประเมินที่เปิดใช้งาน</p>
           </div>
         </div>
       )}
@@ -881,20 +918,20 @@ function SurveyPreviewModal({ survey, onClose }: { survey: AdminSurvey; onClose:
       <div className="my-8 max-h-[90vh] w-full max-w-3xl overflow-y-auto rounded-2xl bg-slate-50 shadow-2xl">
         <div className="sticky top-0 z-10 flex items-start justify-between gap-3 border-b border-slate-200 bg-white px-5 py-4">
           <div>
-            <p className="text-xs font-bold uppercase tracking-wider text-[#1455a0]">PREVIEW MODE</p>
+            <p className="text-xs font-bold uppercase tracking-wider text-[#1455a0]">โหมดดูตัวอย่าง</p>
             <h2 id="survey-preview-title" className="mt-1 text-lg font-bold text-[#002d62]">{survey.title || "แบบประเมินกิจกรรม"}</h2>
             <p className="mt-1 text-xs text-slate-500">ตัวอย่างมุมมองผู้ตอบ · ไม่ส่งหรือบันทึกคำตอบ</p>
           </div>
-          <button type="button" onClick={onClose} className="rounded-lg p-2 text-slate-500 hover:bg-slate-100" aria-label="ปิด Preview"><X className="h-5 w-5" /></button>
+          <button type="button" onClick={onClose} className="rounded-lg p-2 text-slate-500 hover:bg-slate-100" aria-label="ปิดหน้าตัวอย่าง"><X className="h-5 w-5" /></button>
         </div>
         <div className="space-y-3 p-4 sm:p-6">
           <header className="rounded-2xl bg-[#002d62] p-6 text-white">
-            <p className="text-xs font-semibold uppercase tracking-wider text-emerald-300">Mahidol Lampang · Survey</p>
+            <p className="text-xs font-semibold uppercase tracking-wider text-emerald-300">มหาวิทยาลัยมหิดล วิทยาเขตลำปาง · แบบประเมิน</p>
             <h3 className="mt-2 text-2xl font-bold">{survey.title || "แบบประเมินกิจกรรม"}</h3>
             <p className="mt-2 text-sm text-white/80">{survey.welcome_text || "ขอความร่วมมือประเมินกิจกรรม"}</p>
           </header>
           <div className="rounded-2xl border border-slate-200 bg-white p-4 text-xs text-slate-500">
-            โหมดข้อมูล: {survey.anonymous ? "ไม่ระบุตัวตน (Anonymous)" : "ระบุตัวตน (Identified)"} · {survey.questions.length} คำถาม
+            รูปแบบการเก็บข้อมูล: {survey.anonymous ? "ไม่ระบุตัวตน" : "ระบุตัวตน"} · {survey.questions.length} คำถาม
           </div>
           {survey.questions.length === 0 ? (
             <div className="rounded-2xl border border-dashed border-slate-300 bg-white p-8 text-center text-sm text-slate-500">ยังไม่มีคำถามในแบบประเมินนี้</div>
