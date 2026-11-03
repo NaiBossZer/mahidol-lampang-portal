@@ -2,8 +2,9 @@ import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { ClipboardList, Copy, Plus, RefreshCw, Save, Sparkles, Trash2 } from "lucide-react";
 import { toast } from "sonner";
-import { type ActivityOccurrence } from "@/services/admin-occurrences";
+import { createAdminOccurrence, getAdminOccurrences, type ActivityOccurrence } from "@/services/admin-occurrences";
 import { shellacWorkshopSurveyTemplate } from "@/services/shellac-workshop-survey-template";
+import { createActivity, getAdminActivities } from "@/services/api";
 import {
   createAdminQuestion,
   createAdminSurvey,
@@ -48,6 +49,7 @@ export function SurveyManagementPage() {
   const [surveyTitleDraft, setSurveyTitleDraft] = useState("");
   const [surveyTitleSaving, setSurveyTitleSaving] = useState(false);
   const [templateApplying, setTemplateApplying] = useState(false);
+  const [campaignSettingUp, setCampaignSettingUp] = useState(false);
 
   async function load() {
     setLoading(true);
@@ -149,6 +151,114 @@ export function SurveyManagementPage() {
     }
   }
 
+  async function installTemplateForSurvey(survey: AdminSurvey) {
+    if (survey.questions.length > 0) return survey;
+    const created: SurveyQuestion[] = [];
+    for (const question of shellacWorkshopSurveyTemplate) {
+      const saved = await createAdminQuestion({
+        ...question,
+        survey_id: survey.id,
+        active: true,
+      });
+      created.push(saved);
+    }
+    const title =
+      "แบบประเมินผลโครงการอบรมเชิงปฏิบัติการ “ครั่งสร้างรายได้ สู้โลกร้อน: การปล่อยเลี้ยงครั่งและการจัดการครั่งอย่างยั่งยืน”";
+    const welcomeText =
+      "วันศุกร์ที่ 18 ธันวาคม 2569 เวลา 08.30–16.00 น. ณ คณะสิ่งแวดล้อมและทรัพยากรศาสตร์ มหาวิทยาลัยมหิดล อำเภอสบปราบ จังหวัดลำปาง แบบประเมินนี้ใช้เพื่อประเมินการจัดอบรม ความรู้และทักษะที่ได้รับ ตลอดจนแนวทางนำไปใช้ในพื้นที่ ระดับคะแนน 1 = น้อยที่สุด และ 5 = มากที่สุด";
+    const updated = await updateAdminSurvey(survey.id, {
+      title,
+      anonymous: true,
+      enabled: true,
+      open_at: "2026-12-18T01:30:00.000Z",
+      close_at: "2026-12-25T16:59:59.000Z",
+      welcome_text: welcomeText,
+    });
+    return { ...survey, ...updated, questions: created };
+  }
+
+  async function setupShellacCampaign() {
+    setCampaignSettingUp(true);
+    try {
+      const title =
+        "โครงการอบรมเชิงปฏิบัติการ “ครั่งสร้างรายได้ สู้โลกร้อน: การปล่อยเลี้ยงครั่งและการจัดการครั่งอย่างยั่งยืน”";
+      const location =
+        "คณะสิ่งแวดล้อมและทรัพยากรศาสตร์ มหาวิทยาลัยมหิดล อำเภอสบปราบ จังหวัดลำปาง";
+      const activities = await getAdminActivities();
+      let activity = activities.find((item) =>
+        item.title.includes("ครั่งสร้างรายได้ สู้โลกร้อน"),
+      );
+      if (!activity) {
+        activity = await createActivity({
+          title,
+          slug: "shellac-income-climate-workshop-2026",
+          summary: "อบรมเชิงปฏิบัติการการปล่อยเลี้ยงครั่ง การจัดการครั่งอย่างยั่งยืน และการสร้างรายได้ในชุมชน",
+          content: "กิจกรรมประกอบด้วยการบรรยายวงจรชีวิตครั่งและพืชอาศัย เทคนิคการปล่อยเลี้ยง การดูแลแปลง การเก็บเกี่ยวและคัดคุณภาพผลผลิต การตลาด การสาธิต และการฝึกปฏิบัติในแปลงสาธิต",
+          activityDate: "2026-12-18",
+          location,
+          participantCount: 0,
+          objective: "พัฒนาความรู้และทักษะการปล่อยเลี้ยงครั่งและการจัดการครั่งอย่างยั่งยืนเพื่อสร้างรายได้และรับมือสภาพอากาศแปรปรวน",
+          process: "บรรยายความรู้พื้นฐานและวงจรชีวิตครั่ง\nคัดเลือกพืชอาศัยและเทคนิคการปล่อยเลี้ยง\nสาธิตการเลือกกิ่งเชื้อครั่ง\nฝึกปฏิบัติในแปลงสาธิต\nติดตามการเจริญเติบโตและบันทึกข้อมูล",
+          outcome: "ผู้เข้าร่วมมีความรู้และทักษะเบื้องต้นในการปล่อยเลี้ยง ดูแล ติดตาม และเตรียมผลผลิตครั่งเพื่อจำหน่าย",
+          impact: "เพิ่มโอกาสสร้างรายได้จากครั่งและส่งเสริมการจัดการทรัพยากรอย่างยั่งยืนในชุมชน",
+          status: "draft",
+        });
+      }
+
+      let occurrences = await getAdminOccurrences(activity.id);
+      let occurrence = occurrences.find((item) => item.start_at.startsWith("2026-12-18"));
+      if (!occurrence) {
+        await createAdminOccurrence({
+          activityId: activity.id,
+          occurrenceNo: 1,
+          startAt: "2026-12-18T08:30:00+07:00",
+          endAt: "2026-12-18T16:00:00+07:00",
+          status: "scheduled",
+          participant_count: 0,
+          location_type: "external",
+          location_detail: location,
+        });
+        occurrences = await getAdminOccurrences(activity.id);
+        occurrence = occurrences.find((item) => item.start_at.startsWith("2026-12-18"));
+      }
+      if (!occurrence) throw new Error("สร้างรอบกิจกรรมไม่สำเร็จ");
+
+      const existingSurveys = await getAdminSurveys(occurrence.id);
+      let survey = existingSurveys[0];
+      if (!survey) {
+        survey = await createAdminSurvey({
+          occurrenceId: occurrence.id,
+          title: "แบบประเมินผลโครงการอบรมเชิงปฏิบัติการ",
+          enabled: true,
+          anonymous: true,
+          openAt: "2026-12-18T01:30:00.000Z",
+          closeAt: "2026-12-25T16:59:59.000Z",
+          welcomeText: "แบบประเมินผลการอบรม",
+        });
+      }
+      survey = await installTemplateForSurvey(survey);
+      setActivityTitles((current) => ({ ...current, [activity.id]: activity.title }));
+      setActivityFilter(activity.id);
+      setOccurrences((current) => [
+        ...current.filter((item) => item.id !== occurrence.id),
+        occurrence!,
+      ]);
+      setSurveys((current) => [
+        survey!,
+        ...current.filter((item) => item.id !== survey!.id),
+      ]);
+      setSelected(survey);
+      setSurveyTitleDraft(survey.title ?? "");
+      resetDraft();
+      toast.success("ตั้งค่ากิจกรรม รอบอบรม และแบบประเมินชุดครั่งเรียบร้อยแล้ว");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "ตั้งค่าโครงการไม่สำเร็จ");
+      await load();
+    } finally {
+      setCampaignSettingUp(false);
+    }
+  }
+
   async function applyShellacTemplate() {
     if (!selected) return;
     if (selected.questions.length > 0) {
@@ -157,25 +267,7 @@ export function SurveyManagementPage() {
     }
     setTemplateApplying(true);
     try {
-      const created: SurveyQuestion[] = [];
-      for (const question of shellacWorkshopSurveyTemplate) {
-        const saved = await createAdminQuestion({
-          ...question,
-          survey_id: selected.id,
-          active: true,
-        });
-        created.push(saved);
-      }
-      const title =
-        "แบบประเมินผลโครงการอบรมเชิงปฏิบัติการ “ครั่งสร้างรายได้ สู้โลกร้อน: การปล่อยเลี้ยงครั่งและการจัดการครั่งอย่างยั่งยืน”";
-      const welcomeText =
-        "วันศุกร์ที่ 18 ธันวาคม 2569 เวลา 08.30–16.00 น. ณ คณะสิ่งแวดล้อมและทรัพยากรศาสตร์ มหาวิทยาลัยมหิดล อำเภอสบปราบ จังหวัดลำปาง แบบประเมินนี้ใช้เพื่อประเมินการจัดอบรม ความรู้และทักษะที่ได้รับ ตลอดจนแนวทางนำไปใช้ในพื้นที่ ระดับคะแนน 1 = น้อยที่สุด และ 5 = มากที่สุด";
-      const updated = await updateAdminSurvey(selected.id, {
-        title,
-        anonymous: true,
-        welcome_text: welcomeText,
-      });
-      const next = { ...selected, ...updated, questions: created };
+      const next = await installTemplateForSurvey(selected);
       setSelected(next);
       setSurveys((items) => items.map((item) => (item.id === selected.id ? next : item)));
       setSurveyTitleDraft(title);
@@ -305,6 +397,14 @@ export function SurveyManagementPage() {
         description="สร้างและจัดการแบบประเมินกิจกรรม พร้อม Question Builder ในหน้าจอเดียว"
         actions={
           <>
+            <AdminButton
+              variant="primary"
+              icon={<ClipboardList className="h-4 w-4" />}
+              onClick={() => void setupShellacCampaign()}
+              disabled={campaignSettingUp}
+            >
+              {campaignSettingUp ? "กำลังตั้งค่าโครงการ..." : "ตั้งค่าแบบประเมินโครงการครั่ง"}
+            </AdminButton>
             <Link
               to="/admin/ai"
               className="inline-flex min-h-10 items-center justify-center gap-2 rounded-xl border border-violet-200 bg-violet-50 px-4 text-sm font-semibold text-violet-800 hover:bg-violet-100"
