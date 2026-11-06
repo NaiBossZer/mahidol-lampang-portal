@@ -1,5 +1,4 @@
 import { useEffect, useMemo, useState } from "react";
-import "./SurveyManagementPage.css";
 import { Link } from "react-router-dom";
 import { ArrowLeft, CheckCircle2, ClipboardList, Copy, Download, ExternalLink, Eye, FileText, Plus, QrCode, RefreshCw, Save, Sparkles, Trash2, X } from "lucide-react";
 import { toast } from "sonner";
@@ -334,7 +333,7 @@ export function SurveyManagementPage() {
   }
 
   return (
-    <section className="survey-management-design mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
+    <section className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
       <AdminPageHeader
         eyebrow="แบบประเมิน"
         title="จัดการแบบประเมิน"
@@ -411,7 +410,7 @@ export function SurveyManagementPage() {
         </>}
 
       {activeTab === "list" && <div className="mt-4">
-        <AdminCard className="survey-builder-panel overflow-hidden rounded-2xl border-slate-200 shadow-sm">
+        <AdminCard className="overflow-hidden rounded-2xl border-slate-200 shadow-sm">
           <div className="border-b border-slate-100 px-5 py-5">
             <div className="flex items-center justify-between gap-3">
               <div>
@@ -823,7 +822,7 @@ export function SurveyManagementPage() {
                     selected.questions.map((question, index) => (
                       <div
                         key={question.id}
-                        className="survey-question-item rounded-xl border border-slate-200 bg-white p-4 shadow-sm transition hover:-translate-y-0.5 hover:border-blue-200 hover:shadow-md"
+                        className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm transition hover:-translate-y-0.5 hover:border-blue-200 hover:shadow-md"
                       >
                         <div className="flex items-start gap-3">
                           <button
@@ -927,7 +926,7 @@ function SurveyPreviewModal({ survey, onClose }: { survey: AdminSurvey; onClose:
         </div>
         <div className="space-y-3 p-4 sm:p-6">
           <header className="rounded-2xl bg-[#002d62] p-6 text-white">
-            <p className="text-xs font-semibold uppercase tracking-wider text-emerald-300">งานพันธกิจเพื่อสังคม · แบบประเมิน</p>
+            <p className="text-xs font-semibold uppercase tracking-wider text-emerald-300">มหาวิทยาลัยมหิดล วิทยาเขตลำปาง · แบบประเมิน</p>
             <h3 className="mt-2 text-2xl font-bold">{survey.title || "แบบประเมินกิจกรรม"}</h3>
             <p className="mt-2 text-sm text-white/80">{survey.welcome_text || "ขอความร่วมมือประเมินกิจกรรม"}</p>
           </header>
