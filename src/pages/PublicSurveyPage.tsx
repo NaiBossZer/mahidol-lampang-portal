@@ -254,7 +254,7 @@ export function PublicSurveyPage() {
       const key = question.section_key || "general";
       let group = groups.find((item) => item.key === key);
       if (!group) {
-        group = { key, title: key === "general" ? "คำถามประเมิน" : key.replace(/[_-]+/g, " "), questions: [] };
+        const sectionTitles: Record<string, string> = { opening: "พิธีเปิด", learning: "ห้องเรียนรู้", learning_room: "ห้องเรียนรู้", outcomes: "ผลที่ได้รับ", feedback: "ความคิดเห็นเพิ่มเติม", profile: "ข้อมูลทั่วไป", organization: "การจัดกิจกรรม", practice: "การฝึกปฏิบัติ", overall: "ความพึงพอใจโดยรวม" };\n        group = { key, title: sectionTitles[key] || (key === "general" ? "คำถามประเมิน" : key.replace(/[_-]+/g, " ")), questions: [] };
         groups.push(group);
       }
       group.questions.push(question);
