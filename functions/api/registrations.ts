@@ -80,6 +80,8 @@ export async function onRequest({ request, env }: { request: Request; env: Env }
       const organization = String(body.organization ?? "").trim();
       const position = String(body.position ?? "").trim();
       const participantType = String(body.participantType ?? "general").trim();
+      const allowedParticipantTypes = new Set(["general", "community", "student", "staff", "partner"]);
+      if (String(body.website ?? "").trim()) return json({ success: true, data: { registrationCode: registrationCode() } }, 201);
       if (!activityId || fullName.length < 2 || fullName.length > 200 || !/^0[0-9]{8,9}$/.test(phoneNormalized) || body.pdpaConsent !== true) {
         return json({ success: false, error: "กรุณากรอกชื่อและเบอร์โทรศัพท์ให้ถูกต้อง พร้อมยินยอมประกาศความเป็นส่วนตัว" }, 400);
       }
