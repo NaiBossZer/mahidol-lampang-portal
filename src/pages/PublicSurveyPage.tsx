@@ -249,6 +249,88 @@ export function PublicSurveyPage() {
     );
   }
 
+  if (survey && !consent) {
+    return (
+      <main className="min-h-screen bg-[#fffdf7] pb-10 text-[#183153]">
+        <header className="w-full border-b-[3px] border-[#d6b34a] bg-[#102d55] text-white">
+          <div className="mx-auto flex min-h-[76px] w-full max-w-[560px] items-center justify-between gap-3 px-3 sm:px-0">
+            <div className="flex min-w-0 flex-1 items-center gap-2.5">
+              <div className="flex shrink-0 items-center gap-1">
+                <img src="/mahidol-logo.png" alt="มหาวิทยาลัยมหิดล" className="h-9 w-[68px] rounded bg-white object-contain p-1" />
+                <img src="/envi-logo.jpg" alt="คณะสิ่งแวดล้อมและทรัพยากรศาสตร์" className="h-9 w-[42px] rounded bg-white object-contain p-1" />
+                <img src="/social-engagement-logo.png" alt="งานพันธกิจเพื่อสังคม" className="h-9 w-[30px] rounded bg-white object-contain p-1" />
+              </div>
+              <div className="min-w-0 leading-tight">
+                <p className="text-xs font-bold text-white sm:text-sm">งานพันธกิจเพื่อสังคม</p>
+                <p className="mt-0.5 text-[9px] font-medium leading-4 text-white/90 sm:text-[10px]">คณะสิ่งแวดล้อมและทรัพยากรศาสตร์</p>
+                <p className="text-[9px] leading-3 text-white/65">มหาวิทยาลัยมหิดล</p>
+              </div>
+            </div>
+            <span className="inline-flex shrink-0 items-center gap-2 rounded-md border border-white/20 bg-white/5 px-2 py-2 text-[9px] text-white/90 sm:px-3 sm:text-[10px]">
+              <ClipboardCheck className="h-3 w-3" /> ระบบแบบประเมินออนไลน์
+            </span>
+          </div>
+        </header>
+
+        <div className="mx-auto w-full max-w-[556px] px-3 pt-8 sm:px-0 sm:pt-12">
+          <section className="overflow-hidden rounded-xl border border-[#e5e9ef] bg-white shadow-[0_5px_18px_rgba(25,45,75,0.06)]">
+            <div className="border-b border-[#eee2c9] bg-[#fff8e9] px-5 py-5 sm:px-7">
+              <div className="flex items-center gap-2 text-[#b51f43]">
+                <ShieldCheck className="h-5 w-5" />
+                <span className="text-xs font-bold tracking-wide">ก่อนเริ่มทำแบบประเมิน</span>
+              </div>
+              <h1 className="mt-3 text-xl font-bold text-[#183153] sm:text-2xl">การคุ้มครองข้อมูลส่วนบุคคล (PDPA)</h1>
+              <p className="mt-2 text-sm leading-6 text-slate-600">{survey.title || "แบบประเมินกิจกรรม"}</p>
+            </div>
+
+            <div className="space-y-4 px-5 py-6 sm:px-7">
+              <div className="rounded-lg border border-[#e5e9ef] bg-[#fafbfc] p-4">
+                <h2 className="text-sm font-semibold text-[#183153]">วัตถุประสงค์ในการใช้ข้อมูล</h2>
+                <p className="mt-2 text-sm leading-7 text-slate-600">
+                  ข้อมูลที่ท่านให้ผ่านแบบประเมินนี้จะถูกใช้เพื่อการวิเคราะห์และปรับปรุงกิจกรรมตามวัตถุประสงค์ที่แจ้งไว้
+                </p>
+              </div>
+              <div className="flex items-start gap-3 rounded-lg border border-[#e5e9ef] p-4">
+                <LockKeyhole className="mt-0.5 h-5 w-5 shrink-0 text-[#b51f43]" />
+                <p className="text-sm leading-7 text-slate-600">
+                  โปรดอ่านและพิจารณาข้อความการคุ้มครองข้อมูลส่วนบุคคลก่อนดำเนินการ หากท่านยินยอมจึงกดปุ่ม “ยอมรับและเริ่มทำแบบประเมิน”
+                </p>
+              </div>
+              {error && <p className="rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-700" role="alert">{error}</p>}
+              <div className="flex flex-col-reverse gap-2 pt-2 sm:flex-row sm:justify-between">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSurvey(null);
+                    setAnswers({});
+                    setConsent(false);
+                    setError("");
+                  }}
+                  className="inline-flex min-h-11 items-center justify-center rounded-md border border-[#d4dce6] bg-white px-5 py-2.5 text-sm font-semibold text-slate-600 transition hover:bg-slate-50"
+                >
+                  กลับไปเลือกแบบประเมิน
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setConsent(true);
+                    setError("");
+                  }}
+                  className="inline-flex min-h-11 items-center justify-center gap-2 rounded-md bg-[#b51f43] px-6 py-2.5 text-sm font-semibold text-white transition hover:bg-[#941934]"
+                >
+                  <ShieldCheck className="h-4 w-4" /> ยอมรับและเริ่มทำแบบประเมิน
+                </button>
+              </div>
+            </div>
+          </section>
+          <p className="mt-5 text-center text-[10px] leading-5 text-slate-400">
+            มหาวิทยาลัยมหิดล · คณะสิ่งแวดล้อมและทรัพยากรศาสตร์ · งานพันธกิจเพื่อสังคม
+          </p>
+        </div>
+      </main>
+    );
+  }
+
   const sectionGroups = survey.questions.reduce<Array<{ key: string; title: string; questions: SurveyQuestion[] }>>(
     (groups, question) => {
       const key = question.section_key || "general";
@@ -338,30 +420,6 @@ export function PublicSurveyPage() {
         </section>
 
         <form onSubmit={submit} className="mt-4 space-y-4">
-          <section className="rounded-[9px] border border-[#e5e9ef] bg-white p-3">
-            <div className="flex items-start gap-2">
-              <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-[#b51f43]" />
-              <div>
-                <h2 className="text-[10px] font-semibold text-[#183153]">การคุ้มครองข้อมูลส่วนบุคคล (PDPA)</h2>
-                <p className="mt-1 text-[9px] leading-4 text-slate-500">
-                  ข้อมูลจะถูกใช้เพื่อการวิเคราะห์และปรับปรุงกิจกรรมตามวัตถุประสงค์ที่แจ้งไว้
-                </p>
-              </div>
-            </div>
-            <label className="mt-3 flex cursor-pointer items-start gap-2 rounded-md border border-[#e5e9ef] bg-[#fafbfc] p-2.5 text-[9px] leading-4 text-slate-600">
-              <input
-                type="checkbox"
-                checked={consent}
-                onChange={(event) => {
-                  setConsent(event.target.checked);
-                  setError("");
-                }}
-                className="mt-0.5 h-3.5 w-3.5 shrink-0 accent-[#b51f43]"
-              />
-              <span>ข้าพเจ้ายอมรับข้อตกลงความเป็นส่วนตัวและยินยอมให้ใช้ข้อมูลเพื่อการวิเคราะห์และปรับปรุงกิจกรรม</span>
-            </label>
-          </section>
-
           {sectionGroups.map((group) => (
             <section key={group.key}>
               <div className="mb-2 flex items-center gap-2">
