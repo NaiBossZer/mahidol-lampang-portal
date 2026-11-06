@@ -423,7 +423,9 @@ function figmaLinkedPackageSourcemaps(): Plugin {
         const mapFile = path.resolve(path.dirname(file), url)
         return { map: JSON.parse(fs.readFileSync(mapFile, 'utf8')), mapDir: path.dirname(mapFile) }
       }
-    } catch {}
+    } catch {
+      // Invalid or missing source maps fall back to identity mappings below.
+    }
     // Without a usable input map, map every line to itself.
     const mappings = code.split('\n').map((_, i) => (i ? 'AACA' : 'AAAA'))
     const map = { version: 3, sources: [file], sourcesContent: [code], names: [], mappings: mappings.join(';') }
