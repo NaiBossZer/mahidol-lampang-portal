@@ -48,7 +48,7 @@ export function PublicSurveyPage() {
     setError("");
     setShowValidation(false);
     try {
-      const response = await fetch(`/api/survey?surveyId=${encodeURIComponent(id)}`);
+      const response = await fetch(`/api/survey?surveyId=${encodeURIComponent(id)}${isTestMode ? "&mode=test" : ""}`, { credentials: "include" });
       const body = await response.json();
       if (!response.ok) throw new Error(body.error || "ไม่สามารถโหลดแบบประเมินได้");
       setSurvey(body.data as PublicSurvey);
@@ -77,7 +77,7 @@ export function PublicSurveyPage() {
         setError(e instanceof Error ? e.message : "ไม่สามารถโหลดรายการแบบประเมินได้");
         setLoading(false);
       });
-  }, [querySurveyId]);
+  }, [querySurveyId, isTestMode]);
 
   const setAnswer = (question: SurveyQuestion, value: string) => {
     setAnswers((current) => ({ ...current, [question.id]: value }));
@@ -167,10 +167,10 @@ export function PublicSurveyPage() {
           <span className="mx-auto grid h-20 w-20 place-items-center rounded-full bg-emerald-50 text-emerald-600">
             <CheckCircle2 className="h-10 w-10" />
           </span>
-          <p className="mt-6 text-xs font-bold tracking-[0.16em] text-emerald-700">SUBMISSION COMPLETE</p>
-          <h1 className="mt-2 text-2xl font-bold text-[#002d62]">ขอบคุณสำหรับการประเมิน</h1>
+          <p className="mt-6 text-xs font-bold tracking-[0.16em] text-emerald-700">{isTestMode ? "TEST SUBMISSION SAVED" : "SUBMISSION COMPLETE"}</p>
+          <h1 className="mt-2 text-2xl font-bold text-[#002d62]">{isTestMode ? "บันทึกผลทดสอบเรียบร้อย" : "ขอบคุณสำหรับการประเมิน"}</h1>
           <p className="mx-auto mt-3 max-w-sm text-sm leading-7 text-slate-600">
-            ระบบบันทึกคำตอบของท่านเรียบร้อยแล้ว ขอบคุณที่สละเวลาแบ่งปันความคิดเห็นเพื่อพัฒนากิจกรรมให้ดียิ่งขึ้น
+            {isTestMode ? "คำตอบนี้ถูกจัดเก็บในฐานข้อมูลทดสอบแยกต่างหาก ไม่ถูกรวมในผลประเมินจริง" : "ระบบบันทึกคำตอบของท่านเรียบร้อยแล้ว ขอบคุณที่สละเวลาแบ่งปันความคิดเห็นเพื่อพัฒนากิจกรรมให้ดียิ่งขึ้น"}
           </p>
           <div className="mt-7 rounded-2xl bg-[#f7f7f4] px-4 py-3 text-xs text-slate-500">
             ท่านสามารถปิดหน้านี้ได้
@@ -182,7 +182,7 @@ export function PublicSurveyPage() {
 
   if (!survey) {
     return (
-      <main className="min-h-screen bg-[#fffdf7] pb-10 text-[#183153]">
+      <main className="min-h-screen bg-[#fffdf7] pb-10 text-[#183153]">\n        {isTestMode && <div className="border-b border-amber-300 bg-amber-50 px-4 py-2 text-center text-xs font-bold text-amber-900">โหมดทดสอบสำหรับผู้ดูแล · คำตอบจะไม่ถูกรวมกับผลประเมินจริง</div>}
         <header className="w-full border-b-[3px] border-[#d6b34a] bg-[#102d55] text-white">
           <div className="mx-auto flex min-h-[76px] w-full max-w-[560px] items-center justify-between gap-3 px-3 sm:px-0">
             <div className="flex min-w-0 flex-1 items-center gap-2.5">
