@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState, type ReactNode } from "react";
-import { Activity, Archive, CalendarDays, CheckCircle2, FileText, ImagePlus, Lightbulb, MapPin, MoreHorizontal, Pencil, Plus, RefreshCw, Send, Star, Trash2, Upload, Users, X } from "lucide-react";
+import { Activity, CalendarDays, CheckCircle2, FileText, ImagePlus, Lightbulb, MapPin, MoreHorizontal, Pencil, Plus, Send, Star, Trash2, Upload, Users, X } from "lucide-react";
 import { toast } from "sonner";
 import {
   createActivity,
@@ -175,21 +175,21 @@ export function ActivitiesManagementPage() {
     () => [...new Set(activities.map((activity) => String(Number(activity.activityDate.slice(0, 4)) + 543)))].sort((a, b) => Number(b) - Number(a)),
     [activities],
   );
+  const visibleActivities = activities.filter((activity) => activity.status !== "archived");
   const activitySummary = {
-    all: activities.length,
-    draft: activities.filter((activity) => activity.status === "draft").length,
-    published: activities.filter((activity) => activity.status === "published").length,
-    archived: activities.filter((activity) => activity.status === "archived").length,
+    all: visibleActivities.length,
+    draft: visibleActivities.filter((activity) => activity.status === "draft").length,
+    published: visibleActivities.filter((activity) => activity.status === "published").length,
   };
   const filtered = useMemo(() => {
     const needle = q.trim().toLowerCase();
-    return activities.filter((activity) => {
+    return visibleActivities.filter((activity) => {
       const activityYear = String(Number(activity.activityDate.slice(0, 4)) + 543);
       return (status === "all" || activity.status === status) &&
         (year === "all" || activityYear === year) &&
         (!needle || `${activity.title} ${activity.slug} ${activity.location ?? ""}`.toLowerCase().includes(needle));
     });
-  }, [activities, q, status, year]);
+  }, [visibleActivities, q, status, year]);
 
   function create() {
     setEdit(null);
@@ -362,22 +362,18 @@ export function ActivitiesManagementPage() {
         eyebrow="ACTIVITIES"
         title="รายการกิจกรรมโครงการ"
         description="ค้นหา ติดตามสถานะ และจัดการกิจกรรมโครงการทั้งหมดจากฐานข้อมูลกลาง"
-        actions={<>
-          <AdminButton variant="secondary" icon={<RefreshCw className="h-4 w-4" />} onClick={() => void load()}>รีเฟรช</AdminButton>
-          <AdminButton variant="primary" icon={<Plus className="h-4 w-4" />} onClick={create}>สร้างกิจกรรมใหม่</AdminButton>
-        </>}
+        actions={<AdminButton variant="primary" icon={<Plus className="h-4 w-4" />} onClick={create}>สร้างกิจกรรมใหม่</AdminButton>}
       />
 
-      <div className="mt-6 grid grid-cols-2 gap-3 xl:grid-cols-4">
+      <div className="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-3">
         {([
           { key: "all", label: "กิจกรรมทั้งหมด", value: activitySummary.all, icon: Activity, tone: "blue", hint: "ทุกสถานะ" },
           { key: "published", label: "เผยแพร่แล้ว", value: activitySummary.published, icon: Send, tone: "green", hint: "แสดงต่อสาธารณะ" },
           { key: "draft", label: "ฉบับร่าง", value: activitySummary.draft, icon: FileText, tone: "amber", hint: "ยังไม่เผยแพร่" },
-          { key: "archived", label: "เก็บถาวร", value: activitySummary.archived, icon: Archive, tone: "slate", hint: "จัดเก็บแล้ว" },
         ] as const).map((item) => {
           const Icon = item.icon;
           const active = status === item.key;
-          const tones = { blue: "bg-blue-50 text-blue-700 ring-blue-100", green: "bg-emerald-50 text-emerald-700 ring-emerald-100", amber: "bg-amber-50 text-amber-700 ring-amber-100", slate: "bg-slate-100 text-slate-600 ring-slate-200" };
+          const tones = { blue: "bg-blue-50 text-blue-700 ring-blue-100", green: "bg-emerald-50 text-emerald-700 ring-emerald-100", amber: "bg-amber-50 text-amber-700 ring-amber-100" };
           return (
             <button key={item.key} type="button" onClick={() => setStatus(item.key)} aria-pressed={active}
               className={`rounded-2xl border bg-white p-4 text-left shadow-sm transition hover:-translate-y-0.5 hover:shadow-md sm:p-5 ${active ? "border-[#002d62] ring-2 ring-[#002d62]/10" : "border-slate-200"}`}>
@@ -401,10 +397,6 @@ export function ActivitiesManagementPage() {
           <option value="all">ทุกปี พ.ศ.</option>
           {availableYears.map((value) => <option key={value} value={value}>{value}</option>)}
         </select>
-        <select aria-label="กรองตามสถานะ" value={status} onChange={(event) => setStatus(event.target.value as typeof status)}
-          className="min-h-11 rounded-xl border border-slate-200 bg-white px-3 text-sm outline-none transition focus:border-[#002d62] focus:ring-4 focus:ring-[#002d62]/10">
-          <option value="all">ทุกสถานะ</option><option value="draft">ร่าง</option><option value="published">เผยแพร่</option><option value="archived">เก็บถาวร</option>
-        </select>
         {(q || status !== "all" || year !== "all") && (
           <button type="button" onClick={() => { setQ(""); setStatus("all"); setYear("all"); }} className="min-h-11 rounded-xl px-3 text-sm font-semibold text-slate-500 transition hover:bg-slate-100 hover:text-[#002d62]">ล้างตัวกรอง</button>
         )}
@@ -412,7 +404,7 @@ export function ActivitiesManagementPage() {
 
       <div className="mt-4 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
         <div className="flex flex-col gap-1 border-b border-slate-100 px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-5">
-          <div><h2 className="text-sm font-bold text-slate-900">รายการกิจกรรม</h2><p className="mt-0.5 text-xs text-slate-500">แสดง {filtered.length.toLocaleString("th-TH")} จาก {activities.length.toLocaleString("th-TH")} กิจกรรม</p></div>
+          <div><h2 className="text-sm font-bold text-slate-900">รายการกิจกรรม</h2><p className="mt-0.5 text-xs text-slate-500">แสดง {filtered.length.toLocaleString("th-TH")} จาก {visibleActivities.length.toLocaleString("th-TH")} กิจกรรม</p></div>
           <span className="text-xs text-slate-400">ข้อมูลจากฐานข้อมูลกลาง</span>
         </div>
         {loading ? <AdminLoadingState label="กำลังโหลดกิจกรรม..." /> : filtered.length === 0 ? (
