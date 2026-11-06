@@ -1,5 +1,5 @@
 import { Children, isValidElement, type ButtonHTMLAttributes, type HTMLAttributes, type ReactNode } from "react";
-import { Search, RefreshCw, Sparkles } from "lucide-react";
+import { Search, RefreshCw, Sparkles, ShieldCheck } from "lucide-react";
 
 type AdminButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & { variant?: "primary" | "secondary" | "ghost" | "danger"; icon?: ReactNode };
 
