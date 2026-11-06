@@ -33,6 +33,10 @@ export function PublicSurveyPage() {
     () => new URLSearchParams(window.location.search).get("surveyId"),
     [],
   );
+  const isTestMode = useMemo(
+    () => new URLSearchParams(window.location.search).get("mode") === "test",
+    [],
+  );
   const [survey, setSurvey] = useState<PublicSurvey | null>(null);
   const [available, setAvailable] = useState<SurveySummary[]>([]);
   const [answers, setAnswers] = useState<Record<string, string | string[]>>({});
@@ -62,6 +66,11 @@ export function PublicSurveyPage() {
   }
 
   useEffect(() => {
+    if (isTestMode) {
+      if (querySurveyId) void loadSurvey(querySurveyId);
+      else { setError("ลิงก์ทดสอบไม่ถูกต้อง"); setLoading(false); }
+      return;
+    }
     fetch("/api/survey")
       .then(async (r) => {
         const body = await r.json();
@@ -128,10 +137,12 @@ export function PublicSurveyPage() {
       });
       const response = await fetch("/api/survey", {
         method: "POST",
+        credentials: "include",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           surveyId: survey.id,
           occurrenceId: survey.occurrence_id,
+          ...(isTestMode ? { mode: "test" } : {}),
           pdpaConsent: true,
           answers: normalized,
         }),
