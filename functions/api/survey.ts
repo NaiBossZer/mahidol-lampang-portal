@@ -1,8 +1,45 @@
-import { json, supabaseConfig } from "./auth/_shared";
+import { getCookie, getSupabaseUser, hasAdminPermission, isAdminRole, json, supabaseConfig } from "./auth/_shared";
 
 type Env = Record<string, unknown>;
 type Row = Record<string, unknown>;
 type Answer = { questionId: string; number?: number; text?: string; options?: string[] };
+
+async function authorizeTest(request: Request, env: Env) {
+  const user = await getSupabaseUser(request, env);
+  const role = user?.app_metadata?.role;
+  const token = getCookie(request, "sb_access_token");
+  if (!user || !isAdminRole(role) || !hasAdminPermission(role, "survey.read") || !token) return null;
+  return { user, role, token };
+}
+
+async function sbAsUser<T>(env: Env, token: string, path: string, init: RequestInit = {}) {
+  const { url, key, configured } = supabaseConfig(env);
+  if (!configured) throw new Error("Supabase is not configured");
+  const response = await fetch(`${url}/rest/v1/${path}`, {
+    ...init,
+    headers: { apikey: key, Authorization: `Bearer ${token}`, Accept: "application/json", "Content-Type": "application/json", ...(init.headers ?? {}) },
+  });
+  const body = await response.json().catch(() => null);
+  if (!response.ok) {
+    const detail = typeof body === "object" && body !== null ? String((body as Record<string, unknown>).message ?? (body as Record<string, unknown>).hint ?? "") : "";
+    throw new Error(`Supabase REST ${response.status}${detail ? `: ${detail.slice(0, 220)}` : ""}`);
+  }
+  return body as T;
+}
+
+async function loadTestSurvey(request: Request, env: Env, surveyId: string) {
+  const auth = await authorizeTest(request, env);
+  if (!auth) return { response: json({ success: false, error: "กรุณาเข้าสู่ระบบผู้ดูแลที่มีสิทธิ์ดูแบบประเมิน" }, 401) };
+  const surveys = await sbAsUser<Row[]>(env, auth.token, `occurrence_surveys?id=eq.${encodeURIComponent(surveyId)}&select=id,occurrence_id,title,anonymous,welcome_text,enabled`);
+  const survey = surveys[0];
+  if (!survey) return { response: json({ success: false, error: "ไม่พบแบบประเมิน" }, 404) };
+  const occurrences = await sbAsUser<Row[]>(env, auth.token, `activity_occurrences?id=eq.${encodeURIComponent(String(survey.occurrence_id))}&select=id,activity_id,status`);
+  const occurrence = occurrences[0];
+  if (!occurrence || ["cancelled", "archived"].includes(String(occurrence.status)))
+    return { response: json({ success: false, error: "รอบกิจกรรมถูกยกเลิกหรือเก็บถาวรแล้ว" }, 409) };
+  const questions = await sbAsUser<Row[]>(env, auth.token, `survey_questions?survey_id=eq.${encodeURIComponent(surveyId)}&active=eq.true&select=id,section_key,question_text,question_type,required,order_index,options,scale_min,scale_max&order=order_index.asc`);
+  return { auth, survey, occurrence, questions };
+}
 
 async function sb<T>(env: Env, path: string, init: RequestInit = {}) {
   const { url, key, configured } = supabaseConfig(env);
@@ -47,7 +84,7 @@ export async function onRequest({ request, env }: { request: Request; env: Env }
     const url = new URL(request.url);
     if (request.method === "GET") {
       const surveyId = url.searchParams.get("surveyId");
-      if (!surveyId) {
+      if (url.searchParams.get("mode") === "test") {\n        if (!surveyId) return json({ success: false, error: "ต้องระบุ surveyId" }, 400);\n        const loaded = await loadTestSurvey(request, env, surveyId);\n        if ("response" in loaded) return loaded.response;\n        return json({ success: true, data: { ...loaded.survey, occurrence_id: loaded.occurrence.id, questions: loaded.questions }, mode: "test" });\n      }\n      if (!surveyId) {
         const surveys = await sb<Row[]>(
           env,
           "occurrence_surveys?enabled=eq.true&select=id,occurrence_id,title,anonymous,welcome_text,open_at,close_at,enabled&order=created_at.desc",
@@ -75,7 +112,7 @@ export async function onRequest({ request, env }: { request: Request; env: Env }
     if (request.method !== "POST")
       return json({ success: false, error: "Method Not Allowed" }, 405, { Allow: "GET, POST" });
     const body = (await request.json()) as {
-      surveyId?: string;
+      surveyId?: string;\n      mode?: string;
       activityId?: string;
       occurrenceId?: string;
       ageGroup?: string;
