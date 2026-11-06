@@ -9,7 +9,6 @@ import {
   ShieldCheck,
 } from "lucide-react";
 import type { SurveyQuestion } from "@/services/admin-surveys";
-import { PublicHeader } from "@/components/layout/PublicHeader";
 
 type PublicSurvey = {
   id: string;
@@ -270,7 +269,25 @@ export function PublicSurveyPage() {
 
   return (
     <main className="min-h-screen bg-[#fffdf7] pb-10 text-[#183153]">
-      <PublicHeader />
+      <header className="w-full border-b-[3px] border-[#d6b34a] bg-[#102d55] text-white">
+        <div className="mx-auto flex min-h-[76px] w-full max-w-[560px] items-center justify-between gap-3 px-3 sm:px-0">
+          <div className="flex min-w-0 flex-1 items-center gap-2.5">
+            <div className="flex shrink-0 items-center gap-1">
+              <img src="/mahidol-logo.png" alt="มหาวิทยาลัยมหิดล" className="h-9 w-[68px] rounded bg-white object-contain p-1" />
+              <img src="/envi-logo.jpg" alt="คณะสิ่งแวดล้อมและทรัพยากรศาสตร์" className="h-9 w-[42px] rounded bg-white object-contain p-1" />
+              <img src="/social-engagement-logo.png" alt="งานพันธกิจเพื่อสังคม" className="h-9 w-[30px] rounded bg-white object-contain p-1" />
+            </div>
+            <div className="min-w-0 leading-tight">
+              <p className="text-xs font-bold text-white sm:text-sm">งานพันธกิจเพื่อสังคม</p>
+              <p className="mt-0.5 text-[9px] font-medium leading-4 text-white/90 sm:text-[10px]">คณะสิ่งแวดล้อมและทรัพยากรศาสตร์</p>
+              <p className="text-[9px] leading-3 text-white/65">มหาวิทยาลัยมหิดล</p>
+            </div>
+          </div>
+          <span className="inline-flex shrink-0 items-center gap-2 rounded-md border border-white/20 bg-white/5 px-2 py-2 text-[9px] text-white/90 sm:px-3 sm:text-[10px]">
+            <ClipboardCheck className="h-3 w-3" /> ระบบแบบประเมินออนไลน์
+          </span>
+        </div>
+      </header>
 
       <div className="mx-auto w-full max-w-[556px] px-3 pt-7 sm:px-0 sm:pt-12">
         <div className="overflow-hidden rounded-[9px] border border-[#e8e3d8] bg-white shadow-[0_5px_18px_rgba(25,45,75,0.06)]">
