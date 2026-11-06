@@ -9,6 +9,7 @@ import {
   ShieldCheck,
 } from "lucide-react";
 import type { SurveyQuestion } from "@/services/admin-surveys";
+import { PublicHeader } from "@/components/layout/PublicHeader";
 
 type PublicSurvey = {
   id: string;
@@ -269,21 +270,7 @@ export function PublicSurveyPage() {
 
   return (
     <main className="min-h-screen bg-[#fffdf7] pb-10 text-[#183153]">
-      <header className="w-full border-b-[3px] border-[#d6b34a] bg-[#102d55] text-white">
-        <div className="mx-auto flex min-h-[76px] w-full max-w-[560px] items-center gap-3 px-4 sm:px-0">
-          <div className="grid h-12 w-12 shrink-0 place-items-center rounded-full border border-[#8295ae] bg-[#173b68] shadow-inner">
-            <span className="font-serif text-base font-bold tracking-wide text-[#e5bd48]">MU</span>
-          </div>
-          <div className="min-w-0 flex-1">
-            <p className="text-sm font-bold leading-5 text-white">งานพันธกิจเพื่อสังคม</p>
-            <p className="text-[10px] font-medium leading-4 text-white/90">คณะสิ่งแวดล้อมและทรัพยากรศาสตร์</p>
-            <p className="text-[9px] leading-3 text-white/65">มหาวิทยาลัยมหิดล</p>
-          </div>
-          <span className="hidden items-center gap-2 rounded-md border border-white/20 bg-white/5 px-3 py-2 text-[10px] text-white/90 sm:inline-flex">
-            <ClipboardCheck className="h-3 w-3" /> ระบบแบบประเมินออนไลน์
-          </span>
-        </div>
-      </header>
+      <PublicHeader />
 
       <div className="mx-auto w-full max-w-[556px] px-3 pt-7 sm:px-0 sm:pt-12">
         <div className="overflow-hidden rounded-[9px] border border-[#e8e3d8] bg-white shadow-[0_5px_18px_rgba(25,45,75,0.06)]">
