@@ -39,7 +39,7 @@ export function ActivityRegistrationPage() {
       const response = await fetch("/api/registrations", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ activityId: activity.id, ...form, pdpaConsent: consent }),
+        body: JSON.stringify({ activityId: activity.id, ...form, website: (event.currentTarget.elements.namedItem("website") as HTMLInputElement | null)?.value ?? "", pdpaConsent: consent }),
       });
       const body = await response.json();
       if (!response.ok) throw new Error(body.error || "ลงทะเบียนไม่สำเร็จ");
@@ -60,6 +60,7 @@ export function ActivityRegistrationPage() {
       <div className="bg-brand-navy px-6 py-7 text-white sm:px-8">{activity?.featured_image && <img src={activity.featured_image} alt="" className="mb-5 h-44 w-full rounded-2xl object-cover" />}<p className="text-xs font-bold tracking-widest text-northern-gold">MAHIDOL UNIVERSITY · EVENT REGISTRATION</p><h1 className="mt-3 text-2xl font-black leading-tight sm:text-3xl">ลงทะเบียนเข้าร่วมกิจกรรม</h1><p className="mt-3 text-sm leading-6 text-blue-100">{activity?.title}</p><div className="mt-5 flex flex-wrap gap-4 text-xs text-white/80"><span className="inline-flex items-center gap-2"><CalendarDays className="h-4 w-4" />{activity?.activity_date}</span>{activity?.location && <span className="inline-flex items-center gap-2"><MapPin className="h-4 w-4" />{activity.location}</span>}</div></div>
       <form onSubmit={submit} className="space-y-5 p-5 sm:p-8">
         <div className="flex items-center gap-2 border-b border-slate-100 pb-3"><ClipboardList className="h-5 w-5 text-brand-blue" /><h2 className="font-bold text-brand-navy">ข้อมูลผู้เข้าร่วม</h2></div>
+        <input type="text" name="website" tabIndex={-1} autoComplete="off" aria-hidden="true" className="hidden" />
         <div className="grid gap-4 sm:grid-cols-2">
           <Field label="ชื่อ–นามสกุล *"><input required minLength={2} maxLength={200} value={form.fullName} onChange={(e) => update("fullName", e.target.value)} autoComplete="name" className={inputClass} placeholder="กรอกชื่อและนามสกุล" /></Field>
           <Field label="เบอร์โทรศัพท์ *"><input required type="tel" value={form.phone} onChange={(e) => update("phone", e.target.value)} autoComplete="tel" className={inputClass} placeholder="08XXXXXXXX" /></Field>
