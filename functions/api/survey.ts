@@ -84,7 +84,13 @@ export async function onRequest({ request, env }: { request: Request; env: Env }
     const url = new URL(request.url);
     if (request.method === "GET") {
       const surveyId = url.searchParams.get("surveyId");
-      if (url.searchParams.get("mode") === "test") {\n        if (!surveyId) return json({ success: false, error: "ต้องระบุ surveyId" }, 400);\n        const loaded = await loadTestSurvey(request, env, surveyId);\n        if ("response" in loaded) return loaded.response;\n        return json({ success: true, data: { ...loaded.survey, occurrence_id: loaded.occurrence.id, questions: loaded.questions }, mode: "test" });\n      }\n      if (!surveyId) {
+      if (url.searchParams.get("mode") === "test") {
+        if (!surveyId) return json({ success: false, error: "ต้องระบุ surveyId" }, 400);
+        const loaded = await loadTestSurvey(request, env, surveyId);
+        if ("response" in loaded) return loaded.response;
+        return json({ success: true, data: { ...loaded.survey, occurrence_id: loaded.occurrence.id, questions: loaded.questions }, mode: "test" });
+      }
+      if (!surveyId) {
         const surveys = await sb<Row[]>(
           env,
           "occurrence_surveys?enabled=eq.true&select=id,occurrence_id,title,anonymous,welcome_text,open_at,close_at,enabled&order=created_at.desc",
@@ -112,7 +118,8 @@ export async function onRequest({ request, env }: { request: Request; env: Env }
     if (request.method !== "POST")
       return json({ success: false, error: "Method Not Allowed" }, 405, { Allow: "GET, POST" });
     const body = (await request.json()) as {
-      surveyId?: string;\n      mode?: string;
+      surveyId?: string;
+      mode?: string;
       activityId?: string;
       occurrenceId?: string;
       ageGroup?: string;
