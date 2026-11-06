@@ -963,19 +963,16 @@ function SurveyTestResponsesModal({ survey, onClose }: { survey: AdminSurvey; on
   const [error, setError] = useState("");
   const [deletingId, setDeletingId] = useState("");
 
-  async function load() {
+  useEffect(() => {
+    let active = true;
     setLoading(true);
     setError("");
-    try {
-      setRows(await getSurveyTestResponses(survey.id));
-    } catch (e) {
-      setError(e instanceof Error ? e.message : "โหลดผลทดสอบไม่สำเร็จ");
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  useEffect(() => { void load(); }, [survey.id]);
+    getSurveyTestResponses(survey.id)
+      .then((data) => { if (active) setRows(data); })
+      .catch((e) => { if (active) setError(e instanceof Error ? e.message : "โหลดผลทดสอบไม่สำเร็จ"); })
+      .finally(() => { if (active) setLoading(false); });
+    return () => { active = false; };
+  }, [survey.id]);
 
   async function remove(row: SurveyTestResponse) {
     if (!window.confirm("ยืนยันลบคำตอบทดสอบรายการนี้?")) return;
