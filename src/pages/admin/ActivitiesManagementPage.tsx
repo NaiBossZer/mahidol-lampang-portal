@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState, type ReactNode } from "react";
-import { CalendarDays, CheckCircle2, ImagePlus, Lightbulb, Pencil, Plus, RefreshCw, Star, Trash2, Upload, X } from "lucide-react";
+import { Activity, Archive, CalendarDays, CheckCircle2, FileText, ImagePlus, Lightbulb, Pencil, Plus, RefreshCw, Send, Star, Trash2, Upload, Users, X } from "lucide-react";
 import { toast } from "sonner";
 import {
   createActivity,
@@ -137,6 +137,7 @@ export function ActivitiesManagementPage() {
   const [centers, setCenters] = useState<LearningCenter[]>([]);
   const [q, setQ] = useState("");
   const [status, setStatus] = useState<"all" | ActivityStatus>("all");
+  const [year, setYear] = useState("all");
   const [edit, setEdit] = useState<AdminActivity | null>(null);
   const [form, setForm] = useState<ActivityWriteInput>(blankActivity);
   const [selectedCenters, setSelectedCenters] = useState<string[]>([]);
@@ -170,14 +171,25 @@ export function ActivitiesManagementPage() {
     void getAdminLearningCenters().then(setCenters).catch(() => setCenters([]));
   }, []);
 
+  const availableYears = useMemo(
+    () => [...new Set(activities.map((activity) => String(Number(activity.activityDate.slice(0, 4)) + 543)))].sort((a, b) => Number(b) - Number(a)),
+    [activities],
+  );
+  const summary = useMemo(() => ({
+    all: activities.length,
+    draft: activities.filter((activity) => activity.status === "draft").length,
+    published: activities.filter((activity) => activity.status === "published").length,
+    archived: activities.filter((activity) => activity.status === "archived").length,
+  }), [activities]);
   const filtered = useMemo(() => {
     const needle = q.trim().toLowerCase();
-    return activities.filter(
-      (activity) =>
-        (status === "all" || activity.status === status) &&
-        (!needle || `${activity.title} ${activity.slug} ${activity.location ?? ""}`.toLowerCase().includes(needle)),
-    );
-  }, [activities, q, status]);
+    return activities.filter((activity) => {
+      const activityYear = String(Number(activity.activityDate.slice(0, 4)) + 543);
+      return (status === "all" || activity.status === status) &&
+        (year === "all" || activityYear === year) &&
+        (!needle || `${activity.title} ${activity.slug} ${activity.location ?? ""}`.toLowerCase().includes(needle));
+    });
+  }, [activities, q, status, year]);
 
   function create() {
     setEdit(null);
