@@ -196,22 +196,28 @@ export function PublicSurveyPage() {
       <main className="min-h-screen bg-[#fffdf7] pb-10 text-[#183153]">
         {isTestMode && <div className="border-b border-amber-300 bg-amber-50 px-4 py-2 text-center text-xs font-bold text-amber-900">โหมดทดสอบสำหรับผู้ดูแล · คำตอบจะไม่ถูกรวมกับผลประเมินจริง</div>}
         <header className="w-full border-b-[3px] border-[#d6b34a] bg-[#102d55] text-white">
-          <div className="mx-auto flex min-h-[76px] w-full max-w-[560px] items-center justify-between gap-3 px-3 sm:px-0">
-            <div className="flex min-w-0 flex-1 items-center gap-2.5">
+          <div className="mx-auto flex min-h-[76px] w-full max-w-[560px] flex-col items-center justify-center gap-2 px-3 py-3 sm:flex-row sm:justify-between sm:gap-3 sm:px-0 sm:py-0">
+            <div className="flex w-full items-center justify-center gap-2.5 sm:w-auto sm:min-w-0 sm:flex-1 sm:justify-start">
               <div className="flex shrink-0 items-center gap-1">
                 <img src="/mahidol-logo.png" alt="มหาวิทยาลัยมหิดล" className="h-9 w-[68px] rounded bg-white object-contain p-1" />
                 <img src="/envi-logo.jpg" alt="คณะสิ่งแวดล้อมและทรัพยากรศาสตร์" className="h-9 w-[42px] rounded bg-white object-contain p-1" />
                 <img src="/social-engagement-logo.png" alt="งานพันธกิจเพื่อสังคม" className="h-9 w-[30px] rounded bg-white object-contain p-1" />
               </div>
-              <div className="min-w-0 leading-tight">
+              <div className="hidden min-w-0 leading-tight sm:block">
                 <p className="text-xs font-bold text-white sm:text-sm">งานพันธกิจเพื่อสังคม</p>
                 <p className="mt-0.5 text-[9px] font-medium leading-4 text-white/90 sm:text-[10px]">คณะสิ่งแวดล้อมและทรัพยากรศาสตร์</p>
                 <p className="text-[9px] leading-3 text-white/65">มหาวิทยาลัยมหิดล</p>
               </div>
             </div>
-            <span className="inline-flex shrink-0 items-center gap-2 rounded-md border border-white/20 bg-white/5 px-2 py-2 text-[9px] text-white/90 sm:px-3 sm:text-[10px]">
-              <ClipboardCheck className="h-3 w-3" /> ระบบแบบประเมินออนไลน์
-            </span>
+            <div className="flex w-full flex-col items-center gap-2 sm:w-auto sm:flex-row sm:justify-end">
+              <div className="text-center sm:hidden">
+                <p className="text-xs font-bold leading-5 text-white">งานพันธกิจเพื่อสังคม</p>
+                <p className="text-[10px] leading-4 text-white/75">คณะสิ่งแวดล้อมและทรัพยากรศาสตร์ · มหาวิทยาลัยมหิดล</p>
+              </div>
+              <span className="inline-flex shrink-0 items-center gap-2 whitespace-nowrap rounded-md border border-white/20 bg-white/5 px-3 py-2 text-[10px] text-white/90 sm:px-3 sm:text-[10px]">
+                <ClipboardCheck className="h-3.5 w-3.5" /> ระบบแบบประเมินออนไลน์
+              </span>
+            </div>
           </div>
         </header>
 
@@ -289,22 +295,28 @@ export function PublicSurveyPage() {
       <main className="min-h-screen bg-[#fffdf7] pb-10 text-[#183153]">
         {isTestMode && <div className="border-b border-amber-300 bg-amber-50 px-4 py-2 text-center text-xs font-bold text-amber-900">โหมดทดสอบสำหรับผู้ดูแล · คำตอบจะไม่ถูกรวมกับผลประเมินจริง</div>}
         <header className="w-full border-b-[3px] border-[#d6b34a] bg-[#102d55] text-white">
-          <div className="mx-auto flex min-h-[76px] w-full max-w-[560px] items-center justify-between gap-3 px-3 sm:px-0">
-            <div className="flex min-w-0 flex-1 items-center gap-2.5">
+          <div className="mx-auto flex min-h-[76px] w-full max-w-[560px] flex-col items-center justify-center gap-2 px-3 py-3 sm:flex-row sm:justify-between sm:gap-3 sm:px-0 sm:py-0">
+            <div className="flex w-full items-center justify-center gap-2.5 sm:w-auto sm:min-w-0 sm:flex-1 sm:justify-start">
               <div className="flex shrink-0 items-center gap-1">
                 <img src="/mahidol-logo.png" alt="มหาวิทยาลัยมหิดล" className="h-9 w-[68px] rounded bg-white object-contain p-1" />
                 <img src="/envi-logo.jpg" alt="คณะสิ่งแวดล้อมและทรัพยากรศาสตร์" className="h-9 w-[42px] rounded bg-white object-contain p-1" />
                 <img src="/social-engagement-logo.png" alt="งานพันธกิจเพื่อสังคม" className="h-9 w-[30px] rounded bg-white object-contain p-1" />
               </div>
-              <div className="min-w-0 leading-tight">
+              <div className="hidden min-w-0 leading-tight sm:block">
                 <p className="text-xs font-bold text-white sm:text-sm">งานพันธกิจเพื่อสังคม</p>
                 <p className="mt-0.5 text-[9px] font-medium leading-4 text-white/90 sm:text-[10px]">คณะสิ่งแวดล้อมและทรัพยากรศาสตร์</p>
                 <p className="text-[9px] leading-3 text-white/65">มหาวิทยาลัยมหิดล</p>
               </div>
             </div>
-            <span className="inline-flex shrink-0 items-center gap-2 rounded-md border border-white/20 bg-white/5 px-2 py-2 text-[9px] text-white/90 sm:px-3 sm:text-[10px]">
-              <ClipboardCheck className="h-3 w-3" /> ระบบแบบประเมินออนไลน์
-            </span>
+            <div className="flex w-full flex-col items-center gap-2 sm:w-auto sm:flex-row sm:justify-end">
+              <div className="text-center sm:hidden">
+                <p className="text-xs font-bold leading-5 text-white">งานพันธกิจเพื่อสังคม</p>
+                <p className="text-[10px] leading-4 text-white/75">คณะสิ่งแวดล้อมและทรัพยากรศาสตร์ · มหาวิทยาลัยมหิดล</p>
+              </div>
+              <span className="inline-flex shrink-0 items-center gap-2 whitespace-nowrap rounded-md border border-white/20 bg-white/5 px-3 py-2 text-[10px] text-white/90 sm:px-3 sm:text-[10px]">
+                <ClipboardCheck className="h-3.5 w-3.5" /> ระบบแบบประเมินออนไลน์
+              </span>
+            </div>
           </div>
         </header>
 
@@ -389,24 +401,30 @@ export function PublicSurveyPage() {
     <main className="min-h-screen bg-[#fffdf7] pb-10 text-[#183153]">
         {isTestMode && <div className="border-b border-amber-300 bg-amber-50 px-4 py-2 text-center text-xs font-bold text-amber-900">โหมดทดสอบสำหรับผู้ดูแล · คำตอบจะไม่ถูกรวมกับผลประเมินจริง</div>}
       <header className="w-full border-b-[3px] border-[#d6b34a] bg-[#102d55] text-white">
-        <div className="mx-auto flex min-h-[76px] w-full max-w-[560px] items-center justify-between gap-3 px-3 sm:px-0">
-          <div className="flex min-w-0 flex-1 items-center gap-2.5">
-            <div className="flex shrink-0 items-center gap-1">
-              <img src="/mahidol-logo.png" alt="มหาวิทยาลัยมหิดล" className="h-9 w-[68px] rounded bg-white object-contain p-1" />
-              <img src="/envi-logo.jpg" alt="คณะสิ่งแวดล้อมและทรัพยากรศาสตร์" className="h-9 w-[42px] rounded bg-white object-contain p-1" />
-              <img src="/social-engagement-logo.png" alt="งานพันธกิจเพื่อสังคม" className="h-9 w-[30px] rounded bg-white object-contain p-1" />
+          <div className="mx-auto flex min-h-[76px] w-full max-w-[560px] flex-col items-center justify-center gap-2 px-3 py-3 sm:flex-row sm:justify-between sm:gap-3 sm:px-0 sm:py-0">
+            <div className="flex w-full items-center justify-center gap-2.5 sm:w-auto sm:min-w-0 sm:flex-1 sm:justify-start">
+              <div className="flex shrink-0 items-center gap-1">
+                <img src="/mahidol-logo.png" alt="มหาวิทยาลัยมหิดล" className="h-9 w-[68px] rounded bg-white object-contain p-1" />
+                <img src="/envi-logo.jpg" alt="คณะสิ่งแวดล้อมและทรัพยากรศาสตร์" className="h-9 w-[42px] rounded bg-white object-contain p-1" />
+                <img src="/social-engagement-logo.png" alt="งานพันธกิจเพื่อสังคม" className="h-9 w-[30px] rounded bg-white object-contain p-1" />
+              </div>
+              <div className="hidden min-w-0 leading-tight sm:block">
+                <p className="text-xs font-bold text-white sm:text-sm">งานพันธกิจเพื่อสังคม</p>
+                <p className="mt-0.5 text-[9px] font-medium leading-4 text-white/90 sm:text-[10px]">คณะสิ่งแวดล้อมและทรัพยากรศาสตร์</p>
+                <p className="text-[9px] leading-3 text-white/65">มหาวิทยาลัยมหิดล</p>
+              </div>
             </div>
-            <div className="min-w-0 leading-tight">
-              <p className="text-xs font-bold text-white sm:text-sm">งานพันธกิจเพื่อสังคม</p>
-              <p className="mt-0.5 text-[9px] font-medium leading-4 text-white/90 sm:text-[10px]">คณะสิ่งแวดล้อมและทรัพยากรศาสตร์</p>
-              <p className="text-[9px] leading-3 text-white/65">มหาวิทยาลัยมหิดล</p>
+            <div className="flex w-full flex-col items-center gap-2 sm:w-auto sm:flex-row sm:justify-end">
+              <div className="text-center sm:hidden">
+                <p className="text-xs font-bold leading-5 text-white">งานพันธกิจเพื่อสังคม</p>
+                <p className="text-[10px] leading-4 text-white/75">คณะสิ่งแวดล้อมและทรัพยากรศาสตร์ · มหาวิทยาลัยมหิดล</p>
+              </div>
+              <span className="inline-flex shrink-0 items-center gap-2 whitespace-nowrap rounded-md border border-white/20 bg-white/5 px-3 py-2 text-[10px] text-white/90 sm:px-3 sm:text-[10px]">
+                <ClipboardCheck className="h-3.5 w-3.5" /> ระบบแบบประเมินออนไลน์
+              </span>
             </div>
           </div>
-          <span className="inline-flex shrink-0 items-center gap-2 rounded-md border border-white/20 bg-white/5 px-2 py-2 text-[9px] text-white/90 sm:px-3 sm:text-[10px]">
-            <ClipboardCheck className="h-3 w-3" /> ระบบแบบประเมินออนไลน์
-          </span>
-        </div>
-      </header>
+        </header>
 
       <div className="mx-auto w-full max-w-[556px] px-3 pt-7 sm:px-0 sm:pt-12">
         <div className="overflow-hidden rounded-[9px] border border-[#e8e3d8] bg-white shadow-[0_5px_18px_rgba(25,45,75,0.06)]">
