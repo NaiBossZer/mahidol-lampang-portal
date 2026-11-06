@@ -73,7 +73,8 @@ export function SurveyManagementPage() {
   const [surveyTitleDraft, setSurveyTitleDraft] = useState("");
   const [surveyTitleSaving, setSurveyTitleSaving] = useState(false);
   const [activeTab, setActiveTab] = useState<"list" | "builder">("list");
-  const [previewSurvey, setPreviewSurvey] = useState<AdminSurvey | null>(null);\n  const [testResponsesSurvey, setTestResponsesSurvey] = useState<AdminSurvey | null>(null);
+  const [previewSurvey, setPreviewSurvey] = useState<AdminSurvey | null>(null);
+  const [testResponsesSurvey, setTestResponsesSurvey] = useState<AdminSurvey | null>(null);
   const [qrSurvey, setQrSurvey] = useState<AdminSurvey | null>(null);
   const [qrDownloading, setQrDownloading] = useState(false);
 
@@ -560,7 +561,9 @@ export function SurveyManagementPage() {
                     )}
                   </div>
                   <div className="flex flex-wrap items-center gap-2">
-                    <AdminButton variant="secondary" icon={<Eye className="h-4 w-4" />} onClick={() => setPreviewSurvey(selected)}>ดูตัวอย่าง</AdminButton>\n                    <AdminButton variant="secondary" onClick={() => window.open(`/survey?surveyId=${encodeURIComponent(selected.id)}&mode=test`, "_blank", "noopener,noreferrer")}>ทดสอบและบันทึก</AdminButton>\n                    <AdminButton variant="secondary" onClick={() => setTestResponsesSurvey(selected)}>ผลทดสอบ</AdminButton>
+                    <AdminButton variant="secondary" icon={<Eye className="h-4 w-4" />} onClick={() => setPreviewSurvey(selected)}>ดูตัวอย่าง</AdminButton>
+                    <AdminButton variant="secondary" onClick={() => window.open(`/survey?surveyId=${encodeURIComponent(selected.id)}&mode=test`, "_blank", "noopener,noreferrer")}>ทดสอบและบันทึก</AdminButton>
+                    <AdminButton variant="secondary" onClick={() => setTestResponsesSurvey(selected)}>ผลทดสอบ</AdminButton>
                     <AdminButton variant="secondary" icon={<QrCode className="h-4 w-4" />} onClick={() => openSurveyQr(selected)} disabled={!selected.enabled}>คิวอาร์โค้ด</AdminButton>
                     <AdminStatusBadge tone={surveyAvailability(selected).tone}>
                       {surveyAvailability(selected).label}
