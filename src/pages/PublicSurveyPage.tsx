@@ -193,7 +193,8 @@ export function PublicSurveyPage() {
 
   if (!survey) {
     return (
-      <main className="min-h-screen bg-[#fffdf7] pb-10 text-[#183153]">\n        {isTestMode && <div className="border-b border-amber-300 bg-amber-50 px-4 py-2 text-center text-xs font-bold text-amber-900">โหมดทดสอบสำหรับผู้ดูแล · คำตอบจะไม่ถูกรวมกับผลประเมินจริง</div>}
+      <main className="min-h-screen bg-[#fffdf7] pb-10 text-[#183153]">
+        {isTestMode && <div className="border-b border-amber-300 bg-amber-50 px-4 py-2 text-center text-xs font-bold text-amber-900">โหมดทดสอบสำหรับผู้ดูแล · คำตอบจะไม่ถูกรวมกับผลประเมินจริง</div>}
         <header className="w-full border-b-[3px] border-[#d6b34a] bg-[#102d55] text-white">
           <div className="mx-auto flex min-h-[76px] w-full max-w-[560px] items-center justify-between gap-3 px-3 sm:px-0">
             <div className="flex min-w-0 flex-1 items-center gap-2.5">
