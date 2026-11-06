@@ -11,14 +11,18 @@ async function sb<T>(env: Env, path: string, init: RequestInit = {}) {
     ...init,
     headers: {
       apikey: key,
-      Authorization: `Bearer ${key}`,
       Accept: "application/json",
       "Content-Type": "application/json",
       ...(init.headers ?? {}),
     },
   });
   const body = await response.json().catch(() => null);
-  if (!response.ok) throw new Error(`Supabase REST ${response.status}`);
+  if (!response.ok) {
+    const detail = typeof body === "object" && body !== null
+      ? String((body as Record<string, unknown>).message ?? (body as Record<string, unknown>).error_description ?? (body as Record<string, unknown>).hint ?? "")
+      : "";
+    throw new Error(`Supabase REST ${response.status}${detail ? `: ${detail.slice(0, 240)}` : ""}`);
+  }
   return body as T;
 }
 
