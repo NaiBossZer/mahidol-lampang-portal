@@ -513,9 +513,8 @@ export function ActivitiesManagementPage() {
                 </Field>
                 <Field label="สถานะ">
                   <select value={form.status} onChange={(event) => setForm((current) => ({ ...current, status: event.target.value as ActivityStatus }))} className="dashboard-control mt-1 w-full">
-                    <option value="draft">ร่าง</option>
+                    <option value="draft">ฉบับร่าง</option>
                     <option value="published">เผยแพร่</option>
-                    <option value="archived">เก็บถาวร</option>
                   </select>
                 </Field>
                 <Field label="รูปภาพหน้าปกกิจกรรม">
