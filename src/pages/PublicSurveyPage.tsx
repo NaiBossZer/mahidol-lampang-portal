@@ -1,4 +1,4 @@
-import { FormEvent, useEffect, useMemo, useState } from "react";
+import { FormEvent, useCallback, useEffect, useMemo, useState } from "react";
 import {
   AlertCircle,
   ArrowLeft,
@@ -47,7 +47,7 @@ export function PublicSurveyPage() {
   const [error, setError] = useState("");
   const [showValidation, setShowValidation] = useState(false);
 
-  async function loadSurvey(id: string) {
+  const loadSurvey = useCallback(async (id: string) => {
     setLoading(true);
     setError("");
     setShowValidation(false);
@@ -63,7 +63,7 @@ export function PublicSurveyPage() {
     } finally {
       setLoading(false);
     }
-  }
+  }, [isTestMode]);
 
   useEffect(() => {
     if (isTestMode) {
@@ -86,7 +86,7 @@ export function PublicSurveyPage() {
         setError(e instanceof Error ? e.message : "ไม่สามารถโหลดรายการแบบประเมินได้");
         setLoading(false);
       });
-  }, [querySurveyId, isTestMode]);
+  }, [querySurveyId, isTestMode, loadSurvey]);
 
   const setAnswer = (question: SurveyQuestion, value: string) => {
     setAnswers((current) => ({ ...current, [question.id]: value }));
