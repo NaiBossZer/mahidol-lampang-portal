@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState, type ReactNode } from "react";
-import { Activity, Archive, CalendarDays, CheckCircle2, FileText, ImagePlus, Lightbulb, Pencil, Plus, RefreshCw, Send, Star, Trash2, Upload, Users, X } from "lucide-react";
+import { Activity, Archive, CalendarDays, CheckCircle2, FileText, ImagePlus, Lightbulb, MapPin, MoreHorizontal, Pencil, Plus, RefreshCw, Send, Star, Trash2, Upload, Users, X } from "lucide-react";
 import { toast } from "sonner";
 import {
   createActivity,
@@ -152,6 +152,7 @@ export function ActivitiesManagementPage() {
   const [uploading, setUploading] = useState(false);
   const [deletingMedia, setDeletingMedia] = useState(false);
   const [recommendationActivity, setRecommendationActivity] = useState<AdminActivity | null>(null);
+  const [actionMenuId, setActionMenuId] = useState<string | null>(null);
 
   async function load() {
     setLoading(true);
@@ -360,7 +361,7 @@ export function ActivitiesManagementPage() {
       <AdminPageHeader
         eyebrow="ACTIVITIES"
         title="รายการกิจกรรมโครงการ"
-        description="ภาพรวมกิจกรรมทั้งหมด ค้นหา กรองสถานะ และจัดการข้อมูลได้จากหน้าเดียว"
+        description="ค้นหา ติดตามสถานะ และจัดการกิจกรรมโครงการทั้งหมดจากฐานข้อมูลกลาง"
         actions={<>
           <AdminButton variant="secondary" icon={<RefreshCw className="h-4 w-4" />} onClick={() => void load()}>รีเฟรช</AdminButton>
           <AdminButton variant="primary" icon={<Plus className="h-4 w-4" />} onClick={create}>สร้างกิจกรรมใหม่</AdminButton>
@@ -419,25 +420,47 @@ export function ActivitiesManagementPage() {
             action={<AdminButton variant="primary" icon={<Plus className="h-4 w-4" />} onClick={create}>สร้างกิจกรรมใหม่</AdminButton>} />
         ) : <>
           <div className="hidden overflow-x-auto md:block">
-            <table className="w-full min-w-[850px] text-sm">
+            <table className="w-full min-w-[980px] text-sm">
               <thead className="bg-slate-50 text-xs font-semibold text-slate-500"><tr>
                 <th className="px-5 py-3 text-left">กิจกรรม</th><th className="px-4 py-3 text-left">วันที่จัด</th><th className="px-4 py-3 text-left">สถานที่</th><th className="px-4 py-3 text-center">ผู้เข้าร่วม</th><th className="px-4 py-3 text-center">สถานะ</th><th className="px-5 py-3 text-right">จัดการ</th>
               </tr></thead>
               <tbody className="divide-y divide-slate-100">
                 {filtered.map((activity) => <tr key={activity.id} className="transition-colors hover:bg-slate-50/70">
                   <td className="px-5 py-4"><div className="flex items-center gap-3">
-                    {activity.featuredImage ? <img src={activity.featuredImage} alt="" className="h-12 w-16 rounded-lg object-cover" /> : <div className="grid h-12 w-16 place-items-center rounded-lg bg-slate-100 text-slate-400"><ImagePlus className="h-5 w-5" /></div>}
-                    <div className="min-w-0"><p className="max-w-[420px] font-semibold text-slate-900">{activity.title}</p><p className="mt-0.5 truncate text-xs text-slate-400">/{activity.slug}</p></div>
+                    {activity.featuredImage ? <img src={activity.featuredImage} alt="" className="h-14 w-[76px] shrink-0 rounded-lg object-cover" /> : <div className="grid h-12 w-16 place-items-center rounded-lg bg-slate-100 text-slate-400"><ImagePlus className="h-5 w-5" /></div>}
+                    <div className="min-w-0"><p className="max-w-[420px] line-clamp-2 font-semibold leading-5 text-slate-900">{activity.title}</p><p className="mt-1 truncate text-[11px] text-slate-400">/{activity.slug}</p></div>
                   </div></td>
                   <td className="whitespace-nowrap px-4 py-4 text-slate-600"><span className="inline-flex items-center gap-1.5"><CalendarDays className="h-4 w-4 text-slate-400" />{new Date(activity.activityDate).toLocaleDateString("th-TH")}</span></td>
-                  <td className="max-w-[180px] truncate px-4 py-4 text-slate-600">{activity.location || "—"}</td>
+                  <td className="max-w-[220px] px-4 py-4"><span className="inline-flex max-w-[210px] items-start gap-1.5 text-xs leading-5 text-slate-600"><MapPin className="mt-0.5 h-3.5 w-3.5 shrink-0 text-slate-400" /><span className="line-clamp-2">{activity.location || "ไม่ระบุสถานที่"}</span></span></td>
                   <td className="px-4 py-4 text-center font-semibold text-slate-700">{(activity.participantCount ?? 0).toLocaleString("th-TH")}</td>
                   <td className="px-4 py-4 text-center"><AdminStatusBadge tone={statusTone(activity.status)}>{statusLabel[activity.status]}</AdminStatusBadge></td>
-                  <td className="px-5 py-4 text-right"><div className="flex items-center justify-end gap-2">
-                    <button type="button" onClick={() => setRecommendationActivity(activity)} className="inline-flex min-h-9 items-center gap-1.5 rounded-lg border border-violet-200 bg-violet-50 px-2.5 text-xs font-semibold text-violet-700 transition-colors hover:bg-violet-100" title="ดูคำแนะนำจาก AI"><Lightbulb className="h-3.5 w-3.5 text-amber-500" /><span>AI Advice</span></button>
-                    <AdminButton variant="secondary" icon={<Pencil className="h-3.5 w-3.5" />} onClick={() => void openEdit(activity)} className="min-h-9 px-3 text-xs">แก้ไข</AdminButton>
-                    <AdminButton variant="danger" icon={<Trash2 className="h-3.5 w-3.5" />} onClick={() => void removeActivity(activity)} disabled={deletingId === activity.id || !!deletingId} className="min-h-9 px-3 text-xs" title="ลบกิจกรรมถาวร">{deletingId === activity.id ? "กำลังลบ..." : "ลบ"}</AdminButton>
-                  </div></td>
+                  <td className="px-5 py-4 text-right">
+                    <div className="relative inline-flex">
+                      <button type="button" onClick={() => setActionMenuId((current) => current === activity.id ? null : activity.id)}
+                        aria-label={`จัดการกิจกรรม ${activity.title}`} aria-expanded={actionMenuId === activity.id}
+                        className="grid h-9 w-9 place-items-center rounded-lg border border-slate-200 bg-white text-slate-500 transition hover:border-[#002d62]/30 hover:bg-slate-50 hover:text-[#002d62]">
+                        <MoreHorizontal className="h-4 w-4" />
+                      </button>
+                      {actionMenuId === activity.id && (
+                        <div className="absolute right-0 top-11 z-20 w-48 overflow-hidden rounded-xl border border-slate-200 bg-white py-1 text-left shadow-xl">
+                          <button type="button" onClick={() => { setActionMenuId(null); setRecommendationActivity(activity); }}
+                            className="flex w-full items-center gap-2 px-3 py-2.5 text-xs font-medium text-slate-700 transition hover:bg-slate-50">
+                            <Lightbulb className="h-4 w-4 text-amber-500" /> AI Advice
+                          </button>
+                          <button type="button" onClick={() => { setActionMenuId(null); void openEdit(activity); }}
+                            className="flex w-full items-center gap-2 px-3 py-2.5 text-xs font-medium text-slate-700 transition hover:bg-slate-50">
+                            <Pencil className="h-4 w-4 text-slate-400" /> แก้ไขกิจกรรม
+                          </button>
+                          <div className="my-1 border-t border-slate-100" />
+                          <button type="button" onClick={() => { setActionMenuId(null); void removeActivity(activity); }}
+                            disabled={deletingId === activity.id || !!deletingId}
+                            className="flex w-full items-center gap-2 px-3 py-2.5 text-xs font-medium text-red-600 transition hover:bg-red-50 disabled:opacity-50">
+                            <Trash2 className="h-4 w-4" /> {deletingId === activity.id ? "กำลังลบ..." : "ลบกิจกรรม"}
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  </td>
                 </tr>)}
               </tbody>
             </table>
