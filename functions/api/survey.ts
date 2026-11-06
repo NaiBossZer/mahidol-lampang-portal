@@ -132,6 +132,39 @@ export async function onRequest({ request, env }: { request: Request; env: Env }
     };
     if (!body.surveyId || body.pdpaConsent !== true)
       return json({ success: false, error: "ต้องระบุ surveyId และยินยอม PDPA" }, 400);
+    if (body.mode === "test") {
+      const loaded = await loadTestSurvey(request, env, body.surveyId);
+      if ("response" in loaded) return loaded.response;
+      const allowedIds = new Set(loaded.questions.map((q) => String(q.id)));
+      const answers = Array.isArray(body.answers)
+        ? body.answers.filter((answer) => allowedIds.has(String(answer.questionId)))
+        : [];
+      const requiredIds = loaded.questions.filter((q) => q.required === true).map((q) => String(q.id));
+      const answeredIds = new Set(
+        answers
+          .filter((answer) =>
+            (typeof answer.text === "string" && answer.text.trim().length > 0) ||
+            typeof answer.number === "number" ||
+            (Array.isArray(answer.options) && answer.options.length > 0),
+          )
+          .map((answer) => String(answer.questionId)),
+      );
+      if (requiredIds.some((id) => !answeredIds.has(id)))
+        return json({ success: false, error: "กรุณาตอบคำถามที่จำเป็นให้ครบ" }, 400);
+      const rows = await sbAsUser<Row[]>(env, loaded.auth.token, "survey_test_responses", {
+        method: "POST",
+        headers: { Prefer: "return=representation" },
+        body: JSON.stringify({
+          survey_id: body.surveyId,
+          occurrence_id: loaded.occurrence.id,
+          activity_id: loaded.occurrence.activity_id,
+          submitted_by: loaded.auth.user.id,
+          answers,
+        }),
+      });
+      if (!rows[0]?.id) throw new Error("ไม่สามารถบันทึกคำตอบทดสอบได้");
+      return json({ success: true, data: { responseId: rows[0].id, test: true } }, 201);
+    }
     const surveys = await sb<Row[]>(
       env,
       `occurrence_surveys?id=eq.${encodeURIComponent(body.surveyId)}&enabled=eq.true&select=id,occurrence_id,open_at,close_at`,
