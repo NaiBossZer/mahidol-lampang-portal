@@ -1,5 +1,5 @@
 import { Children, isValidElement, type ButtonHTMLAttributes, type HTMLAttributes, type ReactNode } from "react";
-import { Search, RefreshCw, Sparkles, ShieldCheck } from "lucide-react";
+import { Search, RefreshCw, Sparkles } from "lucide-react";
 
 type AdminButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & { variant?: "primary" | "secondary" | "ghost" | "danger"; icon?: ReactNode };
 
@@ -17,10 +17,6 @@ export function AdminPageHeader({ eyebrow, title, description, actions }: { eyeb
             {description && <p className="mt-1 text-sm leading-6 text-[#d7e2ff]">{description}</p>}
           </div>
           <div className="flex flex-wrap items-center gap-2 [&_button]:!border-white/20 [&_button]:!bg-white [&_button]:!text-[#002d62] [&_button]:hover:!bg-slate-50">
-            <div className="rounded-xl border border-white/15 bg-white/5 px-4 py-2.5">
-              <div className="flex items-center gap-2 text-xs font-semibold"><ShieldCheck className="h-4 w-4 text-[#95f8a7]" /> Governed Activity Data</div>
-              <p className="mt-0.5 text-[11px] text-white/70">CRUD · Relations · Media · Status</p>
-            </div>
             {actions}
           </div>
         </div>
