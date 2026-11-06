@@ -177,10 +177,15 @@ export async function onRequest({ request, env }: { request: Request; env: Env }
       return json({ success: false, error: "แบบประเมินไม่พร้อมรับคำตอบ หรืออยู่นอกช่วงเวลาเปิดรับ" }, 409);
     const occurrenceId = String(occurrence.occurrence_id);
     const activityId = String(occurrence.activity_id ?? "");
-    const responseRows = await sb<Row[]>(env, "survey_responses", {
+    // The public role may INSERT survey_responses but intentionally cannot SELECT them.
+    // PostgREST return=representation adds RETURNING and is therefore rejected by RLS.
+    // Generate the UUID here and request a minimal response to keep SELECT private.
+    const responseId = crypto.randomUUID();
+    await sb<null>(env, "survey_responses", {
       method: "POST",
-      headers: { Prefer: "return=representation" },
+      headers: { Prefer: "return=minimal" },
       body: JSON.stringify({
+        id: responseId,
         activity_id: activityId,
         occurrence_id: occurrenceId,
         survey_id: body.surveyId,
@@ -192,8 +197,6 @@ export async function onRequest({ request, env }: { request: Request; env: Env }
         pdpa_consent: true,
       }),
     });
-    const responseId = responseRows[0]?.id;
-    if (!responseId) throw new Error("ไม่สามารถสร้าง response ได้");
     const answers = Array.isArray(body.answers) ? body.answers : [];
     if (answers.length)
       await sb<Row[]>(env, "survey_answers", {
