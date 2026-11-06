@@ -97,6 +97,9 @@ export function ActivityDetailPage() {
               <h2 id="activity-evidence-title" className="mt-2 text-xl font-black text-brand-navy">
                 ข้อมูลกิจกรรม
               </h2>
+              <RouterLink to={`/register/${activity.slug}`} className="mt-5 inline-flex min-h-11 w-full items-center justify-center rounded-xl bg-brand-navy px-4 py-3 text-sm font-bold text-white transition hover:bg-brand-blue">
+                ลงทะเบียนเข้าร่วมกิจกรรม
+              </RouterLink>
               <dl className="mt-5 space-y-4 text-sm">
                 <div>
                   <dt className="text-xs text-slate-400">ระบบหลัก</dt>
