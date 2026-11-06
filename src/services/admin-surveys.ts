@@ -136,3 +136,22 @@ export async function getSurveyWorkspaceData(): Promise<SurveyWorkspaceData> {
     activityTitles,
   };
 }
+
+
+export type SurveyTestResponse = {
+  id: string;
+  survey_id: string;
+  occurrence_id: string;
+  submitted_by: string;
+  answers: Array<{ questionId: string; number?: number; text?: string; options?: string[] }>;
+  created_at: string;
+};
+
+export const getSurveyTestResponses = (surveyId: string) =>
+  request<SurveyTestResponse[]>(`/api/admin/survey-tests?surveyId=${encodeURIComponent(surveyId)}`);
+
+export const deleteSurveyTestResponse = (surveyId: string, responseId: string) =>
+  request<{ id: string }>(
+    `/api/admin/survey-tests?surveyId=${encodeURIComponent(surveyId)}&id=${encodeURIComponent(responseId)}`,
+    { method: "DELETE" },
+  );
