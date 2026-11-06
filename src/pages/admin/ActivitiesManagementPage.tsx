@@ -348,103 +348,111 @@ export function ActivitiesManagementPage() {
     <section className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
       <AdminPageHeader
         eyebrow="ACTIVITIES"
-        title="จัดการกิจกรรม"
-        description="สร้างและแก้ไขกิจกรรมด้วยข้อมูลจริงจากแบบฟอร์มเดียว พร้อมตรวจสอบการบันทึกกลับจากเซิร์ฟเวอร์"
-        actions={
-          <>
-            <AdminButton variant="secondary" icon={<RefreshCw className="h-4 w-4" />} onClick={() => void load()}>
-              รีเฟรช
-            </AdminButton>
-            <AdminButton variant="primary" icon={<Plus className="h-4 w-4" />} onClick={create}>
-              เพิ่มกิจกรรม
-            </AdminButton>
-          </>
-        }
+        title="รายการกิจกรรมโครงการ"
+        description="ภาพรวมกิจกรรมทั้งหมด ค้นหา กรองสถานะ และจัดการข้อมูลได้จากหน้าเดียว"
+        actions={<>
+          <AdminButton variant="secondary" icon={<RefreshCw className="h-4 w-4" />} onClick={() => void load()}>รีเฟรช</AdminButton>
+          <AdminButton variant="primary" icon={<Plus className="h-4 w-4" />} onClick={create}>สร้างกิจกรรมใหม่</AdminButton>
+        </>}
       />
+
+      <div className="mt-6 grid grid-cols-2 gap-3 xl:grid-cols-4">
+        {([
+          { key: "all", label: "กิจกรรมทั้งหมด", value: summary.all, icon: Activity, tone: "blue", hint: "ทุกสถานะ" },
+          { key: "published", label: "เผยแพร่แล้ว", value: summary.published, icon: Send, tone: "green", hint: "แสดงต่อสาธารณะ" },
+          { key: "draft", label: "ฉบับร่าง", value: summary.draft, icon: FileText, tone: "amber", hint: "ยังไม่เผยแพร่" },
+          { key: "archived", label: "เก็บถาวร", value: summary.archived, icon: Archive, tone: "slate", hint: "จัดเก็บแล้ว" },
+        ] as const).map((item) => {
+          const Icon = item.icon;
+          const active = status === item.key;
+          const tones = { blue: "bg-blue-50 text-blue-700 ring-blue-100", green: "bg-emerald-50 text-emerald-700 ring-emerald-100", amber: "bg-amber-50 text-amber-700 ring-amber-100", slate: "bg-slate-100 text-slate-600 ring-slate-200" };
+          return (
+            <button key={item.key} type="button" onClick={() => setStatus(item.key)} aria-pressed={active}
+              className={`rounded-2xl border bg-white p-4 text-left shadow-sm transition hover:-translate-y-0.5 hover:shadow-md sm:p-5 ${active ? "border-[#002d62] ring-2 ring-[#002d62]/10" : "border-slate-200"}`}>
+              <div className="flex items-start justify-between gap-2">
+                <span className="text-xs font-semibold text-slate-500 sm:text-sm">{item.label}</span>
+                <span className={`grid h-9 w-9 shrink-0 place-items-center rounded-xl ring-1 ${tones[item.tone]}`}><Icon className="h-4 w-4" /></span>
+              </div>
+              <div className="mt-3 flex items-end justify-between gap-2">
+                <strong className="text-2xl font-bold tracking-tight text-slate-900 tabular-nums sm:text-3xl">{loading ? "—" : item.value.toLocaleString("th-TH")}</strong>
+                <span className="text-[10px] text-slate-400 sm:text-xs">{item.hint}</span>
+              </div>
+            </button>
+          );
+        })}
+      </div>
 
       <AIInsightsPanel />
 
-      <AdminFilterBar search={q} onSearchChange={setQ} placeholder="ค้นหาชื่อกิจกรรม, รหัส URL หรือสถานที่">
-        <select
-          value={status}
-          onChange={(event) => setStatus(event.target.value as typeof status)}
-          className="min-h-11 rounded-xl border border-slate-200 bg-white px-3 text-sm outline-none transition focus:border-[#002d62] focus:ring-4 focus:ring-[#002d62]/10"
-        >
-          <option value="all">ทุกสถานะ</option>
-          <option value="draft">ร่าง</option>
-          <option value="published">เผยแพร่</option>
-          <option value="archived">เก็บถาวร</option>
+      <AdminFilterBar search={q} onSearchChange={setQ} placeholder="ค้นหาชื่อกิจกรรม รหัส URL หรือสถานที่">
+        <select aria-label="กรองตามปี พ.ศ." value={year} onChange={(event) => setYear(event.target.value)}
+          className="min-h-11 rounded-xl border border-slate-200 bg-white px-3 text-sm outline-none transition focus:border-[#002d62] focus:ring-4 focus:ring-[#002d62]/10">
+          <option value="all">ทุกปี พ.ศ.</option>
+          {availableYears.map((value) => <option key={value} value={value}>{value}</option>)}
         </select>
+        <select aria-label="กรองตามสถานะ" value={status} onChange={(event) => setStatus(event.target.value as typeof status)}
+          className="min-h-11 rounded-xl border border-slate-200 bg-white px-3 text-sm outline-none transition focus:border-[#002d62] focus:ring-4 focus:ring-[#002d62]/10">
+          <option value="all">ทุกสถานะ</option><option value="draft">ร่าง</option><option value="published">เผยแพร่</option><option value="archived">เก็บถาวร</option>
+        </select>
+        {(q || status !== "all" || year !== "all") && (
+          <button type="button" onClick={() => { setQ(""); setStatus("all"); setYear("all"); }} className="min-h-11 rounded-xl px-3 text-sm font-semibold text-slate-500 transition hover:bg-slate-100 hover:text-[#002d62]">ล้างตัวกรอง</button>
+        )}
       </AdminFilterBar>
 
-      <AdminTable minWidth="820px">
-        {loading ? (
-          <AdminLoadingState label="กำลังโหลดกิจกรรม..." />
-        ) : filtered.length === 0 ? (
-          <AdminEmptyState
-            title="ไม่พบกิจกรรมตามเงื่อนไข"
-            description="ลองปรับเงื่อนไขการค้นหาหรือเพิ่มกิจกรรมใหม่"
-            action={<AdminButton variant="primary" icon={<Plus className="h-4 w-4" />} onClick={create}>เพิ่มกิจกรรม</AdminButton>}
-          />
-        ) : (
-          <>
-            <AdminTableHeader>
-              <tr>
-                <th className="px-5 py-3 text-left">กิจกรรม</th>
-                <th className="px-4 py-3 text-left">วันที่</th>
-                <th className="px-4 py-3 text-left">สถานที่</th>
-                <th className="px-4 py-3 text-center">ผู้เข้าร่วม</th>
-                <th className="px-4 py-3 text-center">สถานะ</th>
-                <th className="px-5 py-3 text-right">จัดการ</th>
-              </tr>
-            </AdminTableHeader>
-            <tbody className="divide-y divide-slate-100">
-              {filtered.map((activity) => (
-                <AdminTableRow key={activity.id}>
-                  <td className="px-5 py-4">
-                    <div className="flex items-center gap-3">
-                      {activity.featuredImage ? (
-                        <img src={activity.featuredImage} alt="" className="h-12 w-16 rounded-lg object-cover" />
-                      ) : (
-                        <div className="grid h-12 w-16 place-items-center rounded-lg bg-slate-100 text-slate-400"><ImagePlus className="h-5 w-5" /></div>
-                      )}
-                      <div className="min-w-0">
-                        <p className="font-semibold text-slate-900">{activity.title}</p>
-                        <p className="mt-0.5 truncate text-xs text-slate-400">/{activity.slug}</p>
-                      </div>
-                    </div>
-                  </td>
-                  <td className="whitespace-nowrap px-4 py-4 text-slate-600">
-                    <span className="inline-flex items-center gap-1.5"><CalendarDays className="h-4 w-4 text-slate-400" />{new Date(activity.activityDate).toLocaleDateString("th-TH")}</span>
-                  </td>
+      <div className="mt-4 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+        <div className="flex flex-col gap-1 border-b border-slate-100 px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-5">
+          <div><h2 className="text-sm font-bold text-slate-900">รายการกิจกรรม</h2><p className="mt-0.5 text-xs text-slate-500">แสดง {filtered.length.toLocaleString("th-TH")} จาก {activities.length.toLocaleString("th-TH")} กิจกรรม</p></div>
+          <span className="text-xs text-slate-400">ข้อมูลจากฐานข้อมูลกลาง</span>
+        </div>
+        {loading ? <AdminLoadingState label="กำลังโหลดกิจกรรม..." /> : filtered.length === 0 ? (
+          <AdminEmptyState title="ไม่พบกิจกรรมตามเงื่อนไข" description="ลองปรับคำค้นหาหรือตัวกรอง หรือสร้างกิจกรรมใหม่"
+            action={<AdminButton variant="primary" icon={<Plus className="h-4 w-4" />} onClick={create}>สร้างกิจกรรมใหม่</AdminButton>} />
+        ) : <>
+          <div className="hidden overflow-x-auto md:block">
+            <table className="w-full min-w-[850px] text-sm">
+              <thead className="bg-slate-50 text-xs font-semibold text-slate-500"><tr>
+                <th className="px-5 py-3 text-left">กิจกรรม</th><th className="px-4 py-3 text-left">วันที่จัด</th><th className="px-4 py-3 text-left">สถานที่</th><th className="px-4 py-3 text-center">ผู้เข้าร่วม</th><th className="px-4 py-3 text-center">สถานะ</th><th className="px-5 py-3 text-right">จัดการ</th>
+              </tr></thead>
+              <tbody className="divide-y divide-slate-100">
+                {filtered.map((activity) => <tr key={activity.id} className="transition-colors hover:bg-slate-50/70">
+                  <td className="px-5 py-4"><div className="flex items-center gap-3">
+                    {activity.featuredImage ? <img src={activity.featuredImage} alt="" className="h-12 w-16 rounded-lg object-cover" /> : <div className="grid h-12 w-16 place-items-center rounded-lg bg-slate-100 text-slate-400"><ImagePlus className="h-5 w-5" /></div>}
+                    <div className="min-w-0"><p className="max-w-[420px] font-semibold text-slate-900">{activity.title}</p><p className="mt-0.5 truncate text-xs text-slate-400">/{activity.slug}</p></div>
+                  </div></td>
+                  <td className="whitespace-nowrap px-4 py-4 text-slate-600"><span className="inline-flex items-center gap-1.5"><CalendarDays className="h-4 w-4 text-slate-400" />{new Date(activity.activityDate).toLocaleDateString("th-TH")}</span></td>
                   <td className="max-w-[180px] truncate px-4 py-4 text-slate-600">{activity.location || "—"}</td>
-                  <td className="px-4 py-4 text-center font-semibold text-slate-700">{activity.participantCount ?? 0}</td>
+                  <td className="px-4 py-4 text-center font-semibold text-slate-700">{(activity.participantCount ?? 0).toLocaleString("th-TH")}</td>
                   <td className="px-4 py-4 text-center"><AdminStatusBadge tone={statusTone(activity.status)}>{statusLabel[activity.status]}</AdminStatusBadge></td>
-                  <td className="px-5 py-4 text-right">
-                    <div className="flex items-center justify-end gap-2">
-                      <button type="button" onClick={() => setRecommendationActivity(activity)} className="inline-flex min-h-9 items-center gap-1.5 rounded-lg border border-violet-200 bg-violet-50 px-2.5 text-xs font-semibold text-violet-700 transition-colors hover:bg-violet-100" title="ดูคำแนะนำจาก AI">
-                        <Lightbulb className="h-3.5 w-3.5 text-amber-500" /><span className="hidden sm:inline">AI Advice</span>
-                      </button>
-                      <AdminButton variant="secondary" icon={<Pencil className="h-3.5 w-3.5" />} onClick={() => void openEdit(activity)} className="min-h-9 px-3 text-xs">แก้ไข</AdminButton>
-                      <AdminButton
-                        variant="danger"
-                        icon={<Trash2 className="h-3.5 w-3.5" />}
-                        onClick={() => void removeActivity(activity)}
-                        disabled={deletingId === activity.id || !!deletingId}
-                        className="min-h-9 px-3 text-xs"
-                        title="ลบกิจกรรมถาวร"
-                      >
-                        {deletingId === activity.id ? "กำลังลบ..." : "ลบ"}
-                      </AdminButton>
-                    </div>
-                  </td>
-                </AdminTableRow>
-              ))}
-            </tbody>
-          </>
-        )}
-      </AdminTable>
-
+                  <td className="px-5 py-4 text-right"><div className="flex items-center justify-end gap-2">
+                    <button type="button" onClick={() => setRecommendationActivity(activity)} className="inline-flex min-h-9 items-center gap-1.5 rounded-lg border border-violet-200 bg-violet-50 px-2.5 text-xs font-semibold text-violet-700 transition-colors hover:bg-violet-100" title="ดูคำแนะนำจาก AI"><Lightbulb className="h-3.5 w-3.5 text-amber-500" /><span>AI Advice</span></button>
+                    <AdminButton variant="secondary" icon={<Pencil className="h-3.5 w-3.5" />} onClick={() => void openEdit(activity)} className="min-h-9 px-3 text-xs">แก้ไข</AdminButton>
+                    <AdminButton variant="danger" icon={<Trash2 className="h-3.5 w-3.5" />} onClick={() => void removeActivity(activity)} disabled={deletingId === activity.id || !!deletingId} className="min-h-9 px-3 text-xs" title="ลบกิจกรรมถาวร">{deletingId === activity.id ? "กำลังลบ..." : "ลบ"}</AdminButton>
+                  </div></td>
+                </tr>)}
+              </tbody>
+            </table>
+          </div>
+          <div className="grid gap-3 p-3 md:hidden">
+            {filtered.map((activity) => <article key={activity.id} className="rounded-xl border border-slate-200 p-3">
+              <div className="flex gap-3">
+                {activity.featuredImage ? <img src={activity.featuredImage} alt="" className="h-16 w-20 shrink-0 rounded-lg object-cover" /> : <div className="grid h-16 w-20 shrink-0 place-items-center rounded-lg bg-slate-100 text-slate-400"><ImagePlus className="h-5 w-5" /></div>}
+                <div className="min-w-0 flex-1"><div className="flex flex-wrap items-center gap-2"><AdminStatusBadge tone={statusTone(activity.status)}>{statusLabel[activity.status]}</AdminStatusBadge><span className="text-[11px] text-slate-400">{new Date(activity.activityDate).toLocaleDateString("th-TH")}</span></div>
+                  <h3 className="mt-1 line-clamp-2 text-sm font-bold leading-5 text-slate-900">{activity.title}</h3><p className="mt-1 truncate text-xs text-slate-400">/{activity.slug}</p>
+                </div>
+              </div>
+              <div className="mt-3 grid grid-cols-2 gap-2 border-t border-slate-100 pt-3 text-xs">
+                <div className="flex min-w-0 items-center gap-1.5 text-slate-600"><CalendarDays className="h-3.5 w-3.5 shrink-0 text-slate-400" /><span className="truncate">{activity.location || "ไม่ระบุสถานที่"}</span></div>
+                <div className="flex items-center gap-1.5 text-slate-600"><Users className="h-3.5 w-3.5 shrink-0 text-slate-400" /><span>ผู้เข้าร่วม {(activity.participantCount ?? 0).toLocaleString("th-TH")} คน</span></div>
+              </div>
+              <div className="mt-3 flex flex-wrap gap-2">
+                <AdminButton variant="secondary" icon={<Lightbulb className="h-3.5 w-3.5" />} onClick={() => setRecommendationActivity(activity)} className="min-h-9 flex-1 px-2 text-xs">AI Advice</AdminButton>
+                <AdminButton variant="secondary" icon={<Pencil className="h-3.5 w-3.5" />} onClick={() => void openEdit(activity)} className="min-h-9 flex-1 px-2 text-xs">แก้ไข</AdminButton>
+                <AdminButton variant="danger" icon={<Trash2 className="h-3.5 w-3.5" />} onClick={() => void removeActivity(activity)} disabled={deletingId === activity.id || !!deletingId} className="min-h-9 flex-1 px-2 text-xs">ลบ</AdminButton>
+              </div>
+            </article>)}
+          </div>
+        </>}
+      </div>
       {open && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/40 p-4" role="dialog" aria-modal="true">
           <div className="flex max-h-[92vh] w-full max-w-5xl flex-col overflow-hidden rounded-2xl bg-white shadow-2xl">
