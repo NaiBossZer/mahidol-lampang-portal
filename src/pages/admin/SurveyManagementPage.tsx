@@ -7,8 +7,11 @@ import {
   createAdminQuestion,
   createAdminSurvey,
   getSurveyWorkspaceData,
+  getSurveyTestResponses,
+  deleteSurveyTestResponse,
   updateAdminQuestion,
   updateAdminSurvey,
+  type SurveyTestResponse,
   type AdminSurvey,
   type SurveyQuestion,
 } from "@/services/admin-surveys";
