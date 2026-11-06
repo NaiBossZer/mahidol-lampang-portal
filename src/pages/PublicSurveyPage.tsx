@@ -182,26 +182,49 @@ export function PublicSurveyPage() {
 
   if (!survey) {
     return (
-      <main className="min-h-screen bg-[#f7f7f4] px-4 py-8 sm:px-6 sm:py-12">
-        <div className="mx-auto max-w-3xl">
-          <header className="overflow-hidden rounded-3xl bg-[#002d62] text-white shadow-lg shadow-blue-950/10">
-            <div className="border-b border-white/10 px-6 py-5 sm:px-8">
-              <p className="text-xs font-semibold tracking-[0.14em] text-blue-200">MAHIDOL UNIVERSITY</p>
-              <p className="mt-1 text-xs text-white/70">คณะสิ่งแวดล้อมและทรัพยากรศาสตร์ · งานพันธกิจเพื่อสังคม</p>
+      <main className="min-h-screen bg-[#fffdf7] pb-10 text-[#183153]">
+        <header className="w-full border-b-[3px] border-[#d6b34a] bg-[#102d55] text-white">
+          <div className="mx-auto flex min-h-[76px] w-full max-w-[560px] items-center justify-between gap-3 px-3 sm:px-0">
+            <div className="flex min-w-0 flex-1 items-center gap-2.5">
+              <div className="flex shrink-0 items-center gap-1">
+                <img src="/mahidol-logo.png" alt="มหาวิทยาลัยมหิดล" className="h-9 w-[68px] rounded bg-white object-contain p-1" />
+                <img src="/envi-logo.jpg" alt="คณะสิ่งแวดล้อมและทรัพยากรศาสตร์" className="h-9 w-[42px] rounded bg-white object-contain p-1" />
+                <img src="/social-engagement-logo.png" alt="งานพันธกิจเพื่อสังคม" className="h-9 w-[30px] rounded bg-white object-contain p-1" />
+              </div>
+              <div className="min-w-0 leading-tight">
+                <p className="text-xs font-bold text-white sm:text-sm">งานพันธกิจเพื่อสังคม</p>
+                <p className="mt-0.5 text-[9px] font-medium leading-4 text-white/90 sm:text-[10px]">คณะสิ่งแวดล้อมและทรัพยากรศาสตร์</p>
+                <p className="text-[9px] leading-3 text-white/65">มหาวิทยาลัยมหิดล</p>
+              </div>
             </div>
-            <div className="px-6 py-8 sm:px-8 sm:py-10">
-              <span className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-3 py-1.5 text-xs font-medium text-white/90">
-                <ClipboardCheck className="h-4 w-4" /> แบบประเมินกิจกรรม
+            <span className="inline-flex shrink-0 items-center gap-2 rounded-md border border-white/20 bg-white/5 px-2 py-2 text-[9px] text-white/90 sm:px-3 sm:text-[10px]">
+              <ClipboardCheck className="h-3 w-3" /> ระบบแบบประเมินออนไลน์
+            </span>
+          </div>
+        </header>
+
+        <div className="mx-auto w-full max-w-[556px] px-3 pt-5 sm:px-0 sm:pt-7">
+          <a
+            href="/"
+            className="mb-4 inline-flex min-h-9 items-center gap-2 rounded-md border border-[#d4dce6] bg-white px-3 py-2 text-xs font-semibold text-[#183153] transition hover:border-[#b51f43]/40 hover:bg-[#fff8f9] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#b51f43]/20"
+          >
+            <ArrowLeft className="h-3.5 w-3.5" /> กลับไปหน้าเว็บไซต์หลัก
+          </a>
+
+          <header className="overflow-hidden rounded-xl border border-[#e5e9ef] bg-white shadow-[0_5px_18px_rgba(25,45,75,0.06)]">
+            <div className="border-b border-[#eee2c9] bg-[#fff8e9] px-5 py-5 sm:px-7">
+              <span className="inline-flex items-center gap-2 text-[#b51f43]">
+                <ClipboardCheck className="h-4 w-4" />
+                <span className="text-xs font-bold tracking-wide">แบบประเมินกิจกรรม</span>
               </span>
-              <h1 className="mt-4 text-2xl font-bold sm:text-3xl">เลือกแบบประเมิน</h1>
-              <p className="mt-2 max-w-xl text-sm leading-6 text-white/75">
+              <h1 className="mt-3 text-xl font-bold text-[#183153] sm:text-2xl">เลือกแบบประเมิน</h1>
+              <p className="mt-2 text-sm leading-6 text-slate-600">
                 กรุณาเลือกแบบประเมินที่ท่านต้องการตอบ ข้อมูลคำตอบจะถูกนำไปใช้เพื่อประเมินและพัฒนาการจัดกิจกรรม
               </p>
             </div>
-            <div className="h-1.5 bg-[#a51f3a]" />
           </header>
 
-          <section className="mt-6 rounded-3xl border border-slate-200 bg-white p-5 shadow-sm sm:p-7">
+          <section className="mt-4 rounded-xl border border-slate-200 bg-white p-5 shadow-sm sm:p-7">
             <div className="mb-5 flex items-center justify-between gap-3">
               <div>
                 <h2 className="text-base font-bold text-slate-900">แบบประเมินที่เปิดรับคำตอบ</h2>
@@ -243,7 +266,7 @@ export function PublicSurveyPage() {
               </div>
             )}
           </section>
-          <p className="mt-6 text-center text-[11px] text-slate-400">มหาวิทยาลัยมหิดล · คณะสิ่งแวดล้อมและทรัพยากรศาสตร์</p>
+          <p className="mt-6 text-center text-[10px] leading-5 text-slate-400">มหาวิทยาลัยมหิดล · คณะสิ่งแวดล้อมและทรัพยากรศาสตร์ · งานพันธกิจเพื่อสังคม</p>
         </div>
       </main>
     );
