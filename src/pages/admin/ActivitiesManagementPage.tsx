@@ -175,12 +175,12 @@ export function ActivitiesManagementPage() {
     () => [...new Set(activities.map((activity) => String(Number(activity.activityDate.slice(0, 4)) + 543)))].sort((a, b) => Number(b) - Number(a)),
     [activities],
   );
-  const summary = useMemo(() => ({
+  const activitySummary = {
     all: activities.length,
     draft: activities.filter((activity) => activity.status === "draft").length,
     published: activities.filter((activity) => activity.status === "published").length,
     archived: activities.filter((activity) => activity.status === "archived").length,
-  }), [activities]);
+  };
   const filtered = useMemo(() => {
     const needle = q.trim().toLowerCase();
     return activities.filter((activity) => {
@@ -370,10 +370,10 @@ export function ActivitiesManagementPage() {
 
       <div className="mt-6 grid grid-cols-2 gap-3 xl:grid-cols-4">
         {([
-          { key: "all", label: "กิจกรรมทั้งหมด", value: summary.all, icon: Activity, tone: "blue", hint: "ทุกสถานะ" },
-          { key: "published", label: "เผยแพร่แล้ว", value: summary.published, icon: Send, tone: "green", hint: "แสดงต่อสาธารณะ" },
-          { key: "draft", label: "ฉบับร่าง", value: summary.draft, icon: FileText, tone: "amber", hint: "ยังไม่เผยแพร่" },
-          { key: "archived", label: "เก็บถาวร", value: summary.archived, icon: Archive, tone: "slate", hint: "จัดเก็บแล้ว" },
+          { key: "all", label: "กิจกรรมทั้งหมด", value: activitySummary.all, icon: Activity, tone: "blue", hint: "ทุกสถานะ" },
+          { key: "published", label: "เผยแพร่แล้ว", value: activitySummary.published, icon: Send, tone: "green", hint: "แสดงต่อสาธารณะ" },
+          { key: "draft", label: "ฉบับร่าง", value: activitySummary.draft, icon: FileText, tone: "amber", hint: "ยังไม่เผยแพร่" },
+          { key: "archived", label: "เก็บถาวร", value: activitySummary.archived, icon: Archive, tone: "slate", hint: "จัดเก็บแล้ว" },
         ] as const).map((item) => {
           const Icon = item.icon;
           const active = status === item.key;
