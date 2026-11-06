@@ -7,8 +7,11 @@ import {
   createAdminQuestion,
   createAdminSurvey,
   getSurveyWorkspaceData,
+  getSurveyTestResponses,
+  deleteSurveyTestResponse,
   updateAdminQuestion,
   updateAdminSurvey,
+  type SurveyTestResponse,
   type AdminSurvey,
   type SurveyQuestion,
 } from "@/services/admin-surveys";
@@ -71,6 +74,7 @@ export function SurveyManagementPage() {
   const [surveyTitleSaving, setSurveyTitleSaving] = useState(false);
   const [activeTab, setActiveTab] = useState<"list" | "builder">("list");
   const [previewSurvey, setPreviewSurvey] = useState<AdminSurvey | null>(null);
+  const [testResponsesSurvey, setTestResponsesSurvey] = useState<AdminSurvey | null>(null);
   const [qrSurvey, setQrSurvey] = useState<AdminSurvey | null>(null);
   const [qrDownloading, setQrDownloading] = useState(false);
 
@@ -558,6 +562,8 @@ export function SurveyManagementPage() {
                   </div>
                   <div className="flex flex-wrap items-center gap-2">
                     <AdminButton variant="secondary" icon={<Eye className="h-4 w-4" />} onClick={() => setPreviewSurvey(selected)}>ดูตัวอย่าง</AdminButton>
+                    <AdminButton variant="secondary" onClick={() => window.open(`/survey?surveyId=${encodeURIComponent(selected.id)}&mode=test`, "_blank", "noopener,noreferrer")}>ทดสอบและบันทึก</AdminButton>
+                    <AdminButton variant="secondary" onClick={() => setTestResponsesSurvey(selected)}>ผลทดสอบ</AdminButton>
                     <AdminButton variant="secondary" icon={<QrCode className="h-4 w-4" />} onClick={() => openSurveyQr(selected)} disabled={!selected.enabled}>คิวอาร์โค้ด</AdminButton>
                     <AdminStatusBadge tone={surveyAvailability(selected).tone}>
                       {surveyAvailability(selected).label}
@@ -945,6 +951,77 @@ function SurveyPreviewModal({ survey, onClose }: { survey: AdminSurvey; onClose:
           ))}
           <div className="rounded-xl border border-blue-100 bg-blue-50 p-3 text-xs text-blue-800">นี่เป็นเพียงหน้าตัวอย่าง ปุ่มส่งคำตอบถูกปิดไว้และไม่มีการบันทึกข้อมูล</div>
         </div>
+      </div>
+    </div>
+  );
+}
+
+
+function SurveyTestResponsesModal({ survey, onClose }: { survey: AdminSurvey; onClose: () => void }) {
+  const [rows, setRows] = useState<SurveyTestResponse[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [deletingId, setDeletingId] = useState("");
+
+  useEffect(() => {
+    let active = true;
+    setLoading(true);
+    setError("");
+    getSurveyTestResponses(survey.id)
+      .then((data) => { if (active) setRows(data); })
+      .catch((e) => { if (active) setError(e instanceof Error ? e.message : "โหลดผลทดสอบไม่สำเร็จ"); })
+      .finally(() => { if (active) setLoading(false); });
+    return () => { active = false; };
+  }, [survey.id]);
+
+  async function remove(row: SurveyTestResponse) {
+    if (!window.confirm("ยืนยันลบคำตอบทดสอบรายการนี้?")) return;
+    setDeletingId(row.id);
+    try {
+      await deleteSurveyTestResponse(survey.id, row.id);
+      setRows((items) => items.filter((item) => item.id !== row.id));
+      toast.success("ลบคำตอบทดสอบแล้ว");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "ลบคำตอบทดสอบไม่สำเร็จ");
+    } finally {
+      setDeletingId("");
+    }
+  }
+
+  return (
+    <div className="fixed inset-0 z-[110] grid place-items-center overflow-y-auto bg-slate-950/60 p-4" role="dialog" aria-modal="true" aria-labelledby="survey-test-responses-title">
+      <div className="my-8 max-h-[90vh] w-full max-w-3xl overflow-y-auto rounded-2xl bg-white p-5 shadow-2xl sm:p-6">
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <p className="text-xs font-bold uppercase tracking-wider text-amber-700">ข้อมูลแยกจากผลจริง</p>
+            <h2 id="survey-test-responses-title" className="mt-1 text-xl font-bold text-[#002d62]">ผลการทดสอบแบบประเมิน</h2>
+            <p className="mt-1 text-sm text-slate-600">{survey.title || "แบบประเมินกิจกรรม"}</p>
+          </div>
+          <button type="button" onClick={onClose} className="rounded-lg p-2 text-slate-500 hover:bg-slate-100" aria-label="ปิด"><X className="h-5 w-5" /></button>
+        </div>
+        {loading ? <p className="py-10 text-center text-sm text-slate-500">กำลังโหลด...</p> : error ? <p className="mt-4 rounded-lg bg-red-50 p-3 text-sm text-red-700">{error}</p> : rows.length === 0 ? <p className="mt-5 rounded-xl border border-dashed border-slate-300 p-8 text-center text-sm text-slate-500">ยังไม่มีคำตอบทดสอบ</p> : (
+          <div className="mt-5 space-y-3">
+            {rows.map((row, index) => (
+              <article key={row.id} className="rounded-xl border border-slate-200 p-4">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <div>
+                    <p className="text-sm font-semibold text-slate-800">รายการทดสอบ #{rows.length - index}</p>
+                    <p className="mt-1 text-xs text-slate-500">{new Date(row.created_at).toLocaleString("th-TH")} · {row.answers.length} คำตอบ</p>
+                  </div>
+                  <button type="button" disabled={deletingId === row.id} onClick={() => void remove(row)} className="inline-flex items-center gap-1 rounded-lg border border-red-200 px-3 py-2 text-xs font-semibold text-red-700 hover:bg-red-50 disabled:opacity-50"><Trash2 className="h-3.5 w-3.5" />{deletingId === row.id ? "กำลังลบ..." : "ลบข้อมูลทดสอบ"}</button>
+                </div>
+                <div className="mt-3 space-y-2">
+                  {row.answers.map((answer, answerIndex) => {
+                    const question = survey.questions.find((item) => item.id === answer.questionId);
+                    const value = typeof answer.number === "number" ? String(answer.number) : Array.isArray(answer.options) ? answer.options.join(", ") : String(answer.text ?? "");
+                    return <div key={answer.questionId} className="rounded-lg bg-slate-50 px-3 py-2 text-xs"><p className="font-semibold text-slate-700">{answerIndex + 1}. {question?.question_text ?? "คำถามที่ถูกปิดใช้งาน"}</p><p className="mt-1 whitespace-pre-wrap text-slate-600">{value || "—"}</p></div>;
+                  })}
+                </div>
+              </article>
+            ))}
+          </div>
+        )}
+        <div className="mt-5 flex justify-end"><AdminButton variant="secondary" onClick={onClose}>ปิดหน้าต่าง</AdminButton></div>
       </div>
     </div>
   );

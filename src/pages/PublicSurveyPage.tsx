@@ -1,4 +1,4 @@
-import { FormEvent, useEffect, useMemo, useState } from "react";
+import { FormEvent, useCallback, useEffect, useMemo, useState } from "react";
 import {
   AlertCircle,
   ArrowLeft,
@@ -33,6 +33,10 @@ export function PublicSurveyPage() {
     () => new URLSearchParams(window.location.search).get("surveyId"),
     [],
   );
+  const isTestMode = useMemo(
+    () => new URLSearchParams(window.location.search).get("mode") === "test",
+    [],
+  );
   const [survey, setSurvey] = useState<PublicSurvey | null>(null);
   const [available, setAvailable] = useState<SurveySummary[]>([]);
   const [answers, setAnswers] = useState<Record<string, string | string[]>>({});
@@ -43,12 +47,12 @@ export function PublicSurveyPage() {
   const [error, setError] = useState("");
   const [showValidation, setShowValidation] = useState(false);
 
-  async function loadSurvey(id: string) {
+  const loadSurvey = useCallback(async (id: string) => {
     setLoading(true);
     setError("");
     setShowValidation(false);
     try {
-      const response = await fetch(`/api/survey?surveyId=${encodeURIComponent(id)}`);
+      const response = await fetch(`/api/survey?surveyId=${encodeURIComponent(id)}${isTestMode ? "&mode=test" : ""}`, { credentials: "include" });
       const body = await response.json();
       if (!response.ok) throw new Error(body.error || "ไม่สามารถโหลดแบบประเมินได้");
       setSurvey(body.data as PublicSurvey);
@@ -59,9 +63,14 @@ export function PublicSurveyPage() {
     } finally {
       setLoading(false);
     }
-  }
+  }, [isTestMode]);
 
   useEffect(() => {
+    if (isTestMode) {
+      if (querySurveyId) void loadSurvey(querySurveyId);
+      else { setError("ลิงก์ทดสอบไม่ถูกต้อง"); setLoading(false); }
+      return;
+    }
     fetch("/api/survey")
       .then(async (r) => {
         const body = await r.json();
@@ -77,7 +86,7 @@ export function PublicSurveyPage() {
         setError(e instanceof Error ? e.message : "ไม่สามารถโหลดรายการแบบประเมินได้");
         setLoading(false);
       });
-  }, [querySurveyId]);
+  }, [querySurveyId, isTestMode, loadSurvey]);
 
   const setAnswer = (question: SurveyQuestion, value: string) => {
     setAnswers((current) => ({ ...current, [question.id]: value }));
@@ -128,10 +137,12 @@ export function PublicSurveyPage() {
       });
       const response = await fetch("/api/survey", {
         method: "POST",
+        credentials: "include",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           surveyId: survey.id,
           occurrenceId: survey.occurrence_id,
+          ...(isTestMode ? { mode: "test" } : {}),
           pdpaConsent: true,
           answers: normalized,
         }),
@@ -167,10 +178,10 @@ export function PublicSurveyPage() {
           <span className="mx-auto grid h-20 w-20 place-items-center rounded-full bg-emerald-50 text-emerald-600">
             <CheckCircle2 className="h-10 w-10" />
           </span>
-          <p className="mt-6 text-xs font-bold tracking-[0.16em] text-emerald-700">SUBMISSION COMPLETE</p>
-          <h1 className="mt-2 text-2xl font-bold text-[#002d62]">ขอบคุณสำหรับการประเมิน</h1>
+          <p className="mt-6 text-xs font-bold tracking-[0.16em] text-emerald-700">{isTestMode ? "TEST SUBMISSION SAVED" : "SUBMISSION COMPLETE"}</p>
+          <h1 className="mt-2 text-2xl font-bold text-[#002d62]">{isTestMode ? "บันทึกผลทดสอบเรียบร้อย" : "ขอบคุณสำหรับการประเมิน"}</h1>
           <p className="mx-auto mt-3 max-w-sm text-sm leading-7 text-slate-600">
-            ระบบบันทึกคำตอบของท่านเรียบร้อยแล้ว ขอบคุณที่สละเวลาแบ่งปันความคิดเห็นเพื่อพัฒนากิจกรรมให้ดียิ่งขึ้น
+            {isTestMode ? "คำตอบนี้ถูกจัดเก็บในฐานข้อมูลทดสอบแยกต่างหาก ไม่ถูกรวมในผลประเมินจริง" : "ระบบบันทึกคำตอบของท่านเรียบร้อยแล้ว ขอบคุณที่สละเวลาแบ่งปันความคิดเห็นเพื่อพัฒนากิจกรรมให้ดียิ่งขึ้น"}
           </p>
           <div className="mt-7 rounded-2xl bg-[#f7f7f4] px-4 py-3 text-xs text-slate-500">
             ท่านสามารถปิดหน้านี้ได้
@@ -183,6 +194,7 @@ export function PublicSurveyPage() {
   if (!survey) {
     return (
       <main className="min-h-screen bg-[#fffdf7] pb-10 text-[#183153]">
+        {isTestMode && <div className="border-b border-amber-300 bg-amber-50 px-4 py-2 text-center text-xs font-bold text-amber-900">โหมดทดสอบสำหรับผู้ดูแล · คำตอบจะไม่ถูกรวมกับผลประเมินจริง</div>}
         <header className="w-full border-b-[3px] border-[#d6b34a] bg-[#102d55] text-white">
           <div className="mx-auto flex min-h-[76px] w-full max-w-[560px] items-center justify-between gap-3 px-3 sm:px-0">
             <div className="flex min-w-0 flex-1 items-center gap-2.5">
@@ -275,6 +287,7 @@ export function PublicSurveyPage() {
   if (survey && !consent) {
     return (
       <main className="min-h-screen bg-[#fffdf7] pb-10 text-[#183153]">
+        {isTestMode && <div className="border-b border-amber-300 bg-amber-50 px-4 py-2 text-center text-xs font-bold text-amber-900">โหมดทดสอบสำหรับผู้ดูแล · คำตอบจะไม่ถูกรวมกับผลประเมินจริง</div>}
         <header className="w-full border-b-[3px] border-[#d6b34a] bg-[#102d55] text-white">
           <div className="mx-auto flex min-h-[76px] w-full max-w-[560px] items-center justify-between gap-3 px-3 sm:px-0">
             <div className="flex min-w-0 flex-1 items-center gap-2.5">
@@ -374,6 +387,7 @@ export function PublicSurveyPage() {
 
   return (
     <main className="min-h-screen bg-[#fffdf7] pb-10 text-[#183153]">
+        {isTestMode && <div className="border-b border-amber-300 bg-amber-50 px-4 py-2 text-center text-xs font-bold text-amber-900">โหมดทดสอบสำหรับผู้ดูแล · คำตอบจะไม่ถูกรวมกับผลประเมินจริง</div>}
       <header className="w-full border-b-[3px] border-[#d6b34a] bg-[#102d55] text-white">
         <div className="mx-auto flex min-h-[76px] w-full max-w-[560px] items-center justify-between gap-3 px-3 sm:px-0">
           <div className="flex min-w-0 flex-1 items-center gap-2.5">
