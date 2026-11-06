@@ -9,7 +9,7 @@ create table if not exists public.activity_registrations (
   email text,
   organization text,
   position text,
-  participant_type text not null default 'general',
+  participant_type text not null default 'general' check (participant_type in ('general', 'community', 'student', 'staff', 'partner')),
   pdpa_consent boolean not null default false,
   pdpa_consent_at timestamptz,
   pdpa_notice_version text not null default '1.0',
