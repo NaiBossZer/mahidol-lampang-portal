@@ -52,7 +52,7 @@ export function json(body: unknown, status = 200, headers: Record<string, string
 
 export function supabaseConfig(env: Record<string, unknown>) {
   const url = String(env.SUPABASE_URL ?? "").replace(/\/$/, "");
-  const key = String(env.SUPABASE_ANON_KEY ?? "");
+  const key = String(env.SUPABASE_PUBLISHABLE_KEY ?? env.SUPABASE_ANON_KEY ?? "");
   return { url, key, configured: Boolean(url && key) };
 }
 
