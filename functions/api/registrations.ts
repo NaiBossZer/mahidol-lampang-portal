@@ -67,7 +67,16 @@ export async function onRequest({ request, env }: { request: Request; env: Env }
         `activities?slug=eq.${encodeURIComponent(slug)}&status=eq.published&select=id,title,slug,activity_date,location,featured_image,summary&limit=1`,
       );
       if (!rows[0]) return json({ success: false, error: "กิจกรรมนี้ยังไม่เปิดรับลงทะเบียน" }, 404);
-      return json({ success: true, data: rows[0] });
+      const settingsRows = await requestRest<Row[]>(
+        env,
+        `activity_registration_settings?activity_id=eq.${encodeURIComponent(String(rows[0].id))}&select=enabled,opens_at,closes_at,capacity,form_fields,confirmation_message&limit=1`,
+      );
+      const settings = settingsRows[0] ?? {
+        enabled: true, opens_at: null, closes_at: null, capacity: null,
+        form_fields: { email: true, organization: true, position: true, participantType: true },
+        confirmation_message: "ลงทะเบียนสำเร็จ ขอบคุณที่สนใจเข้าร่วมกิจกรรม",
+      };
+      return json({ success: true, data: { ...rows[0], registration_settings: settings } });
     }
 
     if (request.method === "POST") {
@@ -91,6 +100,28 @@ export async function onRequest({ request, env }: { request: Request; env: Env }
         `activities?id=eq.${encodeURIComponent(activityId)}&status=eq.published&select=id&limit=1`,
       );
       if (!activities[0]) return json({ success: false, error: "กิจกรรมยังไม่เปิดรับลงทะเบียน" }, 409);
+      const settingsRows = await requestRest<Row[]>(
+        env,
+        `activity_registration_settings?activity_id=eq.${encodeURIComponent(activityId)}&select=enabled,opens_at,closes_at,capacity,form_fields&limit=1`,
+      );
+      const settings = settingsRows[0] ?? {
+        enabled: true, opens_at: null, closes_at: null, capacity: null,
+        form_fields: { email: true, organization: true, position: true, participantType: true },
+      };
+      const now = Date.now();
+      if (settings.enabled === false) return json({ success: false, error: "กิจกรรมนี้ปิดรับลงทะเบียนแล้ว" }, 409);
+      if (settings.opens_at && now < Date.parse(String(settings.opens_at))) return json({ success: false, error: "ยังไม่ถึงเวลาเปิดรับลงทะเบียน" }, 409);
+      if (settings.closes_at && now >= Date.parse(String(settings.closes_at))) return json({ success: false, error: "หมดเวลารับลงทะเบียนแล้ว" }, 409);
+      const fields = settings.form_fields && typeof settings.form_fields === "object" ? settings.form_fields as Record<string, unknown> : {};
+      if (fields.email === true && email && !/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(email)) return json({ success: false, error: "รูปแบบอีเมลไม่ถูกต้อง" }, 400);
+      const capacity = settings.capacity == null ? null : Number(settings.capacity);
+      if (capacity !== null) {
+        const current = await requestRest<Row[]>(
+          env,
+          `activity_registrations?activity_id=eq.${encodeURIComponent(activityId)}&status=neq.cancelled&select=id`,
+        );
+        if (current.length >= capacity) return json({ success: false, error: "มีผู้ลงทะเบียนครบตามจำนวนที่กำหนดแล้ว" }, 409);
+      }
 
       const code = registrationCode();
       await requestRest<null>(env, "activity_registrations", {
