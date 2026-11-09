@@ -136,6 +136,25 @@ export async function onRequest({ request, env }: { request: Request; env: Env }
       return json({ success: true, data: { registrationCode: code } }, 201);
     }
 
+    if (request.method === "DELETE") {
+      const admin = await authorizeAdmin(request, env);
+      if (!admin || !hasAdminPermission(admin.role, "activities.update")) return json({ success: false, error: "ไม่มีสิทธิ์ลบข้อมูลผู้ลงทะเบียน" }, 403);
+      const body = await request.json() as { id?: string };
+      const id = String(body.id ?? "").trim();
+      if (!id) return json({ success: false, error: "กรุณาระบุรายการผู้ลงทะเบียนที่ต้องการลบ" }, 400);
+      const rows = await requestRest<Row[]>(
+        env,
+        `activity_registrations?id=eq.${encodeURIComponent(id)}&select=id,registration_code,full_name`,
+        {
+          method: "DELETE",
+          headers: { Prefer: "return=representation" },
+        },
+        admin.token,
+      );
+      if (!rows[0]) return json({ success: false, error: "ไม่พบรายการลงทะเบียน หรือรายการถูกลบไปแล้ว" }, 404);
+      return json({ success: true, data: rows[0] });
+    }
+
     if (request.method === "PATCH") {
       const admin = await authorizeAdmin(request, env);
       if (!admin || !hasAdminPermission(admin.role, "activities.update")) return json({ success: false, error: "ไม่มีสิทธิ์แก้ไขสถานะผู้ลงทะเบียน" }, 403);
@@ -159,7 +178,7 @@ export async function onRequest({ request, env }: { request: Request; env: Env }
       return json({ success: true, data: rows[0] });
     }
 
-    return json({ success: false, error: "Method Not Allowed" }, 405, { Allow: "GET, POST, PATCH" });
+    return json({ success: false, error: "Method Not Allowed" }, 405, { Allow: "GET, POST, PATCH, DELETE" });
   } catch (error) {
     console.error("/api/registrations", error);
     const code = (error as { code?: string } | null)?.code;
