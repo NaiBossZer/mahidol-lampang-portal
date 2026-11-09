@@ -48,6 +48,7 @@ export function ActivityRegistrationPage() {
 
   async function submit(event: FormEvent) {
     event.preventDefault();
+    const formElement = event.currentTarget as HTMLFormElement;
     if (!activity || !consent) return;
     setSubmitting(true);
     setError("");
@@ -57,7 +58,7 @@ export function ActivityRegistrationPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           activityId: activity.id, ...form,
-          website: (event.currentTarget.elements.namedItem("website") as HTMLInputElement | null)?.value ?? "",
+          website: (formElement.elements.namedItem("website") as HTMLInputElement | null)?.value ?? "",
           pdpaConsent: consent,
         }),
       });
