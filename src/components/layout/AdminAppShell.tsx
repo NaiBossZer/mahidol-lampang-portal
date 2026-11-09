@@ -13,6 +13,7 @@ const aiStudioItem: NavItem = { to: "/admin/ai-studio-workspace", label: "AI Stu
 const navGroups: readonly NavGroup[] = [
   { id: "activities", label: "บริหารกิจกรรม & Survey", icon: Activity, items: [
     { to: "/admin/activities", label: "รายการกิจกรรมโครงการ", icon: Activity, permission: "activities.read" },
+    { to: "/admin/activity-registrations", label: "ลงทะเบียนผู้เข้าร่วม", icon: Users, permission: "activities.read" },
     { to: "/admin/survey-workflow", label: "สร้างกิจกรรม & AI Survey", icon: Bot, permission: "survey.read", badge: "AI" },
     { to: "/admin/surveys", label: "แบบประเมิน", icon: FileText, permission: "survey.read" },
   ] },
@@ -29,6 +30,7 @@ const PATH_TITLE_MAP: Record<string, { group: string; title: string }> = {
   "/dashboard": { group: "รายงานผลสัมฤทธิ์ & สถิติ", title: "ภาพรวมสถิติ (Executive Dashboard)" },
   "/admin": { group: "ระบบหลังบ้าน", title: "Central Admin" },
   "/admin/activities": { group: "บริหารกิจกรรม & Survey", title: "รายการกิจกรรมโครงการ" },
+  "/admin/activity-registrations": { group: "บริหารกิจกรรม & Survey", title: "ลงทะเบียนผู้เข้าร่วม" },
   "/admin/survey-workflow": { group: "บริหารกิจกรรม & Survey", title: "สร้างกิจกรรม & AI Survey" },
   "/admin/cms": { group: "คลังเอกสารราชการ", title: "คลังเอกสารราชการ" },
   "/admin/facility-safety": { group: "อาคาร & ความปลอดภัย", title: "Facility-Safety Dashboard" },
