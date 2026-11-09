@@ -29,7 +29,8 @@ export function ActivityRegistrationsPage() {
   const [selected, setSelected] = useState<Registration | null>(null);
   const [loadingActivities, setLoadingActivities] = useState(true);
   const [loadingRows, setLoadingRows] = useState(false);
-  const [savingId, setSavingId] = useState<string | null>(null);\n  const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [savingId, setSavingId] = useState<string | null>(null);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
   const [error, setError] = useState("");
   const [filtersOpen, setFiltersOpen] = useState(false);
 
