@@ -94,7 +94,6 @@ export async function onRequest({ request, env }: { request: Request; env: Env }
       if (!activityId || fullName.length < 2 || fullName.length > 200 || !/^0[0-9]{8,9}$/.test(phoneNormalized) || body.pdpaConsent !== true) {
         return json({ success: false, error: "กรุณากรอกชื่อและเบอร์โทรศัพท์ให้ถูกต้อง พร้อมยินยอมประกาศความเป็นส่วนตัว" }, 400);
       }
-      if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return json({ success: false, error: "รูปแบบอีเมลไม่ถูกต้อง" }, 400);
       const activities = await requestRest<Row[]>(
         env,
         `activities?id=eq.${encodeURIComponent(activityId)}&status=eq.published&select=id&limit=1`,
