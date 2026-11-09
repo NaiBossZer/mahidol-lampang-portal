@@ -112,7 +112,7 @@ export async function onRequest({ request, env }: { request: Request; env: Env }
       if (settings.opens_at && now < Date.parse(String(settings.opens_at))) return json({ success: false, error: "ยังไม่ถึงเวลาเปิดรับลงทะเบียน" }, 409);
       if (settings.closes_at && now >= Date.parse(String(settings.closes_at))) return json({ success: false, error: "หมดเวลารับลงทะเบียนแล้ว" }, 409);
       const fields = settings.form_fields && typeof settings.form_fields === "object" ? settings.form_fields as Record<string, unknown> : {};
-      if (fields.email === true && email && !/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(email)) return json({ success: false, error: "รูปแบบอีเมลไม่ถูกต้อง" }, 400);
+      if (fields.email === true && email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return json({ success: false, error: "รูปแบบอีเมลไม่ถูกต้อง" }, 400);
       if (fields.participantType === true && !allowedParticipantTypes.has(participantType)) return json({ success: false, error: "ประเภทผู้เข้าร่วมไม่ถูกต้อง" }, 400);
       const code = registrationCode();
       await requestRest<null>(env, "activity_registrations", {
