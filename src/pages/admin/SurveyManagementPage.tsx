@@ -518,8 +518,8 @@ export function SurveyManagementPage() {
         <AdminCard className="overflow-hidden rounded-2xl border-slate-200 shadow-sm">
           {selected ? (
             <>
-              <div className="border-b border-slate-100 bg-white px-5 py-5">
-                <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+              <div className="border-b border-slate-100 bg-white px-5 py-6 sm:px-6">
+                <div className="flex flex-col gap-5">
                   <div className="min-w-0">
                     <p className="text-[11px] font-bold uppercase tracking-[0.13em] text-[#1455a0]">
                       สร้าง แก้ไขและปรับปรุงแบบสอบถาม
@@ -551,73 +551,100 @@ export function SurveyManagementPage() {
                         {surveyTitleSaving ? "กำลังบันทึก..." : "บันทึกชื่อ"}
                       </AdminButton>
                     </div>
-                    <p className="mt-1 text-xs text-slate-500">
-                      ชื่อนี้จะถูกส่งไปยังระบบแบบประเมิน (RAC) โดยไม่เปลี่ยนชื่อกิจกรรม
-                    </p>
-                    {selectedOccurrence && (
-                      <p className="mt-1 font-mono text-[10px] text-slate-400">
-                        รหัสกิจกรรม: {selectedOccurrence.activity_id} · รหัสแบบประเมิน: {selected?.id}
-                      </p>
-                    )}
+
                   </div>
-                  <div className="flex flex-wrap items-center gap-2">
-                    <AdminButton variant="secondary" icon={<Eye className="h-4 w-4" />} onClick={() => setPreviewSurvey(selected)}>ดูตัวอย่าง</AdminButton>
-                    <AdminButton variant="secondary" onClick={() => window.open(`/survey?surveyId=${encodeURIComponent(selected.id)}&mode=test`, "_blank", "noopener,noreferrer")}>ทดสอบและบันทึก</AdminButton>
-                    <AdminButton variant="secondary" onClick={() => setTestResponsesSurvey(selected)}>ผลทดสอบ</AdminButton>
-                    <AdminButton variant="secondary" icon={<QrCode className="h-4 w-4" />} onClick={() => openSurveyQr(selected)} disabled={!selected.enabled}>คิวอาร์โค้ด</AdminButton>
-                    <AdminStatusBadge tone={surveyAvailability(selected).tone}>
-                      {surveyAvailability(selected).label}
-                    </AdminStatusBadge>
-                    <AdminButton
-                      variant={selected.enabled ? "secondary" : "primary"}
-                      onClick={() =>
-                        void updateAdminSurvey(selected.id, { enabled: !selected.enabled })
-                          .then((updated) => {
-                            setSelected({ ...selected, ...updated });
-                            setSurveys((items) =>
-                              items.map((item) =>
-                                item.id === selected.id ? { ...item, ...updated } : item,
-                              ),
-                            );
-                            toast.success(
-                              updated.enabled ? "เปิดใช้งานแบบประเมินแล้ว" : "ปิดใช้งานแบบประเมินแล้ว",
-                            );
-                          })
-                          .catch((e) =>
-                            toast.error(e instanceof Error ? e.message : "บันทึกสถานะไม่สำเร็จ"),
-                          )
-                      }
-                    >
-                      {selected.enabled ? "ปิดใช้งาน" : "เปิดใช้งาน"}
-                    </AdminButton>
-                    <AdminButton
-                      variant="secondary"
-                      onClick={() =>
-                        void updateAdminSurvey(selected.id, { anonymous: !selected.anonymous })
-                          .then((updated) => {
-                            setSelected({ ...selected, ...updated });
-                            setSurveys((items) =>
-                              items.map((item) =>
-                                item.id === selected.id ? { ...item, ...updated } : item,
-                              ),
-                            );
-                          })
-                          .catch((e) =>
-                            toast.error(e instanceof Error ? e.message : "บันทึกไม่สำเร็จ"),
-                          )
-                      }
-                    >
-                      {selected.anonymous ? "เปลี่ยนเป็นระบุตัวตน" : "เปลี่ยนเป็นไม่ระบุตัวตน"}
-                    </AdminButton>
+                  <div className="grid gap-3 lg:grid-cols-3">
+                    <section className="min-w-0 rounded-xl border border-slate-200 bg-white p-3">
+                      <div className="mb-3">
+                        <p className="text-xs font-bold text-slate-800">ตรวจสอบแบบประเมิน</p>
+                        <p className="mt-0.5 text-[11px] text-slate-500">ตรวจความถูกต้องก่อนเปิดใช้งาน</p>
+                      </div>
+                      <div className="flex flex-wrap gap-2">
+                        <AdminButton variant="secondary" icon={<Eye className="h-4 w-4" />} onClick={() => setPreviewSurvey(selected)}>ดูตัวอย่าง</AdminButton>
+                        <AdminButton variant="secondary" onClick={() => window.open(`/survey?surveyId=${encodeURIComponent(selected.id)}&mode=test`, "_blank", "noopener,noreferrer")}>ทดสอบแบบประเมิน</AdminButton>
+                        <AdminButton variant="secondary" onClick={() => setTestResponsesSurvey(selected)}>ผลทดสอบ</AdminButton>
+                      </div>
+                    </section>
+
+                    <section className="min-w-0 rounded-xl border border-slate-200 bg-white p-3">
+                      <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+                        <div>
+                          <p className="text-xs font-bold text-slate-800">เผยแพร่และรับคำตอบ</p>
+                          <p className="mt-0.5 text-[11px] text-slate-500">ควบคุมการเข้าถึงแบบประเมิน</p>
+                        </div>
+                        <AdminStatusBadge tone={surveyAvailability(selected).tone}>
+                          {surveyAvailability(selected).label}
+                        </AdminStatusBadge>
+                      </div>
+                      <div className="flex flex-wrap gap-2">
+                        <AdminButton
+                          variant={selected.enabled ? "secondary" : "primary"}
+                          onClick={() =>
+                            void updateAdminSurvey(selected.id, { enabled: !selected.enabled })
+                              .then((updated) => {
+                                setSelected({ ...selected, ...updated });
+                                setSurveys((items) =>
+                                  items.map((item) =>
+                                    item.id === selected.id ? { ...item, ...updated } : item,
+                                  ),
+                                );
+                                toast.success(
+                                  updated.enabled ? "เปิดใช้งานแบบประเมินแล้ว" : "ปิดใช้งานแบบประเมินแล้ว",
+                                );
+                              })
+                              .catch((e) =>
+                                toast.error(e instanceof Error ? e.message : "บันทึกสถานะไม่สำเร็จ"),
+                              )
+                          }
+                        >
+                          {selected.enabled ? "ปิดรับคำตอบ" : "เปิดรับคำตอบ"}
+                        </AdminButton>
+                        <AdminButton variant="secondary" icon={<QrCode className="h-4 w-4" />} onClick={() => openSurveyQr(selected)} disabled={!selected.enabled}>คิวอาร์โค้ด</AdminButton>
+                      </div>
+                    </section>
+
+                    <section className="min-w-0 rounded-xl border border-slate-200 bg-white p-3">
+                      <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+                        <div>
+                          <p className="text-xs font-bold text-slate-800">ข้อมูลผู้ตอบ</p>
+                          <p className="mt-0.5 text-[11px] text-slate-500">กำหนดรูปแบบการระบุตัวตน</p>
+                        </div>
+                        <AdminStatusBadge tone={selected.anonymous ? "neutral" : "success"}>
+                          {selected.anonymous ? "ไม่ระบุตัวตน" : "ระบุตัวตน"}
+                        </AdminStatusBadge>
+                      </div>
+                      <AdminButton
+                        variant="secondary"
+                        onClick={() =>
+                          void updateAdminSurvey(selected.id, { anonymous: !selected.anonymous })
+                            .then((updated) => {
+                              setSelected({ ...selected, ...updated });
+                              setSurveys((items) =>
+                                items.map((item) =>
+                                  item.id === selected.id ? { ...item, ...updated } : item,
+                                ),
+                              );
+                              toast.success(updated.anonymous ? "ตั้งค่าไม่ระบุตัวตนแล้ว" : "ตั้งค่าระบุตัวตนแล้ว");
+                            })
+                            .catch((e) =>
+                              toast.error(e instanceof Error ? e.message : "บันทึกไม่สำเร็จ"),
+                            )
+                        }
+                      >
+                        {selected.anonymous ? "เปลี่ยนเป็นระบุตัวตน" : "เปลี่ยนเป็นไม่ระบุตัวตน"}
+                      </AdminButton>
+                    </section>
                   </div>
                 </div>
-                <p className="mt-3 text-xs leading-5 text-slate-500">
-                  การเปิดใช้งานแบบประเมินแยกจากสถานะกิจกรรม กิจกรรมฉบับร่างหรือเสร็จสิ้นแล้วก็เปิดรับคำตอบได้
-                  หากไม่กำหนดวันและเวลา ระบบจะเปิดรับคำตอบต่อเนื่องจนกว่าจะปิดใช้งาน
-                </p>
+                <div className="mt-4 rounded-xl border border-blue-100 bg-blue-50/70 px-4 py-3">
+                  <p className="text-xs font-semibold text-blue-900">การเปิดรับคำตอบ</p>
+                  <p className="mt-1 text-xs leading-5 text-blue-800/80">
+                    แยกจากสถานะกิจกรรมโดยอิสระ หากไม่กำหนดวันและเวลา ระบบจะเปิดรับคำตอบต่อเนื่องจนกว่าจะปิดใช้งาน
+                  </p>
+                </div>
               </div>
-              <div className="border-t border-slate-100 bg-slate-50/70 px-5 py-4">
-                <div className="grid gap-3 sm:grid-cols-2">
+              <div className="border-t border-slate-100 bg-slate-50/70 px-5 py-5 sm:px-6">
+                <div className="grid gap-4 sm:grid-cols-2">
                   <label className="block">
                     <span className="mb-1 block text-xs font-semibold text-slate-600">เปิดรับ</span>
                     <input
@@ -681,7 +708,7 @@ export function SurveyManagementPage() {
                 </div>
               </div>
 
-              <div className="grid gap-4 p-5 xl:grid-cols-[minmax(0,1.2fr)_minmax(300px,.8fr)]">
+              <div className="grid items-start gap-5 p-5 sm:p-6 xl:grid-cols-[minmax(0,1.05fr)_minmax(360px,.95fr)]">
                 <div className="order-2 rounded-2xl border border-slate-200 bg-slate-50/80 p-5 xl:order-2">
                   <div className="grid gap-3 md:grid-cols-[minmax(0,1fr)_160px_auto]">
                     <label className="block">
@@ -807,7 +834,7 @@ export function SurveyManagementPage() {
                   </label>
                 </div>
 
-                <div className="order-1 rounded-2xl border border-slate-200 bg-white p-4 xl:order-1">
+                <div className="order-1 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm xl:order-1">
                 <div className="flex items-center justify-between gap-3">
                   <div>
                     <h3 className="text-sm font-bold text-slate-900">รายการคำถาม</h3>
