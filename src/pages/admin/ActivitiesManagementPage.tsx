@@ -12,7 +12,6 @@ import {
 } from "@/services/api";
 import { getAdminLearningCenters, type LearningCenter } from "@/services/admin-learning-centers";
 import AIRecommendationsSidebar from "@/components/admin/AIRecommendationsSidebar";
-import AIInsightsPanel from "@/components/admin/AIInsightsPanel";
 import GoogleDriveImagePicker from "@/components/admin/GoogleDriveImagePicker";
 import {
   AdminPageHeader,
@@ -454,7 +453,6 @@ export function ActivitiesManagementPage() {
         }
       />
 
-      <AIInsightsPanel />
 
       <AdminFilterBar search={q} onSearchChange={setQ} placeholder="ค้นหาชื่อกิจกรรม, รหัส URL หรือสถานที่">
         <select
