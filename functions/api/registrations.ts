@@ -114,6 +114,7 @@ export async function onRequest({ request, env }: { request: Request; env: Env }
       if (settings.closes_at && now >= Date.parse(String(settings.closes_at))) return json({ success: false, error: "หมดเวลารับลงทะเบียนแล้ว" }, 409);
       const fields = settings.form_fields && typeof settings.form_fields === "object" ? settings.form_fields as Record<string, unknown> : {};
       if (fields.email === true && email && !/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(email)) return json({ success: false, error: "รูปแบบอีเมลไม่ถูกต้อง" }, 400);
+      if (fields.participantType === true && !allowedParticipantTypes.has(participantType)) return json({ success: false, error: "ประเภทผู้เข้าร่วมไม่ถูกต้อง" }, 400);
       const capacity = settings.capacity == null ? null : Number(settings.capacity);
       if (capacity !== null) {
         const current = await requestRest<Row[]>(
@@ -133,10 +134,10 @@ export async function onRequest({ request, env }: { request: Request; env: Env }
           full_name: fullName,
           phone,
           phone_normalized: phoneNormalized,
-          email: email || null,
-          organization: organization || null,
-          position: position || null,
-          participant_type: participantType,
+          email: fields.email === true ? email || null : null,
+          organization: fields.organization === true ? organization || null : null,
+          position: fields.position === true ? position || null : null,
+          participant_type: fields.participantType === true ? participantType : "general",
           pdpa_consent: true,
           pdpa_consent_at: new Date().toISOString(),
           pdpa_notice_version: "1.0",
@@ -173,6 +174,9 @@ export async function onRequest({ request, env }: { request: Request; env: Env }
     console.error("/api/registrations", error);
     const code = (error as { code?: string } | null)?.code;
     if (code === "23505") return json({ success: false, error: "เบอร์โทรศัพท์นี้ลงทะเบียนกิจกรรมแล้ว" }, 409);
+    if (code === "23514" && error instanceof Error && error.message.includes("REGISTRATION_CAPACITY_REACHED")) {
+      return json({ success: false, error: "มีผู้ลงทะเบียนครบตามจำนวนที่กำหนดแล้ว" }, 409);
+    }
     return json({ success: false, error: error instanceof Error ? error.message : "ไม่สามารถดำเนินการได้" }, 500);
   }
 }
