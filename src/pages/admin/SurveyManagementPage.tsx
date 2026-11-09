@@ -560,55 +560,82 @@ export function SurveyManagementPage() {
                       </p>
                     )}
                   </div>
-                  <div className="flex flex-wrap items-center gap-2 rounded-2xl border border-slate-200 bg-slate-50/80 p-3">
-                    <AdminButton variant="secondary" icon={<Eye className="h-4 w-4" />} onClick={() => setPreviewSurvey(selected)}>ดูตัวอย่าง</AdminButton>
-                    <AdminButton variant="secondary" onClick={() => window.open(`/survey?surveyId=${encodeURIComponent(selected.id)}&mode=test`, "_blank", "noopener,noreferrer")}>ทดสอบและบันทึก</AdminButton>
-                    <AdminButton variant="secondary" onClick={() => setTestResponsesSurvey(selected)}>ผลทดสอบ</AdminButton>
-                    <AdminButton variant="secondary" icon={<QrCode className="h-4 w-4" />} onClick={() => openSurveyQr(selected)} disabled={!selected.enabled}>คิวอาร์โค้ด</AdminButton>
-                    <AdminStatusBadge tone={surveyAvailability(selected).tone}>
-                      {surveyAvailability(selected).label}
-                    </AdminStatusBadge>
-                    <AdminButton
-                      variant={selected.enabled ? "secondary" : "primary"}
-                      onClick={() =>
-                        void updateAdminSurvey(selected.id, { enabled: !selected.enabled })
-                          .then((updated) => {
-                            setSelected({ ...selected, ...updated });
-                            setSurveys((items) =>
-                              items.map((item) =>
-                                item.id === selected.id ? { ...item, ...updated } : item,
-                              ),
-                            );
-                            toast.success(
-                              updated.enabled ? "เปิดใช้งานแบบประเมินแล้ว" : "ปิดใช้งานแบบประเมินแล้ว",
-                            );
-                          })
-                          .catch((e) =>
-                            toast.error(e instanceof Error ? e.message : "บันทึกสถานะไม่สำเร็จ"),
-                          )
-                      }
-                    >
-                      {selected.enabled ? "ปิดใช้งาน" : "เปิดใช้งาน"}
-                    </AdminButton>
-                    <AdminButton
-                      variant="secondary"
-                      onClick={() =>
-                        void updateAdminSurvey(selected.id, { anonymous: !selected.anonymous })
-                          .then((updated) => {
-                            setSelected({ ...selected, ...updated });
-                            setSurveys((items) =>
-                              items.map((item) =>
-                                item.id === selected.id ? { ...item, ...updated } : item,
-                              ),
-                            );
-                          })
-                          .catch((e) =>
-                            toast.error(e instanceof Error ? e.message : "บันทึกไม่สำเร็จ"),
-                          )
-                      }
-                    >
-                      {selected.anonymous ? "เปลี่ยนเป็นระบุตัวตน" : "เปลี่ยนเป็นไม่ระบุตัวตน"}
-                    </AdminButton>
+                  <div className="grid gap-3 lg:grid-cols-3">
+                    <section className="min-w-0 rounded-xl border border-slate-200 bg-white p-3">
+                      <div className="mb-3">
+                        <p className="text-xs font-bold text-slate-800">ตรวจสอบแบบประเมิน</p>
+                        <p className="mt-0.5 text-[11px] text-slate-500">ตรวจความถูกต้องก่อนเปิดใช้งาน</p>
+                      </div>
+                      <div className="flex flex-wrap gap-2">
+                        <AdminButton variant="secondary" icon={<Eye className="h-4 w-4" />} onClick={() => setPreviewSurvey(selected)}>ดูตัวอย่าง</AdminButton>
+                        <AdminButton variant="secondary" onClick={() => window.open(`/survey?surveyId=${encodeURIComponent(selected.id)}&mode=test`, "_blank", "noopener,noreferrer")}>ทดสอบแบบประเมิน</AdminButton>
+                        <AdminButton variant="secondary" onClick={() => setTestResponsesSurvey(selected)}>ผลทดสอบ</AdminButton>
+                      </div>
+                    </section>
+
+                    <section className="min-w-0 rounded-xl border border-slate-200 bg-white p-3">
+                      <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+                        <div>
+                          <p className="text-xs font-bold text-slate-800">เผยแพร่และรับคำตอบ</p>
+                          <p className="mt-0.5 text-[11px] text-slate-500">ควบคุมการเข้าถึงแบบประเมิน</p>
+                        </div>
+                        <AdminStatusBadge tone={surveyAvailability(selected).tone}>
+                          {surveyAvailability(selected).label}
+                        </AdminStatusBadge>
+                      </div>
+                      <div className="flex flex-wrap gap-2">
+                        <AdminButton
+                          variant={selected.enabled ? "secondary" : "primary"}
+                          onClick={() =>
+                            void updateAdminSurvey(selected.id, { enabled: !selected.enabled })
+                              .then((updated) => {
+                                setSelected({ ...selected, ...updated });
+                                setSurveys((items) =>
+                                  items.map((item) =>
+                                    item.id === selected.id ? { ...item, ...updated } : item,
+                                  ),
+                                );
+                                toast.success(
+                                  updated.enabled ? "เปิดใช้งานแบบประเมินแล้ว" : "ปิดใช้งานแบบประเมินแล้ว",
+                                );
+                              })
+                              .catch((e) =>
+                                toast.error(e instanceof Error ? e.message : "บันทึกสถานะไม่สำเร็จ"),
+                              )
+                          }
+                        >
+                          {selected.enabled ? "ปิดรับคำตอบ" : "เปิดรับคำตอบ"}
+                        </AdminButton>
+                        <AdminButton variant="secondary" icon={<QrCode className="h-4 w-4" />} onClick={() => openSurveyQr(selected)} disabled={!selected.enabled}>คิวอาร์โค้ด</AdminButton>
+                      </div>
+                    </section>
+
+                    <section className="min-w-0 rounded-xl border border-slate-200 bg-white p-3">
+                      <div className="mb-3">
+                        <p className="text-xs font-bold text-slate-800">ข้อมูลผู้ตอบ</p>
+                        <p className="mt-0.5 text-[11px] text-slate-500">กำหนดรูปแบบการระบุตัวตน</p>
+                      </div>
+                      <AdminButton
+                        variant="secondary"
+                        onClick={() =>
+                          void updateAdminSurvey(selected.id, { anonymous: !selected.anonymous })
+                            .then((updated) => {
+                              setSelected({ ...selected, ...updated });
+                              setSurveys((items) =>
+                                items.map((item) =>
+                                  item.id === selected.id ? { ...item, ...updated } : item,
+                                ),
+                              );
+                              toast.success(updated.anonymous ? "ตั้งค่าไม่ระบุตัวตนแล้ว" : "ตั้งค่าระบุตัวตนแล้ว");
+                            })
+                            .catch((e) =>
+                              toast.error(e instanceof Error ? e.message : "บันทึกไม่สำเร็จ"),
+                            )
+                        }
+                      >
+                        {selected.anonymous ? "ไม่ระบุตัวตน · เปลี่ยนการตั้งค่า" : "ระบุตัวตน · เปลี่ยนการตั้งค่า"}
+                      </AdminButton>
+                    </section>
                   </div>
                 </div>
                 <div className="mt-4 rounded-xl border border-blue-100 bg-blue-50/70 px-4 py-3">
