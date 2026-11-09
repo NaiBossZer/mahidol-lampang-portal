@@ -34,6 +34,7 @@ import {
 } from "@/lib/electricityReportGenerator";
 
 type ReportStatus = "draft" | "processing" | "needs_review" | "approved" | "published" | "failed";
+const REPORT_EDITABLE_STATUSES = new Set<ReportStatus>(["draft", "processing", "needs_review", "failed"]);
 type SourceStatus = "uploaded" | "queued" | "processing" | "processed" | "needs_review" | "failed";
 type SourceType = "pea_bill" | "solar_excel" | "report_pdf" | "report_pptx" | "other";
 
@@ -111,6 +112,12 @@ const SOURCE_TYPE_LABEL: Record<SourceType, string> = {
   report_pdf: "Report PDF",
   report_pptx: "Report PPTX",
   other: "เอกสารอื่น",
+};
+
+const SOURCE_ROLE_LABEL: Record<string, string> = {
+  SOBPRAB: "PEA สบปราบ",
+  PHALAAD: "PEA ผาลาด",
+  SOLAR: "Solar 18 kWp",
 };
 
 const STATUS_META: Record<string, { label: string; className: string }> = {
@@ -226,7 +233,6 @@ export function ElectricityReportsPage() {
   const [sources, setSources] = useState<SourceDocument[]>([]);
   const [runs, setRuns] = useState<ProcessingRun[]>([]);
   const [selectedReportId, setSelectedReportId] = useState("");
-  const [selectedSourceIds, setSelectedSourceIds] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
@@ -263,14 +269,48 @@ export function ElectricityReportsPage() {
     [reports, selectedReportId],
   );
 
-  const selectedMonthSources = useMemo(() => {
-    if (!activeReport) return sources;
-    return sources.filter(
-      (item) =>
-        !item.billing_period ||
-        item.billing_period.slice(0, 7) === activeReport.report_month.slice(0, 7),
-    );
-  }, [activeReport, sources]);
+  const sourceMonths = useMemo(
+    () =>
+      [...new Set(sources.map((item) => item.billing_period?.slice(0, 7)).filter(Boolean) as string[])].sort(
+        (a, b) => b.localeCompare(a),
+      ),
+    [sources],
+  );
+
+  const sourceViewMonth =
+    activeReport?.report_month.slice(0, 7) || sourceMonths[0] || new Date().toISOString().slice(0, 7);
+
+  const selectedMonthSources = useMemo(
+    () =>
+      sources
+        .filter((item) => item.billing_period?.slice(0, 7) === sourceViewMonth)
+        .sort((a, b) => b.uploaded_at.localeCompare(a.uploaded_at)),
+    [sourceViewMonth, sources],
+  );
+
+  const latestSetSources = useMemo(() => {
+    const latest = new Map<string, SourceDocument>();
+    for (const source of selectedMonthSources) {
+      const role =
+        source.source_type === "solar_excel"
+          ? "SOLAR"
+          : source.site?.code === "PHALAAD"
+            ? "PHALAAD"
+            : source.site?.code === "SOBPRAB"
+              ? "SOBPRAB"
+              : "";
+      if (role && !latest.has(role)) latest.set(role, source);
+    }
+    return ["SOBPRAB", "PHALAAD", "SOLAR"]
+      .map((role) => latest.get(role))
+      .filter((source): source is SourceDocument => Boolean(source));
+  }, [selectedMonthSources]);
+
+  const sourceSetIds = latestSetSources.map((source) => source.id);
+  const sourceSetComplete = sourceSetIds.length === 3;
+  const sourceSetProcessing = latestSetSources.some(
+    (source) => source.status === "processing" || source.status === "queued",
+  );
 
   const latestRun = runs[0];
 
@@ -288,15 +328,9 @@ export function ElectricityReportsPage() {
     }
   };
 
-  const toggleSource = (id: string) => {
-    setSelectedSourceIds((current) =>
-      current.includes(id) ? current.filter((value) => value !== id) : [...current, id],
-    );
-  };
-
-  const handleProcess = async (ids = selectedSourceIds) => {
-    if (!ids.length) {
-      toast.error("เลือกเอกสารต้นทางอย่างน้อย 1 รายการ");
+  const handleProcess = async (ids: string[] = sourceSetIds) => {
+    if (ids.length !== 3) {
+      toast.error("ชุดเอกสารต้องมีครบ 3 รายการ: PEA สบปราบ, PEA ผาลาด และ Solar");
       return;
     }
     setIsProcessing(true);
@@ -306,11 +340,11 @@ export function ElectricityReportsPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ sourceDocumentIds: ids }),
       });
-      setSelectedSourceIds([]);
-      toast.success("AI Agent ประมวลผลแล้ว และสร้าง Monthly Report ในสถานะรอตรวจสอบ");
+      toast.success("AI Agent ประมวลผลชุดเอกสาร 3 รายการแล้ว");
       await loadDashboard(true);
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "AI Agent ประมวลผลไม่สำเร็จ");
+      await loadDashboard(true);
     } finally {
       setIsProcessing(false);
     }
@@ -354,6 +388,25 @@ export function ElectricityReportsPage() {
     setShowEditor(true);
   };
 
+  const transitionReport = async (report: MonthlyReport, action: "approve" | "publish") => {
+    const message =
+      action === "approve"
+        ? "ยืนยันการตรวจสอบและอนุมัติ Monthly Report นี้หรือไม่?"
+        : "ยืนยันการเผยแพร่ Monthly Report ที่อนุมัติแล้วหรือไม่?";
+    if (!window.confirm(message)) return;
+
+    try {
+      await apiRequest(
+        "/api/admin/electricity?action=" + action + "&id=" + encodeURIComponent(report.id),
+        { method: "PATCH" },
+      );
+      toast.success(action === "approve" ? "อนุมัติ Monthly Report แล้ว" : "เผยแพร่ Monthly Report แล้ว");
+      await loadDashboard(true);
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "เปลี่ยนสถานะรายงานไม่สำเร็จ");
+    }
+  };
+
   const saveReport = async () => {
     try {
       const payload = {
@@ -365,7 +418,7 @@ export function ElectricityReportsPage() {
         solar_yield_kwh: draft.solar_yield_kwh,
         co2_avoided_ton: draft.co2_avoided_ton || null,
         coal_saved_ton: draft.coal_saved_ton || null,
-        status: draft.status,
+        status: REPORT_EDITABLE_STATUSES.has(draft.status) ? draft.status : "needs_review",
       };
 
       if (editingId) {
@@ -488,6 +541,50 @@ export function ElectricityReportsPage() {
 
         <ElectricitySourceUploadCard onUploaded={() => loadDashboard(true)} />
 
+        {sources.length > 0 ? (
+          <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-xs">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <div className="flex items-center gap-2">
+                  <Database className="h-4 w-4 text-[#002d62]" />
+                  <h2 className="text-sm font-bold text-[#0c2340]">ชุดเอกสาร Source of Truth ล่าสุด</h2>
+                  <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-black text-slate-600">
+                    {sourceViewMonth}
+                  </span>
+                </div>
+                <p className="mt-1 text-[11px] text-slate-500">
+                  PEA สบปราบ {latestSetSources.some((source) => source.site?.code === "SOBPRAB") ? "✓" : "—"} ·
+                  PEA ผาลาด {latestSetSources.some((source) => source.site?.code === "PHALAAD") ? "✓" : "—"} ·
+                  Solar {latestSetSources.some((source) => source.site?.code === "SOLAR") ? "✓" : "—"}
+                </p>
+              </div>
+              <div className="flex items-center gap-2">
+                <span
+                  className={cn(
+                    "rounded-full px-2.5 py-1 text-[10px] font-black",
+                    latestSetSources.length === 3
+                      ? "bg-emerald-100 text-emerald-700"
+                      : "bg-amber-100 text-amber-800",
+                  )}
+                >
+                  {latestSetSources.length}/3 เอกสาร
+                </span>
+                {sourceSetComplete ? (
+                  <button
+                    type="button"
+                    disabled={isProcessing || sourceSetProcessing}
+                    onClick={() => void handleProcess()}
+                    className="inline-flex items-center gap-1.5 rounded-lg border border-[#002d62] bg-white px-3 py-2 text-xs font-bold text-[#002d62] hover:bg-blue-50 disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    <Play className="h-3.5 w-3.5" />
+                    {sourceSetProcessing ? "AI Agent กำลังทำงาน…" : "ประมวลผลชุดนี้อีกครั้ง"}
+                  </button>
+                ) : null}
+              </div>
+            </div>
+          </div>
+        ) : null}
+
         {!reports.length && (
           <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
             <div className="flex items-start gap-3">
@@ -495,7 +592,7 @@ export function ElectricityReportsPage() {
               <div>
                 <p className="font-bold">ยังไม่มี Monthly Report ในฐานข้อมูล</p>
                 <p className="mt-1 text-xs">
-                  อัปโหลด PDF ค่าไฟสบปราบ/ผาลาด หรือ Excel Solar ที่ส่วนอัปโหลดด้านบน แล้วเลือกเอกสารต้นทางเพื่อสั่ง AI Agent ประมวลผล
+                  อัปโหลดชุดเอกสาร 3 ไฟล์ด้านบน ระบบจะส่ง PEA สบปราบ + PEA ผาลาด + Solar เข้า AI Agent เป็นรอบเดียวกันโดยอัตโนมัติ
                 </p>
               </div>
             </div>
@@ -633,6 +730,25 @@ export function ElectricityReportsPage() {
                       <Pencil className="h-3.5 w-3.5" />
                       แก้ไข
                     </button>
+                    {activeReport.status === "needs_review" ? (
+                      <button
+                        type="button"
+                        onClick={() => void transitionReport(activeReport, "approve")}
+                        className="inline-flex items-center gap-1 rounded-lg bg-emerald-600 px-2.5 py-1.5 text-xs font-bold text-white hover:bg-emerald-700"
+                      >
+                        <CheckCircle2 className="h-3.5 w-3.5" />
+                        อนุมัติ
+                      </button>
+                    ) : null}
+                    {activeReport.status === "approved" ? (
+                      <button
+                        type="button"
+                        onClick={() => void transitionReport(activeReport, "publish")}
+                        className="inline-flex items-center gap-1 rounded-lg bg-violet-600 px-2.5 py-1.5 text-xs font-bold text-white hover:bg-violet-700"
+                      >
+                        เผยแพร่
+                      </button>
+                    ) : null}
                     <button
                       type="button"
                       onClick={() => void deleteReport(activeReport)}
@@ -673,8 +789,8 @@ export function ElectricityReportsPage() {
                 <div className="mt-5">
                   <h3 className="mb-3 text-sm font-bold text-[#0c2340]">เอกสารที่เป็น Source of Truth</h3>
                   <div className="divide-y divide-slate-100 overflow-hidden rounded-xl border border-slate-200">
-                    {selectedMonthSources.length ? (
-                      selectedMonthSources.map((source) => {
+                    {(latestSetSources.length ? latestSetSources : selectedMonthSources).length ? (
+                      (latestSetSources.length ? latestSetSources : selectedMonthSources).map((source) => {
                         const status = STATUS_META[source.status] ?? STATUS_META.uploaded;
                         return (
                           <div key={source.id} className="flex flex-col gap-3 p-3 sm:flex-row sm:items-center sm:justify-between">
@@ -686,6 +802,13 @@ export function ElectricityReportsPage() {
                                 </span>
                               </div>
                               <div className="mt-1 flex flex-wrap gap-x-3 gap-y-1 text-[11px] text-slate-500">
+                                <span className="font-bold text-slate-700">
+                                  {SOURCE_ROLE_LABEL[
+                                    source.source_type === "solar_excel"
+                                      ? "SOLAR"
+                                      : String(source.site?.code ?? "")
+                                  ] ?? "เอกสารต้นทาง"}
+                                </span>
                                 <span>{SOURCE_TYPE_LABEL[source.source_type]}</span>
                                 <span>{source.site?.name ?? "ไม่ระบุ site"}</span>
                                 <span>{source.billing_period ? monthLabel(source.billing_period) : "ไม่ระบุเดือน"}</span>
@@ -698,26 +821,6 @@ export function ElectricityReportsPage() {
                               ) : null}
                             </div>
                             <div className="flex shrink-0 items-center gap-2">
-                              {source.source_type === "pea_bill" || source.source_type === "solar_excel" ? (
-                                <button
-                                  type="button"
-                                  onClick={() => {
-                                    setSelectedSourceIds((current) =>
-                                      current.includes(source.id)
-                                        ? current.filter((value) => value !== source.id)
-                                        : [...current, source.id],
-                                    );
-                                  }}
-                                  className={cn(
-                                    "rounded-lg border px-2.5 py-1.5 text-xs font-semibold",
-                                    selectedSourceIds.includes(source.id)
-                                      ? "border-[#002d62] bg-blue-50 text-[#002d62]"
-                                      : "border-slate-200 text-slate-600 hover:bg-slate-50",
-                                  )}
-                                >
-                                  {selectedSourceIds.includes(source.id) ? "เลือกแล้ว" : "เลือก"}
-                                </button>
-                              ) : null}
                               <button
                                 type="button"
                                 onClick={() => void handleDownloadSource(source.id)}
@@ -737,22 +840,15 @@ export function ElectricityReportsPage() {
                     )}
                   </div>
 
-                  {selectedSourceIds.length > 0 && (
-                    <div className="mt-3 flex flex-col gap-2 rounded-xl border border-blue-200 bg-blue-50 p-3 sm:flex-row sm:items-center sm:justify-between">
-                      <div className="text-xs text-blue-900">
-                        เลือกเอกสาร {selectedSourceIds.length} รายการสำหรับ AI Agent
-                      </div>
-                      <button
-                        type="button"
-                        disabled={isProcessing}
-                        onClick={() => void handleProcess()}
-                        className="inline-flex items-center justify-center gap-1.5 rounded-lg bg-[#002d62] px-3 py-2 text-xs font-bold text-white disabled:opacity-60"
-                      >
-                        <Play className="h-3.5 w-3.5" />
-                        {isProcessing ? "กำลังประมวลผล…" : "ประมวลผลด้วย AI Agent"}
-                      </button>
+                  <div className="mt-3 rounded-xl border border-slate-200 bg-slate-50 p-3">
+                    <div className="text-xs font-black text-slate-800">
+                      ชุดเอกสาร {sourceViewMonth} — {latestSetSources.length}/3 รายการ
                     </div>
-                  )}
+                    <p className="mt-1 text-[11px] text-slate-500">
+                      ต้องครบ PEA สบปราบ, PEA ผาลาด และ Solar ก่อนสร้าง Monthly Report
+                    </p>
+                  </div>
+
                 </div>
               </div>
 
@@ -772,28 +868,28 @@ export function ElectricityReportsPage() {
                       <Upload className="mt-0.5 h-3.5 w-3.5 text-blue-600" />
                       <div>
                         <div className="font-bold text-slate-800">1. Ingest</div>
-                        <p className="text-slate-500">อัปโหลดจากหน้า Admin → private Supabase Storage พร้อม SHA-256</p>
+                        <p className="text-slate-500">อัปโหลด 3 เอกสารพร้อมกัน → private Supabase Storage + SHA-256</p>
                       </div>
                     </div>
                     <div className="flex items-start gap-2">
                       <Sparkles className="mt-0.5 h-3.5 w-3.5 text-purple-600" />
                       <div>
                         <div className="font-bold text-slate-800">2. Extract</div>
-                        <p className="text-slate-500">Responses API อ่าน PDF/Excel และคืน structured JSON</p>
+                        <p className="text-slate-500">AI Agent อ่าน PEA สบปราบ + PEA ผาลาด + Solar ในชุดเดียวกัน</p>
                       </div>
                     </div>
                     <div className="flex items-start gap-2">
                       <ShieldCheck className="mt-0.5 h-3.5 w-3.5 text-emerald-600" />
                       <div>
                         <div className="font-bold text-slate-800">3. Validate</div>
-                        <p className="text-slate-500">เทียบ site/month และตั้ง confidence + needs_review</p>
+                        <p className="text-slate-500">ตรวจครบ 3 บทบาท + เทียบ site/month + confidence + needs_review</p>
                       </div>
                     </div>
                     <div className="flex items-start gap-2">
                       <Database className="mt-0.5 h-3.5 w-3.5 text-slate-600" />
                       <div>
                         <div className="font-bold text-slate-800">4. Persist</div>
-                        <p className="text-slate-500">เขียน reading + Monthly Report และผูก source document</p>
+                        <p className="text-slate-500">เขียน reading + Monthly Report และผูก Source of Truth ทั้ง 3 ไฟล์</p>
                       </div>
                     </div>
                   </div>
@@ -929,8 +1025,6 @@ export function ElectricityReportsPage() {
                     <option value="draft">Draft</option>
                     <option value="processing">Processing</option>
                     <option value="needs_review">Needs Review</option>
-                    <option value="approved">Approved</option>
-                    <option value="published">Published</option>
                     <option value="failed">Failed</option>
                   </select>
                 </label>

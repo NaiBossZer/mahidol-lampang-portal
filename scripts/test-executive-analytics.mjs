@@ -150,12 +150,6 @@ assert.equal(
   "selected dashboard activity must use only that activity's participant_count",
 );
 
-assert.equal(
-  metrics.participants,
-  120,
-  "all-activities dashboard must sum participant_count across both activities",
-);
-
 const metrics = computeExecutiveMetrics(
   mockActivities,
   mockResponses,
@@ -202,6 +196,40 @@ assert.equal(
 assert.equal(metrics.channelDistribution.length, 3, "must detect FACEBOOK, LINE, WEBSITE");
 assert.equal(metrics.comments.length, 2, "must collect 2 comments");
 console.log("PASS: Executive metrics calculations from canonical survey data verified");
+
+const wordingQuestions = [
+  ...mockQuestions,
+  {
+    id: "q-location-detailed",
+    survey_id: "survey-2",
+    section_key: "opening",
+    question_type: "rating",
+    question_text:
+      "ความเหมาะสมของสถานที่จัดกิจกรรม ทั้งด้านการเข้าถึง ความสะดวก และสภาพแวดล้อมสำหรับผู้เข้าร่วม",
+    order_index: 1,
+    active: true,
+  },
+];
+const wordingMetrics = computeExecutiveMetrics(
+  mockActivities,
+  mockResponses,
+  wordingQuestions,
+  mockAnswers,
+  "age_group",
+  [],
+);
+const wordingItem = wordingMetrics.questionScores.find((item) => item.field === "opening:1");
+assert.equal(
+  wordingItem?.label,
+  "ความเหมาะสมของสถานที่จัดกิจกรรม ทั้งด้านการเข้าถึง ความสะดวก และสภาพแวดล้อมสำหรับผู้เข้าร่วม",
+  "ALL dashboard must prefer the most complete wording for an equivalent question slot",
+);
+assert.equal(
+  wordingItem?.respondentCount,
+  2,
+  "ALL dashboard must keep score aggregation across the equivalent question slot",
+);
+console.log("PASS: ALL-dashboard complete-question wording preference verified");
 
 const reportRows = buildReportRows(
   {

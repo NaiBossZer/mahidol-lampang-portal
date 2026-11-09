@@ -16,16 +16,16 @@ The EE Report is an existing Portal feature, not a standalone app.
 `src/pages/admin/ElectricityReportsPage.tsx`
 - page orchestration
 - dashboard/report state
-- source selection
+- monthly document-set state
 - AI processing actions
 - report CRUD
 - approval/export state
 
 `src/components/admin/electricity/ElectricitySourceUploadCard.tsx`
-- Source of Truth upload UI
-- site/type/month selection
-- PEA PDF / Solar XLS/XLSX upload
-- refresh callback after successful upload
+- Source of Truth upload UI for exactly 3 documents per month
+- fixed roles: PEA สบปราบ, PEA ผาลาด, Solar 18 kWp
+- one multipart upload request for the monthly set
+- automatically starts the AI Agent run after the three files are stored
 
 `src/lib/electricityReportGenerator.ts`
 - approved Monthly Report → report model
@@ -64,14 +64,16 @@ When Figma UI is adopted, migrate its visual patterns/components into the existi
 
 ## Single-page workflow
 
-Upload
-→ Source of Truth
-→ Select source documents
-→ AI Agent
-→ Validate
+Select reporting month
+→ Upload 3 Source-of-Truth documents together
+→ AI Agent processes the exact 3-document set
+→ Cross-validate site/month/completeness
 → Monthly Report
+→ Human review
 → Approval
 → Executive view
 → Export
+
+The existing electricity_processing_runs.input_document_ids is the persisted record of which three source documents formed the AI processing set; no second standalone upload application or mock-data workflow is introduced.
 
 No separate Figma app, duplicate Vite setup, duplicate package manager, or mock electricity data should be introduced for this feature.
