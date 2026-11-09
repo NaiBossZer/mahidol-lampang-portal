@@ -82,7 +82,7 @@ export function ActivityRegistrationsPage() {
     finally { setSavingId(null); }
   }
   async function deleteRegistration(row: Registration) {
-    const confirmed = window.confirm(`ยืนยันลบข้อมูลผู้สมัคร "${row.full_name}" (รหัส ${row.registration_code}) อย่างถาวรหรือไม่?\\n\\nข้อมูลที่ลบแล้วจะไม่สามารถกู้คืนได้`);
+    const confirmed = window.confirm(`ยืนยันลบข้อมูลผู้สมัคร "${row.full_name}" (รหัส ${row.registration_code}) อย่างถาวรหรือไม่?\n\nข้อมูลที่ลบแล้วจะไม่สามารถกู้คืนได้`);
     if (!confirmed) return;
     setDeletingId(row.id);
     try {
