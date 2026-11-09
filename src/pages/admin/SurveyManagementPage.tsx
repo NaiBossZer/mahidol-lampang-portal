@@ -611,9 +611,14 @@ export function SurveyManagementPage() {
                     </section>
 
                     <section className="min-w-0 rounded-xl border border-slate-200 bg-white p-3">
-                      <div className="mb-3">
-                        <p className="text-xs font-bold text-slate-800">ข้อมูลผู้ตอบ</p>
-                        <p className="mt-0.5 text-[11px] text-slate-500">กำหนดรูปแบบการระบุตัวตน</p>
+                      <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+                        <div>
+                          <p className="text-xs font-bold text-slate-800">ข้อมูลผู้ตอบ</p>
+                          <p className="mt-0.5 text-[11px] text-slate-500">กำหนดรูปแบบการระบุตัวตน</p>
+                        </div>
+                        <AdminStatusBadge tone={selected.anonymous ? "neutral" : "success"}>
+                          {selected.anonymous ? "ไม่ระบุตัวตน" : "ระบุตัวตน"}
+                        </AdminStatusBadge>
                       </div>
                       <AdminButton
                         variant="secondary"
@@ -633,7 +638,7 @@ export function SurveyManagementPage() {
                             )
                         }
                       >
-                        {selected.anonymous ? "ไม่ระบุตัวตน · เปลี่ยนการตั้งค่า" : "ระบุตัวตน · เปลี่ยนการตั้งค่า"}
+                        {selected.anonymous ? "เปลี่ยนเป็นระบุตัวตน" : "เปลี่ยนเป็นไม่ระบุตัวตน"}
                       </AdminButton>
                     </section>
                   </div>
