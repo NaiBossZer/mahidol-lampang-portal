@@ -67,7 +67,16 @@ export async function onRequest({ request, env }: { request: Request; env: Env }
         `activities?slug=eq.${encodeURIComponent(slug)}&status=eq.published&select=id,title,slug,activity_date,location,featured_image,summary&limit=1`,
       );
       if (!rows[0]) return json({ success: false, error: "กิจกรรมนี้ยังไม่เปิดรับลงทะเบียน" }, 404);
-      return json({ success: true, data: rows[0] });
+      const settingsRows = await requestRest<Row[]>(
+        env,
+        `activity_registration_settings?activity_id=eq.${encodeURIComponent(String(rows[0].id))}&select=enabled,opens_at,closes_at,capacity,form_fields,confirmation_message&limit=1`,
+      );
+      const settings = settingsRows[0] ?? {
+        enabled: true, opens_at: null, closes_at: null, capacity: null,
+        form_fields: { email: true, organization: true, position: true, participantType: true },
+        confirmation_message: "ลงทะเบียนสำเร็จ ขอบคุณที่สนใจเข้าร่วมกิจกรรม",
+      };
+      return json({ success: true, data: { ...rows[0], registration_settings: settings } });
     }
 
     if (request.method === "POST") {
@@ -85,13 +94,26 @@ export async function onRequest({ request, env }: { request: Request; env: Env }
       if (!activityId || fullName.length < 2 || fullName.length > 200 || !/^0[0-9]{8,9}$/.test(phoneNormalized) || body.pdpaConsent !== true) {
         return json({ success: false, error: "กรุณากรอกชื่อและเบอร์โทรศัพท์ให้ถูกต้อง พร้อมยินยอมประกาศความเป็นส่วนตัว" }, 400);
       }
-      if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return json({ success: false, error: "รูปแบบอีเมลไม่ถูกต้อง" }, 400);
       const activities = await requestRest<Row[]>(
         env,
         `activities?id=eq.${encodeURIComponent(activityId)}&status=eq.published&select=id&limit=1`,
       );
       if (!activities[0]) return json({ success: false, error: "กิจกรรมยังไม่เปิดรับลงทะเบียน" }, 409);
-
+      const settingsRows = await requestRest<Row[]>(
+        env,
+        `activity_registration_settings?activity_id=eq.${encodeURIComponent(activityId)}&select=enabled,opens_at,closes_at,capacity,form_fields&limit=1`,
+      );
+      const settings = settingsRows[0] ?? {
+        enabled: true, opens_at: null, closes_at: null, capacity: null,
+        form_fields: { email: true, organization: true, position: true, participantType: true },
+      };
+      const now = Date.now();
+      if (settings.enabled === false) return json({ success: false, error: "กิจกรรมนี้ปิดรับลงทะเบียนแล้ว" }, 409);
+      if (settings.opens_at && now < Date.parse(String(settings.opens_at))) return json({ success: false, error: "ยังไม่ถึงเวลาเปิดรับลงทะเบียน" }, 409);
+      if (settings.closes_at && now >= Date.parse(String(settings.closes_at))) return json({ success: false, error: "หมดเวลารับลงทะเบียนแล้ว" }, 409);
+      const fields = settings.form_fields && typeof settings.form_fields === "object" ? settings.form_fields as Record<string, unknown> : {};
+      if (fields.email === true && email && !/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(email)) return json({ success: false, error: "รูปแบบอีเมลไม่ถูกต้อง" }, 400);
+      if (fields.participantType === true && !allowedParticipantTypes.has(participantType)) return json({ success: false, error: "ประเภทผู้เข้าร่วมไม่ถูกต้อง" }, 400);
       const code = registrationCode();
       await requestRest<null>(env, "activity_registrations", {
         method: "POST",
@@ -102,10 +124,10 @@ export async function onRequest({ request, env }: { request: Request; env: Env }
           full_name: fullName,
           phone,
           phone_normalized: phoneNormalized,
-          email: email || null,
-          organization: organization || null,
-          position: position || null,
-          participant_type: participantType,
+          email: fields.email === true ? email || null : null,
+          organization: fields.organization === true ? organization || null : null,
+          position: fields.position === true ? position || null : null,
+          participant_type: fields.participantType === true ? participantType : "general",
           pdpa_consent: true,
           pdpa_consent_at: new Date().toISOString(),
           pdpa_notice_version: "1.0",
@@ -142,6 +164,9 @@ export async function onRequest({ request, env }: { request: Request; env: Env }
     console.error("/api/registrations", error);
     const code = (error as { code?: string } | null)?.code;
     if (code === "23505") return json({ success: false, error: "เบอร์โทรศัพท์นี้ลงทะเบียนกิจกรรมแล้ว" }, 409);
+    if (code === "23514" && error instanceof Error && error.message.includes("REGISTRATION_CAPACITY_REACHED")) {
+      return json({ success: false, error: "มีผู้ลงทะเบียนครบตามจำนวนที่กำหนดแล้ว" }, 409);
+    }
     return json({ success: false, error: error instanceof Error ? error.message : "ไม่สามารถดำเนินการได้" }, 500);
   }
 }
