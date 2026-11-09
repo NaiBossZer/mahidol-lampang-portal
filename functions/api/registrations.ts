@@ -114,15 +114,6 @@ export async function onRequest({ request, env }: { request: Request; env: Env }
       const fields = settings.form_fields && typeof settings.form_fields === "object" ? settings.form_fields as Record<string, unknown> : {};
       if (fields.email === true && email && !/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(email)) return json({ success: false, error: "รูปแบบอีเมลไม่ถูกต้อง" }, 400);
       if (fields.participantType === true && !allowedParticipantTypes.has(participantType)) return json({ success: false, error: "ประเภทผู้เข้าร่วมไม่ถูกต้อง" }, 400);
-      const capacity = settings.capacity == null ? null : Number(settings.capacity);
-      if (capacity !== null) {
-        const current = await requestRest<Row[]>(
-          env,
-          `activity_registrations?activity_id=eq.${encodeURIComponent(activityId)}&status=neq.cancelled&select=id`,
-        );
-        if (current.length >= capacity) return json({ success: false, error: "มีผู้ลงทะเบียนครบตามจำนวนที่กำหนดแล้ว" }, 409);
-      }
-
       const code = registrationCode();
       await requestRest<null>(env, "activity_registrations", {
         method: "POST",
