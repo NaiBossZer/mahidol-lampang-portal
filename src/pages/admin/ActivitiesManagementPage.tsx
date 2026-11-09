@@ -529,7 +529,7 @@ export function ActivitiesManagementPage() {
                         title="ลบกิจกรรมถาวร"
                         aria-label="ลบกิจกรรมถาวร"
                       >
-                        {deletingId === activity.id ? "กำลังลบ..." : "ลบ"}
+                        {deletingId === activity.id ? <span className="sr-only">กำลังลบ...</span> : null}
                       </AdminButton>
                     </div>
                   </td>
