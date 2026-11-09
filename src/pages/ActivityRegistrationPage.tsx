@@ -93,7 +93,7 @@ export function ActivityRegistrationPage() {
         <input type="text" name="website" tabIndex={-1} autoComplete="off" aria-hidden="true" className="hidden" />
         <div className="grid gap-4 sm:grid-cols-2">
           <Field label="ชื่อ–นามสกุล *"><input required minLength={2} maxLength={200} value={form.fullName} onChange={(e) => update("fullName", e.target.value)} autoComplete="name" className={inputClass} placeholder="กรอกชื่อและนามสกุล" /></Field>
-          <Field label="เบอร์โทรศัพท์ *"><input required type="tel" value={form.phone} onChange={(e) => update("phone", e.target.value)} autoComplete="tel" className={inputClass} placeholder="08XXXXXXXX" /></Field>
+          <Field label="เบอร์โทรศัพท์ *"><input required type="tel" inputMode="numeric" pattern="0[0-9]{8,9}" maxLength={10} title="กรุณากรอกเบอร์โทรศัพท์ 9–10 หลัก โดยขึ้นต้นด้วย 0" value={form.phone} onChange={(e) => update("phone", e.target.value.replace(/[^0-9]/g, "").slice(0, 10))} autoComplete="tel" className={inputClass} placeholder="08XXXXXXXX" /></Field>
           {settings.form_fields?.email && <Field label="อีเมล"><input type="email" value={form.email} onChange={(e) => update("email", e.target.value)} autoComplete="email" className={inputClass} placeholder="name@example.com" /></Field>}
           {settings.form_fields?.organization && <Field label="หน่วยงาน / สังกัด"><input value={form.organization} onChange={(e) => update("organization", e.target.value)} className={inputClass} placeholder="ชื่อหน่วยงานหรือชุมชน" /></Field>}
           {settings.form_fields?.position && <Field label="ตำแหน่ง / บทบาท"><input value={form.position} onChange={(e) => update("position", e.target.value)} className={inputClass} placeholder="ระบุตำแหน่ง (ถ้ามี)" /></Field>}
