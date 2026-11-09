@@ -1,4 +1,4 @@
-import { getCookie, getSupabaseUser, hasAdminPermission, isAdminRole, json, supabaseConfig } from "./auth/_shared";
+import { getCookie, getSupabaseUser, hasAdminPermission, isAdminRole, json, supabaseConfig } from "../auth/_shared";
 
 type Env = Record<string, unknown>;
 type Settings = {
