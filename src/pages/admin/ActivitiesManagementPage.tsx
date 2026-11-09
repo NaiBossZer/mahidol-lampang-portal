@@ -12,7 +12,6 @@ import {
 } from "@/services/api";
 import { getAdminLearningCenters, type LearningCenter } from "@/services/admin-learning-centers";
 import AIRecommendationsSidebar from "@/components/admin/AIRecommendationsSidebar";
-import AIInsightsPanel from "@/components/admin/AIInsightsPanel";
 import GoogleDriveImagePicker from "@/components/admin/GoogleDriveImagePicker";
 import {
   AdminPageHeader,
@@ -441,7 +440,7 @@ export function ActivitiesManagementPage() {
       <AdminPageHeader
         eyebrow="ACTIVITIES"
         title="จัดการกิจกรรม"
-        description="สร้างและแก้ไขกิจกรรมด้วยข้อมูลจริงจากแบบฟอร์มเดียว พร้อมตรวจสอบการบันทึกกลับจากเซิร์ฟเวอร์"
+        description="ค้นหา ติดตามสถานะ และจัดการข้อมูลกิจกรรมทั้งหมดในที่เดียว"
         actions={
           <>
             <AdminButton variant="secondary" icon={<RefreshCw className="h-4 w-4" />} onClick={() => void load()}>
@@ -454,9 +453,8 @@ export function ActivitiesManagementPage() {
         }
       />
 
-      <AIInsightsPanel />
 
-      <AdminFilterBar search={q} onSearchChange={setQ} placeholder="ค้นหาชื่อกิจกรรม, รหัส URL หรือสถานที่">
+      <AdminFilterBar search={q} onSearchChange={setQ} placeholder="ค้นหาชื่อกิจกรรม รหัส URL หรือสถานที่">
         <select
           value={status}
           onChange={(event) => setStatus(event.target.value as typeof status)}
@@ -467,9 +465,10 @@ export function ActivitiesManagementPage() {
           <option value="published">เผยแพร่</option>
           <option value="archived">เก็บถาวร</option>
         </select>
+        <span className="ml-auto inline-flex min-h-10 items-center rounded-xl bg-slate-100 px-3 text-xs font-semibold text-slate-600">แสดง {filtered.length} จาก {activities.length} กิจกรรม</span>
       </AdminFilterBar>
 
-      <AdminTable minWidth="820px">
+      <AdminTable minWidth="1160px">
         {loading ? (
           <AdminLoadingState label="กำลังโหลดกิจกรรม..." />
         ) : filtered.length === 0 ? (
@@ -482,12 +481,12 @@ export function ActivitiesManagementPage() {
           <>
             <AdminTableHeader>
               <tr>
-                <th className="px-5 py-3 text-left">กิจกรรม</th>
-                <th className="px-4 py-3 text-left">วันที่</th>
-                <th className="px-4 py-3 text-left">สถานที่</th>
-                <th className="px-4 py-3 text-center">ผู้เข้าร่วม</th>
-                <th className="px-4 py-3 text-center">สถานะ</th>
-                <th className="px-5 py-3 text-right">จัดการ</th>
+                <th className="w-[34%] px-5 py-3 text-left">กิจกรรม</th>
+                <th className="w-[12%] px-3 py-3 text-left whitespace-nowrap">วันที่</th>
+                <th className="w-[20%] px-3 py-3 text-left">สถานที่</th>
+                <th className="w-[9%] px-2 py-3 text-center whitespace-nowrap">ผู้เข้าร่วม</th>
+                <th className="w-[9%] px-2 py-3 text-center whitespace-nowrap">สถานะ</th>
+                <th className="w-[16%] px-3 py-3 text-center whitespace-nowrap">จัดการ</th>
               </tr>
             </AdminTableHeader>
             <tbody className="divide-y divide-slate-100">
@@ -501,7 +500,7 @@ export function ActivitiesManagementPage() {
                         <div className="grid h-12 w-16 place-items-center rounded-lg bg-slate-100 text-slate-400"><ImagePlus className="h-5 w-5" /></div>
                       )}
                       <div className="min-w-0">
-                        <p className="font-semibold text-slate-900">{activity.title}</p>
+                        <p className="line-clamp-2 break-words font-semibold leading-5 text-slate-900" title={activity.title}>{activity.title}</p>
                         <p className="mt-0.5 truncate text-xs text-slate-400">/{activity.slug}</p>
                       </div>
                     </div>
@@ -509,28 +508,28 @@ export function ActivitiesManagementPage() {
                   <td className="whitespace-nowrap px-4 py-4 text-slate-600">
                     <span className="inline-flex items-center gap-1.5"><CalendarDays className="h-4 w-4 text-slate-400" />{new Date(activity.activityDate).toLocaleDateString("th-TH")}</span>
                   </td>
-                  <td className="max-w-[180px] truncate px-4 py-4 text-slate-600">{activity.location || "—"}</td>
+                  <td className="max-w-[240px] px-4 py-4 text-slate-600"><span className="block truncate" title={activity.location || "—"}>{activity.location || "—"}</span></td>
                   <td className="px-4 py-4 text-center font-semibold text-slate-700">{activity.participantCount ?? 0}</td>
                   <td className="px-4 py-4 text-center"><AdminStatusBadge tone={statusTone(activity.status)}>{statusLabel[activity.status]}</AdminStatusBadge></td>
-                  <td className="px-5 py-4 text-right">
-                    <div className="flex items-center justify-end gap-2">
-                      <button type="button" onClick={() => void openRegistrationSettings(activity)} className="inline-flex min-h-9 items-center gap-1.5 rounded-lg border border-blue-200 bg-blue-50 px-2.5 text-xs font-semibold text-blue-800 transition-colors hover:bg-blue-100" title="ตั้งค่าการลงทะเบียน">
-                        <Settings2 className="h-3.5 w-3.5" /><span className="hidden xl:inline">ตั้งค่าลงทะเบียน</span>
+                  <td className="px-3 py-4 text-center">
+                    <div className="flex items-center justify-center gap-1 whitespace-nowrap">
+                      <button type="button" onClick={() => void openRegistrationSettings(activity)} className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-blue-200 bg-blue-50 text-blue-800 transition-colors hover:bg-blue-100" title="ตั้งค่าการลงทะเบียน" aria-label="ตั้งค่าการลงทะเบียน">
+                        <Settings2 className="h-4 w-4" />
                       </button>
-                      <button type="button" onClick={() => setRecommendationActivity(activity)} className="inline-flex min-h-9 items-center gap-1.5 rounded-lg border border-violet-200 bg-violet-50 px-2.5 text-xs font-semibold text-violet-700 transition-colors hover:bg-violet-100" title="ดูคำแนะนำจาก AI">
-                        <Lightbulb className="h-3.5 w-3.5 text-amber-500" /><span className="hidden sm:inline">AI Advice</span>
+                      <button type="button" onClick={() => setRecommendationActivity(activity)} className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-violet-200 bg-violet-50 text-violet-700 transition-colors hover:bg-violet-100" title="ดูคำแนะนำจาก AI" aria-label="ดูคำแนะนำจาก AI">
+                        <Lightbulb className="h-4 w-4 text-amber-500" />
                       </button>
-                      <AdminButton variant="secondary" icon={<Pencil className="h-3.5 w-3.5" />} onClick={() => void openEdit(activity)} className="min-h-9 px-3 text-xs">แก้ไข</AdminButton>
-                      <AdminButton
-                        variant="danger"
-                        icon={<Trash2 className="h-3.5 w-3.5" />}
+                      <button type="button" onClick={() => void openEdit(activity)} className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-700 shadow-sm transition-colors hover:bg-slate-50" title="แก้ไขกิจกรรม" aria-label="แก้ไขกิจกรรม"><Pencil className="h-4 w-4" /></button>
+                      <button
+                        type="button"
                         onClick={() => void removeActivity(activity)}
                         disabled={deletingId === activity.id || !!deletingId}
-                        className="min-h-9 px-3 text-xs"
+                        className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-red-200 bg-red-50 text-red-700 shadow-sm transition-colors hover:bg-red-100 disabled:cursor-not-allowed disabled:opacity-50"
                         title="ลบกิจกรรมถาวร"
+                        aria-label="ลบกิจกรรมถาวร"
                       >
-                        {deletingId === activity.id ? "กำลังลบ..." : "ลบ"}
-                      </AdminButton>
+                        <Trash2 className="h-4 w-4" />
+                      </button>
                     </div>
                   </td>
                 </AdminTableRow>
