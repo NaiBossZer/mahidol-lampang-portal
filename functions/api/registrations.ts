@@ -52,7 +52,7 @@ export async function onRequest({ request, env }: { request: Request; env: Env }
       const activityId = url.searchParams.get("activityId")!;
       const rows = await requestRest<Row[]>(
         env,
-        `activity_registrations?activity_id=eq.${encodeURIComponent(activityId)}&select=id,registration_code,full_name,phone,email,organization,position,participant_type,status,created_at,checked_in_at&order=created_at.desc`,
+        `activity_registrations?activity_id=eq.${encodeURIComponent(activityId)}&select=id,registration_code,full_name,phone,email,organization,position,participant_type,status,created_at,checked_in_at,pdpa_consent,pdpa_consent_at&order=created_at.desc`,
         {},
         admin.token,
       );
