@@ -519,18 +519,17 @@ export function ActivitiesManagementPage() {
                       <button type="button" onClick={() => setRecommendationActivity(activity)} className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-violet-200 bg-violet-50 text-violet-700 transition-colors hover:bg-violet-100" title="ดูคำแนะนำจาก AI" aria-label="ดูคำแนะนำจาก AI">
                         <Lightbulb className="h-4 w-4 text-amber-500" />
                       </button>
-                      <AdminButton variant="secondary" icon={<Pencil className="h-3.5 w-3.5" />} onClick={() => void openEdit(activity)} className="h-9 w-9 min-h-9 shrink-0 justify-center px-0 text-xs" title="แก้ไข" aria-label="แก้ไข" />
-                      <AdminButton
-                        variant="danger"
-                        icon={<Trash2 className="h-3.5 w-3.5" />}
+                      <button type="button" onClick={() => void openEdit(activity)} className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-700 shadow-sm transition-colors hover:bg-slate-50" title="แก้ไขกิจกรรม" aria-label="แก้ไขกิจกรรม"><Pencil className="h-4 w-4" /></button>
+                      <button
+                        type="button"
                         onClick={() => void removeActivity(activity)}
                         disabled={deletingId === activity.id || !!deletingId}
-                        className="h-9 w-9 min-h-9 shrink-0 justify-center px-0 text-xs"
+                        className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-red-200 bg-red-50 text-red-700 shadow-sm transition-colors hover:bg-red-100 disabled:cursor-not-allowed disabled:opacity-50"
                         title="ลบกิจกรรมถาวร"
                         aria-label="ลบกิจกรรมถาวร"
                       >
-                        {deletingId === activity.id ? <span className="sr-only">กำลังลบ...</span> : null}
-                      </AdminButton>
+                        <Trash2 className="h-4 w-4" />
+                      </button>
                     </div>
                   </td>
                 </AdminTableRow>
