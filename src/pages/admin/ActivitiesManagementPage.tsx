@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState, type ReactNode } from "react";
-import { CalendarDays, CheckCircle2, ImagePlus, Lightbulb, Pencil, Plus, RefreshCw, Star, Trash2, Upload, X } from "lucide-react";
+import { CalendarDays, CheckCircle2, Copy, ExternalLink, ImagePlus, Lightbulb, Pencil, Plus, RefreshCw, Settings2, Star, Trash2, Upload, X } from "lucide-react";
 import { toast } from "sonner";
 import {
   createActivity,
@@ -34,6 +34,26 @@ type ActivityMedia = {
   status?: string;
 };
 
+type RegistrationSettings = {
+  enabled: boolean;
+  opensAt: string;
+  closesAt: string;
+  capacity: string;
+  formFields: { email: boolean; organization: boolean; position: boolean; participantType: boolean };
+  confirmationMessage: string;
+};
+const defaultRegistrationSettings: RegistrationSettings = {
+  enabled: true, opensAt: "", closesAt: "", capacity: "",
+  formFields: { email: true, organization: true, position: true, participantType: true },
+  confirmationMessage: "ลงทะเบียนสำเร็จ ขอบคุณที่สนใจเข้าร่วมกิจกรรม",
+};
+function toDateTimeLocal(value?: string | null) {
+  if (!value) return "";
+  const date = new Date(value);
+  if (!Number.isFinite(date.getTime())) return "";
+  const local = new Date(date.getTime() - date.getTimezoneOffset() * 60000);
+  return local.toISOString().slice(0, 16);
+}
 type RelationState = {
   learningCenterIds: string[];
   organizations: Array<{ organizationId: string; organizerRole?: "primary" | "co" }>;
@@ -152,6 +172,78 @@ export function ActivitiesManagementPage() {
   const [uploading, setUploading] = useState(false);
   const [deletingMedia, setDeletingMedia] = useState(false);
   const [recommendationActivity, setRecommendationActivity] = useState<AdminActivity | null>(null);
+  const [registrationActivity, setRegistrationActivity] = useState<AdminActivity | null>(null);
+  const [registrationSettings, setRegistrationSettings] = useState<RegistrationSettings>(defaultRegistrationSettings);
+  const [registrationSettingsLoading, setRegistrationSettingsLoading] = useState(false);
+  const [registrationSettingsSaving, setRegistrationSettingsSaving] = useState(false);
+
+  async function openRegistrationSettings(activity: AdminActivity) {
+    setRegistrationActivity(activity);
+    setRegistrationSettings(defaultRegistrationSettings);
+    setRegistrationSettingsLoading(true);
+    try {
+      const response = await fetch(`/api/admin/registration-settings?activityId=${encodeURIComponent(activity.id)}`, {
+        credentials: "include", headers: { Accept: "application/json" },
+      });
+      const body = await response.json().catch(() => null);
+      if (!response.ok) throw new Error(body?.error || "โหลดการตั้งค่าการลงทะเบียนไม่สำเร็จ");
+      const data = body.data ?? {};
+      setRegistrationSettings({
+        enabled: data.enabled !== false,
+        opensAt: toDateTimeLocal(data.opens_at),
+        closesAt: toDateTimeLocal(data.closes_at),
+        capacity: data.capacity == null ? "" : String(data.capacity),
+        formFields: {
+          email: data.form_fields?.email !== false,
+          organization: data.form_fields?.organization !== false,
+          position: data.form_fields?.position !== false,
+          participantType: data.form_fields?.participantType !== false,
+        },
+        confirmationMessage: String(data.confirmation_message ?? defaultRegistrationSettings.confirmationMessage),
+      });
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "โหลดการตั้งค่าไม่สำเร็จ");
+      setRegistrationActivity(null);
+    } finally {
+      setRegistrationSettingsLoading(false);
+    }
+  }
+
+  async function saveRegistrationSettings() {
+    if (!registrationActivity || registrationSettingsSaving) return;
+    if (registrationSettings.opensAt && registrationSettings.closesAt &&
+        new Date(registrationSettings.opensAt) >= new Date(registrationSettings.closesAt)) {
+      toast.error("วันปิดรับสมัครต้องอยู่หลังวันเปิดรับสมัคร");
+      return;
+    }
+    if (registrationSettings.capacity && (!Number.isInteger(Number(registrationSettings.capacity)) || Number(registrationSettings.capacity) < 1)) {
+      toast.error("จำนวนรับสมัครต้องเป็นจำนวนเต็มตั้งแต่ 1 คนขึ้นไป");
+      return;
+    }
+    setRegistrationSettingsSaving(true);
+    try {
+      const response = await fetch(`/api/admin/registration-settings?activityId=${encodeURIComponent(registrationActivity.id)}`, {
+        method: "PUT", credentials: "include",
+        headers: { Accept: "application/json", "Content-Type": "application/json" },
+        body: JSON.stringify({
+          enabled: registrationSettings.enabled,
+          opensAt: registrationSettings.opensAt ? new Date(registrationSettings.opensAt).toISOString() : null,
+          closesAt: registrationSettings.closesAt ? new Date(registrationSettings.closesAt).toISOString() : null,
+          capacity: registrationSettings.capacity || null,
+          formFields: registrationSettings.formFields,
+          confirmationMessage: registrationSettings.confirmationMessage,
+        }),
+      });
+      const body = await response.json().catch(() => null);
+      if (!response.ok) throw new Error(body?.error || "บันทึกการตั้งค่าไม่สำเร็จ");
+      toast.success("บันทึกการตั้งค่าการลงทะเบียนแล้ว");
+      setRegistrationActivity(null);
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "บันทึกการตั้งค่าไม่สำเร็จ");
+    } finally {
+      setRegistrationSettingsSaving(false);
+    }
+  }
 
   async function load() {
     setLoading(true);
@@ -422,6 +514,9 @@ export function ActivitiesManagementPage() {
                   <td className="px-4 py-4 text-center"><AdminStatusBadge tone={statusTone(activity.status)}>{statusLabel[activity.status]}</AdminStatusBadge></td>
                   <td className="px-5 py-4 text-right">
                     <div className="flex items-center justify-end gap-2">
+                      <button type="button" onClick={() => void openRegistrationSettings(activity)} className="inline-flex min-h-9 items-center gap-1.5 rounded-lg border border-blue-200 bg-blue-50 px-2.5 text-xs font-semibold text-blue-800 transition-colors hover:bg-blue-100" title="ตั้งค่าการลงทะเบียน">
+                        <Settings2 className="h-3.5 w-3.5" /><span className="hidden xl:inline">ตั้งค่าลงทะเบียน</span>
+                      </button>
                       <button type="button" onClick={() => setRecommendationActivity(activity)} className="inline-flex min-h-9 items-center gap-1.5 rounded-lg border border-violet-200 bg-violet-50 px-2.5 text-xs font-semibold text-violet-700 transition-colors hover:bg-violet-100" title="ดูคำแนะนำจาก AI">
                         <Lightbulb className="h-3.5 w-3.5 text-amber-500" /><span className="hidden sm:inline">AI Advice</span>
                       </button>
@@ -444,6 +539,49 @@ export function ActivitiesManagementPage() {
           </>
         )}
       </AdminTable>
+
+      {registrationActivity && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-slate-950/50 p-4" role="dialog" aria-modal="true" aria-labelledby="registration-settings-title">
+          <div className="flex max-h-[92vh] w-full max-w-2xl flex-col overflow-hidden rounded-2xl bg-white shadow-2xl">
+            <div className="flex items-center justify-between border-b border-slate-200 px-5 py-4">
+              <div><p className="text-[10px] font-bold tracking-[0.16em] text-slate-400">REGISTRATION SETTINGS</p><h2 id="registration-settings-title" className="text-lg font-bold text-[#002d62]">ตั้งค่าการลงทะเบียน</h2><p className="mt-1 max-w-xl truncate text-xs text-slate-500">{registrationActivity.title}</p></div>
+              <button type="button" onClick={() => setRegistrationActivity(null)} aria-label="ปิด" className="rounded-lg p-2 text-slate-400 hover:bg-slate-100"><X className="h-5 w-5" /></button>
+            </div>
+            {registrationSettingsLoading ? <div className="grid min-h-56 place-items-center text-sm text-slate-500">กำลังโหลดการตั้งค่า...</div> : <>
+              <div className="space-y-5 overflow-y-auto p-5">
+                <label className="flex items-center justify-between gap-4 rounded-xl border border-slate-200 p-4">
+                  <span><span className="block text-sm font-bold text-slate-800">เปิดรับลงทะเบียน</span><span className="mt-1 block text-xs text-slate-500">ปิดแล้วผู้เข้าร่วมจะไม่สามารถส่งแบบฟอร์มได้</span></span>
+                  <input type="checkbox" checked={registrationSettings.enabled} onChange={(e) => setRegistrationSettings((s) => ({ ...s, enabled: e.target.checked }))} className="h-5 w-5 accent-[#12345b]" />
+                </label>
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <Field label="วันและเวลาเริ่มรับสมัคร"><input type="datetime-local" value={registrationSettings.opensAt} onChange={(e) => setRegistrationSettings((s) => ({ ...s, opensAt: e.target.value }))} className="dashboard-control mt-1 w-full" /></Field>
+                  <Field label="วันและเวลาปิดรับสมัคร"><input type="datetime-local" value={registrationSettings.closesAt} onChange={(e) => setRegistrationSettings((s) => ({ ...s, closesAt: e.target.value }))} className="dashboard-control mt-1 w-full" /></Field>
+                  <Field label="จำนวนผู้สมัครสูงสุด"><input type="number" min="1" step="1" value={registrationSettings.capacity} onChange={(e) => setRegistrationSettings((s) => ({ ...s, capacity: e.target.value }))} className="dashboard-control mt-1 w-full" placeholder="ไม่จำกัดจำนวน" /></Field>
+                </div>
+                <div className="rounded-xl border border-slate-200 p-4">
+                  <h3 className="text-sm font-bold text-slate-800">ช่องข้อมูลในแบบฟอร์ม</h3><p className="mt-1 text-xs text-slate-500">ชื่อ–นามสกุล เบอร์โทรศัพท์ และความยินยอม PDPA เป็นข้อมูลบังคับเสมอ</p>
+                  <div className="mt-3 grid gap-3 sm:grid-cols-2">
+                    {([{key:"email",label:"อีเมล"},{key:"organization",label:"หน่วยงาน / สังกัด"},{key:"position",label:"ตำแหน่ง / บทบาท"},{key:"participantType",label:"ประเภทผู้เข้าร่วม"}] as const).map((item) => (
+                      <label key={item.key} className="flex items-center gap-2 text-sm text-slate-700"><input type="checkbox" checked={registrationSettings.formFields[item.key]} onChange={(e) => setRegistrationSettings((s) => ({ ...s, formFields: { ...s.formFields, [item.key]: e.target.checked } }))} className="h-4 w-4 accent-[#12345b]" />{item.label}</label>
+                    ))}
+                  </div>
+                </div>
+                <Field label="ข้อความหลังลงทะเบียนสำเร็จ"><textarea rows={3} maxLength={500} value={registrationSettings.confirmationMessage} onChange={(e) => setRegistrationSettings((s) => ({ ...s, confirmationMessage: e.target.value }))} className="dashboard-control mt-1 w-full" /></Field>
+                <div className="rounded-xl border border-blue-100 bg-blue-50/60 p-4">
+                  <p className="text-xs font-bold text-blue-900">ลิงก์ลงทะเบียนสาธารณะ</p>
+                  <p className="mt-1 break-all text-xs text-blue-800">{`${window.location.origin}/register/${registrationActivity.slug}`}</p>
+                  <button type="button" onClick={() => { void navigator.clipboard.writeText(`${window.location.origin}/register/${registrationActivity.slug}`).then(() => toast.success("คัดลอกลิงก์แล้ว")).catch(() => toast.error("คัดลอกลิงก์ไม่สำเร็จ")); }} className="mt-3 inline-flex min-h-9 items-center gap-2 rounded-lg border border-blue-200 bg-white px-3 text-xs font-semibold text-blue-800 hover:bg-blue-50"><Copy className="h-3.5 w-3.5" />คัดลอกลิงก์</button>
+                  <a href={`/register/${registrationActivity.slug}`} target="_blank" rel="noreferrer" className="ml-2 inline-flex min-h-9 items-center gap-2 rounded-lg border border-blue-200 bg-white px-3 text-xs font-semibold text-blue-800 hover:bg-blue-50"><ExternalLink className="h-3.5 w-3.5" />เปิดหน้าลงทะเบียน</a>
+                </div>
+              </div>
+              <div className="flex justify-end gap-2 border-t border-slate-200 bg-slate-50 px-5 py-4">
+                <AdminButton variant="secondary" onClick={() => setRegistrationActivity(null)}>ยกเลิก</AdminButton>
+                <AdminButton variant="primary" onClick={() => void saveRegistrationSettings()} disabled={registrationSettingsSaving}>{registrationSettingsSaving ? "กำลังบันทึก..." : "บันทึกการตั้งค่า"}</AdminButton>
+              </div>
+            </>}
+          </div>
+        </div>
+      )}
 
       {open && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/40 p-4" role="dialog" aria-modal="true">
