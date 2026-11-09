@@ -551,14 +551,7 @@ export function SurveyManagementPage() {
                         {surveyTitleSaving ? "กำลังบันทึก..." : "บันทึกชื่อ"}
                       </AdminButton>
                     </div>
-                    <p className="mt-1 text-xs text-slate-500">
-                      ชื่อนี้จะถูกส่งไปยังระบบแบบประเมิน (RAC) โดยไม่เปลี่ยนชื่อกิจกรรม
-                    </p>
-                    {selectedOccurrence && (
-                      <p className="mt-1 font-mono text-[10px] text-slate-400">
-                        รหัสกิจกรรม: {selectedOccurrence.activity_id} · รหัสแบบประเมิน: {selected?.id}
-                      </p>
-                    )}
+
                   </div>
                   <div className="grid gap-3 lg:grid-cols-3">
                     <section className="min-w-0 rounded-xl border border-slate-200 bg-white p-3">
