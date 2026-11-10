@@ -109,7 +109,7 @@ export function ActivityRegistrationsPage() {
     if (!attendees.length) return;
     const escapeHtml = (value: unknown) => String(value ?? "").replace(/[&<>"']/g, (char) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[char] ?? char);
     const printedAt = new Intl.DateTimeFormat("th-TH", { dateStyle: "long", timeStyle: "short" }).format(new Date());
-    const rowsHtml = attendees.map((row, index) => `<tr><td class="number">${index + 1}</td><td><strong>${escapeHtml(row.full_name)}</strong><small>${escapeHtml(row.registration_code)}</small></td><td>${escapeHtml(row.phone)}</td><td class="signature"></td></tr>`).join("");
+    const rowsHtml = attendees.map((row) => { const address = [row.subdistrict, row.district, row.province].filter(Boolean).join(" "); return `<tr><td><strong>${escapeHtml(row.full_name)}</strong></td><td>${escapeHtml(address || "-")}</td><td>${escapeHtml(row.phone)}</td><td class="signature"></td></tr>`; }).join("");
     const printWindow = window.open("", "_blank", "width=1000,height=750");
     if (!printWindow) {
       setError("เบราว์เซอร์บล็อกหน้าต่างพิมพ์ กรุณาอนุญาต Pop-up แล้วลองอีกครั้ง");
@@ -124,13 +124,12 @@ export function ActivityRegistrationsPage() {
       table{width:100%;border-collapse:collapse;table-layout:fixed}thead{display:table-header-group}
       th,td{border:1px solid #66758a;padding:7px 8px;vertical-align:middle}
       th{background:#edf2f7;font-weight:700;text-align:center}
-      td.number{text-align:center;width:7%}th:nth-child(1){width:7%}th:nth-child(2){width:38%}th:nth-child(3){width:22%}th:nth-child(4){width:33%}
-      td small{display:block;color:#64748b;font-size:10px;margin-top:2px}
-      td.signature{height:46px}
+      th:nth-child(1){width:25%}th:nth-child(2){width:37%}th:nth-child(3){width:18%}th:nth-child(4){width:20%}
+      td.signature{height:48px}
       tr{break-inside:avoid;page-break-inside:avoid}
       .note{margin-top:10px;text-align:right;font-size:11px;color:#64748b}
       @media screen{body{padding:18px}.sheet{max-width:190mm;margin:auto}}
-    </style></head><body><main class="sheet"><h1>ใบลงชื่อผู้เข้าร่วมกิจกรรม</h1><p class="activity">${escapeHtml(activity?.title || "กิจกรรม")}</p><div class="meta"><span>จำนวนผู้มีสิทธิ์ลงชื่อ: ${attendees.length.toLocaleString("th-TH")} คน</span><span>พิมพ์เมื่อ: ${escapeHtml(printedAt)}</span></div><table><thead><tr><th>ลำดับ</th><th>ชื่อ – นามสกุล</th><th>เบอร์โทรศัพท์</th><th>ลายมือชื่อผู้เข้าร่วม</th></tr></thead><tbody>${rowsHtml}</tbody></table><p class="note">เอกสารสำหรับใช้ลงทะเบียนและยืนยันการเข้าร่วม ณ จุดลงทะเบียน</p></main><script>window.addEventListener("load",()=>setTimeout(()=>window.print(),250));</script></body></html>`);
+    </style></head><body><main class="sheet"><h1>ใบลงชื่อผู้เข้าร่วมกิจกรรม</h1><p class="activity">${escapeHtml(activity?.title || "กิจกรรม")}</p><div class="meta"><span>จำนวนผู้มีสิทธิ์ลงชื่อ: ${attendees.length.toLocaleString("th-TH")} คน</span><span>พิมพ์เมื่อ: ${escapeHtml(printedAt)}</span></div><table><thead><tr><th>ชื่อ – นามสกุล</th><th>ที่อยู่</th><th>เบอร์โทรศัพท์</th><th>ลายมือชื่อ</th></tr></thead><tbody>${rowsHtml}</tbody></table><p class="note">เอกสารสำหรับใช้ลงทะเบียนและยืนยันการเข้าร่วม ณ จุดลงทะเบียน</p></main><script>window.addEventListener("load",()=>setTimeout(()=>window.print(),250));</script></body></html>`);
     printWindow.document.close();
     printWindow.focus();
     setError("");
