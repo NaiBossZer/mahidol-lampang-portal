@@ -1,6 +1,6 @@
 import { FormEvent, useEffect, useState } from "react";
 import { Link as RouterLink, useParams } from "react-router-dom";
-import { CalendarDays, CheckCircle2, ClipboardList, Loader2, MapPin, ShieldCheck, Users } from "lucide-react";
+import { CalendarDays, CheckCircle2, ChevronDown, ChevronUp, ClipboardList, Clock3, Loader2, MapPin, ShieldCheck, Users } from "lucide-react";
 import { PublicAppShell } from "@/components/layout/PublicAppShell";
 
 type RegistrationSettings = {
@@ -21,6 +21,22 @@ const defaultSettings: RegistrationSettings = {
   confirmation_message: "ลงทะเบียนสำเร็จ ขอบคุณที่สนใจเข้าร่วมกิจกรรม",
 };
 
+
+const shellacSchedule = [
+  { time: "08.30–09.00", title: "ลงทะเบียน", detail: "รับชมวีดิทัศน์เกี่ยวกับพื้นที่และครั่งของคณะสิ่งแวดล้อมฯ", kind: "ลงทะเบียน" },
+  { time: "09.00–09.10", title: "พิธีเปิดโครงการ", detail: "กล่าวต้อนรับ ชี้แจงวัตถุประสงค์และกำหนดการอบรม โดยนายกองค์การบริหารส่วนตำบลแม่กัวะ อำเภอสบปราบ", kind: "พิธีการ" },
+  { time: "09.10–10.10", title: "ความรู้พื้นฐาน วงจรชีวิตครั่ง และการคัดเลือกพืชอาศัยที่เหมาะสม", detail: "วิทยากร: ศูนย์ส่งเสริมเทคโนโลยีการเกษตรด้านแมลงเศรษฐกิจ จังหวัดเชียงใหม่", kind: "บรรยาย" },
+  { time: "10.10–10.15", title: "พักรับประทานอาหารว่าง", detail: "", kind: "พัก" },
+  { time: "10.15–11.00", title: "เทคนิคการปล่อยเลี้ยง การดูแลรักษา และเฝ้าระวังศัตรูครั่ง", detail: "การจัดการแปลงให้เหมาะสมกับสภาพอากาศแปรปรวน · วิทยากร: ศูนย์ส่งเสริมเทคโนโลยีการเกษตรด้านแมลงเศรษฐกิจ จังหวัดเชียงใหม่", kind: "บรรยาย" },
+  { time: "11.00–12.00", title: "การเก็บเกี่ยวและคัดคุณภาพผลผลิตครั่ง", detail: "การเตรียมครั่งดิบ/ครั่งแห้งเพื่อจำหน่าย ภาพรวมตลาด ราคา และโอกาสสร้างมูลค่าเพิ่ม · วิทยากร: บริษัท ครีเอเซียมิลล์ จำกัด", kind: "บรรยาย" },
+  { time: "12.00–13.00", title: "รับประทานอาหารกลางวัน", detail: "", kind: "พัก" },
+  { time: "13.00–13.30", title: "สาธิตการสังเกตและคัดเลือกกิ่งเชื้อครั่ง", detail: "ข้อควรระวังในการขนย้ายและเตรียมกิ่งเชื้อ โดยวิทยากรร่วม", kind: "สาธิต" },
+  { time: "13.30–14.30", title: "ฝึกปฏิบัติการปล่อยเลี้ยงครั่งในแปลงสาธิต", detail: "แบ่งกลุ่มฝึกปฏิบัติและรับคำแนะนำจากวิทยากรร่วม", kind: "ปฏิบัติ" },
+  { time: "14.30–14.45", title: "พักรับประทานอาหารว่าง", detail: "", kind: "พัก" },
+  { time: "14.45–15.45", title: "ติดตามการเจริญเติบโตของครั่งและตรวจสภาพกิ่งเลี้ยง", detail: "การบันทึกข้อมูล และแนวทางดูแลแปลงเมื่อเกิดความร้อน ฝนผิดฤดูกาล หรือสภาพแห้งแล้ง โดยวิทยากรร่วม", kind: "ปฏิบัติ" },
+  { time: "15.45–16.00", title: "ถาม–ตอบ และสรุปแนวทางนำความรู้ไปใช้ในพื้นที่", detail: "ผู้เข้าร่วมประเมินผลการอบรม", kind: "สรุป" },
+] as const;
+
 export function ActivityRegistrationPage() {
   const { slug = "" } = useParams();
   const [activity, setActivity] = useState<Activity | null>(null);
@@ -29,6 +45,7 @@ export function ActivityRegistrationPage() {
   const [error, setError] = useState("");
   const [code, setCode] = useState("");
   const [consent, setConsent] = useState(false);
+  const [scheduleOpen, setScheduleOpen] = useState(true);
   const [form, setForm] = useState({ fullName: "", phone: "", age: "", subdistrict: "", district: "", province: "", email: "", participantType: "general" });
 
   useEffect(() => {
@@ -86,6 +103,32 @@ export function ActivityRegistrationPage() {
     <RouterLink to={`/activities/${slug}`} className="inline-flex min-h-10 items-center text-sm font-bold text-brand-navy">← กลับไปหน้ากิจกรรม</RouterLink>
     <section className="mt-4 overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
       <div className="bg-brand-navy px-6 py-7 text-white sm:px-8">{activity?.featured_image && <img src={activity.featured_image} alt="" className="mb-5 h-44 w-full rounded-2xl object-cover" />}<p className="text-xs font-bold tracking-widest text-northern-gold">MAHIDOL UNIVERSITY · EVENT REGISTRATION</p><h1 className="mt-3 text-2xl font-black leading-tight sm:text-3xl">ลงทะเบียนเข้าร่วมกิจกรรม</h1><p className="mt-3 text-sm leading-6 text-blue-100">{activity?.title}</p><div className="mt-5 flex flex-wrap gap-4 text-xs text-white/80"><span className="inline-flex items-center gap-2"><CalendarDays className="h-4 w-4" />{activity?.activity_date}</span>{activity?.location && <span className="inline-flex items-center gap-2"><MapPin className="h-4 w-4" />{activity.location}</span>}</div></div>
+
+      {slug === "shellac-income-climate-workshop-2026-1793678474794" && <section className="border-t border-slate-100 bg-white">
+        <button type="button" onClick={() => setScheduleOpen((open) => !open)} aria-expanded={scheduleOpen} className="flex min-h-16 w-full items-center justify-between gap-3 px-5 py-4 text-left sm:px-8">
+          <span className="flex items-center gap-3">
+            <span className="grid h-10 w-10 place-items-center rounded-xl bg-blue-50 text-brand-blue"><CalendarDays className="h-5 w-5" /></span>
+            <span><span className="block font-bold text-brand-navy">กำหนดการอบรม</span><span className="mt-1 block text-xs text-slate-500">วันศุกร์ที่ 18 ธันวาคม 2569 · 08.30–16.00 น.</span></span>
+          </span>
+          <span className="flex items-center gap-1 text-xs font-bold text-brand-blue">{scheduleOpen ? "ซ่อนกำหนดการ" : "ดูกำหนดการ"}{scheduleOpen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}</span>
+        </button>
+        {scheduleOpen && <div className="px-5 pb-6 sm:px-8">
+          <div className="rounded-2xl bg-slate-50 p-4 sm:p-5">
+            <div className="mb-4 flex items-center gap-2 text-xs text-slate-500"><Clock3 className="h-4 w-4" /> กำหนดการตลอดทั้งวัน</div>
+            <ol className="space-y-0">
+              {shellacSchedule.map((item, index) => <li key={item.time} className="relative grid grid-cols-[92px_minmax(0,1fr)] gap-3 pb-4 last:pb-0 sm:grid-cols-[112px_minmax(0,1fr)]">
+                {index !== shellacSchedule.length - 1 && <span aria-hidden="true" className="absolute left-[91px] top-2 h-full w-px bg-slate-200 sm:left-[111px]" />}
+                <span className="relative z-10 pt-0.5 text-[11px] font-bold tabular-nums text-brand-blue sm:text-xs">{item.time} น.</span>
+                <span className="min-w-0">
+                  <span className="flex flex-wrap items-center gap-2"><span className="text-sm font-bold leading-5 text-slate-800">{item.title}</span><span className={`rounded-full px-2 py-0.5 text-[10px] font-semibold ${item.kind === "พัก" ? "bg-amber-100 text-amber-800" : item.kind === "ปฏิบัติ" ? "bg-emerald-100 text-emerald-800" : "bg-blue-100 text-blue-800"}`}>{item.kind}</span></span>
+                  {item.detail && <span className="mt-1 block text-xs leading-5 text-slate-500">{item.detail}</span>}
+                </span>
+              </li>)}
+            </ol>
+            <p className="mt-5 border-t border-slate-200 pt-3 text-[11px] text-slate-400">หมายเหตุ: กำหนดการอาจมีการเปลี่ยนแปลงตามความเหมาะสม</p>
+          </div>
+        </div>}
+      </section>}
       {closed ? <div className="p-8 text-center"><Users className="mx-auto h-10 w-10 text-slate-400" /><h2 className="mt-3 text-lg font-bold text-brand-navy">{notYetOpen ? "ยังไม่ถึงเวลาเปิดรับลงทะเบียน" : "ปิดรับลงทะเบียนแล้ว"}</h2><p className="mt-2 text-sm text-slate-500">{notYetOpen && settings.opens_at ? `เปิดรับสมัคร ${new Date(settings.opens_at).toLocaleString("th-TH")}` : alreadyClosed && settings.closes_at ? `ปิดรับสมัครเมื่อ ${new Date(settings.closes_at).toLocaleString("th-TH")}` : "ขออภัย ขณะนี้ยังไม่เปิดรับสมัครกิจกรรมนี้"}</p></div> :
       <form onSubmit={submit} className="space-y-5 p-5 sm:p-8">
         <div className="flex items-center gap-2 border-b border-slate-100 pb-3"><ClipboardList className="h-5 w-5 text-brand-blue" /><h2 className="font-bold text-brand-navy">ข้อมูลผู้เข้าร่วม</h2></div>
