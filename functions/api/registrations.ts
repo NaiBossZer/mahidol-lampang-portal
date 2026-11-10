@@ -52,7 +52,7 @@ export async function onRequest({ request, env }: { request: Request; env: Env }
       const activityId = url.searchParams.get("activityId")!;
       const rows = await requestRest<Row[]>(
         env,
-        `activity_registrations?activity_id=eq.${encodeURIComponent(activityId)}&select=id,registration_code,full_name,phone,age,subdistrict,district,province,email,participant_type,status,created_at,checked_in_at,pdpa_consent,pdpa_consent_at&order=created_at.desc`,
+        `activity_registrations?activity_id=eq.${encodeURIComponent(activityId)}&select=id,registration_code,full_name,phone,age,subdistrict,district,province,email,participant_type,occupation,shellac_experience,status,created_at,checked_in_at,pdpa_consent,pdpa_consent_at&order=created_at.desc`,
         {},
         admin.token,
       );
@@ -91,6 +91,9 @@ export async function onRequest({ request, env }: { request: Request; env: Env }
       const province = String(body.province ?? "").trim();
       const email = String(body.email ?? "").trim().toLowerCase();
       const participantType = String(body.participantType ?? "general").trim();
+      const occupation = String(body.occupation ?? "").trim();
+      const shellacExperience = String(body.shellacExperience ?? "").trim();
+      const allowedShellacExperiences = new Set(["no_experience", "studied", "trial", "current", "former"]);
       const allowedParticipantTypes = new Set(["general", "community", "student", "staff", "partner"]);
       if (String(body.website ?? "").trim()) return json({ success: true, data: { registrationCode: registrationCode() } }, 201);
       if (!activityId || fullName.length < 2 || fullName.length > 200 || !/^0[0-9]{8,9}$/.test(phoneNormalized) || !Number.isSafeInteger(age) || age < 1 || !subdistrict || subdistrict.length > 100 || !district || district.length > 100 || !province || province.length > 100 || body.pdpaConsent !== true) {
@@ -98,9 +101,13 @@ export async function onRequest({ request, env }: { request: Request; env: Env }
       }
       const activities = await requestRest<Row[]>(
         env,
-        `activities?id=eq.${encodeURIComponent(activityId)}&status=eq.published&select=id&limit=1`,
+        `activities?id=eq.${encodeURIComponent(activityId)}&status=eq.published&select=id,slug&limit=1`,
       );
       if (!activities[0]) return json({ success: false, error: "กิจกรรมยังไม่เปิดรับลงทะเบียน" }, 409);
+      const requiresShellacBackground = String(activities[0].slug ?? "") === "shellac-income-climate-workshop-2026-1793678474794";
+      if (requiresShellacBackground && (!occupation || occupation.length > 120 || !allowedShellacExperiences.has(shellacExperience))) {
+        return json({ success: false, error: "กรุณาระบุอาชีพและประสบการณ์เกี่ยวกับการเลี้ยงครั่ง" }, 400);
+      }
       const settingsRows = await requestRest<Row[]>(
         env,
         `activity_registration_settings?activity_id=eq.${encodeURIComponent(activityId)}&select=enabled,opens_at,closes_at,capacity,form_fields&limit=1`,
@@ -132,6 +139,8 @@ export async function onRequest({ request, env }: { request: Request; env: Env }
           province,
           email: fields.email === true ? email || null : null,
           participant_type: fields.participantType === true ? participantType : "general",
+          occupation: requiresShellacBackground ? occupation : null,
+          shellac_experience: requiresShellacBackground ? shellacExperience : null,
           pdpa_consent: true,
           pdpa_consent_at: new Date().toISOString(),
           pdpa_notice_version: "1.0",

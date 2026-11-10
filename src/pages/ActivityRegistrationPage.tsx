@@ -46,7 +46,7 @@ export function ActivityRegistrationPage() {
   const [code, setCode] = useState("");
   const [consent, setConsent] = useState(false);
   const [scheduleOpen, setScheduleOpen] = useState(true);
-  const [form, setForm] = useState({ fullName: "", phone: "", age: "", subdistrict: "", district: "", province: "", email: "", participantType: "general" });
+  const [form, setForm] = useState({ fullName: "", phone: "", age: "", subdistrict: "", district: "", province: "", email: "", participantType: "general", occupation: "", occupationOther: "", shellacExperience: "" });
 
   useEffect(() => {
     fetch(`/api/registrations?slug=${encodeURIComponent(slug)}`)
@@ -74,7 +74,7 @@ export function ActivityRegistrationPage() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          activityId: activity.id, ...form,
+          activityId: activity.id, ...form, occupation: form.occupation === "other" ? `อื่น ๆ: ${form.occupationOther.trim()}` : form.occupation,
           website: (formElement.elements.namedItem("website") as HTMLInputElement | null)?.value ?? "",
           pdpaConsent: consent,
         }),
@@ -143,6 +143,12 @@ export function ActivityRegistrationPage() {
           <Field label="จังหวัด *"><input required maxLength={100} value={form.province} onChange={(e) => update("province", e.target.value)} autoComplete="address-level1" className={inputClass} placeholder="กรอกจังหวัด" /></Field>
           {settings.form_fields?.email && <Field label="อีเมล"><input type="email" value={form.email} onChange={(e) => update("email", e.target.value)} autoComplete="email" className={inputClass} placeholder="name@example.com" /></Field>}
           {settings.form_fields?.participantType && <Field label="ประเภทผู้เข้าร่วม"><select value={form.participantType} onChange={(e) => update("participantType", e.target.value)} className={inputClass}><option value="general">บุคคลทั่วไป</option><option value="community">สมาชิกชุมชน</option><option value="student">นักเรียน / นักศึกษา</option><option value="staff">บุคลากร / เจ้าหน้าที่</option><option value="partner">หน่วยงานภาคีเครือข่าย</option></select></Field>}
+          {slug === "shellac-income-climate-workshop-2026-1793678474794" && <>
+            <div className="sm:col-span-2 mt-2 border-t border-slate-100 pt-4"><h3 className="font-bold text-brand-navy">ข้อมูลพื้นฐานเกี่ยวกับอาชีพและครั่ง</h3><p className="mt-1 text-xs text-slate-500">ใช้เพื่อเตรียมเนื้อหาและประเมินผลการอบรม</p></div>
+            <Field label="อาชีพปัจจุบัน *"><select required value={form.occupation} onChange={(e) => update("occupation", e.target.value)} className={inputClass}><option value="">เลือกอาชีพ</option><option value="เกษตรกร">เกษตรกร</option><option value="ผู้ประกอบการ / ค้าขาย">ผู้ประกอบการ / ค้าขาย</option><option value="นักเรียน / นักศึกษา">นักเรียน / นักศึกษา</option><option value="ข้าราชการ / พนักงานเอกชน">ข้าราชการ / พนักงานเอกชน</option><option value="รับจ้างทั่วไป">รับจ้างทั่วไป</option><option value="แม่บ้าน / ไม่ได้ประกอบอาชีพ">แม่บ้าน / ไม่ได้ประกอบอาชีพ</option><option value="other">อื่น ๆ</option></select></Field>
+            {form.occupation === "other" && <Field label="โปรดระบุอาชีพ *"><input required maxLength={120} value={form.occupationOther} onChange={(e) => update("occupationOther", e.target.value)} className={inputClass} placeholder="ระบุอาชีพของท่าน" /></Field>}
+            <Field label="ประสบการณ์เกี่ยวกับการเลี้ยงครั่ง *"><select required value={form.shellacExperience} onChange={(e) => update("shellacExperience", e.target.value)} className={inputClass}><option value="">เลือกประสบการณ์</option><option value="no_experience">ไม่เคยมีประสบการณ์</option><option value="studied">เคยศึกษา / เรียนรู้เกี่ยวกับครั่ง แต่ยังไม่เคยเลี้ยง</option><option value="trial">เคยทดลองเลี้ยงครั่ง</option><option value="current">เลี้ยงครั่งอยู่ในปัจจุบัน</option><option value="former">เคยเลี้ยงครั่ง แต่ปัจจุบันไม่ได้เลี้ยง</option></select></Field>
+          </>}
         </div>
         <label className="flex items-start gap-3 rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm leading-6"><input type="checkbox" checked={consent} onChange={(e) => setConsent(e.target.checked)} className="mt-1 h-4 w-4 accent-[#12345b]" /><span><strong className="text-brand-navy">ยินยอมให้เก็บรวบรวมและใช้ข้อมูลส่วนบุคคล *</strong><br /><span className="text-xs text-slate-600">ข้าพเจ้ายินยอมให้มหาวิทยาลัยมหิดลใช้ข้อมูลที่กรอกเพื่อดำเนินการลงทะเบียน ติดต่อประสานงาน และบริหารจัดการการเข้าร่วมกิจกรรม ตามประกาศความเป็นส่วนตัวของมหาวิทยาลัย</span></span></label>
         {error && <p role="alert" className="rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-700">{error}</p>}
