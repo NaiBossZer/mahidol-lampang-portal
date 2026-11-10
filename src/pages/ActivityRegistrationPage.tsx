@@ -8,7 +8,7 @@ type RegistrationSettings = {
   opens_at: string | null;
   closes_at: string | null;
   capacity: number | null;
-  form_fields: { email?: boolean; organization?: boolean; position?: boolean; participantType?: boolean };
+  form_fields: { email?: boolean; organization?: boolean; participantType?: boolean };
   confirmation_message: string;
 };
 type Activity = {
@@ -17,7 +17,7 @@ type Activity = {
 };
 const defaultSettings: RegistrationSettings = {
   enabled: true, opens_at: null, closes_at: null, capacity: null,
-  form_fields: { email: true, organization: true, position: true, participantType: true },
+  form_fields: { email: true, organization: true, participantType: true },
   confirmation_message: "ลงทะเบียนสำเร็จ ขอบคุณที่สนใจเข้าร่วมกิจกรรม",
 };
 
@@ -29,7 +29,7 @@ export function ActivityRegistrationPage() {
   const [error, setError] = useState("");
   const [code, setCode] = useState("");
   const [consent, setConsent] = useState(false);
-  const [form, setForm] = useState({ fullName: "", phone: "", subdistrict: "", district: "", province: "", postalCode: "", email: "", organization: "", position: "", participantType: "general" });
+  const [form, setForm] = useState({ fullName: "", phone: "", subdistrict: "", district: "", province: "", postalCode: "", email: "", organization: "", participantType: "general" });
 
   useEffect(() => {
     fetch(`/api/registrations?slug=${encodeURIComponent(slug)}`)
@@ -100,7 +100,6 @@ export function ActivityRegistrationPage() {
           <Field label="รหัสไปรษณีย์ *"><input required inputMode="numeric" pattern="[0-9]{5}" maxLength={5} title="กรุณากรอกรหัสไปรษณีย์ 5 หลัก" value={form.postalCode} onChange={(e) => update("postalCode", e.target.value.replace(/[^0-9]/g, "").slice(0, 5))} autoComplete="postal-code" className={inputClass} placeholder="รหัสไปรษณีย์ 5 หลัก" /></Field>
           {settings.form_fields?.email && <Field label="อีเมล"><input type="email" value={form.email} onChange={(e) => update("email", e.target.value)} autoComplete="email" className={inputClass} placeholder="name@example.com" /></Field>}
           {settings.form_fields?.organization && <Field label="หน่วยงาน / สังกัด"><input value={form.organization} onChange={(e) => update("organization", e.target.value)} className={inputClass} placeholder="ชื่อหน่วยงานหรือชุมชน" /></Field>}
-          {settings.form_fields?.position && <Field label="ตำแหน่ง / บทบาท"><input value={form.position} onChange={(e) => update("position", e.target.value)} className={inputClass} placeholder="ระบุตำแหน่ง (ถ้ามี)" /></Field>}
           {settings.form_fields?.participantType && <Field label="ประเภทผู้เข้าร่วม"><select value={form.participantType} onChange={(e) => update("participantType", e.target.value)} className={inputClass}><option value="general">บุคคลทั่วไป</option><option value="community">สมาชิกชุมชน</option><option value="student">นักเรียน / นักศึกษา</option><option value="staff">บุคลากร / เจ้าหน้าที่</option><option value="partner">หน่วยงานภาคีเครือข่าย</option></select></Field>}
         </div>
         <label className="flex items-start gap-3 rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm leading-6"><input type="checkbox" checked={consent} onChange={(e) => setConsent(e.target.checked)} className="mt-1 h-4 w-4 accent-[#12345b]" /><span><strong className="text-brand-navy">ยินยอมให้เก็บรวบรวมและใช้ข้อมูลส่วนบุคคล *</strong><br /><span className="text-xs text-slate-600">ข้าพเจ้ายินยอมให้มหาวิทยาลัยมหิดลใช้ข้อมูลที่กรอกเพื่อดำเนินการลงทะเบียน ติดต่อประสานงาน และบริหารจัดการการเข้าร่วมกิจกรรม ตามประกาศความเป็นส่วนตัวของมหาวิทยาลัย</span></span></label>
