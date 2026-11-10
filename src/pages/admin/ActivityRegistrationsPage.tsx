@@ -104,12 +104,36 @@ export function ActivityRegistrationsPage() {
       setDeletingId(null);
     }
   }
-  function exportCsv() {
-    const fields: (keyof Registration)[] = ["registration_code", "full_name", "phone", "age", "subdistrict", "district", "province", "email", "participant_type", "status", "created_at", "checked_in_at"];
-    const esc = (v: unknown) => `"${String(v ?? "").replace(/"/g, '""')}"`;
-    const csv = "\uFEFF" + [fields.join(","), ...filtered.map(row => fields.map(f => esc(row[f])).join(","))].join("\r\n");
-    const url = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8" }));
-    const a = document.createElement("a"); a.href = url; a.download = "activity-registrations.csv"; a.click(); URL.revokeObjectURL(url);
+  function printAttendanceSheet() {
+    const attendees = filtered.filter((row) => row.status !== "cancelled");
+    if (!attendees.length) return;
+    const escapeHtml = (value: unknown) => String(value ?? "").replace(/[&<>"']/g, (char) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[char] ?? char);
+    const printedAt = new Intl.DateTimeFormat("th-TH", { dateStyle: "long", timeStyle: "short" }).format(new Date());
+    const rowsHtml = attendees.map((row, index) => `<tr><td class="number">${index + 1}</td><td><strong>${escapeHtml(row.full_name)}</strong><small>${escapeHtml(row.registration_code)}</small></td><td>${escapeHtml(row.phone)}</td><td class="signature"></td></tr>`).join("");
+    const printWindow = window.open("", "_blank", "width=1000,height=750");
+    if (!printWindow) {
+      setError("เบราว์เซอร์บล็อกหน้าต่างพิมพ์ กรุณาอนุญาต Pop-up แล้วลองอีกครั้ง");
+      return;
+    }
+    printWindow.document.open();
+    printWindow.document.write(`<!doctype html><html lang="th"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>ใบลงชื่อผู้เข้าร่วมกิจกรรม</title><style>
+      @page{size:A4 portrait;margin:12mm}
+      *{box-sizing:border-box}body{font-family:"Sarabun","TH Sarabun New",Tahoma,Arial,sans-serif;color:#172b45;margin:0;font-size:13px}
+      h1{font-size:21px;text-align:center;margin:0 0 5px} .activity{font-size:16px;font-weight:700;text-align:center;margin:0 0 14px}
+      .meta{display:flex;justify-content:space-between;gap:12px;margin:0 0 12px;font-size:12px}
+      table{width:100%;border-collapse:collapse;table-layout:fixed}thead{display:table-header-group}
+      th,td{border:1px solid #66758a;padding:7px 8px;vertical-align:middle}
+      th{background:#edf2f7;font-weight:700;text-align:center}
+      td.number{text-align:center;width:7%}th:nth-child(1){width:7%}th:nth-child(2){width:38%}th:nth-child(3){width:22%}th:nth-child(4){width:33%}
+      td small{display:block;color:#64748b;font-size:10px;margin-top:2px}
+      td.signature{height:46px}
+      tr{break-inside:avoid;page-break-inside:avoid}
+      .note{margin-top:10px;text-align:right;font-size:11px;color:#64748b}
+      @media screen{body{padding:18px}.sheet{max-width:190mm;margin:auto}}
+    </style></head><body><main class="sheet"><h1>ใบลงชื่อผู้เข้าร่วมกิจกรรม</h1><p class="activity">${escapeHtml(activity?.title || "กิจกรรม")}</p><div class="meta"><span>จำนวนผู้มีสิทธิ์ลงชื่อ: ${attendees.length.toLocaleString("th-TH")} คน</span><span>พิมพ์เมื่อ: ${escapeHtml(printedAt)}</span></div><table><thead><tr><th>ลำดับ</th><th>ชื่อ – นามสกุล</th><th>เบอร์โทรศัพท์</th><th>ลายมือชื่อผู้เข้าร่วม</th></tr></thead><tbody>${rowsHtml}</tbody></table><p class="note">เอกสารสำหรับใช้ลงทะเบียนและยืนยันการเข้าร่วม ณ จุดลงทะเบียน</p></main><script>window.addEventListener("load",()=>setTimeout(()=>window.print(),250));</script></body></html>`);
+    printWindow.document.close();
+    printWindow.focus();
+    setError("");
   }
   const clearFilters = () => { setQuery(""); setTypeFilter("all"); setStatusFilter("all"); setCheckinFilter("all"); };
   const activity = activities.find(x => x.id === activityId);
@@ -117,7 +141,7 @@ export function ActivityRegistrationsPage() {
   return <main className="mx-auto w-full max-w-[1680px] space-y-5 px-4 pb-8 sm:px-6 xl:px-8">
     <header className="flex flex-col gap-3 border-b border-slate-200/80 pb-4 lg:flex-row lg:items-center lg:justify-between">
       <div><div className="mb-2 flex items-center gap-2 text-xs font-medium text-slate-400"><span>จัดการกิจกรรม</span><ChevronRight className="h-3.5 w-3.5" /><span className="text-[#285b93]">ลงทะเบียนผู้เข้าร่วม</span></div><p className="text-[11px] font-bold uppercase tracking-[0.18em] text-[#4777aa]">ACTIVITY OPERATIONS</p><h1 className="mt-1 text-2xl font-bold tracking-tight text-[#17365f] sm:text-3xl">ลงทะเบียนผู้เข้าร่วม</h1><p className="mt-1.5 text-sm text-slate-500">จัดการรายชื่อ ตรวจสอบข้อมูล และติดตามการเข้าร่วมกิจกรรม</p></div>
-      <div className="flex gap-2"><button onClick={() => void loadRows()} disabled={loadingRows || !activityId} className="inline-flex min-h-10 items-center gap-2 rounded-xl border border-slate-200 bg-white px-3.5 text-sm font-semibold text-slate-600 shadow-sm hover:bg-slate-50 disabled:opacity-50"><RefreshCw className={`h-4 w-4 ${loadingRows ? "animate-spin" : ""}`} />รีเฟรช</button><button onClick={exportCsv} disabled={!filtered.length} className="inline-flex min-h-10 items-center gap-2 rounded-xl bg-[#17477b] px-4 text-sm font-semibold text-white shadow-sm hover:bg-[#10365f] disabled:opacity-40"><Download className="h-4 w-4" />ส่งออก CSV</button></div>
+      <div className="flex gap-2"><button onClick={() => void loadRows()} disabled={loadingRows || !activityId} className="inline-flex min-h-10 items-center gap-2 rounded-xl border border-slate-200 bg-white px-3.5 text-sm font-semibold text-slate-600 shadow-sm hover:bg-slate-50 disabled:opacity-50"><RefreshCw className={`h-4 w-4 ${loadingRows ? "animate-spin" : ""}`} />รีเฟรช</button><button onClick={printAttendanceSheet} disabled={!filtered.some(row => row.status !== "cancelled")} className="inline-flex min-h-10 items-center gap-2 rounded-xl bg-[#17477b] px-4 text-sm font-semibold text-white shadow-sm hover:bg-[#10365f] disabled:opacity-40"><Download className="h-4 w-4" />พิมพ์ใบลงชื่อ / บันทึก PDF</button></div>
     </header>
 
     <section className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5"><div className="flex flex-col gap-3 sm:flex-row sm:items-center"><span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-blue-50 text-[#285b93]"><CalendarDays className="h-5 w-5" /></span><div className="min-w-0 flex-1"><label htmlFor="registration-activity" className="mb-1 block text-xs font-semibold text-slate-500">กิจกรรมที่กำลังจัดการ</label><div className="relative"><select id="registration-activity" value={activityId} onChange={e => setActivityId(e.target.value)} disabled={loadingActivities || !activities.length} className="min-h-11 w-full appearance-none rounded-xl border border-slate-200 bg-slate-50 px-3 pr-10 text-sm font-semibold text-[#17365f] outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 disabled:opacity-60"><option value="">{loadingActivities ? "กำลังโหลดกิจกรรม..." : "ทุกกิจกรรม"}</option>{activities.map(x => <option key={x.id} value={x.id}>{x.title}</option>)}</select><ChevronDown className="pointer-events-none absolute right-3 top-3.5 h-4 w-4 text-slate-400" /></div></div>{activity && <div className="hidden items-center gap-2 rounded-xl bg-emerald-50 px-3 py-2 text-xs font-medium text-emerald-700 lg:flex"><BadgeCheck className="h-4 w-4" />กิจกรรมที่เลือก</div>}</div>{activity && <p className="mt-3 text-xs text-slate-400 sm:pl-[52px]">แสดงข้อมูลผู้ลงทะเบียนของกิจกรรมที่เลือกเท่านั้น</p>}</section>
