@@ -52,7 +52,7 @@ export async function onRequest({ request, env }: { request: Request; env: Env }
       const activityId = url.searchParams.get("activityId")!;
       const rows = await requestRest<Row[]>(
         env,
-        `activity_registrations?activity_id=eq.${encodeURIComponent(activityId)}&select=id,registration_code,full_name,phone,email,organization,position,participant_type,status,created_at,checked_in_at,pdpa_consent,pdpa_consent_at&order=created_at.desc`,
+        `activity_registrations?activity_id=eq.${encodeURIComponent(activityId)}&select=id,registration_code,full_name,phone,age,subdistrict,district,province,postal_code,email,organization,participant_type,status,created_at,checked_in_at,pdpa_consent,pdpa_consent_at&order=created_at.desc`,
         {},
         admin.token,
       );
@@ -73,7 +73,7 @@ export async function onRequest({ request, env }: { request: Request; env: Env }
       );
       const settings = settingsRows[0] ?? {
         enabled: true, opens_at: null, closes_at: null, capacity: null,
-        form_fields: { email: true, organization: true, position: true, participantType: true },
+        form_fields: { email: true, organization: true, participantType: true },
         confirmation_message: "ลงทะเบียนสำเร็จ ขอบคุณที่สนใจเข้าร่วมกิจกรรม",
       };
       return json({ success: true, data: { ...rows[0], registration_settings: settings } });
@@ -85,14 +85,18 @@ export async function onRequest({ request, env }: { request: Request; env: Env }
       const fullName = String(body.fullName ?? "").trim();
       const phone = String(body.phone ?? "").trim();
       const phoneNormalized = normalizePhone(phone);
+      const age = Number(body.age);
+      const subdistrict = String(body.subdistrict ?? "").trim();
+      const district = String(body.district ?? "").trim();
+      const province = String(body.province ?? "").trim();
+      const postalCode = String(body.postalCode ?? "").trim();
       const email = String(body.email ?? "").trim().toLowerCase();
       const organization = String(body.organization ?? "").trim();
-      const position = String(body.position ?? "").trim();
       const participantType = String(body.participantType ?? "general").trim();
       const allowedParticipantTypes = new Set(["general", "community", "student", "staff", "partner"]);
       if (String(body.website ?? "").trim()) return json({ success: true, data: { registrationCode: registrationCode() } }, 201);
-      if (!activityId || fullName.length < 2 || fullName.length > 200 || !/^0[0-9]{8,9}$/.test(phoneNormalized) || body.pdpaConsent !== true) {
-        return json({ success: false, error: "กรุณากรอกชื่อและเบอร์โทรศัพท์ให้ถูกต้อง พร้อมยินยอมประกาศความเป็นส่วนตัว" }, 400);
+      if (!activityId || fullName.length < 2 || fullName.length > 200 || !/^0[0-9]{8,9}$/.test(phoneNormalized) || !Number.isSafeInteger(age) || age < 1 || !subdistrict || subdistrict.length > 100 || !district || district.length > 100 || !province || province.length > 100 || !/^[0-9]{5}$/.test(postalCode) || body.pdpaConsent !== true) {
+        return json({ success: false, error: "กรุณากรอกชื่อ อายุ เบอร์โทรศัพท์ ที่อยู่ทั้ง 4 ช่อง และยินยอมประกาศความเป็นส่วนตัวให้ถูกต้อง" }, 400);
       }
       const activities = await requestRest<Row[]>(
         env,
@@ -105,7 +109,7 @@ export async function onRequest({ request, env }: { request: Request; env: Env }
       );
       const settings = settingsRows[0] ?? {
         enabled: true, opens_at: null, closes_at: null, capacity: null,
-        form_fields: { email: true, organization: true, position: true, participantType: true },
+        form_fields: { email: true, organization: true, participantType: true },
       };
       const now = Date.now();
       if (settings.enabled === false) return json({ success: false, error: "กิจกรรมนี้ปิดรับลงทะเบียนแล้ว" }, 409);
@@ -123,10 +127,14 @@ export async function onRequest({ request, env }: { request: Request; env: Env }
           registration_code: code,
           full_name: fullName,
           phone,
+          age,
           phone_normalized: phoneNormalized,
+          subdistrict,
+          district,
+          province,
+          postal_code: postalCode,
           email: fields.email === true ? email || null : null,
           organization: fields.organization === true ? organization || null : null,
-          position: fields.position === true ? position || null : null,
           participant_type: fields.participantType === true ? participantType : "general",
           pdpa_consent: true,
           pdpa_consent_at: new Date().toISOString(),
