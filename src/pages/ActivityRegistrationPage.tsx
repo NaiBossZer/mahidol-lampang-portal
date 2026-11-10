@@ -29,7 +29,7 @@ export function ActivityRegistrationPage() {
   const [error, setError] = useState("");
   const [code, setCode] = useState("");
   const [consent, setConsent] = useState(false);
-  const [form, setForm] = useState({ fullName: "", phone: "", subdistrict: "", district: "", province: "", postalCode: "", email: "", organization: "", participantType: "general" });
+  const [form, setForm] = useState({ fullName: "", phone: "", age: "", subdistrict: "", district: "", province: "", postalCode: "", email: "", organization: "", participantType: "general" });
 
   useEffect(() => {
     fetch(`/api/registrations?slug=${encodeURIComponent(slug)}`)
@@ -94,6 +94,7 @@ export function ActivityRegistrationPage() {
         <div className="grid gap-4 sm:grid-cols-2">
           <Field label="ชื่อ–นามสกุล *"><input required minLength={2} maxLength={200} value={form.fullName} onChange={(e) => update("fullName", e.target.value)} autoComplete="name" className={inputClass} placeholder="กรอกชื่อและนามสกุล" /></Field>
           <Field label="เบอร์โทรศัพท์ *"><input required type="tel" inputMode="numeric" pattern="0[0-9]{8,9}" maxLength={10} title="กรุณากรอกเบอร์โทรศัพท์ 9–10 หลัก โดยขึ้นต้นด้วย 0" value={form.phone} onChange={(e) => update("phone", e.target.value.replace(/[^0-9]/g, "").slice(0, 10))} autoComplete="tel" className={inputClass} placeholder="08XXXXXXXX" /></Field>
+          <Field label="อายุ (ปี) *"><input required type="number" min={1} step={1} inputMode="numeric" value={form.age} onChange={(e) => update("age", e.target.value.replace(/[^0-9]/g, ""))} className={inputClass} placeholder="กรอกอายุเป็นปี" /></Field>
           <Field label="ตำบล / แขวง *"><input required maxLength={100} value={form.subdistrict} onChange={(e) => update("subdistrict", e.target.value)} autoComplete="address-level3" className={inputClass} placeholder="กรอกตำบล / แขวง" /></Field>
           <Field label="อำเภอ / เขต *"><input required maxLength={100} value={form.district} onChange={(e) => update("district", e.target.value)} autoComplete="address-level2" className={inputClass} placeholder="กรอกอำเภอ / เขต" /></Field>
           <Field label="จังหวัด *"><input required maxLength={100} value={form.province} onChange={(e) => update("province", e.target.value)} autoComplete="address-level1" className={inputClass} placeholder="กรอกจังหวัด" /></Field>
