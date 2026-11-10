@@ -33,7 +33,7 @@ async function rest<T>(env: Env, path: string, init: RequestInit = {}, token?: s
   return body as T;
 }
 
-const DEFAULT_FIELDS = { email: true, organization: true, position: true, participantType: true };
+const DEFAULT_FIELDS = { email: true, position: true, participantType: true };
 
 export async function onRequest({ request, env }: { request: Request; env: Env }) {
   const user = await getSupabaseUser(request, env);
@@ -74,7 +74,6 @@ export async function onRequest({ request, env }: { request: Request; env: Env }
       const fieldsInput = body.formFields && typeof body.formFields === "object" ? body.formFields as Record<string, unknown> : {};
       const formFields = {
         email: fieldsInput.email === true,
-        organization: fieldsInput.organization === true,
         position: fieldsInput.position === true,
         participantType: fieldsInput.participantType === true,
       };
