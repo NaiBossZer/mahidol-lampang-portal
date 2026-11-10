@@ -117,18 +117,18 @@ export function ActivityRegistrationsPage() {
     }
     printWindow.document.open();
     printWindow.document.write(`<!doctype html><html lang="th"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>ใบลงชื่อผู้เข้าร่วมกิจกรรม</title><style>
-      @page{size:A4 portrait;margin:12mm}
+      @page{size:A4 landscape;margin:10mm}
       *{box-sizing:border-box}body{font-family:"Sarabun","TH Sarabun New",Tahoma,Arial,sans-serif;color:#172b45;margin:0;font-size:13px}
       h1{font-size:21px;text-align:center;margin:0 0 5px} .activity{font-size:16px;font-weight:700;text-align:center;margin:0 0 14px}
       .meta{display:flex;justify-content:space-between;gap:12px;margin:0 0 12px;font-size:12px}
       table{width:100%;border-collapse:collapse;table-layout:fixed}thead{display:table-header-group}
       th,td{border:1px solid #66758a;padding:7px 8px;vertical-align:middle}
       th{background:#edf2f7;font-weight:700;text-align:center}
-      th:nth-child(1){width:25%}th:nth-child(2){width:37%}th:nth-child(3){width:18%}th:nth-child(4){width:20%}
+      th:nth-child(1){width:22%}th:nth-child(2){width:34%}th:nth-child(3){width:16%}th:nth-child(4){width:28%}
       td.signature{height:48px}
       tr{break-inside:avoid;page-break-inside:avoid}
       .note{margin-top:10px;text-align:right;font-size:11px;color:#64748b}
-      @media screen{body{padding:18px}.sheet{max-width:190mm;margin:auto}}
+      @media screen{body{padding:18px}.sheet{max-width:277mm;margin:auto}}
     </style></head><body><main class="sheet"><h1>ใบลงชื่อผู้เข้าร่วมกิจกรรม</h1><p class="activity">${escapeHtml(activity?.title || "กิจกรรม")}</p><div class="meta"><span>จำนวนผู้มีสิทธิ์ลงชื่อ: ${attendees.length.toLocaleString("th-TH")} คน</span><span>พิมพ์เมื่อ: ${escapeHtml(printedAt)}</span></div><table><thead><tr><th>ชื่อ – นามสกุล</th><th>ที่อยู่</th><th>เบอร์โทรศัพท์</th><th>ลายมือชื่อ</th></tr></thead><tbody>${rowsHtml}</tbody></table><p class="note">เอกสารสำหรับใช้ลงทะเบียนและยืนยันการเข้าร่วม ณ จุดลงทะเบียน</p></main><script>window.addEventListener("load",()=>setTimeout(()=>window.print(),250));</script></body></html>`);
     printWindow.document.close();
     printWindow.focus();
