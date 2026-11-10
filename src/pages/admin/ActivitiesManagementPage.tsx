@@ -38,12 +38,12 @@ type RegistrationSettings = {
   opensAt: string;
   closesAt: string;
   capacity: string;
-  formFields: { email: boolean; organization: boolean; position: boolean; participantType: boolean };
+  formFields: { email: boolean; position: boolean; participantType: boolean };
   confirmationMessage: string;
 };
 const defaultRegistrationSettings: RegistrationSettings = {
   enabled: true, opensAt: "", closesAt: "", capacity: "",
-  formFields: { email: true, organization: true, position: true, participantType: true },
+  formFields: { email: true, position: true, participantType: true },
   confirmationMessage: "ลงทะเบียนสำเร็จ ขอบคุณที่สนใจเข้าร่วมกิจกรรม",
 };
 function toDateTimeLocal(value?: string | null) {
@@ -194,7 +194,6 @@ export function ActivitiesManagementPage() {
         capacity: data.capacity == null ? "" : String(data.capacity),
         formFields: {
           email: data.form_fields?.email !== false,
-          organization: data.form_fields?.organization !== false,
           position: data.form_fields?.position !== false,
           participantType: data.form_fields?.participantType !== false,
         },
@@ -560,7 +559,7 @@ export function ActivitiesManagementPage() {
                 <div className="rounded-xl border border-slate-200 p-4">
                   <h3 className="text-sm font-bold text-slate-800">ช่องข้อมูลในแบบฟอร์ม</h3><p className="mt-1 text-xs text-slate-500">ชื่อ–นามสกุล เบอร์โทรศัพท์ และความยินยอม PDPA เป็นข้อมูลบังคับเสมอ</p>
                   <div className="mt-3 grid gap-3 sm:grid-cols-2">
-                    {([{key:"email",label:"อีเมล"},{key:"organization",label:"หน่วยงาน / สังกัด"},{key:"position",label:"ตำแหน่ง / บทบาท"},{key:"participantType",label:"ประเภทผู้เข้าร่วม"}] as const).map((item) => (
+                    {([{key:"email",label:"อีเมล"},{key:"position",label:"ตำแหน่ง / บทบาท"},{key:"participantType",label:"ประเภทผู้เข้าร่วม"}] as const).map((item) => (
                       <label key={item.key} className="flex items-center gap-2 text-sm text-slate-700"><input type="checkbox" checked={registrationSettings.formFields[item.key]} onChange={(e) => setRegistrationSettings((s) => ({ ...s, formFields: { ...s.formFields, [item.key]: e.target.checked } }))} className="h-4 w-4 accent-[#12345b]" />{item.label}</label>
                     ))}
                   </div>
