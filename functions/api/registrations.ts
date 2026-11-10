@@ -52,7 +52,7 @@ export async function onRequest({ request, env }: { request: Request; env: Env }
       const activityId = url.searchParams.get("activityId")!;
       const rows = await requestRest<Row[]>(
         env,
-        `activity_registrations?activity_id=eq.${encodeURIComponent(activityId)}&select=id,registration_code,full_name,phone,subdistrict,district,province,postal_code,email,organization,position,participant_type,status,created_at,checked_in_at,pdpa_consent,pdpa_consent_at&order=created_at.desc`,
+        `activity_registrations?activity_id=eq.${encodeURIComponent(activityId)}&select=id,registration_code,full_name,phone,subdistrict,district,province,postal_code,email,organization,participant_type,status,created_at,checked_in_at,pdpa_consent,pdpa_consent_at&order=created_at.desc`,
         {},
         admin.token,
       );
@@ -73,7 +73,7 @@ export async function onRequest({ request, env }: { request: Request; env: Env }
       );
       const settings = settingsRows[0] ?? {
         enabled: true, opens_at: null, closes_at: null, capacity: null,
-        form_fields: { email: true, organization: true, position: true, participantType: true },
+        form_fields: { email: true, organization: true, participantType: true },
         confirmation_message: "ลงทะเบียนสำเร็จ ขอบคุณที่สนใจเข้าร่วมกิจกรรม",
       };
       return json({ success: true, data: { ...rows[0], registration_settings: settings } });
@@ -91,7 +91,6 @@ export async function onRequest({ request, env }: { request: Request; env: Env }
       const postalCode = String(body.postalCode ?? "").trim();
       const email = String(body.email ?? "").trim().toLowerCase();
       const organization = String(body.organization ?? "").trim();
-      const position = String(body.position ?? "").trim();
       const participantType = String(body.participantType ?? "general").trim();
       const allowedParticipantTypes = new Set(["general", "community", "student", "staff", "partner"]);
       if (String(body.website ?? "").trim()) return json({ success: true, data: { registrationCode: registrationCode() } }, 201);
@@ -134,7 +133,6 @@ export async function onRequest({ request, env }: { request: Request; env: Env }
           postal_code: postalCode,
           email: fields.email === true ? email || null : null,
           organization: fields.organization === true ? organization || null : null,
-          position: fields.position === true ? position || null : null,
           participant_type: fields.participantType === true ? participantType : "general",
           pdpa_consent: true,
           pdpa_consent_at: new Date().toISOString(),
