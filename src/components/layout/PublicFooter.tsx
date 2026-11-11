@@ -52,25 +52,34 @@ export function PublicFooter() {
 
           <div>
             <p className="text-sm font-bold text-[#D6A84F]">ติดต่อเรา</p>
-            <div className="mt-3 space-y-2.5 text-xs leading-5 text-blue-100">
-              <p className="flex items-start gap-2">
-                <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-[#D6A84F]" aria-hidden="true" />
-                <span>ศูนย์วิจัยเเละบริการวิชาการสิ่งเเวดล้อม เลขที่ 125 หมู่ที่ 8 ตำบลแม่กัวะ อำเภอสบปราบ จังหวัดลำปาง 52170</span>
-              </p>
-              <a
-                href="tel:054296368"
-                className="flex items-center gap-2 transition hover:text-white"
-              >
-                <Phone className="h-4 w-4 shrink-0 text-[#D6A84F]" aria-hidden="true" />
-                054-296-368
-              </a>
-              <a
-                href="mailto:en.northcenter@gmail.com"
-                className="flex items-center gap-2 break-all transition hover:text-white"
-              >
-                <Mail className="h-4 w-4 shrink-0 text-[#D6A84F]" aria-hidden="true" />
-                en.northcenter@gmail.com
-              </a>
+            <div className="mt-3 flex items-start gap-4 text-xs leading-5 text-blue-100">
+              <div className="min-w-0 flex-1 space-y-2.5">
+                <p className="flex items-start gap-2">
+                  <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-[#D6A84F]" aria-hidden="true" />
+                  <span>ศูนย์วิจัยเเละบริการวิชาการสิ่งเเวดล้อม เลขที่ 125 หมู่ที่ 8 ตำบลแม่กัวะ อำเภอสบปราบ จังหวัดลำปาง 52170</span>
+                </p>
+                <a
+                  href="tel:054296368"
+                  className="flex items-center gap-2 transition hover:text-white"
+                >
+                  <Phone className="h-4 w-4 shrink-0 text-[#D6A84F]" aria-hidden="true" />
+                  054-296-368
+                </a>
+                <a
+                  href="mailto:en.northcenter@gmail.com"
+                  className="flex items-center gap-2 break-all transition hover:text-white"
+                >
+                  <Mail className="h-4 w-4 shrink-0 text-[#D6A84F]" aria-hidden="true" />
+                  en.northcenter@gmail.com
+                </a>
+              </div>
+              <img
+                src="/LINE_SOCIAL-ENV.png"
+                alt="LINE งานพันธกิจเพื่อสังคม"
+                className="h-20 w-20 shrink-0 rounded-lg bg-white object-contain p-1"
+                width="80"
+                height="80"
+              />
             </div>
           </div>
         </div>
