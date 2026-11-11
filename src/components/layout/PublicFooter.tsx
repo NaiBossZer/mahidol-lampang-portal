@@ -77,7 +77,7 @@ export function PublicFooter() {
               <img
                 src="/LINE_SOCIAL-ENV.png"
                 alt="LINE งานพันธกิจเพื่อสังคม"
-                className="h-20 w-20 shrink-0 rounded-lg bg-white object-contain p-1"
+                className="h-28 w-28 shrink-0 rounded-lg bg-white object-contain p-1"
                 width="80"
                 height="80"
               />
