@@ -24,8 +24,8 @@ export function PublicFooter() {
           <div>
             <div className="flex items-start gap-3">
               <img
-                src="/mahidol-logo.png"
-                alt="มหาวิทยาลัยมหิดล"
+                src="/social-engagement-logo.png"
+                alt="งานพันธกิจเพื่อสังคม"
                 className="h-11 w-11 shrink-0 rounded-full bg-white object-contain p-1"
                 width="44"
                 height="44"
