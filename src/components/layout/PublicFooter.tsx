@@ -67,21 +67,21 @@ export function PublicFooter() {
             <div className="mt-3 space-y-2.5 text-xs leading-5 text-blue-100">
               <p className="flex items-start gap-2">
                 <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-[#D6A84F]" aria-hidden="true" />
-                <span>191 หมู่ 11 ต.ทุ่งฝาย อ.เมือง จ.ลำปาง 52000</span>
+                <span>ศูนย์วิจัยเเละบริการวิชาการสิ่งเเวดล้อม เลขที่ 125 หมู่ที่ 8 ตำบลแม่กัวะ ตำบลแม่กัวะ อำเภอสบปราบ จังหวัดลำปาง 52170</span>
               </p>
               <a
-                href="tel:054820200"
+                href="tel:054296368"
                 className="flex items-center gap-2 transition hover:text-white"
               >
                 <Phone className="h-4 w-4 shrink-0 text-[#D6A84F]" aria-hidden="true" />
-                054-820-200
+                054-296-368
               </a>
               <a
-                href="mailto:lampang@mahidol.ac.th"
+                href="mailto:en.northcenter@gmail.com"
                 className="flex items-center gap-2 break-all transition hover:text-white"
               >
                 <Mail className="h-4 w-4 shrink-0 text-[#D6A84F]" aria-hidden="true" />
-                lampang@mahidol.ac.th
+                en.northcenter@gmail.com
               </a>
             </div>
           </div>
