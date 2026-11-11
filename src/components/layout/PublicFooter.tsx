@@ -37,8 +37,8 @@ export function PublicFooter() {
               </div>
             </div>
             <p className="mt-4 max-w-sm text-xs leading-6 text-blue-100">
-              มุ่งมั่นพัฒนาวิทยาการและการเรียนรู้ร่วมกับชุมชน เพื่อสร้างการเปลี่ยนแปลงที่<br />
-              ยั่งยืน
+              มุ่งมั่นพัฒนาวิทยาการและการเรียนรู้ร่วมกับชุมชน<br />
+              เพื่อสร้างการเปลี่ยนแปลงที่ยั่งยืน
             </p>
           </div>
 
@@ -75,7 +75,7 @@ export function PublicFooter() {
                 </a>
               </div>
               <img
-                src="/LINE_SOCIAL-ENV.png"
+                src="https://raw.githubusercontent.com/NaiBossZer/mahidol-lampang-portal/main/public/LINE_SOCIAL-ENV.png"
                 alt="LINE งานพันธกิจเพื่อสังคม"
                 className="h-28 w-28 shrink-0 rounded-lg bg-white object-contain p-1"
                 width="80"
