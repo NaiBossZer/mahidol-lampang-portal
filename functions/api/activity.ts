@@ -70,7 +70,13 @@ export async function onRequestGet({ request, env }: { request: Request; env: En
       status: "eq.active",
       is_post_event: "eq.true",
     });
-    return json({ success: true, data: toActivity(raw, media) });
+    const activity = toActivity(raw, media);
+    const participantCount = await supabaseRest<number>(
+      env,
+      "rpc/get_public_activity_registration_count",
+      { target_activity_id: String(raw.id) },
+    );
+    return json({ success: true, data: { ...activity, participantCount: Number(participantCount) } });
   } catch (error) {
     console.error("GET /api/activity", error);
     return json({ error: "ไม่สามารถโหลดรายละเอียดกิจกรรมได้" }, 500);

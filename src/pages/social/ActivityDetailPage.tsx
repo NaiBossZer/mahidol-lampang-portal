@@ -101,10 +101,6 @@ export function ActivityDetailPage() {
                 ลงทะเบียนเข้าร่วมกิจกรรม
               </RouterLink>
               <dl className="mt-5 space-y-4 text-sm">
-                <div>
-                  <dt className="text-xs text-slate-400">ระบบหลัก</dt>
-                  <dd className="mt-1 font-bold text-brand-navy">{systemLabel(activity.system)}</dd>
-                </div>
                 {activity.centerName && (
                   <div>
                     <dt className="text-xs text-slate-400">ศูนย์ / พื้นที่</dt>
@@ -163,14 +159,6 @@ function Section({
       <p className="mt-3 text-sm leading-7 text-slate-600">{text}</p>
     </section>
   );
-}
-function systemLabel(system: SocialActivity["system"]) {
-  return {
-    "smart-farm": "Smart Farm",
-    "clean-energy": "Clean Energy",
-    shellac: "Shellac Learning Center",
-    social: "พันธกิจเพื่อสังคม",
-  }[system];
 }
 function formatDate(value: string) {
   const date = new Date(value);
