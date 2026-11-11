@@ -86,7 +86,7 @@ export function PublicFooter() {
         </div>
 
         <div className="mt-8 flex flex-col gap-2 border-t border-white/15 pt-4 text-[10px] text-slate-300 sm:flex-row sm:items-center sm:justify-between">
-          <p>© 2026 มหาวิทยาลัยมหิดล</p>
+          <p>© 2026 งานพันธกิจเพื่อสังคม คณะสิ่งแวดล้อมและทรัพยากรศาสตร์ มหาวิทยาลัยมหิดล</p>
           <div className="flex gap-4">
             <Link to="/site-map" className="transition hover:text-white">
               ผังของการใช้งาน
