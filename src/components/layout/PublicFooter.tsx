@@ -2,7 +2,7 @@ import { Mail, MapPin, Phone } from "lucide-react";
 import { Link } from "react-router-dom";
 
 const learningLinks = [
-  { label: "ศูนย์วิจัยและพัฒนาต้นน้ำ", to: "/activities" },
+  { label: "ห้องการเรียนรู้ครั่งครบวงจร", to: "/activities" },
   { label: "สมาร์ทฟาร์มอัจฉริยะ", to: "/smart-farm" },
   { label: "สถานีพลังงานทดแทน", to: "/clean-energy" },
 ];
