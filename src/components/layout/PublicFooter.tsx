@@ -31,9 +31,9 @@ export function PublicFooter() {
                 height="44"
               />
               <div className="min-w-0">
-                <p className="text-sm font-bold leading-6">มหาวิทยาลัยมหิดล</p>
+                <p className="text-sm font-bold leading-6">งานพันธกิจเพื่อสังคม</p>
                 <p className="mt-0.5 text-[10px] font-medium leading-4 text-[#D6A84F]">
-                  งานพันธกิจ สิ่งแวดล้อม มหิดล
+                  คณะสิ่งแวดล้อมและทรัพยากรศาสตร์ มหาวิทยาลัยมหิดล
                 </p>
               </div>
             </div>
