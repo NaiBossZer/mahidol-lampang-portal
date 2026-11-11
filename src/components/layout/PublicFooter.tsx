@@ -2,9 +2,9 @@ import { Mail, MapPin, Phone } from "lucide-react";
 import { Link } from "react-router-dom";
 
 const learningLinks = [
-  { label: "ห้องการเรียนรู้ครั่งครบวงจร", to: "/activities" },
-  { label: "สมาร์ทฟาร์มอัจฉริยะ", to: "/smart-farm" },
-  { label: "สถานีพลังงานทดแทน", to: "/clean-energy" },
+  "ห้องการเรียนรู้ครั่งครบวงจร",
+  "สมาร์ทฟาร์มอัจฉริยะ",
+  "สถานีพลังงานทดแทน",
 ];
 
 const researchTopics = ["เทคโนโลยีภูมิปัญญาท้องถิ่น", "เกษตรอัจฉริยะ", "พลังงานสะอาด"];
@@ -45,10 +45,8 @@ export function PublicFooter() {
           <div>
             <p className="text-sm font-bold text-[#D6A84F]">ศูนย์การเรียนรู้</p>
             <div className="mt-3 space-y-2 text-xs leading-5 text-blue-100">
-              {learningLinks.map((item) => (
-                <Link key={item.to} to={item.to} className="block transition hover:text-white">
-                  {item.label}
-                </Link>
+              {learningLinks.map((label) => (
+                <p key={label}>{label}</p>
               ))}
             </div>
           </div>
