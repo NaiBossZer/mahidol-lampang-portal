@@ -7,7 +7,6 @@ const learningLinks = [
   "สถานีพลังงานทดแทน",
 ];
 
-const researchTopics = ["เทคโนโลยีภูมิปัญญาท้องถิ่น", "เกษตรอัจฉริยะ", "พลังงานสะอาด"];
 
 export function PublicFooter() {
   return (
@@ -20,7 +19,7 @@ export function PublicFooter() {
       />
       <div aria-hidden="true" className="absolute inset-0 bg-[#123B63]/70" />
       <div className="relative mx-auto max-w-[1280px] px-4 py-10 sm:px-6 sm:py-12 lg:px-8 lg:py-14">
-        <div className="grid gap-8 md:grid-cols-4 md:gap-7 lg:gap-10">
+        <div className="grid gap-8 md:grid-cols-3 md:gap-7 lg:gap-10">
           <div>
             <div className="flex items-start gap-3">
               <img
@@ -47,15 +46,6 @@ export function PublicFooter() {
             <div className="mt-3 space-y-2 text-xs leading-5 text-blue-100">
               {learningLinks.map((label) => (
                 <p key={label}>{label}</p>
-              ))}
-            </div>
-          </div>
-
-          <div>
-            <p className="text-sm font-bold text-[#D6A84F]">งานวิจัยและเทคโนโลยี</p>
-            <div className="mt-3 space-y-2 text-xs leading-5 text-blue-100">
-              {researchTopics.map((topic) => (
-                <p key={topic}>{topic}</p>
               ))}
             </div>
           </div>
