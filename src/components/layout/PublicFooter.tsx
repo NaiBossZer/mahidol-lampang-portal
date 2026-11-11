@@ -1,5 +1,4 @@
 import { Mail, MapPin, Phone } from "lucide-react";
-import { Link } from "react-router-dom";
 
 const learningLinks = [
   "ห้องการเรียนรู้ครั่งครบวงจร",
@@ -85,16 +84,8 @@ export function PublicFooter() {
           </div>
         </div>
 
-        <div className="mt-8 flex flex-col gap-2 border-t border-white/15 pt-4 text-[10px] text-slate-300 sm:flex-row sm:items-center sm:justify-between">
+        <div className="mt-8 border-t border-white/15 pt-4 text-[10px] text-slate-300">
           <p>© 2026 งานพันธกิจเพื่อสังคม คณะสิ่งแวดล้อมและทรัพยากรศาสตร์ มหาวิทยาลัยมหิดล</p>
-          <div className="flex gap-4">
-            <Link to="/site-map" className="transition hover:text-white">
-              ผังของการใช้งาน
-            </Link>
-            <Link to="/login" className="transition hover:text-white">
-              เข้าสู่ระบบ
-            </Link>
-          </div>
         </div>
       </div>
     </footer>
