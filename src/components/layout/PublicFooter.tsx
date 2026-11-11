@@ -67,7 +67,7 @@ export function PublicFooter() {
             <div className="mt-3 space-y-2.5 text-xs leading-5 text-blue-100">
               <p className="flex items-start gap-2">
                 <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-[#D6A84F]" aria-hidden="true" />
-                <span>ศูนย์วิจัยเเละบริการวิชาการสิ่งเเวดล้อม เลขที่ 125 หมู่ที่ 8 ตำบลแม่กัวะ ตำบลแม่กัวะ อำเภอสบปราบ จังหวัดลำปาง 52170</span>
+                <span>ศูนย์วิจัยเเละบริการวิชาการสิ่งเเวดล้อม เลขที่ 125 หมู่ที่ 8 ตำบลแม่กัวะ อำเภอสบปราบ จังหวัดลำปาง 52170</span>
               </p>
               <a
                 href="tel:054296368"
