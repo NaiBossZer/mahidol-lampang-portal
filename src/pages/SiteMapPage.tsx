@@ -1,4 +1,5 @@
 import { Map3DViewer } from "@/components/Map3DViewer";
+import { ModelAuditPanel } from "@/components/ModelAuditPanel";
 import { PublicAppShell } from "@/components/layout/PublicAppShell";
 
 const capabilities = [
@@ -35,6 +36,7 @@ export function SiteMapPage() {
           </header>
 
           <Map3DViewer />
+          <ModelAuditPanel />
 
           <div className="mt-5 grid gap-3 md:grid-cols-3">
             {capabilities.map((item) => (
