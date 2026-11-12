@@ -33,6 +33,7 @@ type AuditReport = {
   materialCount: number;
   textureCount: number;
   imageCount: number;
+  accessors: Array<{ index: number; type?: string; count?: number; min?: number[]; max?: number[] }>;
   nodes: Array<{
     index: number;
     name: string;
@@ -82,6 +83,7 @@ function makeReport(doc: GltfDocument, source: string, fileSize?: number): Audit
     materialCount: doc.materials?.length ?? 0,
     textureCount: doc.textures?.length ?? 0,
     imageCount: doc.images?.length ?? 0,
+    accessors: (doc.accessors ?? []).map((accessor, index) => ({ index, type: accessor.type, count: accessor.count, min: accessor.min, max: accessor.max })),
     nodes: nodes.map((node, index) => ({
       index,
       name: node.name?.trim() || `Node ${index}`,
@@ -250,6 +252,7 @@ export function ModelAuditPanel() {
               ["Meshes", report.meshCount],
               ["Primitives", report.primitiveCount],
               ["Materials", report.materialCount],
+              ["Accessors", report.accessors.length],
             ].map(([label, value]) => (
               <div key={label} className="rounded-lg border border-slate-200 p-3">
                 <p className="text-[10px] font-semibold text-slate-500">{label}</p>
@@ -285,6 +288,16 @@ export function ModelAuditPanel() {
                       <p className="mt-1 text-[10px] text-slate-500">{mesh.primitiveCount} primitives · {mesh.primitives.map((primitive) => primitive.material === undefined ? "no material" : `material ${primitive.material}`).join(", ")}</p>
                     </div>
                   ))}
+                </div>
+              </div>
+              <div className="min-w-0 rounded-xl border border-slate-200 p-3 lg:col-span-2">
+                <h3 className="text-sm font-bold text-slate-900">Geometry bounds / Accessors</h3>
+                <p className="mt-1 text-[10px] text-slate-500">ค่าขอบเขต min/max เป็นข้อมูลระดับ accessor ไม่ใช่ footprint อาคารหรือพิกัดภูมิศาสตร์</p>
+                <div className="mt-2 max-h-64 overflow-auto">
+                  <table className="w-full text-left text-[10px]">
+                    <thead className="sticky top-0 bg-slate-100 text-slate-600"><tr><th className="p-2">#</th><th className="p-2">Type</th><th className="p-2">Count</th><th className="p-2">Min</th><th className="p-2">Max</th></tr></thead>
+                    <tbody>{report.accessors.map((accessor) => <tr key={accessor.index} className="border-t border-slate-100"><td className="p-2">{accessor.index}</td><td className="p-2">{accessor.type ?? "—"}</td><td className="p-2 tabular-nums">{accessor.count ?? "—"}</td><td className="p-2 font-mono">{accessor.min?.join(", ") ?? "—"}</td><td className="p-2 font-mono">{accessor.max?.join(", ") ?? "—"}</td></tr>)}</tbody>
+                  </table>
                 </div>
               </div>
             </div>
