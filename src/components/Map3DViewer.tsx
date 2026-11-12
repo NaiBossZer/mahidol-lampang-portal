@@ -20,7 +20,6 @@ export function Map3DViewer({ modelUrl }: Map3DViewerProps) {
   const [hasError, setHasError] = useState(false);
   const [shouldLoad, setShouldLoad] = useState(false);
   const [viewerReady, setViewerReady] = useState(false);
-  const [autoRotate, setAutoRotate] = useState(true);
   const [cameraPreset, setCameraPreset] = useState<CameraPreset>("overview");
   const [isFullscreen, setIsFullscreen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -86,13 +85,6 @@ export function Map3DViewer({ modelUrl }: Map3DViewerProps) {
       viewer.removeAttribute("src");
     };
   }, [activeModelUrl, shouldLoad, viewerReady]);
-
-  useEffect(() => {
-    const viewer = viewerRef.current;
-    if (!viewer) return;
-    if (autoRotate) viewer.setAttribute("auto-rotate", "");
-    else viewer.removeAttribute("auto-rotate");
-  }, [autoRotate, viewerReady]);
 
   useEffect(() => {
     const onFullscreenChange = () => {
@@ -202,9 +194,6 @@ export function Map3DViewer({ modelUrl }: Map3DViewerProps) {
           <p className="text-[10px] text-slate-300">โมเดลพื้นที่ต้นฉบับ</p>
         </div>
         <div className="pointer-events-auto flex flex-wrap justify-end gap-2">
-          <button type="button" className={buttonClass} onClick={() => setAutoRotate((value) => !value)} aria-pressed={autoRotate}>
-            {autoRotate ? "หยุดหมุน" : "หมุนอัตโนมัติ"}
-          </button>
           <button type="button" className={buttonClass} onClick={() => setCamera("overview")} aria-pressed={cameraPreset === "overview"}>มุมเฉียง</button>
           <button type="button" className={buttonClass} onClick={() => setCamera("top")} aria-pressed={cameraPreset === "top"}>มุมบน</button>
           <button type="button" className={buttonClass} onClick={() => setCamera("low")} aria-pressed={cameraPreset === "low"}>มุมระดับต่ำ</button>
