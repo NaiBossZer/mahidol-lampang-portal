@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Map3DViewer } from "@/components/Map3DViewer";
 import { PublicAppShell } from "@/components/layout/PublicAppShell";
 
@@ -16,6 +17,7 @@ const capabilities = [
 ];
 
 export function SiteMapPage() {
+  const navigate = useNavigate();
   const [buildings, setBuildings] = useState<BuildingAnchor[]>([]);
   const [mappingStatus, setMappingStatus] = useState<"loading" | "ready" | "login_required" | "unconfigured" | "error">("loading");
 
@@ -40,12 +42,11 @@ export function SiteMapPage() {
   }, []);
 
   const openFacilityInspection = (building: BuildingAnchor) => {
-    const facilityUrl = import.meta.env.VITE_FACILITY_SAFETY_URL ||
-      "https://feat-facility-mapping-founda.facility-safety.pages.dev";
-    const target = new URL("/", facilityUrl);
-    target.searchParams.set("building_id", building.id);
-    target.searchParams.set("facility_page", "inspection");
-    window.location.assign(target.toString());
+    const params = new URLSearchParams({
+      building_id: building.id,
+      facility_page: "inspection",
+    });
+    navigate(`/facility-safety/inspection?${params.toString()}`);
   };
 
   return (
