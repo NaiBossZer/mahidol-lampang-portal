@@ -1,7 +1,16 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 
+type BuildingAnchor = {
+  id: string;
+  name: string;
+  code?: string | null;
+  model_anchor: { x: number; y: number; z: number };
+};
+
 type Map3DViewerProps = {
   modelUrl?: string;
+  buildings?: BuildingAnchor[];
+  onBuildingSelect?: (building: BuildingAnchor) => void;
 };
 
 type CameraPreset = "overview" | "top" | "low";
@@ -14,7 +23,7 @@ const CAMERA_PRESETS: Record<CameraPreset, string> = {
   low: "35deg 75deg 100m",
 };
 
-export function Map3DViewer({ modelUrl }: Map3DViewerProps) {
+export function Map3DViewer({ modelUrl, buildings = [], onBuildingSelect }: Map3DViewerProps) {
   const [progress, setProgress] = useState(0);
   const [isLoaded, setIsLoaded] = useState(false);
   const [hasError, setHasError] = useState(false);
@@ -145,7 +154,23 @@ export function Map3DViewer({ modelUrl }: Map3DViewerProps) {
           max-camera-orbit="auto 90deg 220m"
           className="h-full w-full bg-slate-950"
           style={{ backgroundColor: "#07111f" }}
-        />
+        >
+          {buildings.map((building, index) => (
+            <button
+              key={building.id}
+              type="button"
+              slot={`hotspot-facility-${index}`}
+              data-position={`${building.model_anchor.x}m ${building.model_anchor.y}m ${building.model_anchor.z}m`}
+              data-normal="0m 1m 0m"
+              aria-label={`เปิดการตรวจอาคาร ${building.name}`}
+              title={building.name}
+              onClick={() => onBuildingSelect?.(building)}
+              className="rounded-full border-2 border-white bg-amber-400 px-3 py-1.5 text-xs font-black text-slate-950 shadow-lg transition hover:scale-110 hover:bg-amber-300 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-amber-200"
+            >
+              {building.name}
+            </button>
+          ))}
+        </model-viewer>
       ) : (
         <div className="flex h-full flex-col items-center justify-center gap-3 px-6 text-center text-slate-300">
           <span className="text-4xl" aria-hidden="true">⌖</span>
