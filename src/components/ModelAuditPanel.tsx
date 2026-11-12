@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useMemo, useState, type ChangeEvent } from "react";
 
 const MODEL_URL =
   "https://huggingface.co/BossLampang/site-map-3d-MU-Lampang/resolve/main/site-map-3d.glb";
@@ -170,7 +170,7 @@ export function ModelAuditPanel() {
     }
   }, []);
 
-  const onLocalFile = useCallback(async (event: React.ChangeEvent<HTMLInputElement>) => {
+  const onLocalFile = useCallback(async (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
     setBusy(true);
