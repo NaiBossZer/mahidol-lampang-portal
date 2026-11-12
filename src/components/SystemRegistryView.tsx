@@ -17,11 +17,15 @@ export function SystemRegistryView({ systemKey, title, systemLabel, sso = false,
 
   useEffect(() => {
     let active = true;
+    setUrl(null);
     setError("");
     void getSystemUrl(systemKey)
       .then((value) => {
         if (!active) return;
-        if (!value) setError("ยังไม่ได้ตั้งค่า URL ของระบบนี้ใน System Registry");
+        if (!value) {
+          setError("ยังไม่ได้ตั้งค่า URL ของระบบนี้ใน System Registry");
+          return;
+        }
         const target = new URL(value);
         if (forwardSearch) {
           new URLSearchParams(window.location.search).forEach((paramValue, paramKey) => {
