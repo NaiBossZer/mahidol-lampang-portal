@@ -1,9 +1,10 @@
 import { Map3DViewer } from "@/components/Map3DViewer";
+import { ProceduralCampusViewer } from "@/components/ProceduralCampusViewer";
 import { ModelAuditPanel } from "@/components/ModelAuditPanel";
 import { PublicAppShell } from "@/components/layout/PublicAppShell";
 
 const capabilities = [
-  { number: "01", title: "สำรวจพื้นที่", description: "หมุนมุมมอง ซูม และดูผังบริเวณจากโมเดล 3 มิติต้นฉบับ" },
+  { number: "01", title: "สำรวจพื้นที่", description: "หมุนมุมมอง ซูม และสำรวจแบบจำลอง 3 มิติที่สร้างจาก geometry ใหม่" },
   { number: "02", title: "มุมมองหลายระดับ", description: "สลับมุมมองเฉียง มุมบน และมุมระดับต่ำ เพื่อสำรวจองค์ประกอบพื้นที่" },
   { number: "03", title: "ต่อยอด Digital Twin", description: "เตรียมเชื่อมข้อมูลอาคาร ความปลอดภัย เซนเซอร์ และการใช้ประโยชน์พื้นที่ในระยะถัดไป" },
 ];
@@ -25,18 +26,23 @@ export function SiteMapPage() {
                 แผนที่พื้นที่ปฏิบัติการ 3D
               </h1>
               <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-600">
-                สำรวจพื้นที่ปฏิบัติการและพื้นที่เรียนรู้ของมหิดล ลำปาง ผ่านโมเดลสามมิติต้นฉบับ
-                ซึ่งจะใช้เป็นฐานสำหรับพัฒนา Mahidol Lampang Integrated Digital Center
+                สำรวจพื้นที่ปฏิบัติการและพื้นที่เรียนรู้ผ่านแบบจำลองสามมิติที่สร้างขึ้นใหม่จากภาพถ่ายทางอากาศ
+                เพื่อพัฒนา Mahidol Lampang Integrated Digital Center
               </p>
             </div>
             <span className="inline-flex w-fit items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-xs font-bold text-emerald-800">
               <span className="h-2 w-2 rounded-full bg-emerald-500" />
-              โมเดล 3D ต้นฉบับ
+              แบบจำลอง 3D สร้างใหม่
             </span>
           </header>
 
-          <Map3DViewer />
+          <ProceduralCampusViewer />
           <ModelAuditPanel />
+          <details className="mt-5 rounded-xl border border-slate-200 bg-white p-4">
+            <summary className="cursor-pointer text-sm font-bold text-slate-800">เปิดดูโมเดล GLB ต้นฉบับ (สำหรับเปรียบเทียบ)</summary>
+            <p className="my-3 text-xs leading-6 text-slate-600">เก็บโมเดลต้นฉบับไว้โดยไม่แก้ไข ใช้ตรวจสอบและเปรียบเทียบกับแบบจำลอง procedural ที่สร้างใหม่</p>
+            <Map3DViewer />
+          </details>
 
           <div className="mt-5 grid gap-3 md:grid-cols-3">
             {capabilities.map((item) => (
@@ -51,10 +57,7 @@ export function SiteMapPage() {
           <aside className="mt-5 rounded-xl border border-slate-200 bg-white p-4">
             <h2 className="text-sm font-bold text-slate-900">เกี่ยวกับโมเดล</h2>
             <p className="mt-1 text-xs leading-6 text-slate-600">
-              หน้านี้คงไฟล์โมเดล GLB ต้นฉบับไว้โดยไม่แก้ไข geometry หรือเปลี่ยนแหล่งไฟล์
-              การปรับปรุงรอบนี้เพิ่มเครื่องมือควบคุมมุมกล้อง การหมุนอัตโนมัติ และการแสดงผลเต็มจอ
-              ส่วนข้อมูลตำแหน่งอาคาร ชั้น ห้อง และสถานะจากระบบจริงจะเชื่อมต่อในระยะถัดไป
-              หลังตรวจสอบโครงสร้างภายในไฟล์โมเดลและจับคู่ตำแหน่งกับผังพื้นที่ที่ยืนยันแล้ว
+              แบบจำลองหลักสร้าง geometry ขึ้นใหม่จากองค์ประกอบที่มองเห็นในภาพถ่ายทางอากาศ โดยกำหนดตำแหน่งและสัดส่วนเป็นค่าประมาณเพื่อทำต้นแบบก่อน ไฟล์ GLB ต้นฉบับยังคงเก็บไว้ให้เปิดดูเปรียบเทียบได้ ส่วนพิกัด ขนาดอาคาร ชั้น ห้อง และข้อมูลสถานะจริงจะปรับหลังได้รับผังสำรวจหรือข้อมูล CAD/BIM ที่ยืนยันแล้ว
             </p>
           </aside>
         </div>
