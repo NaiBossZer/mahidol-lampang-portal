@@ -1,5 +1,13 @@
+import { useEffect, useState } from "react";
 import { Map3DViewer } from "@/components/Map3DViewer";
 import { PublicAppShell } from "@/components/layout/PublicAppShell";
+
+type BuildingAnchor = {
+  id: string;
+  name: string;
+  code?: string | null;
+  model_anchor: { x: number; y: number; z: number };
+};
 
 const capabilities = [
   { number: "01", title: "สำรวจพื้นที่", description: "สำรวจโมเดลพื้นที่ต้นฉบับด้วยการหมุนมุมมองและซูมตามต้องการ" },
@@ -8,6 +16,38 @@ const capabilities = [
 ];
 
 export function SiteMapPage() {
+  const [buildings, setBuildings] = useState<BuildingAnchor[]>([]);
+  const [mappingStatus, setMappingStatus] = useState<"loading" | "ready" | "login_required" | "unconfigured" | "error">("loading");
+
+  useEffect(() => {
+    let active = true;
+    void fetch("/api/facility/buildings", { credentials: "same-origin" })
+      .then(async (response) => {
+        if (response.status === 401) {
+          if (active) setMappingStatus("login_required");
+          return null;
+        }
+        if (!response.ok) throw new Error("Facility map API unavailable");
+        return (await response.json()) as { success: boolean; mapping_ready?: boolean; data?: BuildingAnchor[] };
+      })
+      .then((result) => {
+        if (!active || !result) return;
+        setBuildings(result.data || []);
+        setMappingStatus(result.mapping_ready ? "ready" : "unconfigured");
+      })
+      .catch(() => { if (active) setMappingStatus("error"); });
+    return () => { active = false; };
+  }, []);
+
+  const openFacilityInspection = (building: BuildingAnchor) => {
+    const facilityUrl = import.meta.env.VITE_FACILITY_SAFETY_URL ||
+      "https://feat-facility-mapping-founda.facility-safety.pages.dev";
+    const target = new URL("/", facilityUrl);
+    target.searchParams.set("building_id", building.id);
+    target.searchParams.set("facility_page", "inspection");
+    window.location.assign(target.toString());
+  };
+
   return (
     <PublicAppShell>
       <section
@@ -34,7 +74,18 @@ export function SiteMapPage() {
             </span>
           </header>
 
-          <Map3DViewer />
+          <Map3DViewer buildings={buildings} onBuildingSelect={openFacilityInspection} />
+          <div className="mt-3 flex flex-wrap items-center justify-between gap-2 rounded-xl border border-slate-200 bg-white px-4 py-3 text-xs text-slate-600">
+            <span>
+              {mappingStatus === "loading" && "กำลังตรวจสอบข้อมูลอาคารที่ยืนยันพิกัดแล้ว…"}
+              {mappingStatus === "ready" && buildings.length > 0 && `เลือกอาคารจากจุดสีทองบนโมเดลเพื่อเปิดหน้าตรวจอาคาร (${buildings.length} อาคาร)`}
+              {mappingStatus === "ready" && buildings.length === 0 && "ยังไม่มีอาคารที่ยืนยันตำแหน่งบนโมเดล"}
+              {mappingStatus === "login_required" && "เข้าสู่ระบบเพื่อดูจุดอาคารที่ได้รับอนุญาต"}
+              {mappingStatus === "unconfigured" && "รอเปิดใช้ Facility Mapping migration และยืนยันพิกัดอาคาร"}
+              {mappingStatus === "error" && "ไม่สามารถโหลดข้อมูลจุดอาคารได้ในขณะนี้"}
+            </span>
+            <span className="rounded-full bg-slate-100 px-2 py-1 font-semibold">แสดงเฉพาะจุดที่ยืนยันแล้ว</span>
+          </div>
 
           <div className="mt-5 grid gap-3 md:grid-cols-3">
             {capabilities.map((item) => (
