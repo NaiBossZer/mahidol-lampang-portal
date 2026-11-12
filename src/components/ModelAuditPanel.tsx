@@ -62,7 +62,7 @@ function parseGlbJson(buffer: ArrayBuffer): GltfDocument {
   if (jsonType !== 0x4e4f534a || jsonLength < 2 || 20 + jsonLength > buffer.byteLength) {
     throw new Error("ไม่พบ JSON chunk ที่สมบูรณ์ในไฟล์ GLB");
   }
-  const jsonText = new TextDecoder().decode(new Uint8Array(buffer, 20, jsonLength)).replace(/[\u0000\u0020]+$/g, "");
+  const jsonText = new TextDecoder().decode(new Uint8Array(buffer, 20, jsonLength)).replace(/ +$/g, "");
   const doc = JSON.parse(jsonText) as GltfDocument;
   if (declaredLength < 20 + jsonLength) throw new Error("ขนาดที่ระบุใน GLB ไม่ถูกต้อง");
   return doc;
