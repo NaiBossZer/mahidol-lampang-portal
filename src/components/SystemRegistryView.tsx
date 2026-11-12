@@ -8,9 +8,10 @@ type Props = {
   title: string;
   systemLabel: string;
   sso?: boolean;
+  forwardSearch?: boolean;
 };
 
-export function SystemRegistryView({ systemKey, title, systemLabel, sso = false }: Props) {
+export function SystemRegistryView({ systemKey, title, systemLabel, sso = false, forwardSearch = false }: Props) {
   const [url, setUrl] = useState<string | null>(null);
   const [error, setError] = useState("");
 
@@ -21,7 +22,13 @@ export function SystemRegistryView({ systemKey, title, systemLabel, sso = false 
       .then((value) => {
         if (!active) return;
         if (!value) setError("ยังไม่ได้ตั้งค่า URL ของระบบนี้ใน System Registry");
-        setUrl(value);
+        const target = new URL(value);
+        if (forwardSearch) {
+          new URLSearchParams(window.location.search).forEach((paramValue, paramKey) => {
+            target.searchParams.set(paramKey, paramValue);
+          });
+        }
+        setUrl(target.toString());
       })
       .catch((reason) => {
         if (!active) return;
@@ -30,7 +37,7 @@ export function SystemRegistryView({ systemKey, title, systemLabel, sso = false 
     return () => {
       active = false;
     };
-  }, [systemKey]);
+  }, [systemKey, forwardSearch]);
 
   if (error) {
     return (
