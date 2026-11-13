@@ -12,7 +12,6 @@ const centerItems = [
 const navItems = [
   { th: "หน้าแรก", en: "Home", to: "/" },
   { th: "กิจกรรม", en: "Activities", to: "/activities" },
-  { th: "แผนที่", en: "Site Map", to: "/site-map" },
   { th: "ร้านค้า", en: "Store", to: "/storefront" },
 ];
 
