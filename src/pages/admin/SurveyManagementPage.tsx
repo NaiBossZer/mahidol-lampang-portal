@@ -999,9 +999,17 @@ function SurveyPreviewModal({ survey, onClose }: { survey: AdminSurvey; onClose:
                       <h3 className="text-[10px] font-semibold leading-5 text-[#183153]">{question.order_index}. {question.question_text}{question.required && <span className="ml-1 text-[#b51f43]">*</span>}</h3>
                       {question.question_type === "rating" && <>
                         <div className="mt-2 flex items-center justify-between text-[8px] text-slate-400"><span>น้อยที่สุด</span><span>มากที่สุด</span></div>
-                        <div className="mt-1 flex flex-wrap gap-1.5">
+                        <div
+                          className="mt-1 grid w-full gap-2"
+                          style={{
+                            gridTemplateColumns: `repeat(${Math.max(1, question.scale_max - question.scale_min + 1)}, minmax(0, 1fr))`,
+                          }}
+                        >
                           {Array.from({ length: Math.max(0, question.scale_max - question.scale_min + 1) }, (_, i) => question.scale_min + i).map((score) => (
-                            <label key={score} className="cursor-pointer"><input type="radio" name={"preview-" + question.id} value={score} checked={answers[question.id] === String(score)} onChange={() => setAnswer(question, String(score))} className="peer sr-only" /><span className="grid h-8 w-10 place-items-center rounded-[5px] border border-[#d4dce6] bg-white text-[10px] font-medium text-[#183153] transition peer-checked:border-[#b51f43] peer-checked:bg-[#b51f43] peer-checked:text-white peer-focus-visible:ring-2 peer-focus-visible:ring-[#b51f43]/20">{score}</span></label>
+                            <label key={score} className="min-w-0 cursor-pointer">
+                              <input type="radio" name={"preview-" + question.id} value={score} checked={answers[question.id] === String(score)} onChange={() => setAnswer(question, String(score))} className="peer sr-only" />
+                              <span className="grid h-9 w-full place-items-center rounded-[5px] border border-[#d4dce6] bg-white text-[10px] font-medium text-[#183153] transition peer-checked:border-[#b51f43] peer-checked:bg-[#b51f43] peer-checked:text-white peer-focus-visible:ring-2 peer-focus-visible:ring-[#b51f43]/20">{score}</span>
+                            </label>
                           ))}
                         </div>
                       </>}
