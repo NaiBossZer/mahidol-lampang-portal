@@ -127,7 +127,7 @@ export function SurveyManagementPage() {
       if (activityFilter && occurrence?.activity_id !== activityFilter) return false;
       const activityTitle = occurrence ? (activityTitles[occurrence.activity_id] ?? "") : "";
       const searchText =
-        `${activityTitle} ${survey.id} ${survey.anonymous ? "anonymous" : "identified"} ${survey.questions.length}`.toLowerCase();
+        `${activityTitle} ${survey.id} ${survey.questions.length}`.toLowerCase();
       return !needle || searchText.includes(needle);
     });
   }, [activityFilter, activityTitles, occurrences, search, surveys]);
@@ -437,13 +437,12 @@ export function SurveyManagementPage() {
               }
             />
           ) : (
-            <AdminTable minWidth="820px" className="mt-0 rounded-none border-0 shadow-none">
+            <AdminTable minWidth="720px" className="mt-0 rounded-none border-0 shadow-none">
               <AdminTableHeader>
                 <tr>
                   <th className="px-5 py-3 text-left">แบบประเมิน</th>
                   <th className="px-4 py-3 text-center">คำถาม</th>
                   <th className="px-4 py-3 text-center">สถานะ</th>
-                  <th className="px-4 py-3 text-center">โหมด</th>
                   <th className="px-4 py-3 text-center">เครื่องมือ</th>
                 </tr>
               </AdminTableHeader>
@@ -483,11 +482,6 @@ export function SurveyManagementPage() {
                       <td className="px-4 py-4 text-center">
                         <AdminStatusBadge tone={surveyAvailability(survey).tone}>
                           {surveyAvailability(survey).label}
-                        </AdminStatusBadge>
-                      </td>
-                      <td className="px-4 py-4 text-center">
-                        <AdminStatusBadge tone={survey.anonymous ? "neutral" : "success"}>
-                          {survey.anonymous ? "ไม่ระบุตัวตน" : "ระบุตัวตน"}
                         </AdminStatusBadge>
                       </td>
                       <td className="px-4 py-3">
@@ -602,37 +596,6 @@ export function SurveyManagementPage() {
                       </div>
                     </section>
 
-                    <section className="min-w-0 rounded-xl border border-slate-200 bg-white p-3">
-                      <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
-                        <div>
-                          <p className="text-xs font-bold text-slate-800">ข้อมูลผู้ตอบ</p>
-                          <p className="mt-0.5 text-[11px] text-slate-500">กำหนดรูปแบบการระบุตัวตน</p>
-                        </div>
-                        <AdminStatusBadge tone={selected.anonymous ? "neutral" : "success"}>
-                          {selected.anonymous ? "ไม่ระบุตัวตน" : "ระบุตัวตน"}
-                        </AdminStatusBadge>
-                      </div>
-                      <AdminButton
-                        variant="secondary"
-                        onClick={() =>
-                          void updateAdminSurvey(selected.id, { anonymous: !selected.anonymous })
-                            .then((updated) => {
-                              setSelected({ ...selected, ...updated });
-                              setSurveys((items) =>
-                                items.map((item) =>
-                                  item.id === selected.id ? { ...item, ...updated } : item,
-                                ),
-                              );
-                              toast.success(updated.anonymous ? "ตั้งค่าไม่ระบุตัวตนแล้ว" : "ตั้งค่าระบุตัวตนแล้ว");
-                            })
-                            .catch((e) =>
-                              toast.error(e instanceof Error ? e.message : "บันทึกไม่สำเร็จ"),
-                            )
-                        }
-                      >
-                        {selected.anonymous ? "เปลี่ยนเป็นระบุตัวตน" : "เปลี่ยนเป็นไม่ระบุตัวตน"}
-                      </AdminButton>
-                    </section>
                   </div>
                 </div>
                 <div className="mt-4 rounded-xl border border-blue-100 bg-blue-50/70 px-4 py-3">
